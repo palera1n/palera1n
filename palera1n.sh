@@ -69,11 +69,11 @@ if [ "$2" = '--dfu' ]; then
     fi
 else
     if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' iPhone:' >> /dev/null); then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); then
             echo "[*] Waiting for device in normal mode"
         fi
 
-        while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' iPhone:' >> /dev/null); do
+        while ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); do
             sleep 1
         done
 
@@ -81,11 +81,11 @@ else
         defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
         killall Finder
     else
-        if ! (lsusb 2> /dev/null | grep ' iPhone:' >> /dev/null); then
+        if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
             echo "[*] Waiting for device in normal mode"
         fi
 
-        while ! (lsusb 2> /dev/null | grep ' iPhone:' >> /dev/null); do
+        while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
             sleep 1
         done
     fi
@@ -105,11 +105,11 @@ if [ ! "$2" = '--dfu' ]; then
             sleep 1
         done
     else
-        if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
+        if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
             echo "[*] Waiting for device to reconnect in recovery mode"
         fi
 
-        while ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
+        while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
             sleep 1
         done
     fi
