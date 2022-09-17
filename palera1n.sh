@@ -52,39 +52,65 @@ echo "palera1n | Version $version"
 echo "Written by Nebula | Some code by Nathan | Patching commands by Mineek | Loader app by Amy"
 echo ""
 
-# Get device's iOS version from ideviceinfo
+# Get device's iOS version from ideviceinfo if in normal mode
 echo "[*] Getting device version..."
-version=$2
+if [ "$2" = '--dfu' ]; then
+    if [ -z "$3" ]; then
+        echo "[-] When using --dfu, please pass the version you're device is on"
+        exit
+    else
+        version=$3
+    fi
+else
+    if [ "$os" = 'Darwin' ]; then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' iPhone:' >> /dev/null); then
+            echo "[*] Waiting for device in normal mode"
+        fi
 
-if [ -z "$version" ]; then
-    echo "[-] No version specified"
-    exit
+        while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' iPhone:' >> /dev/null); do
+            sleep 1
+        done
+
+        defaults write -g ignore-devices -bool true
+        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
+        killall Finder
+    else
+        if ! (lsusb 2> /dev/null | grep ' iPhone:' >> /dev/null); then
+            echo "[*] Waiting for device in normal mode"
+        fi
+
+        while ! (lsusb 2> /dev/null | grep ' iPhone:' >> /dev/null); do
+            sleep 1
+        done
+    fi
 fi
 
 # Put device into recovery mode, and set auto-boot to true
-echo "[*] Switching device into recovery mode..."
-ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //') > /dev/null
-if [ "$os" = 'Darwin' ]; then
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
-        echo "[*] Waiting for device to reconnect in recovery mode"
-    fi
+if [ ! "$2" = '--dfu' ]; then
+    echo "[*] Switching device into recovery mode..."
+    ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //') > /dev/null
+    if [ "$os" = 'Darwin' ]; then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
+            echo "[*] Waiting for device to reconnect in recovery mode"
+        fi
 
-    while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
-        sleep 1
-    done
-else
-    if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
-        echo "[*] Waiting for device to reconnect in recovery mode"
-    fi
+        while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
+            sleep 1
+        done
+    else
+        if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
+            echo "[*] Waiting for device to reconnect in recovery mode"
+        fi
 
-    while ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
-        sleep 1
-    done
+        while ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
+            sleep 1
+        done
+    fi
+    $dir/irecovery -c "setenv auto-boot true"
+    $dir/irecovery -c "saveenv"
 fi
-$dir/irecovery -c "setenv auto-boot true"
-$dir/irecovery -c "saveenv"
 
-# Grab more info from recovery
+# Grab more info
 echo "[*] Getting device info..."
 cpid=$($dir/irecovery -q | grep CPID | sed 's/CPID: //')
 model=$($dir/irecovery -q | grep MODEL | sed 's/MODEL: //')
@@ -92,29 +118,33 @@ deviceid=$($dir/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
 ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | $dir/jq '.firmwares | .[] | select(.version=="'$version'") | .url' --raw-output)
 
 # Have the user put the device into DFU
-echo "[*] Press any key when ready for DFU mode"
-read -n 1 -s
-step 3 "Get ready"
-step 4 "Hold volume down + side button" &
-sleep 3
-irecovery -c reset
-step 1 "Keep holding"
-step 10 'Release side button, but keep holding volume down'
-sleep 1
+if [ ! "$2" = '--dfu' ]; then
+    echo "[*] Press any key when ready for DFU mode"
+    read -n 1 -s
+    step 3 "Get ready"
+    step 4 "Hold volume down + side button" &
+    sleep 3
+    irecovery -c reset
+    step 1 "Keep holding"
+    step 10 'Release side button, but keep holding volume down'
+    sleep 1
+fi
 
 # Check if device entered dfu
-if [ "$os" = 'Darwin' ]; then
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-        echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
-        exit 1
+if [ ! "$2" = '--dfu' ]; then
+    if [ "$os" = 'Darwin' ]; then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
+            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
+            exit
+        fi
+    else
+        if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
+            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
+            exit
+        fi
     fi
-else
-    if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-        echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
-        exit 1
-    fi
+    echo "[*] Device entered DFU!"
 fi
-echo "[*] Device entered DFU!"
 
 sleep 2
 $dir/gaster pwn > /dev/null
