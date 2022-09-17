@@ -10,8 +10,8 @@ It boots the device with AMFI patches, and installs Pogo by Amy to the Tips app.
 2. Clone this repo with `git clone https://github.com/itsnebulalol/palera1n && cd palera1n`
 3. Prepare your blob for the current version you're on
 4. Run `./palera1n.sh path/to/blob.shsh2 install`
-    - If you want to start from DFU, run `./palera1n.sh path/to/blob.shsh2 --dfu <your iOS version here> install`
     - \[A10+\] Before running, you **must** disable your passcode
+    - If you want to start from DFU, run `./palera1n.sh path/to/blob.shsh2 --dfu <your iOS version here> install`
 5. Make sure your device is in normal mode, if you didn't start from DFU
 6. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
