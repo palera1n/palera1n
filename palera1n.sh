@@ -242,8 +242,6 @@ echo "[*] Booting device"
 $dir/gaster reset > /dev/null
 sleep 1
 $dir/irecovery -f boot/iBSS.img4
-sleep 2
-$dir/irecovery -f boot/iBSS.img4
 sleep 3
 if [[ "$@" == *"install"* ]]; then
     $dir/irecovery -f boot/restore_ibec.img4
@@ -295,4 +293,5 @@ if [[ "$@" == *"install"* ]]; then
     echo "The device should now reboot after about 30 seconds, then you can rerun the script without the install arg"
 else
     echo "The device should now boot to iOS, and you can open the Tips app and install Pogo (if you ran install before)"
+    echo "Add the repo mineek.github.io/repo for Procursus"
 fi
