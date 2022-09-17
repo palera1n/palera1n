@@ -296,4 +296,6 @@ if [[ "$@" == *"install"* ]]; then
 else
     echo "The device should now boot to iOS, and you can open the Tips app and install Pogo (if you ran install before)"
     echo "Add the repo mineek.github.io/repo for Procursus"
+    echo "If you already have installed Pogo, click uicache and remount preboot in the tools section"
+    echo "If Pogo doesn't install to Tips, get an IPA from the latest action build of Pogo and install with TrollStore"
 fi
