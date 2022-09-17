@@ -216,9 +216,11 @@ $dir/irecovery -f boot/kernelcache.img4
 sleep 1
 $dir/irecovery -c "bootx"
 
-defaults write -g ignore-devices -bool false
-defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
-killall Finder
+if [ "$os" = 'Darwin' ]; then
+    defaults write -g ignore-devices -bool false
+    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
+    killall Finder
+fi
 
 rm -rf work
 echo ""
