@@ -200,8 +200,6 @@ sleep 3
 if [[ "$@" == *"install"* ]]; then
     $dir/irecovery -f boot/restore_ibec.img4
     sleep 2
-    $dir/irecovery -c "ramdisk"
-    sleep 2
 else
     $dir/irecovery -f boot/iBEC.img4
     sleep 2
