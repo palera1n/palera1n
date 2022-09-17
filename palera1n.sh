@@ -291,4 +291,8 @@ fi
 rm -rf work
 echo ""
 echo "Done!"
-echo "The device should now boot to iOS, and you can install Pogo with TrollStore"
+if [[ "$@" == *"install"* ]]; then
+    echo "The device should now reboot after about 30 seconds, then you can rerun the script without the install arg"
+else
+    echo "The device should now boot to iOS, and you can open the Tips app and install Pogo (if you ran install before)"
+fi
