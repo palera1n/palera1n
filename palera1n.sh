@@ -233,7 +233,7 @@ if [ ! -e boot ]; then
             $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o work/ramdisk.dmg > /dev/null
         fi
         $dir/hfsplus work/ramdisk.dmg grow 300000000 > /dev/null
-        $dir/hfsplus work/ramdisk.dmg untar installer/ramdisk.tar.gz > /dev/null
+        $dir/hfsplus work/ramdisk.dmg untar other/ramdisk.tar.gz > /dev/null
         $dir/img4 -i work/ramdisk.dmg -o boot/ramdisk.img4 -M work/IM4M -A -T rdsk > /dev/null
     fi
 fi
@@ -260,6 +260,8 @@ if [[ "$cpid" == *"0x80"* ]]; then
     $dir/irecovery -c "go"
     sleep 5
 fi
+irecovery -f other/bootlogo.img4
+sleep 1
 if [[ "$@" == *"install"* ]]; then
     $dir/irecovery -f boot/ramdisk.img4
     sleep 2

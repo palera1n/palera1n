@@ -4,6 +4,8 @@ iOS 15.0-15.4.1 semi-tethered checkm8 "jailbreak"
 # What does this do?
 It boots the device with AMFI patches, and installs Pogo by Amy to the Tips app.
 
+**WARNING**: As of now, this is pretty unstable. On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic about a minute after being in sleep mode.
+
 # How to use
 1. Install libimobiledevice
     - It's needed for `ideviceenterrecovery` and `ideviceinfo`
