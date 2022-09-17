@@ -197,9 +197,9 @@ if [ ! -e boot ]; then
 
     echo "[*] Patching and repacking iBSS/iBEC"
     $dir/iBoot64Patcher iBSS.dec iBSS.patched > /dev/null
-    $dir/iBoot64Patcher iBEC.dec iBEC.patched -b -v "keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1" > /dev/null
+    $dir/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1' #> /dev/null
     if [[ "$@" == *"install"* ]]; then
-        $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b rd=md0 debug=0x2014e -v "wdt=-1" > /dev/null
+        $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b 'rd=md0 debug=0x2014e -v wdt=-1' > /dev/null
     fi
     cd ..
     $dir/img4 -i work/iBSS.patched -o boot/iBSS.img4 -M work/IM4M -A -T ibss > /dev/null
