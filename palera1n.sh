@@ -52,32 +52,14 @@ echo "palera1n | Version $version"
 echo "Written by Nebula | Some code by Nathan | Patching commands by Mineek | Loader app by Amy"
 echo ""
 
-# Wait for normal mode
-if [ "$os" = 'Darwin' ]; then
-    if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' iPhone:' >> /dev/null); then
-        echo "[*] Waiting for device in normal mode"
-    fi
-
-    while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' iPhone:' >> /dev/null); do
-        sleep 1
-    done
-
-    defaults write -g ignore-devices -bool true
-    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
-    killall Finder
-else
-    if ! (lsusb 2> /dev/null | grep ' iPhone:' >> /dev/null); then
-        echo "[*] Waiting for device in normal mode"
-    fi
-
-    while ! (lsusb 2> /dev/null | grep ' iPhone:' >> /dev/null); do
-        sleep 1
-    done
-fi
-
 # Get device's iOS version from ideviceinfo
 echo "[*] Getting device version..."
-version=$(ideviceinfo | grep "ProductVersion: " | sed 's/ProductVersion: //')
+version=$2
+
+if [ -z "$version" ]; then
+    echo "[-] No version specified"
+    exit
+fi
 
 # Put device into recovery mode, and set auto-boot to true
 echo "[*] Switching device into recovery mode..."
@@ -164,15 +146,21 @@ if [ ! -e boot ]; then
         $dir/pzb -g Firmware/"$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache $ipswurl > /dev/null
     fi
 
+    echo "[*] Downloading ramdisk"
+    $dir/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" $ipswurl > /dev/null
+
     echo "[*] Downloading kernelcache"
     $dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
 
     echo "[*] Patching and repacking iBSS/iBEC"
     $dir/iBoot64Patcher iBSS.dec iBSS.patched > /dev/null
-    $dir/iBoot64Patcher iBEC.dec iBEC.patched -b -v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1 > /dev/null
+    $dir/iBoot64Patcher iBEC.dec iBEC.patched -b "-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1" > /dev/null
+    # make restore_ibec
+    $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b "rd=md0 debug=0x2014e -v wdt=-1" > /dev/null
     cd ..
     $dir/img4 -i work/iBSS.patched -o boot/iBSS.img4 -M work/IM4M -A -T ibss > /dev/null
     $dir/img4 -i work/iBEC.patched -o boot/iBEC.img4 -M work/IM4M -A -T ibec > /dev/null
+    $dir/img4 -i work/restore_ibec.patched -o boot/restore_ibec.img4 -M work/IM4M -A -T ibec > /dev/null
 
     echo "[*] Patching and converting kernelcache"
     $dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > /dev/null
@@ -189,6 +177,19 @@ if [ ! -e boot ]; then
     else
         $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     fi
+    echo "[*] Making ramdisk"
+    if [ "$os" = 'Darwin' ]; then
+        $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o work/ramdisk.dmg
+    else
+        $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o work/ramdisk.dmg
+    fi
+    hdiutil resize -size 150MB work/ramdisk.dmg
+    hdiutil attach -mountpoint /tmp/trolled work/ramdisk.dmg
+    # extract installer.tar.gz to ramdisk
+    tar -xzf installer/ramdisk.tar.gz -C /tmp/trolled
+    hdiutil detach -force /tmp/trolled
+    hdiutil resize -sectors min work/ramdisk.dmg
+    $dir/img4 -i work/ramdisk.dmg -o boot/ramdisk.img4 -M work/IM4M -A -T rdsk
 fi
 
 echo "[*] Booting device"
@@ -196,13 +197,30 @@ $dir/irecovery -f boot/iBSS.img4
 sleep 2
 $dir/irecovery -f boot/iBSS.img4
 sleep 3
-$dir/irecovery -f boot/iBEC.img4
-sleep 2
-if [[ "$cpid" == *"0x80"* ]]; then
+if [[ "$@" == *"install"* ]]; then
+    $dir/irecovery -f boot/restore_ibec.img4
+    sleep 2
+    $dir/irecovery -c "ramdisk"
+    sleep 2
+else
     $dir/irecovery -f boot/iBEC.img4
+    sleep 2
+fi
+if [[ "$cpid" == *"0x80"* ]]; then
+    if [[ "$@" == *"install"* ]]; then
+        $dir/irecovery -f boot/restore_ibec.img4
+    else
+        $dir/irecovery -f boot/iBEC.img4
+    fi
     sleep 2
     $dir/irecovery -c "go"
     sleep 5
+fi
+if [[ "$@" == *"install"* ]]; then
+    $dir/irecovery -f boot/ramdisk.img4
+    sleep 2
+    $dir/irecovery -c "ramdisk"
+    sleep 2
 fi
 $dir/irecovery -f boot/devicetree.img4
 sleep 1
