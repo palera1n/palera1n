@@ -1,5 +1,5 @@
 # palera1n
-iOS 15.0-15.4.1 checkm8 "jailbreak"
+iOS 15.0-15.4.1 semi-tethered checkm8 "jailbreak"
 
 # What does this do?
 It boots the device with AMFI patches, and installs Pogo by Amy to the Tips app.
@@ -15,7 +15,10 @@ It boots the device with AMFI patches, and installs Pogo by Amy to the Tips app.
 5. Make sure your device is in normal mode, if you didn't start from DFU
 6. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
-7. Open the Tips app, and hit install!
+7. Once your device reboots, run the script again, but without `install`
+8. Open the Tips app, and hit install!
+    - You should now see Sileo on your homescreen, enjoy!
+    - You'll have to uicache in the Pogo app every reboot
 
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
