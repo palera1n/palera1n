@@ -178,9 +178,9 @@ if [ ! -e boot ]; then
 
     echo "[*] Downloading trustcache"
     if [ "$os" = 'Darwin' ]; then
-        $dir/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)".trustcache $ipswurl > /dev/null
+        $dir/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" $ipswurl > /dev/null
     else
-        $dir/pzb -g Firmware/"$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache $ipswurl > /dev/null
+        $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
     fi
 
     if [[ "$@" == *"install"* ]]; then
@@ -197,7 +197,7 @@ if [ ! -e boot ]; then
 
     echo "[*] Patching and repacking iBSS/iBEC"
     $dir/iBoot64Patcher iBSS.dec iBSS.patched > /dev/null
-    $dir/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1' #> /dev/null
+    $dir/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1' > /dev/null
     if [[ "$@" == *"install"* ]]; then
         $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b 'rd=md0 debug=0x2014e -v wdt=-1' > /dev/null
     fi
@@ -219,9 +219,9 @@ if [ ! -e boot ]; then
 
     echo "[*] Patching and converting trustcache"
     if [ "$os" = 'Darwin' ]; then
-        $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)".trustcache -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
+        $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     else
-        $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
+        $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     fi
 
     if [[ "$@" == *"install"* ]]; then

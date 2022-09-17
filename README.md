@@ -20,4 +20,5 @@ It boots the device with AMFI patches, and installs Pogo by Amy to the Tips app.
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
 - [Mineek](https://github.com/mineek) for some of the patching and booting commands
 - [Amy](https://github.com/elihwyma) for the Pogo app
+- [nyuszika7h](https://github.com/nyuszika7h) for the script to get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
