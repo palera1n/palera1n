@@ -155,6 +155,7 @@ fi
 
 sleep 2
 $dir/gaster pwn > /dev/null
+sleep 1
 
 if [ ! -e boot ]; then
     # Downloading files, and decrypting iBSS/iBEC
@@ -238,6 +239,8 @@ if [ ! -e boot ]; then
 fi
 
 echo "[*] Booting device"
+$dir/gaster reset > /dev/null
+sleep 1
 $dir/irecovery -f boot/iBSS.img4
 sleep 2
 $dir/irecovery -f boot/iBSS.img4
