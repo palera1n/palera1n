@@ -1,0 +1,7 @@
+.DS_Store
+*/.DS_Store
+binaries/Linux/gaster
+binaries/Darwin/gaster
+work
+boot
+.irecovery
