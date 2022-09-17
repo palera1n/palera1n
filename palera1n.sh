@@ -184,14 +184,14 @@ if [ ! -e boot ]; then
         $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
     fi
 
-    if [[ "$@" == *"install"* ]]; then
-        echo "[*] Downloading ramdisk"
-        if [ "$os" = 'Darwin' ]; then
-            $dir/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" $ipswurl > /dev/null
-        else
-            $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
-        fi
-    fi
+    #if [[ "$@" == *"install"* ]]; then
+    #    echo "[*] Downloading ramdisk"
+    #    if [ "$os" = 'Darwin' ]; then
+    #        $dir/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" $ipswurl > /dev/null
+    #    else
+    #        $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
+    #    fi
+    #fi
 
     echo "[*] Downloading kernelcache"
     $dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
@@ -199,15 +199,15 @@ if [ ! -e boot ]; then
     echo "[*] Patching and repacking iBSS/iBEC"
     $dir/iBoot64Patcher iBSS.dec iBSS.patched > /dev/null
     $dir/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1' > /dev/null
-    if [[ "$@" == *"install"* ]]; then
-        $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b '-v rd=md0 debug=0x2014e wdt=-1' > /dev/null
-    fi
+    #if [[ "$@" == *"install"* ]]; then
+    #    $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b '-v rd=md0 debug=0x2014e wdt=-1' > /dev/null
+    #fi
     cd ..
     $dir/img4 -i work/iBSS.patched -o boot/iBSS.img4 -M work/IM4M -A -T ibss > /dev/null
     $dir/img4 -i work/iBEC.patched -o boot/iBEC.img4 -M work/IM4M -A -T ibec > /dev/null
-    if [[ "$@" == *"install"* ]]; then
-        $dir/img4 -i work/restore_ibec.patched -o boot/restore_ibec.img4 -M work/IM4M -A -T ibec > /dev/null
-    fi
+    #if [[ "$@" == *"install"* ]]; then
+    #    $dir/img4 -i work/restore_ibec.patched -o boot/restore_ibec.img4 -M work/IM4M -A -T ibec > /dev/null
+    #fi
 
     echo "[*] Patching and converting kernelcache"
     $dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > /dev/null
@@ -225,17 +225,17 @@ if [ ! -e boot ]; then
         $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     fi
 
-    if [[ "$@" == *"install"* ]]; then
-        echo "[*] Making ramdisk... this may take awhile"
-        if [ "$os" = 'Darwin' ]; then
-            $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o work/ramdisk.dmg > /dev/null
-        else
-            $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o work/ramdisk.dmg > /dev/null
-        fi
-        $dir/hfsplus work/ramdisk.dmg grow 300000000 > /dev/null
-        $dir/hfsplus work/ramdisk.dmg untar other/ramdisk.tar.gz > /dev/null
-        $dir/img4 -i work/ramdisk.dmg -o boot/ramdisk.img4 -M work/IM4M -A -T rdsk > /dev/null
-    fi
+    #if [[ "$@" == *"install"* ]]; then
+    #    echo "[*] Making ramdisk... this may take awhile"
+    #    if [ "$os" = 'Darwin' ]; then
+    #        $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o work/ramdisk.dmg > /dev/null
+    #    else
+    #        $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o work/ramdisk.dmg > /dev/null
+    #    fi
+    #    $dir/hfsplus work/ramdisk.dmg grow 300000000 > /dev/null
+    #    $dir/hfsplus work/ramdisk.dmg untar other/ramdisk.tar.gz > /dev/null
+    #    $dir/img4 -i work/ramdisk.dmg -o boot/ramdisk.img4 -M work/IM4M -A -T rdsk > /dev/null
+    #fi
 fi
 
 echo "[*] Booting device"
@@ -243,29 +243,29 @@ $dir/gaster reset > /dev/null
 sleep 1
 $dir/irecovery -f boot/iBSS.img4
 sleep 3
-if [[ "$@" == *"install"* ]]; then
-    $dir/irecovery -f boot/restore_ibec.img4
-    sleep 2
-else
-    $dir/irecovery -f boot/iBEC.img4
-    sleep 2
-fi
+#if [[ "$@" == *"install"* ]]; then
+#    $dir/irecovery -f boot/restore_ibec.img4
+#    sleep 2
+#else
+$dir/irecovery -f boot/iBEC.img4
+sleep 2
+#fi
 if [[ "$cpid" == *"0x80"* ]]; then
-    if [[ "$@" == *"install"* ]]; then
-        $dir/irecovery -f boot/restore_ibec.img4
-    else
-        $dir/irecovery -f boot/iBEC.img4
-    fi
+    #if [[ "$@" == *"install"* ]]; then
+    #    $dir/irecovery -f boot/restore_ibec.img4
+    #else
+    #    $dir/irecovery -f boot/iBEC.img4
+    #fi
     sleep 2
     $dir/irecovery -c "go"
     sleep 5
 fi
-if [[ "$@" == *"install"* ]]; then
-    $dir/irecovery -f boot/ramdisk.img4
-    sleep 2
-    $dir/irecovery -c "ramdisk"
-    sleep 2
-fi
+#if [[ "$@" == *"install"* ]]; then
+#    $dir/irecovery -f boot/ramdisk.img4
+#    sleep 2
+#    $dir/irecovery -c "ramdisk"
+#    sleep 2
+#fi
 $dir/irecovery -f boot/devicetree.img4
 sleep 1
 $dir/irecovery -c "devicetree"
@@ -289,11 +289,11 @@ fi
 rm -rf work
 echo ""
 echo "Done!"
-if [[ "$@" == *"install"* ]]; then
-    echo "The device should now reboot after about 30 seconds, then you can rerun the script without the install arg"
-else
-    echo "The device should now boot to iOS, and you can open the Tips app and install Pogo (if you ran install before)"
-    echo "Add the repo mineek.github.io/repo for Procursus"
-    echo "If you already have installed Pogo, click uicache and remount preboot in the tools section"
-    echo "If Pogo doesn't install to Tips, get an IPA from the latest action build of Pogo and install with TrollStore"
-fi
+#if [[ "$@" == *"install"* ]]; then
+#    echo "The device should now reboot after about 30 seconds, then you can rerun the script without the install arg"
+#else
+echo "The device should now boot to iOS"
+echo "If you already have installed Pogo, click uicache and remount preboot in the tools section"
+echo "If not, get an IPA from the latest action build of Pogo and install with TrollStore"
+echo "Add the repo mineek.github.io/repo for Procursus"
+#fi
