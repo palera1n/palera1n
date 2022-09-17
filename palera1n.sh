@@ -260,8 +260,6 @@ if [[ "$cpid" == *"0x80"* ]]; then
     $dir/irecovery -c "go"
     sleep 5
 fi
-irecovery -f other/bootlogo.img4
-sleep 1
 if [[ "$@" == *"install"* ]]; then
     $dir/irecovery -f boot/ramdisk.img4
     sleep 2
