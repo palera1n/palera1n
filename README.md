@@ -2,7 +2,7 @@
 iOS 15.0-15.4.1 checkm8 "jailbreak"
 
 # What does this do?
-It boots the device with AMFI patches, and installs Pogo by Amy.
+It boots the device with AMFI patches, and installs Pogo by Amy to the Tips app.
 
 # How to use
 1. Install libimobiledevice
@@ -14,6 +14,7 @@ It boots the device with AMFI patches, and installs Pogo by Amy.
 5. Make sure your device is in normal mode, if you didn't start from DFU
 6. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
+7. Open the Tips app, and hit install!
 
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script

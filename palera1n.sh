@@ -20,7 +20,6 @@ step() {
 ERR_HANDLER () {
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
-    rm -rf work
 }
 trap ERR_HANDLER EXIT
 
@@ -49,7 +48,7 @@ fi
 chmod +x $dir/*
 
 echo "palera1n | Version $version"
-echo "Written by Nebula | Some code by Nathan | Patching commands by Mineek | Loader app by Amy"
+echo "Written by Nebula | Some code by Nathan | Patching commands and ramdisk by Mineek | Loader app by Amy"
 echo ""
 
 # Get device's iOS version from ideviceinfo if in normal mode
@@ -83,6 +82,7 @@ else
             sleep 1
         done
     fi
+    version=$(ideviceinfo | grep "ProductVersion: " | sed 's/ProductVersion: //')
 fi
 
 # Put device into recovery mode, and set auto-boot to true
@@ -177,7 +177,11 @@ if [ ! -e boot ]; then
     fi
 
     echo "[*] Downloading ramdisk"
-    $dir/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" $ipswurl > /dev/null
+    if [ "$os" = 'Darwin' ]; then
+        $dir/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" $ipswurl > /dev/null
+    else
+        $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
+    fi
 
     echo "[*] Downloading kernelcache"
     $dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
@@ -207,19 +211,16 @@ if [ ! -e boot ]; then
     else
         $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     fi
-    echo "[*] Making ramdisk"
+
+    echo "[*] Making ramdisk... this may take awhile"
     if [ "$os" = 'Darwin' ]; then
-        $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o work/ramdisk.dmg
+        $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o work/ramdisk.dmg > /dev/null
     else
-        $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o work/ramdisk.dmg
+        $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o work/ramdisk.dmg > /dev/null
     fi
-    hdiutil resize -size 150MB work/ramdisk.dmg
-    hdiutil attach -mountpoint /tmp/trolled work/ramdisk.dmg
-    # extract installer.tar.gz to ramdisk
-    tar -xzf installer/ramdisk.tar.gz -C /tmp/trolled
-    hdiutil detach -force /tmp/trolled
-    hdiutil resize -sectors min work/ramdisk.dmg
-    $dir/img4 -i work/ramdisk.dmg -o boot/ramdisk.img4 -M work/IM4M -A -T rdsk
+    $dir/hfsplus work/ramdisk.dmg grow 300000000 > /dev/null
+    $dir/hfsplus work/ramdisk.dmg untar installer/ramdisk.tar.gz > /dev/null
+    $dir/img4 -i work/ramdisk.dmg -o boot/ramdisk.img4 -M work/IM4M -A -T rdsk > /dev/null
 fi
 
 echo "[*] Booting device"
@@ -263,9 +264,11 @@ sleep 1
 $dir/irecovery -c "bootx"
 
 if [ "$os" = 'Darwin' ]; then
-    defaults write -g ignore-devices -bool false
-    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
-    killall Finder
+    if [ ! "$2" = '--dfu' ]; then
+        defaults write -g ignore-devices -bool false
+        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
+        killall Finder
+    fi
 fi
 
 rm -rf work
