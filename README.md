@@ -1,3 +1,5 @@
+# WORK IN PROGESS, CURRENTLY NOT WORKING
+
 # palera1n
 iOS 15.0-15.4.1 checkm8 "jailbreak"
 
