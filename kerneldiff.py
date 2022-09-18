@@ -23,7 +23,6 @@ if __name__ == "__main__":
 
     a = 0
     diff = []
-    open(args[3], 'w+').write("")
     diffFile = open(args[3], 'w+')
     diffFile.write('#AMFI\n\n')
     for i in range(sizeO):
@@ -42,4 +41,4 @@ if __name__ == "__main__":
 
     for d in diff:
         data = str(d[0]) + " " + (str(d[1])) + " " + (str(d[2]))
-        diffFile.write(data + '\n')]
+        diffFile.write(data + '\n')
