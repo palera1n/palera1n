@@ -2,7 +2,7 @@
 iOS 15.0-15.4.1 semi-tethered checkm8 "jailbreak"
 
 # What does this do?
-It boots the device with AMFI patches, and installs Pogo by Amy to the Tips app.
+It boots the device with AMFI patches. Eventually, I want it to automatically install Pogo by Amy. For now, it has to be installed with TrollStore. You can get an IPA [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip).
 
 **WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
