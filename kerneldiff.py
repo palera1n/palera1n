@@ -21,16 +21,23 @@ if __name__ == "__main__":
     p = open(patched, "rb").read()
     o = open(original, "rb").read()
 
+    a = 0
     diff = []
+    diffFile = open(args[3], 'w+')
+    diffFile.write('#AMFI\n\n')
     for i in range(sizeO):
         originalByte = o[i]
         patchedByte = p[i]
         if originalByte != patchedByte:
+            if a == 1e6:
+                for d in diff:
+                    data = str(d[0]) + " " + (str(d[1])) + " " + (str(d[2]))
+                    diffFile.write(data + '\n')
+                diff = []
+                a = 0
             diff.append([hex(i), hex(originalByte), hex(patchedByte)])
+            a += 1
 
-    diffFile = open(args[3], 'w+')
-    diffFile.write('#AMFI\n\n')
     for d in diff:
         data = str(d[0]) + " " + (str(d[1])) + " " + (str(d[2]))
         diffFile.write(data + '\n')
-        print(data)
