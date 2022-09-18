@@ -6,7 +6,9 @@ It boots the device with AMFI patches. Eventually, I want it to automatically in
 
 **WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
-**WARNING 2**: Some Linux users have their device freeze when it patches and converts the kernelcache. Since the file is so big, it seems like something with Linux isn't able to handle it. This shouldn't seem to be a fault with the script, but a fault with Linux/the patching tools.
+**WARNING 2**: ~~Some Linux users have their device freeze when it patches and converts the kernelcache. Since the file is so big, it seems like something with Linux isn't able to handle it. This shouldn't seem to be a fault with the script, but a fault with Linux/the patching tools.~~ This should be fixed.
+
+**WARNING 3**: I am NOT responsible for any data loss. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
 
 # How to use
 1. Install libimobiledevice
