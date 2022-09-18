@@ -222,7 +222,7 @@ if [ ! -e boot ]; then
     if [ "$os" = 'Darwin' ]; then
         $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     else
-        $dir/img4 -i work/"$(Linux/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
+        $dir/img4 -i work/"$($dir/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     fi
 
     #if [[ "$@" == *"install"* ]]; then
