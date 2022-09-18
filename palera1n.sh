@@ -105,7 +105,9 @@ else
 fi
 
 # Put device into recovery mode, and set auto-boot to true
-if [ ! "$2" = '--dfu' ] || [ ! "$2" = '--recovery' ]; then
+if [ "$2" = '--dfu' ] || [ "$2" = '--recovery' ]; then
+    :
+else
     echo "[*] Switching device into recovery mode..."
     ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //') > /dev/null
     if [ "$os" = 'Darwin' ]; then
