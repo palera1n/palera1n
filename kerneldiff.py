@@ -34,13 +34,12 @@ if __name__ == "__main__":
                 for d in diff:
                     data = str(d[0]) + " " + (str(d[1])) + " " + (str(d[2]))
                     diffFile.write(data + '\n')
-                    print(data)
                 diff = []
                 a = 0
+                print("processed 1e6 block")
             diff.append([hex(i), hex(originalByte), hex(patchedByte)])
             a += 1
 
     for d in diff:
         data = str(d[0]) + " " + (str(d[1])) + " " + (str(d[2]))
-        diffFile.write(data + '\n')
-        print(data)
+        diffFile.write(data + '\n')]
