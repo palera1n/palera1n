@@ -37,11 +37,11 @@ if [ "$1" = 'clean' ]; then
 fi
 
 # Download gaster
-if [ ! -e $dir/gaster ]; then
-    curl -sLO https://nightly.link/verygenericname/gaster/workflows/makefile/main/gaster-$os.zip
-    unzip gaster-$os.zip >> /dev/null
-    mv gaster $dir/
-    rm -rf gaster gaster-$os.zip
+if [ ! -e "$dir"/gaster ]; then
+    curl -sLO https://nightly.link/verygenericname/gaster/workflows/makefile/main/gaster-"$os".zip
+    unzip gaster-"$os".zip >> /dev/null
+    mv gaster "$dir"/
+    rm -rf gaster gaster-"$os".zip
 fi
 
 # Check for pyimg4
@@ -59,7 +59,7 @@ else
     mkdir work
 fi
 
-chmod +x $dir/*
+chmod +x "$dir"/*
 
 echo "palera1n | Version $version"
 echo "Written by Nebula | Some code by Nathan | Patching commands and ramdisk by Mineek | Loader app by Amy"
@@ -125,16 +125,16 @@ if [ ! "$2" = '--dfu' ]; then
             sleep 1
         done
     fi
-    $dir/irecovery -c "setenv auto-boot true"
-    $dir/irecovery -c "saveenv"
+    "$dir"/irecovery -c "setenv auto-boot true"
+    "$dir"/irecovery -c "saveenv"
 fi
 
 # Grab more info
 echo "[*] Getting device info..."
-cpid=$($dir/irecovery -q | grep CPID | sed 's/CPID: //')
-model=$($dir/irecovery -q | grep MODEL | sed 's/MODEL: //')
-deviceid=$($dir/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
-ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | $dir/jq '.firmwares | .[] | select(.version=="'$version'") | .url' --raw-output)
+cpid=$("$dir"/irecovery -q | grep CPID | sed 's/CPID: //')
+model=$("$dir"/irecovery -q | grep MODEL | sed 's/MODEL: //')
+deviceid=$("$dir"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
+ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
 
 # Have the user put the device into DFU
 if [ ! "$2" = '--dfu' ]; then
@@ -143,7 +143,7 @@ if [ ! "$2" = '--dfu' ]; then
     step 3 "Get ready"
     step 4 "Hold volume down + side button" &
     sleep 3
-    $dir/irecovery -c "reset"
+    "$dir"/irecovery -c "reset"
     step 1 "Keep holding"
     step 10 'Release side button, but keep holding volume down'
     sleep 1
@@ -167,7 +167,7 @@ fi
 
 sleep 2
 echo "[*] Pwning device"
-$dir/gaster pwn > /dev/null
+"$dir"/gaster pwn > /dev/null
 sleep 1
 
 if [ ! -e boot ]; then
@@ -176,26 +176,26 @@ if [ ! -e boot ]; then
     cd work
 
     echo "[*] Downloading BuildManifest"
-    $dir/pzb -g BuildManifest.plist $ipswurl > /dev/null
-    $dir/img4tool -e -s $1 -m IM4M > /dev/null
+    "$dir"/pzb -g BuildManifest.plist "$ipswurl" > /dev/null
+    "$dir"/img4tool -e -s "$1" -m IM4M > /dev/null
 
     echo "[*] Downloading and decrypting iBSS"
-    $dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
-    $dir/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec > /dev/null
+    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > /dev/null
+    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec > /dev/null
 
     echo "[*] Downloading and decrypting iBEC"
-    $dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
-    $dir/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec > /dev/null
+    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > /dev/null
+    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec > /dev/null
 
     echo "[*] Downloading DeviceTree"
     #$dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
-    $dir/pzb -g Firmware/all_flash/DeviceTree.$model.im4p $ipswurl > /dev/null
+    "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl" > /dev/null
 
     echo "[*] Downloading trustcache"
     if [ "$os" = 'Darwin' ]; then
-       $dir/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" $ipswurl > /dev/null
+       "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > /dev/null
     else
-       $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
+       "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl" > /dev/null
     fi
 
     #if [[ "$@" == *"install"* ]]; then
@@ -208,17 +208,17 @@ if [ ! -e boot ]; then
     #fi
 
     echo "[*] Downloading kernelcache"
-    $dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
+    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > /dev/null
 
     echo "[*] Patching and repacking iBSS/iBEC"
-    $dir/iBoot64Patcher iBSS.dec iBSS.patched > /dev/null
-    $dir/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1' > /dev/null
+    "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > /dev/null
+    "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1' > /dev/null
     #if [[ "$@" == *"install"* ]]; then
     #    $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b '-v rd=md0 debug=0x2014e wdt=-1' > /dev/null
     #fi
     cd ..
-    $dir/img4 -i work/iBSS.patched -o boot/iBSS.img4 -M work/IM4M -A -T ibss > /dev/null
-    $dir/img4 -i work/iBEC.patched -o boot/iBEC.img4 -M work/IM4M -A -T ibec > /dev/null
+    "$dir"/img4 -i work/iBSS.patched -o boot/iBSS.img4 -M work/IM4M -A -T ibss > /dev/null
+    "$dir"/img4 -i work/iBEC.patched -o boot/iBEC.img4 -M work/IM4M -A -T ibec > /dev/null
     #if [[ "$@" == *"install"* ]]; then
     #    $dir/img4 -i work/restore_ibec.patched -o boot/restore_ibec.img4 -M work/IM4M -A -T ibec > /dev/null
     #fi
@@ -229,7 +229,7 @@ if [ ! -e boot ]; then
     else
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > /dev/null
     fi
-    $dir/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > /dev/null
+    "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > /dev/null
     if [[ "$deviceid" == *'iPhone8'* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p --extra work/kpp.bin -f rkrn --lzss > /dev/null
     else
@@ -238,13 +238,13 @@ if [ ! -e boot ]; then
     python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot/kernelcache.img4 -m work/IM4M > /dev/null
 
     echo "[*] Converting DeviceTree"
-    $dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot/devicetree.img4 -M work/IM4M -T rdtr > /dev/null
+    "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot/devicetree.img4 -M work/IM4M -T rdtr > /dev/null
 
     echo "[*] Patching and converting trustcache"
     if [ "$os" = 'Darwin' ]; then
-        $dir/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
+        "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     else
-        $dir/img4 -i work/"$($dir/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
+        "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     fi
 
     #if [[ "$@" == *"install"* ]]; then
@@ -263,16 +263,16 @@ fi
 echo "[*] Booting device"
 sleep 2
 if [[ ! "$deviceid" == *'iPhone8'* ]]; then
-    $dir/irecovery -f boot/iBSS.img4
+    "$dir"/irecovery -f boot/iBSS.img4
     sleep 2
 fi
-$dir/irecovery -f boot/iBSS.img4
+"$dir"/irecovery -f boot/iBSS.img4
 sleep 3
 #if [[ "$@" == *"install"* ]]; then
 #    $dir/irecovery -f boot/restore_ibec.img4
 #    sleep 2
 #else
-$dir/irecovery -f boot/iBEC.img4
+"$dir"/irecovery -f boot/iBEC.img4
 sleep 2
 #fi
 if [[ "$cpid" == *"0x80"* ]]; then
@@ -282,7 +282,7 @@ if [[ "$cpid" == *"0x80"* ]]; then
     #    $dir/irecovery -f boot/iBEC.img4
     #fi
     sleep 2
-    $dir/irecovery -c "go"
+    "$dir"/irecovery -c "go"
     sleep 5
 fi
 #if [[ "$@" == *"install"* ]]; then
@@ -291,17 +291,17 @@ fi
 #    $dir/irecovery -c "ramdisk"
 #    sleep 2
 #fi
-$dir/irecovery -f boot/devicetree.img4
+"$dir"/irecovery -f boot/devicetree.img4
 sleep 1
-$dir/irecovery -c "devicetree"
+"$dir"/irecovery -c "devicetree"
 sleep 1
-$dir/irecovery -f boot/trustcache.img4
+"$dir"/irecovery -f boot/trustcache.img4
 sleep 1
-$dir/irecovery -c "firmware"
+"$dir"/irecovery -c "firmware"
 sleep 1
-$dir/irecovery -f boot/kernelcache.img4
+"$dir"/irecovery -f boot/kernelcache.img4
 sleep 1
-$dir/irecovery -c "bootx"
+"$dir"/irecovery -c "bootx"
 
 if [ "$os" = 'Darwin' ]; then
     if [ ! "$2" = '--dfu' ]; then
