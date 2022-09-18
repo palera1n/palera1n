@@ -231,7 +231,7 @@ if [ ! -e boot ]; then
     #python3 kerneldiff.py work/kcache.raw work/kcache.patched work/kc.bpatch > /dev/null
     #$dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o boot/kernelcache.img4 -M work/IM4M -T rkrn -P work/kc.bpatch `if [ "$os" = 'Linux' ]; then echo "-J"; fi` > /dev/null
     python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw `if [ "$deviceid" == *'iPhone8'* ]; then echo "--extra kpp.bin"; fi` > /dev/null
-    $dir/Kernel64Patcher work/kcache.raw work/kcache.patched -a -r -o > /dev/null
+    $dir/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > /dev/null
     python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p `if [ "$deviceid" == *'iPhone8'* ]; then echo "--extra kpp.bin"; fi` -f rkrn --lzss > /dev/null
     python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot/kernelcache.img4 -m work/IM4M > /dev/null
 
