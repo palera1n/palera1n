@@ -2,7 +2,7 @@
 iOS 15.0-15.4.1 work in progress semi-tethered checkm8 "jailbreak"
 
 # What does this do?
-It boots the device with AMFI patches. Eventually, I want it to automatically install Pogo by Amy. For now, it has to be installed with TrollStore. You can get an IPA [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip).
+It boots the device with AMFI patches. Eventually, I want it to automatically install Pogo by Amy. For now, it has to be installed with TrollStore. You can get an IPA [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip). There is **no tweak injection yet**.
 
 **NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux.
 
