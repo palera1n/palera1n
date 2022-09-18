@@ -4,11 +4,11 @@ iOS 15.0-15.4.1 semi-tethered checkm8 "jailbreak"
 # What does this do?
 It boots the device with AMFI patches. Eventually, I want it to automatically install Pogo by Amy. For now, it has to be installed with TrollStore. You can get an IPA [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip).
 
+**NOTE**: Linux and libimobiledevice don't play well together, and macOS is recommended for this script. If you only have access to a Linux machine, give it a try as it might still work.
+
 **WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
-**WARNING 2**: ~~Some Linux users have their device freeze when it patches and converts the kernelcache. Since the file is so big, it seems like something with Linux isn't able to handle it. This shouldn't seem to be a fault with the script, but a fault with Linux/the patching tools.~~ This should be fixed.
-
-**WARNING 3**: I am NOT responsible for any data loss. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
+**WARNING 2**: I am NOT responsible for any data loss. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
 
 # How to use
 1. Install libimobiledevice

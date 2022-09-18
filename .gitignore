@@ -5,3 +5,4 @@ binaries/Darwin/gaster
 work
 boot
 .irecovery
+BuildManifest.plist

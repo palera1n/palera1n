@@ -44,6 +44,13 @@ if [ ! -e $dir/gaster ]; then
     rm -rf gaster gaster-$os.zip
 fi
 
+# Check for pyimg4
+if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+    echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
+    read -n 1 -s
+    python3 -m pip install pyimg4 > /dev/null
+fi
+
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
     rm -rf work
@@ -59,7 +66,6 @@ echo "Written by Nebula | Some code by Nathan | Patching commands and ramdisk by
 echo ""
 
 # Get device's iOS version from ideviceinfo if in normal mode
-echo "[*] Getting device version..."
 if [ "$2" = '--dfu' ]; then
     if [ -z "$3" ]; then
         echo "[-] When using --dfu, please pass the version you're device is on"
@@ -90,6 +96,12 @@ else
         done
     fi
     version=$(ideviceinfo | grep "ProductVersion: " | sed 's/ProductVersion: //')
+    arch=$(ideviceinfo | grep "CPUArchitecture: " | sed 's/CPUArchitecture: //')
+    if [ ! "$arch" = "arm64" ]; then
+        echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
+        exit
+    fi
+    echo "Hello, $(ideviceinfo | grep "ProductType: " | sed 's/ProductType: //') on $version!"
 fi
 
 # Put device into recovery mode, and set auto-boot to true
@@ -154,6 +166,7 @@ if [ ! "$2" = '--dfu' ]; then
 fi
 
 sleep 2
+echo "[*] Pwning device"
 $dir/gaster pwn > /dev/null
 sleep 1
 
@@ -175,13 +188,14 @@ if [ ! -e boot ]; then
     $dir/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec > /dev/null
 
     echo "[*] Downloading DeviceTree"
-    $dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
+    #$dir/pzb -g "$(awk "/""$cpid""/{x=1}x&&/DeviceTree[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" $ipswurl > /dev/null
+    $dir/pzb -g Firmware/all_flash/DeviceTree.$model.im4p $ipswurl > /dev/null
 
     echo "[*] Downloading trustcache"
     if [ "$os" = 'Darwin' ]; then
-        $dir/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" $ipswurl > /dev/null
+       $dir/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" $ipswurl > /dev/null
     else
-        $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
+       $dir/pzb -g "$($dir/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" $ipswurl > /dev/null
     fi
 
     #if [[ "$@" == *"install"* ]]; then
@@ -210,10 +224,14 @@ if [ ! -e boot ]; then
     #fi
 
     echo "[*] Patching and converting kernelcache"
-    $dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > /dev/null
+    #$dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > /dev/null
+    #$dir/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > /dev/null
+    #python3 kerneldiff.py work/kcache.raw work/kcache.patched work/kc.bpatch > /dev/null
+    #$dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o boot/kernelcache.img4 -M work/IM4M -T rkrn -P work/kc.bpatch `if [ "$os" = 'Linux' ]; then echo "-J"; fi` > /dev/null
+    python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw `if [ "$deviceid" == *'iPhone8'* ]; then echo "--extra kpp.bin"; fi` > /dev/null
     $dir/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > /dev/null
-    python3 kerneldiff.py work/kcache.raw work/kcache.patched work/kc.bpatch > /dev/null
-    $dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o boot/kernelcache.img4 -M work/IM4M -T rkrn -P work/kc.bpatch `if [ "$os" = 'Linux' ]; then echo "-J"; fi` > /dev/null
+    python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p `if [ "$deviceid" == *'iPhone8'* ]; then echo "--extra kpp.bin"; fi` -f rkrn --lzss > /dev/null
+    python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot/kernelcache.img4 -m work/IM4M > /dev/null
 
     echo "[*] Converting DeviceTree"
     $dir/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot/devicetree.img4 -M work/IM4M -T rdtr > /dev/null
