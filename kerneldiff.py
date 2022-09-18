@@ -30,7 +30,7 @@ if __name__ == "__main__":
         originalByte = o[i]
         patchedByte = p[i]
         if originalByte != patchedByte:
-            if a == 0xffffff:
+            if a == 1e6:
                 for d in diff:
                     data = str(d[0]) + " " + (str(d[1])) + " " + (str(d[2]))
                     diffFile.write(data + '\n')
