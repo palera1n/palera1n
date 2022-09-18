@@ -21,7 +21,7 @@ ERR_HANDLER () {
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
     if [ "$os" = 'Darwin' ]; then
-        if [ ! "$2" = '--dfu' ] || [ ! "$2" = '--recovery' ]; then
+        if [ ! "$2" = '--dfu' ]; then
             defaults write -g ignore-devices -bool false
             defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
             killall Finder
@@ -66,9 +66,9 @@ echo "Written by Nebula | Some code by Nathan | Patching commands and ramdisk by
 echo ""
 
 # Get device's iOS version from ideviceinfo if in normal mode
-if [ "$2" = '--dfu' ] || [ "$2" = '--recovery' ]; then
+if [ "$2" = '--dfu' ]; then
     if [ -z "$3" ]; then
-        echo "[-] When using --dfu or --recovery, please pass the version you're device is on"
+        echo "[-] When using --dfu, please pass the version you're device is on"
         exit
     else
         version=$3
@@ -105,9 +105,7 @@ else
 fi
 
 # Put device into recovery mode, and set auto-boot to true
-if [ "$2" = '--dfu' ] || [ "$2" = '--recovery' ]; then
-    :
-else
+if [ ! "$2" = '--dfu' ]; then
     echo "[*] Switching device into recovery mode..."
     ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //') > /dev/null
     if [ "$os" = 'Darwin' ]; then
@@ -299,7 +297,7 @@ sleep 1
 $dir/irecovery -c "bootx"
 
 if [ "$os" = 'Darwin' ]; then
-    if [ ! "$2" = '--dfu' ] || [ ! "$2" = '--recovery' ]; then
+    if [ ! "$2" = '--dfu' ]; then
         defaults write -g ignore-devices -bool false
         defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
         killall Finder
