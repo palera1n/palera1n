@@ -6,7 +6,7 @@ It boots the device with AMFI patches. Eventually, I want it to automatically in
 
 **NOTE**: Linux and libimobiledevice don't play well together, and macOS is recommended for this script. If you only have access to a Linux machine, give it a try as it might still work.
 
-**WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
+**WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode. Patching AMFI also seems to log you out of iCloud?
 
 **WARNING 2**: I am NOT responsible for any data loss. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
 
