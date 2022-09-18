@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -e
 
@@ -31,7 +31,7 @@ ERR_HANDLER () {
 trap ERR_HANDLER EXIT
 
 if [ "$1" = 'clean' ]; then
-    rm -rf boot work
+    rm -rf boot-* work
     echo "[*] Removed the created boot files"
     exit
 fi
@@ -170,9 +170,9 @@ echo "[*] Pwning device"
 "$dir"/gaster pwn > /dev/null
 sleep 1
 
-if [ ! -e boot ]; then
+if [ ! -e boot-"$deviceid" ]; then
     # Downloading files, and decrypting iBSS/iBEC
-    mkdir boot
+    mkdir boot-"$deviceid"
     cd work
 
     echo "[*] Downloading BuildManifest"
@@ -217,10 +217,10 @@ if [ ! -e boot ]; then
     #    $dir/iBoot64Patcher iBEC.patched restore_ibec.patched -b '-v rd=md0 debug=0x2014e wdt=-1' > /dev/null
     #fi
     cd ..
-    "$dir"/img4 -i work/iBSS.patched -o boot/iBSS.img4 -M work/IM4M -A -T ibss > /dev/null
-    "$dir"/img4 -i work/iBEC.patched -o boot/iBEC.img4 -M work/IM4M -A -T ibec > /dev/null
+    "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss > /dev/null
+    "$dir"/img4 -i work/iBEC.patched -o boot-"$deviceid"/iBEC.img4 -M work/IM4M -A -T ibec > /dev/null
     #if [[ "$@" == *"install"* ]]; then
-    #    $dir/img4 -i work/restore_ibec.patched -o boot/restore_ibec.img4 -M work/IM4M -A -T ibec > /dev/null
+    #    $dir/img4 -i work/restore_ibec.patched -o boot-"$deviceid"/restore_ibec.img4 -M work/IM4M -A -T ibec > /dev/null
     #fi
 
     echo "[*] Patching and converting kernelcache"
@@ -235,16 +235,16 @@ if [ ! -e boot ]; then
     else
         python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p -f rkrn --lzss > /dev/null
     fi
-    python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot/kernelcache.img4 -m work/IM4M > /dev/null
+    python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot-"$deviceid"/kernelcache.img4 -m work/IM4M > /dev/null
 
     echo "[*] Converting DeviceTree"
-    "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot/devicetree.img4 -M work/IM4M -T rdtr > /dev/null
+    "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot-"$deviceid"/devicetree.img4 -M work/IM4M -T rdtr > /dev/null
 
     echo "[*] Patching and converting trustcache"
     if [ "$os" = 'Darwin' ]; then
-        "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
+        "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot-"$deviceid"/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     else
-        "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
+        "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot-"$deviceid"/trustcache.img4 -M work/IM4M -T rtsc > /dev/null
     fi
 
     #if [[ "$@" == *"install"* ]]; then
@@ -256,50 +256,46 @@ if [ ! -e boot ]; then
     #    fi
     #    $dir/hfsplus work/ramdisk.dmg grow 300000000 > /dev/null
     #    $dir/hfsplus work/ramdisk.dmg untar other/ramdisk.tar.gz > /dev/null
-    #    $dir/img4 -i work/ramdisk.dmg -o boot/ramdisk.img4 -M work/IM4M -A -T rdsk > /dev/null
+    #    $dir/img4 -i work/ramdisk.dmg -o boot-"$deviceid"/ramdisk.img4 -M work/IM4M -A -T rdsk > /dev/null
     #fi
 fi
 
 echo "[*] Booting device"
 sleep 2
-if [[ ! "$deviceid" == *'iPhone8'* ]]; then
-    "$dir"/irecovery -f boot/iBSS.img4
-    sleep 2
-fi
-"$dir"/irecovery -f boot/iBSS.img4
+"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 3
 #if [[ "$@" == *"install"* ]]; then
-#    $dir/irecovery -f boot/restore_ibec.img4
+#    $dir/irecovery -f boot-"$deviceid"/restore_ibec.img4
 #    sleep 2
 #else
-"$dir"/irecovery -f boot/iBEC.img4
+"$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
 sleep 2
 #fi
 if [[ "$cpid" == *"0x80"* ]]; then
     #if [[ "$@" == *"install"* ]]; then
-    #    $dir/irecovery -f boot/restore_ibec.img4
+    #    $dir/irecovery -f boot-"$deviceid"/restore_ibec.img4
     #else
-    #    $dir/irecovery -f boot/iBEC.img4
+    #    $dir/irecovery -f boot-"$deviceid"/iBEC.img4
     #fi
     sleep 2
     "$dir"/irecovery -c "go"
     sleep 5
 fi
 #if [[ "$@" == *"install"* ]]; then
-#    $dir/irecovery -f boot/ramdisk.img4
+#    $dir/irecovery -f boot-"$deviceid"/ramdisk.img4
 #    sleep 2
 #    $dir/irecovery -c "ramdisk"
 #    sleep 2
 #fi
-"$dir"/irecovery -f boot/devicetree.img4
+"$dir"/irecovery -f boot-"$deviceid"/devicetree.img4
 sleep 1
 "$dir"/irecovery -c "devicetree"
 sleep 1
-"$dir"/irecovery -f boot/trustcache.img4
+"$dir"/irecovery -f boot-"$deviceid"/trustcache.img4
 sleep 1
 "$dir"/irecovery -c "firmware"
 sleep 1
-"$dir"/irecovery -f boot/kernelcache.img4
+"$dir"/irecovery -f boot-"$deviceid"/kernelcache.img4
 sleep 1
 "$dir"/irecovery -c "bootx"
 
