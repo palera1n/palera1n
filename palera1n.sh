@@ -66,7 +66,7 @@ echo "Written by Nebula | Some code by Nathan | Patching commands and ramdisk by
 echo ""
 
 # Get device's iOS version from ideviceinfo if in normal mode
-if [ "$2" = '--dfu' ] || [ ! "$2" = '--recovery' ]; then
+if [ "$2" = '--dfu' ] || [ "$2" = '--recovery' ]; then
     if [ -z "$3" ]; then
         echo "[-] When using --dfu or --recovery, please pass the version you're device is on"
         exit
