@@ -35,7 +35,6 @@ if __name__ == "__main__":
                     diffFile.write(data + '\n')
                 diff = []
                 a = 0
-                print("processed 1e6 block")
             diff.append([hex(i), hex(originalByte), hex(patchedByte)])
             a += 1
 
