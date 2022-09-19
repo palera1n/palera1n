@@ -224,13 +224,13 @@ if [ ! -e boot-"$deviceid" ]; then
     #fi
 
     echo "[*] Patching and converting kernelcache"
-    if [[ "$deviceid" == *'iPhone8'* ]]; then
+    if [ "$deviceid" == *'iPhone8'* ]; then
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin > /dev/null
     else
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > /dev/null
     fi
     "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > /dev/null
-    if [[ "$deviceid" == *'iPhone8'* ]]; then
+    if [ "$deviceid" == *'iPhone8'* ]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p --extra work/kpp.bin -f rkrn --lzss > /dev/null
     else
         python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p -f rkrn --lzss > /dev/null
@@ -261,6 +261,8 @@ if [ ! -e boot-"$deviceid" ]; then
 fi
 
 echo "[*] Booting device"
+sleep 1
+"$dir"/gaster reset > /dev/null
 sleep 2
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 3
@@ -271,7 +273,7 @@ sleep 3
 "$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
 sleep 2
 #fi
-if [[ "$cpid" == *"0x80"* ]]; then
+if [ "$cpid" == *"0x80"* ]; then
     #if [[ "$@" == *"install"* ]]; then
     #    $dir/irecovery -f boot-"$deviceid"/restore_ibec.img4
     #else
