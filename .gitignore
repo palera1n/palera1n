@@ -3,6 +3,6 @@
 binaries/Linux/gaster
 binaries/Darwin/gaster
 work
-boot
+boot*
 .irecovery
 BuildManifest.plist
