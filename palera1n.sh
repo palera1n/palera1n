@@ -185,7 +185,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd rdwork
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s other/blobs/"$cpid".shsh -m IM4M > "$out" # I don't know what the problem is with this...
+    "$dir"/img4tool -e -s $(realpath "other/blobs/$cpid.shsh" 2>/dev/null) -m IM4M > "$out"
     #"$dir"/img4tool -e -s /Users/nebula/workspace/8208387862696_iPhone8,1_n71ap_14.7.1-18G82_3a88b7c3802f2f0510abc432104a15ebd8bd7154.shsh2 -m IM4M > "$out"
 
     echo "[*] Downloading BuildManifest"
