@@ -4,5 +4,6 @@ binaries/Linux/gaster
 binaries/Darwin/gaster
 work
 boot*
+!bootlogo.img4
 .irecovery
 BuildManifest.plist
