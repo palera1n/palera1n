@@ -6,6 +6,8 @@ It boots the device with AMFI patches. Eventually, I want it to automatically in
 
 **NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux.
 
+**NOTE 2**: Onboard blobs are pretty much needed so you don't get the black screen issue. Dump onboards with [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script), then use that blob to boot with palera1n. Progress is being made for this to be done for you, check out the [ramdisk branch](https://github.com/itsnebulalol/palera1n/tree/ramdisk) if interested (it's currently not working).
+
 **WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode. Patching AMFI also seems to log you out of iCloud?
 
 **WARNING 2**: I am NOT responsible for any data loss. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
@@ -13,13 +15,13 @@ It boots the device with AMFI patches. Eventually, I want it to automatically in
 **Known working devices:**
 - iPhone X (GSM)
 - iPhone 7
-- iPhone 6s (mine worked, but some others not)
+- iPhone 6s
 
 # How to use
 1. Install libimobiledevice
     - It's needed for `ideviceenterrecovery` and `ideviceinfo`
 2. Clone this repo with `git clone https://github.com/itsnebulalol/palera1n && cd palera1n`
-3. Prepare your blob for the **current version** you're on
+3. Prepare your onboard blob for the **current version** you're on
 <!-- 4. Run `./palera1n.sh path/to/blob.shsh2 install`
     - \[A10+\] Before running, you **must** disable your passcode
     - If you want to start from DFU, run `./palera1n.sh path/to/blob.shsh2 --dfu <your iOS version here> install` -->
