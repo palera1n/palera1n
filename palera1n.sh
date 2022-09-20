@@ -294,9 +294,13 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         sleep 1
     done
 
+    echo "[*] Dumping blobs and installing Pogo"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" > "$out" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out"
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "pogoinstaller Tips" > "$out"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "reboot" > "$out"
+    sleep 1
+    killall iproxy
 
     # WAIT FOR DEVICE TO COME BACK FROM THE RD
     if [ "$os" = 'Darwin' ]; then
