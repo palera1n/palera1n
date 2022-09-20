@@ -21,15 +21,14 @@ On A10 and A11, you **must disable your passcode**. On A10, this can be fixed in
 1. Install libimobiledevice
     - It's needed for `ideviceenterrecovery` and `ideviceinfo`
 2. Clone this repo with `git clone https://github.com/itsnebulalol/palera1n && cd palera1n`
-3. Prepare your blob for the **current version** you're on
-4. Run `./palera1n.sh path/to/blob.shsh2`
+3. Run `./palera1n.sh`
     - \[A10+\] Before running, you **must** disable your passcode
-    - If you want to start from DFU, run `./palera1n.sh path/to/blob.shsh2 --dfu <your iOS version here>`
-5. Make sure your device is in normal mode, if you didn't start from DFU
-6. Follow the steps
+    - If you want to start from DFU, run `./palera1n.sh --dfu <your iOS version here>`
+4. Make sure your device is in normal mode, if you didn't start from DFU
+5. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
-7. Install Pogo through TrollStore, then hit Install in the Pogo app!
-    - You can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
+6. Open the Tips app, and click install!
+    - If Pogo didn't install to Tips for some reason, you can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
     - You should now see Sileo on your homescreen, enjoy!
     - You'll have to uicache in the Pogo app every reboot
 
