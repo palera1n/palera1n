@@ -180,11 +180,13 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
 
     mkdir -p blobs
+    rm -rf rdwork
     mkdir -p rdwork/boot
     cd rdwork
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s other/blobs/"$cpid".shsh2 -m IM4M > "$out"
+    "$dir"/img4tool -e -s other/blobs/"$cpid".shsh -m IM4M > "$out" # I don't know what the problem is with this...
+    #"$dir"/img4tool -e -s /Users/nebula/workspace/8208387862696_iPhone8,1_n71ap_14.7.1-18G82_3a88b7c3802f2f0510abc432104a15ebd8bd7154.shsh2 -m IM4M > "$out"
 
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$rdipswurl" > "$out"
@@ -204,11 +206,13 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     echo "[*] Downloading DeviceTree"
     "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$rdipswurl" > "$out"
 
-    echo "[*] Downloading trustcache"
+    echo "[*] Downloading trustcache and ramdisk"
     if [ "$os" = 'Darwin' ]; then
-       "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)".trustcache "$rdipswurl" > "$out"
+        "$dir"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$rdipswurl" > "$out"
+        "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$rdipswurl" > "$out"
     else
-       "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache "$rdipswurl" > "$out"
+        "$dir"/pzb -g Firmware/"$(../Linux/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache "$rdipswurl" > "$out"
+        "$dir"/pzb -g "$(../Linux/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" "$rdipswurl" > "$out"
     fi
 
     echo "[*] Downloading kernelcache"
@@ -218,47 +222,49 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         echo "[*] Patching and repacking iBSS"
         "$dir"/iBoot64Patcher iBSS.dec iBSS.patched -n -b 'rd=md0 debug=0x2014e wdt=-1' > "$out"
         cd ..
-        "$dir"/img4 -i work/iBSS.patched -o rdwork/boot/iBSS.img4 -M rdwork/IM4M -A -T ibss > "$out"
+        "$dir"/img4 -i rdwork/iBSS.patched -o rdwork/boot/iBSS.img4 -M rdwork/IM4M -A -T ibss > "$out"
     else
         echo "[*] Patching and repacking iBSS/iBEC"
         "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > "$out"
         "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -n -b 'rd=md0 debug=0x2014e wdt=-1' > "$out"
         cd ..
-        "$dir"/img4 -i work/iBSS.patched -o rdwork/boot/iBSS.img4 -M rdwork/IM4M -A -T ibss > "$out"
-        "$dir"/img4 -i work/iBEC.patched -o rdwork/boot/iBEC.img4 -M rdwork/IM4M -A -T ibec > "$out"
+        "$dir"/img4 -i rdwork/iBSS.patched -o rdwork/boot/iBSS.img4 -M rdwork/IM4M -A -T ibss > "$out"
+        "$dir"/img4 -i rdwork/iBEC.patched -o rdwork/boot/iBEC.img4 -M rdwork/IM4M -A -T ibec > "$out"
     fi
 
     echo "[*] Patching and converting kernelcache"
-    python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > "$out"
-    "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a > "$out"
-    python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p -f rkrn --lzss > "$out"
-    python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o rdwork/boot/kernelcache.img4 -m rdwork/IM4M > "$out"
+    python3 -m pyimg4 im4p extract -i rdwork/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" rdwork/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o rdwork/kcache.raw > "$out"
+    "$dir"/Kernel64Patcher rdwork/kcache.raw rdwork/kcache.patched -a > "$out"
+    python3 -m pyimg4 im4p create -i rdwork/kcache.patched -o rdwork/krnlboot.im4p -f rkrn --lzss > "$out"
+    python3 -m pyimg4 img4 create -p rdwork/krnlboot.im4p -o rdwork/boot/kernelcache.img4 -m rdwork/IM4M > "$out"
 
     echo "[*] Converting DeviceTree"
-    "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o rdwork/boot/devicetree.img4 -M rdwork/IM4M -T rdtr > "$out"
+    "$dir"/img4 -i rdwork/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" rdwork/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o rdwork/boot/devicetree.img4 -M rdwork/IM4M -T rdtr > "$out"
 
-    echo "[*] Patching and converting trustcache"
+    echo "[*] Converting trustcache and ramdisk"
     if [ "$os" = 'Darwin' ]; then
-        "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o rdwork/boot/trustcache.img4 -M rdwork/IM4M -T rtsc > "$out"
+        "$dir"/img4 -i rdwork/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - rdwork/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')".trustcache -o rdwork/boot/trustcache.img4 -M rdwork/IM4M -T rtsc > "$out"
+        "$dir"/img4 -i rdwork/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - rdwork/BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o rdwork/ramdisk.dmg > "$out"
     else
-        "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o rdwork/boot/trustcache.img4 -M rdwork/IM4M -T rtsc > "$out"
+        "$dir"/img4 -i rdwork/"$("$dir"/PlistBuddy rdwork/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')".trustcache -o rdwork/boot/trustcache.img4 -M rdwork/IM4M -T rtsc > "$out"
+        "$dir"/img4 -i rdwork/"$("$dir"/PlistBuddy rdwork/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o rdwork/ramdisk.dmg > "$out"
     fi
 
     echo "[*] Creating ramdisk"
     if [ "$os" = 'Darwin' ]; then
-        hdiutil resize -size 250MB work/ramdisk.dmg > "$out"
-        hdiutil attach -mountpoint /tmp/trolled work/ramdisk.dmg > "$out"
+        hdiutil resize -size 250MB rdwork/ramdisk.dmg > "$out"
+        hdiutil attach -mountpoint /tmp/trolled rdwork/ramdisk.dmg > "$out"
 
-        "$dir"/gtar -x --no-overwrite-dir -f other/ramdisk.tar.gz -C /tmp/trolled/ > "$out"
+        "$dir"/gtar -x --no-overwrite-dir -f other/ramdisk.tar.gz -C /tmp/trolled/ &> /dev/null > "$out"
 
         hdiutil detach -force /tmp/trolled > "$out"
-        hdiutil resize -sectors min work/ramdisk.dmg > "$out"
+        hdiutil resize -sectors min rdwork/ramdisk.dmg > "$out"
     else
         gzip -d other/ramdisk.tar.gz
-        "$dir"/hfsplus work/ramdisk.dmg grow 250000000 > "$out"
-        "$dir"/hfsplus work/ramdisk.dmg untar other/ramdisk.tar > "$out"
+        "$dir"/hfsplus rdwork/ramdisk.dmg grow 250000000 > "$out"
+        "$dir"/hfsplus rdwork/ramdisk.dmg untar other/ramdisk.tar > "$out"
     fi
-    "$dir"/img4 -i work/ramdisk.dmg -o rdwork/boot/ramdisk.img4 -M rdwork/IM4M -A -T rdsk > "$out"
+    "$dir"/img4 -i rdwork/ramdisk.dmg -o rdwork/boot/ramdisk.img4 -M rdwork/IM4M -A -T rdsk > "$out"
 
     echo "[*] Booting device"
     "$dir"/gaster pwn > "$out"
