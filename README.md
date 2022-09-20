@@ -10,7 +10,7 @@ It boots the device with AMFI patches. This is mainly a **developer** jailbreak.
 
 **WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
 
-On A10 and A11, you **must disable your passcode**. On A10, this can be fixed in the future by implementing blackbird. On A11, we don't have a SEP exploit yet.
+On A10 and A11, you **must disable your passcode while in the jailbroken state**. On A10, this can be fixed in the future by implementing blackbird. On A11, we don't have a SEP exploit yet. It may also **break camera while in the jailbroken state**.
 
 **Known working devices:**
 - iPhone X (GSM)
