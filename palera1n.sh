@@ -2,7 +2,9 @@
 
 set -e
 
+# =========
 # Variables
+# =========
 version="1.0.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
@@ -12,7 +14,9 @@ else
     out=/dev/null
 fi
 
+# =========
 # Functions
+# =========
 step() {
     for i in $(seq "$1" -1 1); do
         printf '\r\e[1;36m%s (%d) ' "$2" "$i"
@@ -21,7 +25,6 @@ step() {
     printf '\r\e[0m%s (0)\n' "$2"
 }
 
-# Error handler
 ERR_HANDLER () {
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
@@ -40,6 +43,10 @@ if [ "$1" = 'clean' ]; then
     echo "[*] Removed the created boot files"
     exit
 fi
+
+# ============
+# Dependencies
+# ============
 
 # Download gaster
 if [ ! -e "$dir"/gaster ]; then

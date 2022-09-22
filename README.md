@@ -17,17 +17,20 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
 - iPhone 7
 - iPhone 6s (mine worked, but some others not)
 
+# Prerequisites
+1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
+2. Linux or macOS computer
+    - libimobiledevice and Python 3 are required
+
 # How to use
-1. Install libimobiledevice
-    - It's needed for `ideviceenterrecovery` and `ideviceinfo`
-2. Clone this repo with `git clone https://github.com/itsnebulalol/palera1n && cd palera1n`
-3. Run `./palera1n.sh`
+1. Clone this repo with `git clone https://github.com/itsnebulalol/palera1n && cd palera1n`
+2. Run `./palera1n.sh`
     - \[A10+\] Before running, you **must** disable your passcode
     - If you want to start from DFU, run `./palera1n.sh --dfu <your iOS version here>`
-4. Make sure your device is in normal mode, if you didn't start from DFU
-5. Follow the steps
+3. Make sure your device is in normal mode, if you didn't start from DFU
+4. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
-6. Open the Tips app, and click install!
+5. Open the Tips app, and click install!
     - If Pogo didn't install to Tips for some reason, you can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
     - You should now see Sileo on your homescreen, enjoy!
     - You'll have to uicache in the Pogo app every reboot
