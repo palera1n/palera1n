@@ -89,10 +89,6 @@ _check_dfu() {
 }
 
 _info() {
-    if [ "$3" = "--no-out" ]; then
-        errout="2> /dev/null"
-    fi
-
     if [ "$1" = 'recovery' ]; then
         echo $("$dir"/irecovery -q "$errout" | grep "$2" | sed "s/$2: //")
     elif [ "$1" = 'normal' ]; then
@@ -101,7 +97,7 @@ _info() {
 }
 
 _pwn() {
-    pwnd=$(_info recovery PWND --no-out)
+    pwnd=$(_info recovery PWND)
     if [ "$pwnd" = "" ]; then
         echo "[*] Pwning device"
         "$dir"/gaster pwn > "$out"
@@ -158,7 +154,7 @@ fi
 # ============
 
 # Update submodules
-git submodule update --init --recursive
+git submodule update --init --recursive > "$out"
 
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
@@ -260,12 +256,16 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" > "$out" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out"
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
     if [[ ! "$@" == *"--no-install"* ]]; then
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "pogoinstaller Tips" > "$out"
+        tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cp -rf /usr/local/bin/loader.app/* $tipsdir" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown 33 $tipsdir/Tips" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 755 $tipsdir/Tips $tipsdir/PogoHelper" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown 0 $tipsdir/PogoHelper" > "$out"
     fi
+    sleep 2
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "reboot" > "$out"
     sleep 1
     killall iproxy
-
     _wait normal
 
     # Switch into recovery, and set auto-boot to true
