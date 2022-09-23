@@ -89,10 +89,25 @@ _check_dfu() {
 }
 
 _info() {
+    if [ "$3" = "--no-out" ]; then
+        errout="2> /dev/null"
+    fi
+
     if [ "$1" = 'recovery' ]; then
-        echo $("$dir"/irecovery -q | grep "$2" | sed "s/$2: //")
+        echo $("$dir"/irecovery -q "$errout" | grep "$2" | sed "s/$2: //")
     elif [ "$1" = 'normal' ]; then
-        echo $(ideviceinfo | grep "$2: " | sed "s/$2: //")
+        echo $(ideviceinfo "$errout" | grep "$2: " | sed "s/$2: //")
+    fi
+}
+
+_pwn() {
+    pwnd=$(_info recovery PWND --no-out)
+    if [ "$pwnd" = "" ]; then
+        echo "[*] Pwning device"
+        "$dir"/gaster pwn > "$out"
+        sleep 2
+        "$dir"/gaster reset > "$out"
+        sleep 1
     fi
 }
 
@@ -221,9 +236,7 @@ sleep 2
 # Dump blobs, and install pogo if needed
 # Implementing modified SSHRD_Script, but different as we don't need everything there
 if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
-    echo "[*] Pwning device"
-    "$dir"/gaster pwn > "$out"
-    sleep 1
+    _pwn
 
     mkdir -p blobs
     rm -rf rdwork
@@ -312,8 +325,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/img4 -i rdwork/ramdisk.dmg -o rdwork/boot/ramdisk.img4 -M rdwork/IM4M -A -T rdsk > "$out"
 
     echo "[*] Booting device"
-    "$dir"/gaster pwn > "$out"
-    "$dir"/gaster reset > "$out"
+    _pwn
     "$dir"/irecovery -f rdwork/boot/iBSS.img4
     sleep 2
     if [ "$cpid" = '0x8010' ] || [ "$cpid" = '0x8015' ] || [ "$cpid" = '0x8011' ] || [ "$cpid" = '0x8012' ]; then
@@ -349,7 +361,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mount_filesystems" > "$out"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" > "$out" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out"
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "pogoinstaller Tips" > "$out"
+    if [[ ! "$@" == *"--no-install"* ]]; then
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "pogoinstaller Tips" > "$out"
+    fi
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "reboot" > "$out"
     sleep 1
     killall iproxy
@@ -384,9 +398,7 @@ fi
 
 # Actually create the boot files
 if [ ! -e boot-"$deviceid" ]; then
-    echo "[*] Pwning device"
-    "$dir"/gaster pwn > "$out"
-    sleep 1
+    _pwn
 
     # Downloading files, and decrypting iBSS/iBEC
     mkdir boot-"$deviceid"
@@ -456,10 +468,7 @@ fi
 # ============
 
 sleep 2
-"$dir"/gaster pwn > "$out"
-sleep 2
-"$dir"/gaster reset > "$out"
-sleep 3
+_pwn
 echo "[*] Booting device"
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 3

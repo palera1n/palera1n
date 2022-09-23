@@ -2,20 +2,18 @@
 iOS 15.0-15.7 **work in progress** semi-tethered checkm8 "jailbreak"
 
 # What does this do?
-It boots the device with AMFI patches. This is mainly a **developer** jailbreak. Eventually, I want it to automatically install Pogo by Amy. For now, it has to be installed with TrollStore. You can get an IPA [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip). There is **no tweak injection yet**.
+It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs the loader app (Pogo by Amy) to Tips. This is mainly a **developer** jailbreak. There is **no tweak injection yet**.
 
-**NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux. If not, compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2), or use palera1n from DFU.
+**NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux. If not, compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
 
-**WARNING**: As of now, this is a bit unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode. Patching AMFI also seems to log you out of iCloud?
+**WARNING**: As of now, this is a bit unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
-**WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
+**WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`.
 
 On A10 and A11, you **must disable your passcode while in the jailbroken state**. On A10, this can be fixed in the future by implementing blackbird. On A11, we don't have a SEP exploit yet. It may also **break camera while in the jailbroken state**.
 
 **Known working devices:**
-- iPhone X (GSM)
-- iPhone 7
-- iPhone 6s (mine worked, but some others not)
+iPhone X, 8, 7, 6s
 
 # Prerequisites
 1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
@@ -38,7 +36,7 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
     - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
-- [Mineek](https://github.com/mineek) for some of the patching and booting commands
+- [Mineek](https://github.com/mineek) for the patching and booting commands
 - [Amy](https://github.com/elihwyma) for the Pogo app
-- [nyuszika7h](https://github.com/nyuszika7h) for the script to get into DFU
+- [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
