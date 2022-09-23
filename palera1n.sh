@@ -244,7 +244,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd rdwork
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s $(realpath other/blobs/"$cpid".shsh 2> /dev/null) -m IM4M > "$out"
+    "$dir"/img4tool -e -s $(pwd)/other/blobs/"$cpid".shsh -m IM4M > "$out"
     
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$rdipswurl" > "$out"
