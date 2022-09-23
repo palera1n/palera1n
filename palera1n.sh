@@ -96,7 +96,7 @@ _info() {
     if [ "$1" = 'recovery' ]; then
         echo $("$dir"/irecovery -q "$errout" | grep "$2" | sed "s/$2: //")
     elif [ "$1" = 'normal' ]; then
-        echo $(ideviceinfo "$errout" | grep "$2: " | sed "s/$2: //")
+        echo $("$dir"/ideviceinfo "$errout" | grep "$2: " | sed "s/$2: //")
     fi
 }
 
@@ -157,6 +157,9 @@ fi
 # Prep
 # ============
 
+# Update submodules
+git submodule update --init --recursive
+
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
     rm -rf work
@@ -200,7 +203,7 @@ fi
 # Put device into recovery mode, and set auto-boot to true
 if [ ! "$1" = '--dfu' ]; then
     echo "[*] Switching device into recovery mode..."
-    ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
+    "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
     _wait recovery
 fi
 
@@ -234,118 +237,13 @@ sleep 2
 # ============
 
 # Dump blobs, and install pogo if needed
-# Implementing modified SSHRD_Script, but different as we don't need everything there
 if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
-    _pwn
-
     mkdir -p blobs
-    rm -rf rdwork
-    mkdir -p rdwork/boot
-    cd rdwork
+    cd ramdisk
 
-    echo "[*] Converting blob"
-    "$dir"/img4tool -e -s $(realpath other/blobs/"$cpid".shsh 2> /dev/null) -m IM4M > "$out"
-    
-    echo "[*] Downloading BuildManifest"
-    "$dir"/pzb -g BuildManifest.plist "$rdipswurl" > "$out"
-
-    echo "[*] Downloading and decrypting iBSS"
-    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$rdipswurl" > "$out"
-    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec > "$out"
-
-    if [ "$cpid" = '0x8010' ] || [ "$cpid" = '0x8015' ] || [ "$cpid" = '0x8011' ] || [ "$cpid" = '0x8012' ]; then
-        :
-    else
-        echo "[*] Downloading and decrypting iBEC"
-        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$rdipswurl" > "$out"
-        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec > "$out"
-    fi
-
-    echo "[*] Downloading DeviceTree"
-    "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$rdipswurl" > "$out"
-
-    echo "[*] Downloading trustcache and ramdisk"
-    if [ "$os" = 'Darwin' ]; then
-        "$dir"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$rdipswurl" > "$out"
-        "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$rdipswurl" > "$out"
-    else
-        "$dir"/pzb -g Firmware/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache "$rdipswurl" > "$out"
-        "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" "$rdipswurl" > "$out"
-    fi
-
-    echo "[*] Downloading kernelcache"
-    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$rdipswurl" > "$out"
-
-    if [ "$cpid" = '0x8010' ] || [ "$cpid" = '0x8015' ] || [ "$cpid" = '0x8011' ] || [ "$cpid" = '0x8012' ]; then
-        echo "[*] Patching and repacking iBSS"
-        "$dir"/iBoot64Patcher iBSS.dec iBSS.patched -n -b 'rd=md0 debug=0x2014e wdt=-1' > "$out"
-        cd ..
-        "$dir"/img4 -i rdwork/iBSS.patched -o rdwork/boot/iBSS.img4 -M rdwork/IM4M -A -T ibss > "$out"
-    else
-        echo "[*] Patching and repacking iBSS/iBEC"
-        "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > "$out"
-        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -n -b 'rd=md0 debug=0x2014e wdt=-1' > "$out"
-        cd ..
-        "$dir"/img4 -i rdwork/iBSS.patched -o rdwork/boot/iBSS.img4 -M rdwork/IM4M -A -T ibss > "$out"
-        "$dir"/img4 -i rdwork/iBEC.patched -o rdwork/boot/iBEC.img4 -M rdwork/IM4M -A -T ibec > "$out"
-    fi
-
-    echo "[*] Patching and converting kernelcache"
-    python3 -m pyimg4 im4p extract -i rdwork/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" rdwork/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o rdwork/kcache.raw > "$out"
-    "$dir"/Kernel64Patcher rdwork/kcache.raw rdwork/kcache.patched -a -o > "$out"
-    python3 -m pyimg4 im4p create -i rdwork/kcache.patched -o rdwork/krnlboot.im4p -f rkrn --lzss > "$out"
-    python3 -m pyimg4 img4 create -p rdwork/krnlboot.im4p -o rdwork/boot/kernelcache.img4 -m rdwork/IM4M > "$out"
-
-    echo "[*] Converting DeviceTree"
-    "$dir"/img4 -i rdwork/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" rdwork/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o rdwork/boot/devicetree.img4 -M rdwork/IM4M -T rdtr > "$out"
-
-    echo "[*] Converting trustcache and ramdisk"
-    if [ "$os" = 'Darwin' ]; then
-        "$dir"/img4 -i rdwork/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - rdwork/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')".trustcache -o rdwork/boot/trustcache.img4 -M rdwork/IM4M -T rtsc > "$out"
-        "$dir"/img4 -i rdwork/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - rdwork/BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)" -o rdwork/ramdisk.dmg > "$out"
-    else
-        "$dir"/img4 -i rdwork/"$("$dir"/PlistBuddy rdwork/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')".trustcache -o rdwork/boot/trustcache.img4 -M rdwork/IM4M -T rtsc > "$out"
-        "$dir"/img4 -i rdwork/"$("$dir"/PlistBuddy rdwork/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" -o rdwork/ramdisk.dmg > "$out"
-    fi
-
-    echo "[*] Creating ramdisk"
-    if [ "$os" = 'Darwin' ]; then
-        hdiutil resize -size 250MB rdwork/ramdisk.dmg > "$out"
-        hdiutil attach -mountpoint /tmp/trolled rdwork/ramdisk.dmg > "$out"
-
-        "$dir"/gtar -x --no-overwrite-dir -f other/ramdisk.tar.gz -C /tmp/trolled/ &> /dev/null > "$out"
-
-        hdiutil detach -force /tmp/trolled > "$out"
-        hdiutil resize -sectors min rdwork/ramdisk.dmg > "$out"
-    else
-        gzip -d other/ramdisk.tar.gz
-        "$dir"/hfsplus rdwork/ramdisk.dmg grow 250000000 > "$out"
-        "$dir"/hfsplus rdwork/ramdisk.dmg untar other/ramdisk.tar > "$out"
-    fi
-    "$dir"/img4 -i rdwork/ramdisk.dmg -o rdwork/boot/ramdisk.img4 -M rdwork/IM4M -A -T rdsk > "$out"
-
-    echo "[*] Booting device"
-    _pwn
-    "$dir"/irecovery -f rdwork/boot/iBSS.img4
-    sleep 2
-    if [ "$cpid" = '0x8010' ] || [ "$cpid" = '0x8015' ] || [ "$cpid" = '0x8011' ] || [ "$cpid" = '0x8012' ]; then
-        :
-    else
-        "$dir"/irecovery -f rdwork/boot/iBEC.img4
-        sleep 3
-    fi
-    "$dir"/irecovery -f other/blobsbootlogo.img4
-    sleep 1
-    "$dir"/irecovery -f other/blobsbootlogo.img4
-    "$dir"/irecovery -c 'setpicture 0x0'
-    "$dir"/irecovery -f rdwork/boot/ramdisk.img4
-    "$dir"/irecovery -c ramdisk
-    "$dir"/irecovery -f rdwork/boot/devicetree.img4
-    "$dir"/irecovery -c devicetree
-    "$dir"/irecovery -f rdwork/boot/trustcache.img4
-    "$dir"/irecovery -c firmware
-    "$dir"/irecovery -f rdwork/boot/kernelcache.img4
-    "$dir"/irecovery -c bootx
+    chmod +x sshrd.sh
+    ./sshrd.sh 14.8
+    ./sshrd.sh boot
 
     # Execute the commands once the rd is booted
     "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
@@ -372,7 +270,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     # Switch into recovery, and set auto-boot to true
     echo "[*] Switching device into recovery mode..."
-    ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //') > "$out"
+    "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
     _wait recovery
 
     # Have the user put the device into DFU
