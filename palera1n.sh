@@ -2,6 +2,13 @@
 
 set -e
 
+# Prevent Finder from complaning
+if [ "$os" = 'Darwin' ]; then
+    defaults write -g ignore-devices -bool true
+    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
+    killall Finder
+fi
+
 # =========
 # Variables
 # =========
@@ -25,9 +32,71 @@ step() {
     printf '\r\e[0m%s (0)\n' "$2"
 }
 
-ERR_HANDLER () {
-    [ $? -eq 0 ] && exit
-    echo "[-] An error occurred"
+_wait() {
+    if [ "$1" = 'normal' ]; then
+        if [ "$os" = 'Darwin' ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); then
+                echo "[*] Waiting for device in normal mode"
+            fi
+
+            while ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); do
+                sleep 1
+            done
+        else
+            if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
+                echo "[*] Waiting for device in normal mode"
+            fi
+
+            while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
+                sleep 1
+            done
+        fi
+    elif [ "$1" = 'recovery' ]; then
+        if [ "$os" = 'Darwin' ]; then
+            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
+                echo "[*] Waiting for device to reconnect in recovery mode"
+            fi
+
+            while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
+                sleep 1
+            done
+        else
+            if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
+                echo "[*] Waiting for device to reconnect in recovery mode"
+            fi
+
+            while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
+                sleep 1
+            done
+        fi
+        "$dir"/irecovery -c "setenv auto-boot true"
+        "$dir"/irecovery -c "saveenv"
+    fi
+}
+
+_check_dfu() {
+    if [ "$os" = 'Darwin' ]; then
+        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
+            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
+            exit
+        fi
+    else
+        if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
+            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
+            exit
+        fi
+    fi
+}
+
+_info() {
+    if [ "$1" = 'recovery' ]; then
+        echo $("$dir"/irecovery -q | grep "$2" | sed "s/$2: //")
+    elif [ "$1" = 'normal' ]; then
+        echo $(ideviceinfo | grep "$2: " | sed "s/$2: //")
+    fi
+}
+
+_exit_handler() {
     if [ "$os" = 'Darwin' ]; then
         if [ ! "$1" = '--dfu' ]; then
             defaults write -g ignore-devices -bool false
@@ -35,11 +104,17 @@ ERR_HANDLER () {
             killall Finder
         fi
     fi
+    [ $? -eq 0 ] && exit
+    echo "[-] An error occurred"
 }
-trap ERR_HANDLER EXIT
+trap _exit_handler EXIT
+
+# ===========
+# Subcommands
+# ===========
 
 if [ "$1" = 'clean' ]; then
-    rm -rf boot-* work
+    rm -rf boot* work
     echo "[*] Removed the created boot files"
     exit
 fi
@@ -51,7 +126,7 @@ fi
 # Download gaster
 if [ ! -e "$dir"/gaster ]; then
     curl -sLO https://nightly.link/verygenericname/gaster/workflows/makefile/main/gaster-"$os".zip
-    unzip gaster-"$os".zip >> /dev/null
+    unzip gaster-"$os".zip > "$out"
     mv gaster "$dir"/
     rm -rf gaster gaster-"$os".zip
 fi
@@ -63,6 +138,10 @@ if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     python3 -m pip install pyimg4 > "$out"
 fi
 
+# ============
+# Prep
+# ============
+
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
     rm -rf work
@@ -72,6 +151,10 @@ else
 fi
 
 chmod +x "$dir"/*
+
+# ============
+# Start
+# ============
 
 echo "palera1n | Version $version"
 echo "Written by Nebula | Some code and ramdisk from Nathan | Patching commands and help from Mineek | Loader app by Amy"
@@ -86,66 +169,28 @@ if [ "$1" = '--dfu' ]; then
         version=$2
     fi
 else
-    if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); then
-            echo "[*] Waiting for device in normal mode"
-        fi
-
-        while ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); do
-            sleep 1
-        done
-
-        defaults write -g ignore-devices -bool true
-        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
-        killall Finder
-    else
-        if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
-            echo "[*] Waiting for device in normal mode"
-        fi
-
-        while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
-            sleep 1
-        done
-    fi
-    version=$(ideviceinfo | grep "ProductVersion: " | sed 's/ProductVersion: //')
-    arch=$(ideviceinfo | grep "CPUArchitecture: " | sed 's/CPUArchitecture: //')
-    if [ ! "$arch" = "arm64" ]; then
+    _wait normal
+    version=$(_info normal ProductVersion)
+    arch=$(_info normal CPUArchitecture)
+    if [ "$arch" = "arm64e" ]; then
         echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
         exit
     fi
-    echo "Hello, $(ideviceinfo | grep "ProductType: " | sed 's/ProductType: //') on $version!"
+    echo "Hello, $(_info normal ProductType) on $version!"
 fi
 
 # Put device into recovery mode, and set auto-boot to true
 if [ ! "$1" = '--dfu' ]; then
     echo "[*] Switching device into recovery mode..."
-    ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //') > "$out"
-    if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
-            echo "[*] Waiting for device to reconnect in recovery mode"
-        fi
-
-        while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
-            sleep 1
-        done
-    else
-        if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
-            echo "[*] Waiting for device to reconnect in recovery mode"
-        fi
-
-        while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
-            sleep 1
-        done
-    fi
-    "$dir"/irecovery -c "setenv auto-boot true"
-    "$dir"/irecovery -c "saveenv"
+    ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
+    _wait recovery
 fi
 
 # Grab more info
 echo "[*] Getting device info..."
-cpid=$("$dir"/irecovery -q | grep CPID | sed 's/CPID: //')
-model=$("$dir"/irecovery -q | grep MODEL | sed 's/MODEL: //')
-deviceid=$("$dir"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
+cpid=$(_info recovery CPID)
+model=$(_info recovery MODEL)
+deviceid=$(_info recovery PRODUCT)
 ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'$version'") | .url' --raw-output)
 rdipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="14.8") | .url' --raw-output)
 
@@ -160,24 +205,15 @@ if [ ! "$1" = '--dfu' ]; then
     step 1 "Keep holding"
     step 10 'Release side button, but keep holding volume down'
     sleep 1
-fi
-
-# Check if device entered dfu
-if [ ! "$1" = '--dfu' ]; then
-    if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
-            exit
-        fi
-    else
-        if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
-            exit
-        fi
-    fi
+    
+    _check_dfu
     echo "[*] Device entered DFU!"
 fi
 sleep 2
+
+# ============
+# Ramdisk
+# ============
 
 # Dump blobs, and install pogo if needed
 # Implementing modified SSHRD_Script, but different as we don't need everything there
@@ -192,9 +228,8 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd rdwork
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s $(realpath "other/blobs/$cpid.shsh" 2>/dev/null) -m IM4M > "$out"
-    #"$dir"/img4tool -e -s /Users/nebula/workspace/8208387862696_iPhone8,1_n71ap_14.7.1-18G82_3a88b7c3802f2f0510abc432104a15ebd8bd7154.shsh2 -m IM4M > "$out"
-
+    "$dir"/img4tool -e -s $(realpath "other/blobs/$cpid.shsh" 2> /dev/null) -m IM4M > "$out"
+    
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$rdipswurl" > "$out"
 
@@ -218,8 +253,8 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/pzb -g Firmware/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' |cut -d\> -f2 |cut -d\< -f1 | head -1)".trustcache "$rdipswurl" > "$out"
         "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."RestoreRamDisk"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$rdipswurl" > "$out"
     else
-        "$dir"/pzb -g Firmware/"$(../Linux/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache "$rdipswurl" > "$out"
-        "$dir"/pzb -g "$(../Linux/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" "$rdipswurl" > "$out"
+        "$dir"/pzb -g Firmware/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')".trustcache "$rdipswurl" > "$out"
+        "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:RestoreRamDisk:Info:Path" | sed 's/"//g')" "$rdipswurl" > "$out"
     fi
 
     echo "[*] Downloading kernelcache"
@@ -241,7 +276,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     echo "[*] Patching and converting kernelcache"
     python3 -m pyimg4 im4p extract -i rdwork/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" rdwork/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o rdwork/kcache.raw > "$out"
-    "$dir"/Kernel64Patcher rdwork/kcache.raw rdwork/kcache.patched -a > "$out"
+    "$dir"/Kernel64Patcher rdwork/kcache.raw rdwork/kcache.patched -a -o > "$out"
     python3 -m pyimg4 im4p create -i rdwork/kcache.patched -o rdwork/krnlboot.im4p -f rkrn --lzss > "$out"
     python3 -m pyimg4 img4 create -p rdwork/krnlboot.im4p -o rdwork/boot/kernelcache.img4 -m rdwork/IM4M > "$out"
 
@@ -315,51 +350,12 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
     killall iproxy
 
-    # WAIT FOR DEVICE TO COME BACK FROM THE RD
-    if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); then
-            echo "[*] Waiting for device to reconnect in normal mode"
-        fi
-
-        while ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); do
-            sleep 1
-        done
-
-        defaults write -g ignore-devices -bool true
-        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
-        killall Finder
-    else
-        if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
-            echo "[*] Waiting for device to reconnect in normal mode"
-        fi
-
-        while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
-            sleep 1
-        done
-    fi
+    _wait normal
 
     # Switch into recovery, and set auto-boot to true
     echo "[*] Switching device into recovery mode..."
     ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //') > "$out"
-    if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
-            echo "[*] Waiting for device to reconnect in recovery mode"
-        fi
-
-        while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
-            sleep 1
-        done
-    else
-        if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
-            echo "[*] Waiting for device to reconnect in recovery mode"
-        fi
-
-        while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
-            sleep 1
-        done
-    fi
-    "$dir"/irecovery -c "setenv auto-boot true"
-    "$dir"/irecovery -c "saveenv"
+    _wait recovery
 
     # Have the user put the device into DFU
     echo "[*] Press any key when ready for DFU mode"
@@ -373,20 +369,14 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
 
     # Check if device entered dfu
-    if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
-            exit
-        fi
-    else
-        if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
-            exit
-        fi
-    fi
+    _check_dfu
     echo "[*] Device entered DFU!"
     sleep 2
 fi
+
+# ============
+# Boot create
+# ============
 
 # Actually create the boot files
 if [ ! -e boot-"$deviceid" ]; then
@@ -457,6 +447,10 @@ if [ ! -e boot-"$deviceid" ]; then
     fi
 fi
 
+# ============
+# Boot device
+# ============
+
 sleep 2
 "$dir"/gaster pwn > "$out"
 sleep 2
@@ -494,11 +488,6 @@ fi
 rm -rf work rdwork
 echo ""
 echo "Done!"
-#if [[ "$@" == *"install"* ]]; then
-#    echo "The device should now reboot after about 30 seconds, then you can rerun the script without the install arg"
-#else
 echo "The device should now boot to iOS"
-echo "If you already have installed Pogo, click uicache and remount preboot in the tools section"
-echo "If not, get an IPA from the latest action build of Pogo and install with TrollStore"
-echo "Add the repo mineek.github.io/repo for Procursus"
-#fi
+echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
+echo "If not, Pogo should be installed to Tips"

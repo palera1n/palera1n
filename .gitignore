@@ -8,3 +8,4 @@ boot*
 !bootlogo.img4
 .irecovery
 BuildManifest.plist
+blobs
