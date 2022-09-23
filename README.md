@@ -21,7 +21,7 @@ iPhone X, 8, 7, 6s
     - libimobiledevice and Python 3 are required
 
 # How to use
-1. Clone this repo with `git clone https://github.com/itsnebulalol/palera1n && cd palera1n`
+1. Clone this repo with `git clone --recursive https://github.com/itsnebulalol/palera1n && cd palera1n`
 2. Run `./palera1n.sh`
     - \[A10+\] Before running, you **must** disable your passcode
     - If you want to start from DFU, run `./palera1n.sh --dfu <your iOS version here>`
