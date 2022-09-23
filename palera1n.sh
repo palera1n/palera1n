@@ -151,6 +151,9 @@ else
 fi
 
 chmod +x "$dir"/*
+if [ "$os" = 'Darwin' ]; then
+    xattr -xc "$dir"/*
+fi
 
 # ============
 # Start
@@ -228,7 +231,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd rdwork
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s $(realpath "other/blobs/$cpid.shsh" 2> /dev/null) -m IM4M > "$out"
+    "$dir"/img4tool -e -s $(realpath other/blobs/"$cpid".shsh 2> /dev/null) -m IM4M > "$out"
     
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$rdipswurl" > "$out"
@@ -237,7 +240,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$rdipswurl" > "$out"
     "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec > "$out"
 
-    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+    if [ "$cpid" = '0x8010' ] || [ "$cpid" = '0x8015' ] || [ "$cpid" = '0x8011' ] || [ "$cpid" = '0x8012' ]; then
         :
     else
         echo "[*] Downloading and decrypting iBEC"
@@ -260,7 +263,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     echo "[*] Downloading kernelcache"
     "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$rdipswurl" > "$out"
 
-    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+    if [ "$cpid" = '0x8010' ] || [ "$cpid" = '0x8015' ] || [ "$cpid" = '0x8011' ] || [ "$cpid" = '0x8012' ]; then
         echo "[*] Patching and repacking iBSS"
         "$dir"/iBoot64Patcher iBSS.dec iBSS.patched -n -b 'rd=md0 debug=0x2014e wdt=-1' > "$out"
         cd ..
@@ -313,7 +316,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/gaster reset > "$out"
     "$dir"/irecovery -f rdwork/boot/iBSS.img4
     sleep 2
-    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+    if [ "$cpid" = '0x8010' ] || [ "$cpid" = '0x8015' ] || [ "$cpid" = '0x8011' ] || [ "$cpid" = '0x8012' ]; then
         :
     else
         "$dir"/irecovery -f rdwork/boot/iBEC.img4
@@ -343,6 +346,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     done
 
     echo "[*] Dumping blobs and installing Pogo"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mount_filesystems" > "$out"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" > "$out" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out"
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "pogoinstaller Tips" > "$out"
