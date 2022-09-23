@@ -29,7 +29,7 @@ iPhone X, 8, 7, 6s
 4. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
 5. Open the Tips app, and click install!
-    - If Pogo didn't install to Tips for some reason, you can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
+    - If Pogo didn't install to Tips for some reason, you can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip) to install with TrollStore
     - You should now see Sileo on your homescreen, enjoy!
     - You'll have to uicache in the Pogo app every reboot
 

@@ -166,7 +166,7 @@ fi
 
 chmod +x "$dir"/*
 if [ "$os" = 'Darwin' ]; then
-    xattr -xc "$dir"/*
+    xattr -r -d com.apple.quarantine "$dir"
 fi
 
 # ============
