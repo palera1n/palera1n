@@ -166,7 +166,7 @@ fi
 
 chmod +x "$dir"/*
 if [ "$os" = 'Darwin' ]; then
-    xattr -r -d com.apple.quarantine "$dir"
+    xattr -d com.apple.quarantine "$dir"/*
 fi
 
 # ============
@@ -238,8 +238,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd ramdisk
 
     chmod +x sshrd.sh
-    ./sshrd.sh 14.8
-    ./sshrd.sh boot
+    ./sshrd.sh 14.8 > "$out"
+    ./sshrd.sh boot > "$out"
+    cd ..
 
     # Execute the commands once the rd is booted
     "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
