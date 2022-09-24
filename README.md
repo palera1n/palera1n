@@ -6,7 +6,7 @@ It boots the device with AMFI patches. On first run, it'll boot a ramdisk which 
 
 **NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux. If not, compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
 
-**WARNING**: On the iPhone X, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
+**WARNING**: On A11, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
 **WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`.
 
