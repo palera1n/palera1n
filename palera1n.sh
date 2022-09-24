@@ -90,9 +90,9 @@ _check_dfu() {
 
 _info() {
     if [ "$1" = 'recovery' ]; then
-        echo $("$dir"/irecovery -q "$errout" | grep "$2" | sed "s/$2: //")
+        echo $("$dir"/irecovery -q | grep "$2" | sed "s/$2: //")
     elif [ "$1" = 'normal' ]; then
-        echo $("$dir"/ideviceinfo "$errout" | grep "$2: " | sed "s/$2: //")
+        echo $("$dir"/ideviceinfo | grep "$2: " | sed "s/$2: //")
     fi
 }
 
@@ -105,6 +105,21 @@ _pwn() {
         #"$dir"/gaster reset > "$out"
         #sleep 1
     fi
+}
+
+_dfuhelper() {
+    echo "[*] Press any key when ready for DFU mode"
+    read -n 1 -s
+    step 3 "Get ready"
+    step 4 "Hold volume down + side button" &
+    sleep 3
+    "$dir"/irecovery -c "reset"
+    step 1 "Keep holding"
+    step 10 'Release side button, but keep holding volume down'
+    sleep 1
+    
+    _check_dfu
+    echo "[*] Device entered DFU!"
 }
 
 _exit_handler() {
@@ -212,18 +227,7 @@ ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/
 
 # Have the user put the device into DFU
 if [ ! "$1" = '--dfu' ]; then
-    echo "[*] Press any key when ready for DFU mode"
-    read -n 1 -s
-    step 3 "Get ready"
-    step 4 "Hold volume down + side button" &
-    sleep 3
-    "$dir"/irecovery -c "reset"
-    step 1 "Keep holding"
-    step 10 'Release side button, but keep holding volume down'
-    sleep 1
-    
-    _check_dfu
-    echo "[*] Device entered DFU!"
+    _dfuhelper
 fi
 sleep 2
 
@@ -245,44 +249,44 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     # Execute the commands once the rd is booted
     "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
-    if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null > "$out"); then
+    if ! ("$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "echo connected" &> /dev/null > "$out"); then
         echo "[*] Waiting for the ramdisk to finish booting"
     fi
 
-    while ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null > "$out"); do
+    while ! ("$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "echo connected" &> /dev/null > "$out"); do
         sleep 1
     done
 
     echo "[*] Dumping blobs and installing Pogo"
     sleep 1
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out" 
+    "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out" 
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
     rm dump.raw
     if [[ ! "$@" == *"--no-install"* ]]; then
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s1 /mnt1" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s1 /mnt1" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s6 /mnt6" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s6 /mnt6" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s3 /mnt7" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s3 /mnt7" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/libexec/seputil --gigalocker-init" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/usr/libexec/seputil --gigalocker-init" > "$out"
         sleep 1
-        active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cat /mnt6/active" 2> /dev/null)
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/libexec/seputil --load /mnt6/$active/usr/standalone/firmware/sep-firmware.img4" > "$out"
+        active=$("$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/bin/cat /mnt6/active" 2> /dev/null)
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/usr/libexec/seputil --load /mnt6/$active/usr/standalone/firmware/sep-firmware.img4" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s2 /mnt2" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s2 /mnt2" > "$out"
         sleep 1
-        tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cp -rf /usr/local/bin/loader.app/* $tipsdir" > "$out"
+        tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/bin/cp -rf /usr/local/bin/loader.app/* $tipsdir" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 33 $tipsdir/Tips" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/usr/sbin/chown 33 $tipsdir/Tips" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 $tipsdir/PogoHelper" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/usr/sbin/chown 0 $tipsdir/PogoHelper" > "$out"
     fi
     sleep 2
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot" > "$out"
+    "$dir"/sshpass -p 'alpine' ssh -o UserKnownHostsFile=/dev/null -p2222 root@localhost "/sbin/reboot" > "$out"
     sleep 1
     killall iproxy
     _wait normal
@@ -294,19 +298,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     _wait recovery
 
     # Have the user put the device into DFU
-    echo "[*] Press any key when ready for DFU mode"
-    read -n 1 -s
-    step 3 "Get ready"
-    step 4 "Hold volume down + side button" &
-    sleep 3
-    "$dir"/irecovery -c "reset"
-    step 1 "Keep holding"
-    step 10 'Release side button, but keep holding volume down'
-    sleep 1
-
-    # Check if device entered dfu
-    _check_dfu
-    echo "[*] Device entered DFU!"
+    _dfuhelper
     sleep 2
 fi
 
