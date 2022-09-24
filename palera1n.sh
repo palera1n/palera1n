@@ -102,8 +102,8 @@ _pwn() {
         echo "[*] Pwning device"
         "$dir"/gaster pwn > "$out"
         sleep 2
-        "$dir"/gaster reset > "$out"
-        sleep 1
+        #"$dir"/gaster reset > "$out"
+        #sleep 1
     fi
 }
 
@@ -388,6 +388,8 @@ fi
 sleep 2
 _pwn
 echo "[*] Booting device"
+"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
+sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 3
 "$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
