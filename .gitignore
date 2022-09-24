@@ -5,7 +5,7 @@ binaries/Darwin/gaster
 work
 rdwork
 boot*
-!bootlogo.img4
+!bootlogo.im4p
 .irecovery
 BuildManifest.plist
 blobs

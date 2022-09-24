@@ -247,6 +247,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
     ./sshrd.sh 14.8 &> "$out" > "$out"
+
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot > "$out"
     cd ..
@@ -375,6 +376,8 @@ if [ ! -e boot-"$deviceid" ]; then
     else
         "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot-"$deviceid"/trustcache.img4 -M work/IM4M -T rtsc > "$out"
     fi
+
+    "$dir"/img4 -i other/bootlogo.im4p -o boot-"$deviceid"/bootlogo.img4 -M work/IM4M -A -T rlgo > "$out"
 fi
 
 # ============
@@ -387,17 +390,15 @@ echo "[*] Booting device"
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
-sleep 3
-"$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
 sleep 2
+"$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
+sleep 1
 if [[ "$cpid" == *"0x80"* ]]; then
     "$dir"/irecovery -c "go"
-    sleep 3
+    sleep 2
 fi
-"$dir"/irecovery -f other/bootlogo.img4
-sleep 1
-"$dir"/irecovery -f other/bootlogo.img4
-"$dir"/irecovery -c 'setpicture 0x0'
+"$dir"/irecovery -f boot-"$deviceid"/bootlogo.img4
+"$dir"/irecovery -c "setpicture 0x1"
 "$dir"/irecovery -f boot-"$deviceid"/devicetree.img4
 "$dir"/irecovery -c "devicetree"
 "$dir"/irecovery -f boot-"$deviceid"/trustcache.img4
