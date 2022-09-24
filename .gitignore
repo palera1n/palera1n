@@ -3,6 +3,9 @@
 binaries/Linux/gaster
 binaries/Darwin/gaster
 work
+rdwork
 boot*
+!bootlogo.img4
 .irecovery
 BuildManifest.plist
+blobs

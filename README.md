@@ -1,45 +1,42 @@
 # palera1n
-iOS 15.0-15.4.1 work in progress semi-tethered checkm8 "jailbreak"
+iOS 15.0-15.7 **work in progress** semi-tethered checkm8 "jailbreak"
 
 # What does this do?
-It boots the device with AMFI patches. Eventually, I want it to automatically install Pogo by Amy. For now, it has to be installed with TrollStore. You can get an IPA [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip). There is **no tweak injection yet**.
+It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs the loader app (Pogo by Amy) to Tips. This is mainly a **developer** jailbreak. There is **no tweak injection yet**.
 
-**NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux.
+**NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux. If not, compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
 
-**NOTE 2**: Onboard blobs are pretty much needed so you don't get the black screen issue. Dump onboards with [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script), then use that blob to boot with palera1n. Progress is being made for this to be done for you, check out the [ramdisk branch](https://github.com/itsnebulalol/palera1n/tree/ramdisk) if interested (it's currently not working).
+**WARNING**: On A11, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
-**WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode. Patching AMFI also seems to log you out of iCloud?
+**WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`.
 
-**WARNING 2**: I am NOT responsible for any data loss. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
+On A10 and A11, you **must disable your passcode while in the jailbroken state**. On A10, this can be fixed in the future by implementing blackbird. On A11, we don't have a SEP exploit yet. It may also **break camera while in the jailbroken state**.
 
 **Known working devices:**
-- iPhone X (GSM)
-- iPhone 7
-- iPhone 6s
+iPhone X, 8, 7, 6s
+
+# Prerequisites
+1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
+2. Linux or macOS computer
+    - Python 3 is required
 
 # How to use
-1. Install libimobiledevice
-    - It's needed for `ideviceenterrecovery` and `ideviceinfo`
-2. Clone this repo with `git clone https://github.com/itsnebulalol/palera1n && cd palera1n`
-3. Prepare your onboard blob for the **current version** you're on
-<!-- 4. Run `./palera1n.sh path/to/blob.shsh2 install`
+1. Clone this repo with `git clone --recursive https://github.com/itsnebulalol/palera1n && cd palera1n`
+2. Run `./palera1n.sh`
     - \[A10+\] Before running, you **must** disable your passcode
-    - If you want to start from DFU, run `./palera1n.sh path/to/blob.shsh2 --dfu <your iOS version here> install` -->
-4. Run `./palera1n.sh path/to/blob.shsh2`
-    - \[A10+\] Before running, you **must** disable your passcode
-    - If you want to start from DFU, run `./palera1n.sh path/to/blob.shsh2 --dfu <your iOS version here>`
-5. Make sure your device is in normal mode, if you didn't start from DFU
-6. Follow the steps
+    - If you want to start from DFU, run `./palera1n.sh --dfu <your iOS version here>`
+3. Make sure your device is in normal mode, if you didn't start from DFU
+4. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
-<!-- 7. Once your device reboots, run the script again, but without `install` -->
-7. Install Pogo through TrollStore, then hit Install in the Pogo app!
-    - You can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
+5. Open the Tips app, and click install!
+    - If Pogo didn't install to Tips for some reason, you can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip) to install with TrollStore
     - You should now see Sileo on your homescreen, enjoy!
     - You'll have to uicache in the Pogo app every reboot
 
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
-- [Mineek](https://github.com/mineek) for some of the patching and booting commands
+    - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
+- [Mineek](https://github.com/mineek) for the patching and booting commands
 - [Amy](https://github.com/elihwyma) for the Pogo app
-- [nyuszika7h](https://github.com/nyuszika7h) for the script to get into DFU
+- [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
