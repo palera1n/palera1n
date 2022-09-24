@@ -165,9 +165,9 @@ else
 fi
 
 chmod +x "$dir"/*
-if [ "$os" = 'Darwin' ]; then
-    xattr -d com.apple.quarantine "$dir"/*
-fi
+#if [ "$os" = 'Darwin' ]; then
+#    xattr -d com.apple.quarantine "$dir"/*
+#fi
 
 # ============
 # Start
@@ -209,7 +209,6 @@ cpid=$(_info recovery CPID)
 model=$(_info recovery MODEL)
 deviceid=$(_info recovery PRODUCT)
 ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'$version'") | .url' --raw-output)
-rdipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="14.8") | .url' --raw-output)
 
 # Have the user put the device into DFU
 if [ ! "$1" = '--dfu' ]; then
@@ -238,17 +237,19 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd ramdisk
 
     chmod +x sshrd.sh
-    ./sshrd.sh 14.8 > "$out"
+    echo "[*] Creating ramdisk"
+    ./sshrd.sh 14.8 &> "$out" > "$out"
+    echo "[*] Booting ramdisk"
     ./sshrd.sh boot > "$out"
     cd ..
 
     # Execute the commands once the rd is booted
-    "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
-    if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost &> "$out" >> "$out"); then
+    "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
+    if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null > "$out"); then
         echo "[*] Waiting for the ramdisk to finish booting"
     fi
 
-    while ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost &> "$out" >> "$out"); do
+    while ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null > "$out"); do
         sleep 1
     done
 
@@ -256,24 +257,36 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" > "$out" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out"
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
+    rm dump.raw
     if [[ ! "$@" == *"--no-install"* ]]; then
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "mount_filesystems" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s1 /mnt1" > "$out"
+        sleep 1
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s6 /mnt6" > "$out"
+        sleep 1
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s3 /mnt7" > "$out"
+        sleep 1
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/libexec/seputil --gigalocker-init" > "$out"
+        sleep 1
+        active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cat /mnt6/active" 2> /dev/null)
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/libexec/seputil --load /mnt6/$active/usr/standalone/firmware/sep-firmware.img4" > "$out"
+        sleep 1
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s2 /mnt2" > "$out"
         sleep 1
         tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
-        sleep 1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cp -rf /usr/local/bin/loader.app/* $tipsdir" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown 33 $tipsdir/Tips" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 33 $tipsdir/Tips" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chmod 755 $tipsdir/Tips $tipsdir/PogoHelper" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper" > "$out"
         sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "chown 0 $tipsdir/PogoHelper" > "$out"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 $tipsdir/PogoHelper" > "$out"
     fi
     sleep 2
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "reboot" > "$out"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot" > "$out"
     sleep 1
     killall iproxy
     _wait normal
+    sleep 2
 
     # Switch into recovery, and set auto-boot to true
     echo "[*] Switching device into recovery mode..."
@@ -307,10 +320,10 @@ if [ ! -e boot-"$deviceid" ]; then
 
     # Downloading files, and decrypting iBSS/iBEC
     mkdir boot-"$deviceid"
-    cd work
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s blobs/"$deviceid"-"$version".shsh2 -m IM4M > "$out"
+    "$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M > "$out"
+    cd work
 
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$ipswurl" > "$out"
