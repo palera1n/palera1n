@@ -139,7 +139,12 @@ echo "[*] Getting device info..."
 cpid=$("$dir"/irecovery -q | grep CPID | sed 's/CPID: //')
 model=$("$dir"/irecovery -q | grep MODEL | sed 's/MODEL: //')
 deviceid=$("$dir"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
-ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+# if the version variable is an url, use that instead
+if [[ "$version" == http* ]]; then
+    ipswurl=$version
+else
+    ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+fi
 
 # Have the user put the device into DFU
 if [ ! "$2" = '--dfu' ]; then
