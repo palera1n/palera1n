@@ -1,3 +1,6 @@
+# As of now, Linux users may have a bug where the ramdisk doesn't boot
+If you're having an issue with the ramdisk booting, please use [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script) to manually dump a blob and install TrollStore. Place your dumped blob in blobs/DEVICEID-IOSVERSION.shsh2, then run palera1n again.
+
 # palera1n
 iOS 15.0-15.7 **work in progress** semi-tethered checkm8 "jailbreak"
 
@@ -21,7 +24,7 @@ iPhone X, 8, 7, 6s
     - Python 3 is required
 
 # How to use
-1. Clone this repo with `git clone --recursive https://github.com/itsnebulalol/palera1n && cd palera1n`
+1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
 2. Run `./palera1n.sh`
     - \[A10+\] Before running, you **must** disable your passcode
     - If you want to start from DFU, run `./palera1n.sh --dfu <your iOS version here>`
