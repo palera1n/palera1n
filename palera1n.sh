@@ -14,22 +14,6 @@ else
     out=/dev/null
 fi
 
-# Prevent Finder from complaning
-if [ "$os" = 'Darwin' ]; then
-    defaults write -g ignore-devices -bool true
-    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
-    killall Finder
-fi
-
-if [ "$os" = 'Linux' ]; then
-    killall iproxy &> /dev/null
-    sudo killall iproxy &> /dev/null
-    sudo systemctl stop usbmuxd &> /dev/null >> "$out"
-    killall usbmuxd &> /dev/null
-    sudo killall usbmuxd &> /dev/null
-    sudo usbmuxd -f -p &> /dev/null >> "$out" &
-fi 
-
 # =========
 # Functions
 # =========
@@ -131,6 +115,17 @@ _dfuhelper() {
     echo "[*] Device entered DFU!"
 }
 
+_usb_fix() {
+    if [ "$os" = 'Linux' ]; then
+        killall iproxy &> /dev/null
+        sudo killall iproxy &> /dev/null
+        sudo systemctl stop usbmuxd &> /dev/null >> "$out"
+        killall usbmuxd &> /dev/null
+        sudo killall usbmuxd &> /dev/null
+        sudo usbmuxd -f -p &> /dev/null >> "$out" &
+    fi
+}
+
 _exit_handler() {
     if [ "$os" = 'Darwin' ]; then
         if [ ! "$1" = '--dfu' ]; then
@@ -143,6 +138,22 @@ _exit_handler() {
     echo "[-] An error occurred"
 }
 trap _exit_handler EXIT
+
+# ===========
+# Fixes
+# ===========
+
+# Prevent Finder from complaning
+if [ "$os" = 'Darwin' ]; then
+    defaults write -g ignore-devices -bool true
+    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
+    killall Finder
+fi
+
+# linux usb fixes | i hate linux :intjsad:
+if [ "$os" = 'Linux' ]; then
+    _usb_fix
+fi 
 
 # ===========
 # Subcommands
@@ -262,6 +273,8 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd ..
 
     # Execute the commands once the rd is booted
+    _usb_fix
+
     "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
     if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null > "$out"); then
         echo "[*] Waiting for the ramdisk to finish booting"

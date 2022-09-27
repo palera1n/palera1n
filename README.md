@@ -1,22 +1,16 @@
-# As of now, Linux users may have a bug where the ramdisk doesn't boot
-If you're having an issue with the ramdisk booting, please use [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script) to manually dump a blob and install TrollStore. Place your dumped blob in blobs/DEVICEID-IOSVERSION.shsh2, then run palera1n again.
-
 # palera1n
 iOS 15.0-15.7 **work in progress** semi-tethered checkm8 "jailbreak"
 
 # What does this do?
 It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs the loader app (Pogo by Amy) to Tips. This is mainly a **developer** jailbreak. There is **no tweak injection yet**.
 
-**NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux. If not, compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
+**NOTE**: Linux USB has a whole bunch of issues. The script tries to auto load usbmuxd, but sometimes it won't work. If not, compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
 
 **WARNING**: On A11, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
-**WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`.
+**WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`. Using this on iOS 16 has a higher chance of bootlooping you.
 
 On A10 and A11, you **must disable your passcode while in the jailbroken state**. On A10, this can be fixed in the future by implementing blackbird. On A11, we don't have a SEP exploit yet. It may also **break camera while in the jailbroken state**.
-
-**Known working devices:**
-iPhone X, 8, 7, 6s
 
 # Prerequisites
 1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
