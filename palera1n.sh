@@ -2,20 +2,6 @@
 
 set -e
 
-# Prevent Finder from complaning
-if [ "$os" = 'Darwin' ]; then
-    defaults write -g ignore-devices -bool true
-    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
-    killall Finder
-fi
-
-if [ "$os" = 'Linux' ]; then
-    killall iproxy &> /dev/null
-    sudo systemctl stop usbmuxd &> /dev/null >> "$out"
-    killall usbmuxd &> /dev/null
-    sudo usbmuxd -f -p & &> /dev/null >> "$out"
-fi 
-
 # =========
 # Variables
 # =========
@@ -27,6 +13,22 @@ if [[ "$@" == *"--debug"* ]]; then
 else
     out=/dev/null
 fi
+
+# Prevent Finder from complaning
+if [ "$os" = 'Darwin' ]; then
+    defaults write -g ignore-devices -bool true
+    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
+    killall Finder
+fi
+
+if [ "$os" = 'Linux' ]; then
+    killall iproxy &> /dev/null
+    sudo killall iproxy &> /dev/null
+    sudo systemctl stop usbmuxd &> /dev/null >> "$out"
+    killall usbmuxd &> /dev/null
+    sudo killall usbmuxd &> /dev/null
+    sudo usbmuxd -f -p &> /dev/null >> "$out" &
+fi 
 
 # =========
 # Functions
