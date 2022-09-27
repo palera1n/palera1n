@@ -11,7 +11,8 @@ fi
 
 if [ "$os" = 'Linux' ]; then
     killall iproxy &> /dev/null
-    sudo systemctl stop usbmuxd
+    sudo systemctl stop usbmuxd &> /dev/null >> "$out"
+    killall usbmuxd &> /dev/null
     sudo usbmuxd -f -p & &> /dev/null >> "$out"
 fi 
 
