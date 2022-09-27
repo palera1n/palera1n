@@ -9,6 +9,12 @@ if [ "$os" = 'Darwin' ]; then
     killall Finder
 fi
 
+if [ "$os" = 'Linux' ]; then
+    killall iproxy &> /dev/null
+    sudo systemctl stop usbmuxd
+    sudo usbmuxd -f -p & &> /dev/null >> "$out"
+fi 
+
 # =========
 # Variables
 # =========
