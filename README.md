@@ -30,6 +30,22 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
     - You should now see Sileo on your homescreen, enjoy!
     - You'll have to uicache in the Pogo app every reboot
 
+# Repos
+Known repos are as followed:
+- https://mineek.github.io/repo
+    - This repo has a lot of Procursus rootless packages
+- https://repo.palera.in
+    - A ton of miscellaneous packages
+- https://beta.anamy.gay - main - main
+    - Contains Sileo Nightly
+    - This is a **dist** repo
+
+Make a repo:
+- Release and package architecture should be `iphoneos-arm64`
+- Sign your repos!!!
+
+Use the [palera1n repo](https://github.com/palera1n/repo) as an example
+
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
     - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
