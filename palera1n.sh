@@ -115,13 +115,22 @@ _dfuhelper() {
     echo "[*] Device entered DFU!"
 }
 
+_kill_if_running() {
+    if (pgrep -u root -xf "$1" &> /dev/null > /dev/null); then
+        # yes, it's running as root. kill it
+        sudo killall $1
+    else
+        if (pgrep -x "$1" &> /dev/null > /dev/null); then
+            killall $1
+        fi
+    fi
+}
+
 _usb_fix() {
     if [ "$os" = 'Linux' ]; then
-        killall iproxy &> /dev/null
-        sudo killall iproxy &> /dev/null
+        _kill_if_running iproxy
         sudo systemctl stop usbmuxd &> /dev/null >> "$out"
-        killall usbmuxd &> /dev/null
-        sudo killall usbmuxd &> /dev/null
+        _kill_if_running usbmuxd
         sudo usbmuxd -f -p &> /dev/null >> "$out" &
     fi
 }
