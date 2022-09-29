@@ -129,9 +129,9 @@ _kill_if_running() {
 _usb_fix() {
     if [ "$os" = 'Linux' ]; then
         _kill_if_running iproxy
-        sudo systemctl stop usbmuxd &> /dev/null >> "$out"
+        sudo systemctl stop usbmuxd &> "$out" >> "$out"
         _kill_if_running usbmuxd
-        sudo usbmuxd -f -p &> /dev/null >> "$out" &
+        sudo usbmuxd -f -p &> "$out" >> "$out" &
     fi
 }
 
@@ -285,9 +285,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     _usb_fix
 
     if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
+        sudo "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
     else
-        "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
+        "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
     fi
 
     if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null > "$out"); then
