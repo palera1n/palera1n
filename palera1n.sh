@@ -284,7 +284,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     # Execute the commands once the rd is booted
     _usb_fix
 
-    if [ ! "$os" = 'Linux' ]; then
+    if [ "$os" = 'Linux' ]; then
         sudo "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
     else
         "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
