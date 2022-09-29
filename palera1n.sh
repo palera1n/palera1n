@@ -284,7 +284,12 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     # Execute the commands once the rd is booted
     _usb_fix
 
-    "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
+    if [ ! "$os" = 'Linux' ]; then
+        sudo "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
+    else
+        "$dir"/iproxy 2222 22 &> /dev/null >> "$out" &
+    fi
+
     if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null > "$out"); then
         echo "[*] Waiting for the ramdisk to finish booting"
     fi
@@ -323,7 +328,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 2
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot" > "$out"
     sleep 1
-    killall iproxy
+    _kill_if_running iproxy
     _wait normal
     sleep 2
 
