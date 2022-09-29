@@ -4,13 +4,16 @@ iOS 15.0-15.7 **work in progress** semi-tethered checkm8 "jailbreak"
 # What does this do?
 It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs the loader app (Pogo by Amy) to Tips. This is mainly a **developer** jailbreak. There is **no tweak injection yet**.
 
-**NOTE**: Linux USB has a whole bunch of issues. The script tries to auto load usbmuxd, but sometimes it won't work. If not, compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
-
 **WARNING**: On A11, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
 **WARNING 2**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`. Using this on iOS 16 has a higher chance of bootlooping you.
 
 On A10 and A11, you **must disable your passcode while in the jailbroken state**. On A10, this can be fixed in the future by implementing blackbird. On A11, we don't have a SEP exploit yet. It may also **break camera while in the jailbroken state**.
+
+# Linux issues
+Linux has some weird usbmuxd issues. We have tried our best to fix them, but there stil are issues. We highly recommend to compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
+
+Stop making issues about Linux not being able to connect, we are aware.
 
 # Prerequisites
 1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
