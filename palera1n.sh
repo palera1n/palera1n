@@ -372,6 +372,13 @@ if [ ! -e boot-"$deviceid" ]; then
     echo "[*] Downloading DeviceTree"
     "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl" > "$out"
 
+    echo "[*] Downloading AOP"
+    if [ "$os" = 'Darwin' ]; then
+       "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
+    else
+       "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
+    fi
+
     echo "[*] Downloading trustcache"
     if [ "$os" = 'Darwin' ]; then
        "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
@@ -382,14 +389,14 @@ if [ ! -e boot-"$deviceid" ]; then
     echo "[*] Downloading kernelcache"
     "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > "$out"
 
-    echo "[*] Patching and repacking iBSS/iBEC"
+    echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > "$out"
     "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1' > "$out"
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss > "$out"
     "$dir"/img4 -i work/iBEC.patched -o boot-"$deviceid"/iBEC.img4 -M work/IM4M -A -T ibec > "$out"
 
-    echo "[*] Patching and converting kernelcache"
+    echo "[*] Patching and signing kernelcache"
     if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]; then
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin > "$out"
     else
@@ -403,10 +410,17 @@ if [ ! -e boot-"$deviceid" ]; then
     fi
     python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot-"$deviceid"/kernelcache.img4 -m work/IM4M > "$out"
 
-    echo "[*] Converting DeviceTree"
+    echo "[*] Signing DeviceTree"
     "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot-"$deviceid"/devicetree.img4 -M work/IM4M -T rdtr > "$out"
 
-    echo "[*] Patching and converting trustcache"
+    echo "[*] Signing AOP"
+    if [ "$os" = 'Darwin' ]; then
+       "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
+    else
+       "$dir"/img4 -i work/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
+    fi
+
+    echo "[*] Patching and signing trustcache"
     if [ "$os" = 'Darwin' ]; then
         "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot-"$deviceid"/trustcache.img4 -M work/IM4M -T rtsc > "$out"
     else
@@ -437,6 +451,8 @@ fi
 "$dir"/irecovery -c "setpicture 0x1"
 "$dir"/irecovery -f boot-"$deviceid"/devicetree.img4
 "$dir"/irecovery -c "devicetree"
+"$dir"/irecovery -f boot-"$deviceid"/aop.img4
+"$dir"/irecovery -c "firmware"
 "$dir"/irecovery -f boot-"$deviceid"/trustcache.img4
 "$dir"/irecovery -c "firmware"
 "$dir"/irecovery -f boot-"$deviceid"/kernelcache.img4
