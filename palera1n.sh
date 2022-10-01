@@ -5,6 +5,7 @@ set -e
 # =========
 # Variables
 # =========
+ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
 version="1.0.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
@@ -252,8 +253,8 @@ echo "[*] Getting device info..."
 cpid=$(_info recovery CPID)
 model=$(_info recovery MODEL)
 deviceid=$(_info recovery PRODUCT)
-if [[ "$version" == "http"* ]]; then
-    ipswurl=$version
+if [ ! "$ipsw" = "" ]; then
+    ipswurl=$ipsw
 else
     ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
 fi
