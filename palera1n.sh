@@ -412,9 +412,9 @@ if [ ! -e boot-"$deviceid" ]; then
 
     echo "[*] Signing AOP"
     if [ "$os" = 'Darwin' ]; then
-       "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
+       "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware[/]AOP[/]//')" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
     else
-       "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
+       "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g' | sed 's/Firmware[/]AOP[/]//')" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
     fi
 
     echo "[*] Patching and signing trustcache"
