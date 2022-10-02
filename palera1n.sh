@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+{
+
 set -e
 
 # =========
@@ -137,6 +139,16 @@ _exit_handler() {
     fi
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
+
+    for file in logs/*.log; do
+        mv "$file" logs/FAIL_${file}
+    done
+
+    if [[ "$@" == *"--debug"* ]]; then
+        echo "[*] A failure log has been made. If you're going to make a GitHub issue, please attatch the latest log."
+    else
+        echo "[*] A failure log has been made, but you aren't running with --debug. DO NOT send this in a GitHub issue."
+    fi
 }
 trap _exit_handler EXIT
 
@@ -452,8 +464,14 @@ if [ "$os" = 'Darwin' ]; then
 fi
 
 rm -rf work rdwork
+for file in logs/*.log; do
+    mv "$file" logs/SUCCESS_${file}
+done
+
 echo ""
 echo "Done!"
 echo "The device should now boot to iOS"
 echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
 echo "If not, Pogo should be installed to Tips"
+
+} | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
