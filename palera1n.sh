@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+mkdir -p logs
+
 {
 
 set -e
