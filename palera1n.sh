@@ -55,11 +55,11 @@ _wait() {
                 sleep 1
             done
         else
-            if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
+            if ! (lsusb 2> /dev/null | grep 'Recovery Mode' >> /dev/null); then
                 echo "[*] Waiting for device to reconnect in recovery mode"
             fi
 
-            while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
+            while ! (lsusb 2> /dev/null | grep 'Recovery Mode' >> /dev/null); do
                 sleep 1
             done
         fi
@@ -75,7 +75,7 @@ _check_dfu() {
             exit
         fi
     else
-        if ! (lsusb 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
+        if ! (lsusb 2> /dev/null | grep 'DFU Mode' >> /dev/null); then
             echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
             exit
         fi
@@ -127,15 +127,6 @@ _kill_if_running() {
     fi
 }
 
-_usb_fix() {
-    if [ "$os" = 'Linux' ]; then
-        _kill_if_running iproxy
-        sudo systemctl stop usbmuxd &> "$out" >> "$out"
-        _kill_if_running usbmuxd
-        sudo usbmuxd -f -p &> "$out" >> "$out" &
-    fi
-}
-
 _exit_handler() {
     if [ "$os" = 'Darwin' ]; then
         if [ ! "$1" = '--dfu' ]; then
@@ -159,11 +150,6 @@ if [ "$os" = 'Darwin' ]; then
     defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
     killall Finder
 fi
-
-# linux usb fixes | i hate linux :intjsad:
-if [ "$os" = 'Linux' ]; then
-    _usb_fix
-fi 
 
 # ===========
 # Subcommands
@@ -283,8 +269,6 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd ..
 
     # Execute the commands once the rd is booted
-    _usb_fix
-
     if [ "$os" = 'Linux' ]; then
         sudo "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
     else
