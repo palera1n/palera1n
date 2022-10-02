@@ -141,9 +141,11 @@ _exit_handler() {
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
 
-    for file in logs/*.log; do
-        mv "$file" logs/FAIL_${file}
+    cd logs
+    for file in *.log; do
+        mv "$file" FAIL_${file}
     done
+    cd ..
 
     if [[ "$@" == *"--debug"* ]]; then
         echo "[*] A failure log has been made. If you're going to make a GitHub issue, please attatch the latest log."
@@ -465,9 +467,12 @@ if [ "$os" = 'Darwin' ]; then
 fi
 
 rm -rf work rdwork
-for file in logs/*.log; do
-    mv "$file" logs/SUCCESS_${file}
+
+cd logs
+for file in *.log; do
+    mv "$file" SUCCESS_${file}
 done
+cd ..
 
 echo ""
 echo "Done!"
