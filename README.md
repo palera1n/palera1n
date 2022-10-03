@@ -1,8 +1,8 @@
 # palera1n
-iOS 15.0-15.7 **work in progress** semi-tethered checkm8 "jailbreak"
+iOS 15.0-15.3.1 **work in progress** semi-tethered checkm8 "jailbreak" ( TWEAK BRANCH )
 
 # What does this do?
-It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs the loader app (Pogo by Amy) to Tips. This is mainly a **developer** jailbreak. There is **no tweak injection yet**.
+It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
 
 **WARNING**: On A11, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
 
@@ -19,35 +19,19 @@ Stop making issues about Linux not being able to connect, we are aware.
 1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
 2. Linux or macOS computer
     - Python 3 is required
+3. iOS 15.0-15.3.1
+4. a brain
 
 # How to use
 1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
-2. Run `./palera1n.sh`
+2. Run `./palera1n.sh --tweaks <ios version youre on atm>`
     - \[A10+\] Before running, you **must** disable your passcode
-    - If you want to start from DFU, run `./palera1n.sh --dfu <your iOS version here>`
 3. Make sure your device is in normal mode, if you didn't start from DFU
 4. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
-5. Open the Tips app, and click install!
-    - If Pogo didn't install to Tips for some reason, you can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip) to install with TrollStore
-    - You should now see Sileo on your homescreen, enjoy!
-    - You'll have to uicache in the Pogo app every reboot
 
 # Repos
-Known repos are as followed:
-- https://mineek.github.io/repo
-    - This repo has a lot of Procursus rootless packages
-- https://repo.palera.in
-    - A ton of miscellaneous packages
-- https://beta.anamy.gay - main - main
-    - Contains Sileo Nightly
-    - This is a **dist** repo
-
-Make a repo:
-- Release and package architecture should be `iphoneos-arm64`
-- Sign your repos!!!
-
-Use the [palera1n repo](https://github.com/palera1n/repo) as an example
+All repos work with the tweaks branch because it uses normal procursus and not rootless.
 
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
