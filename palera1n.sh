@@ -460,7 +460,7 @@ if [ ! -e boot-"$deviceid" ]; then
     else
         "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > "$out"
     fi
-    
+
     echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > "$out"
     if [[ $1 == *"--tweaks"* ]]; then
@@ -600,6 +600,8 @@ if [ -f "tweaksinstalled" ]; then
     if [ -f ~/.ssh/known_hosts ]; then
         rm ~/.ssh/known_hosts
     fi
+
+    _kill_if_running iproxy
 fi
 
 cd logs
