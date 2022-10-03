@@ -413,7 +413,7 @@ if [ ! -e boot-"$deviceid" ]; then
 
     # if tweaks, set ipswurl to a custom one
     if [ "$1" = "--tweaks" ]; then
-        read -p "[*] Enter the URL of the OTA ZIP of 15.3b3 of your device: " ipswurl
+        read -p "[*] Enter the URL of the OTA ZIP of 15.1b3 of your device: " ipswurl
     fi
 
     # Downloading files, and decrypting iBSS/iBEC
