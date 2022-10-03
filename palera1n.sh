@@ -473,7 +473,7 @@ if [ ! -e boot-"$deviceid" ]; then
     if [[ $1 == *"--tweaks"* ]]; then
         modelwithoutap=$(echo "$model" | sed 's/ap//')
         bpatchfile=$(find patches -name "$modelwithoutap".bpatch)
-        "$dir"/img4 -i work/kernelcache.development.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P "$bpatchfile" `if [ "$oscheck" = 'Linux' ]; then echo "-J"; fi` > "$out"
+        "$dir"/img4 -i work/kernelcache.development.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi` > "$out"
     else
         "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > "$out"
     fi
