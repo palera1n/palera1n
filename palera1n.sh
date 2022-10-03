@@ -438,15 +438,6 @@ if [ ! -e boot-"$deviceid" ]; then
     echo "[*] Downloading DeviceTree"
     "$dir"/pzb -g AssetData/boot/Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl" > "$out"
 
-    if [[ ! $1 == *"--tweaks"* ]]; then
-        echo "[*] Downloading AOP"
-        if [ "$os" = 'Darwin' ]; then
-            "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
-        else
-            "$dir"/pzb -g AssetData/boot/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
-        fi
-    fi
-
     echo "[*] Downloading trustcache"
     if [ "$os" = 'Darwin' ]; then
        "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
@@ -464,7 +455,7 @@ if [ ! -e boot-"$deviceid" ]; then
     echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > "$out"
     if [[ $1 == *"--tweaks"* ]]; then
-        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched
+        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched > "$out"
     else
         "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1' > "$out"
     fi
@@ -477,9 +468,8 @@ if [ ! -e boot-"$deviceid" ]; then
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin > "$out"
     elif [[ ! $1 == *"--tweaks"* ]]; then
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > "$out"
-    else
-        echo "[*] Dev kernelcache detected, skipping patching"
     fi
+
     if [[ $1 == *"--tweaks"* ]]; then
         modelwithoutap=$(echo "$model" | sed 's/ap//')
         bpatchfile=$(find patches -name "$modelwithoutap".bpatch)
@@ -487,27 +477,19 @@ if [ ! -e boot-"$deviceid" ]; then
     else
         "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > "$out"
     fi
+
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p --extra work/kpp.bin -f rkrn --lzss > "$out"
     elif [[ ! $1 == *"--tweaks"* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p -f rkrn --lzss > "$out"
-    else
-        echo "[*] Dev kernelcache detected, skipping patching 2"
     fi
+
     if [[ ! $1 == *"--tweaks"* ]]; then
         python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot-"$deviceid"/kernelcache.img4 -m work/IM4M > "$out"
-    else
-        echo "[*] Dev kernelcache detected, skipping rebuild"
     fi
+
     echo "[*] Signing DeviceTree"
     "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot-"$deviceid"/devicetree.img4 -M work/IM4M -T rdtr > "$out"
-
-    #echo "[*] Signing AOP"
-    #if [ "$os" = 'Darwin' ]; then
-    #   "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
-    #else
-    #   "$dir"/img4 -i work/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
-    #fi
 
     echo "[*] Patching and signing trustcache"
     if [ "$os" = 'Darwin' ]; then
@@ -540,11 +522,6 @@ fi
 "$dir"/irecovery -c "setpicture 0x1"
 "$dir"/irecovery -f boot-"$deviceid"/devicetree.img4
 "$dir"/irecovery -c "devicetree"
-
-if [[ ! $1 == *"--tweaks"* ]]; then
-    "$dir"/irecovery -f boot-"$deviceid"/aop.img4
-    "$dir"/irecovery -c "firmware"
-fi
 "$dir"/irecovery -f boot-"$deviceid"/trustcache.img4
 "$dir"/irecovery -c "firmware"
 "$dir"/irecovery -f boot-"$deviceid"/kernelcache.img4
