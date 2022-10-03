@@ -26,8 +26,8 @@ Stop making issues about Linux not being able to connect, we are aware.
 1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
 2. Run `./palera1n.sh --tweaks <ios version youre on atm>`
     - \[A10+\] Before running, you **must** disable your passcode
-3. Make sure your device is in normal mode, if you didn't start from DFU
-4. Follow the steps
+    - Put you're device in DFU Mode first.
+3. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
 
 # Repos
