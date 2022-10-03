@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+mkdir -p logs
+
+{
+
 set -e
 
 # =========
@@ -9,6 +13,7 @@ ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND T
 version="1.0.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
+commit=$(git rev-parse --short HEAD)
 if [[ "$@" == *"--debug"* ]]; then
     out=/dev/stdout
 else
@@ -140,6 +145,18 @@ _exit_handler() {
     fi
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
+
+    cd logs
+    for file in *.log; do
+        mv "$file" FAIL_${file}
+    done
+    cd ..
+
+    if [[ "$@" == *"--debug"* ]]; then
+        echo "[*] A failure log has been made. If you're going to make a GitHub issue, please attatch the latest log."
+    else
+        echo "[*] A failure log has been made, but you aren't running with --debug. DO NOT send this in a GitHub issue."
+    fi
 }
 trap _exit_handler EXIT
 
@@ -208,8 +225,8 @@ chmod +x "$dir"/*
 # Start
 # ============
 
-echo "palera1n | Version $version"
-echo "Written by Nebula | Some code and ramdisk from Nathan | Patching commands and help from Mineek | Loader app by Amy"
+echo "palera1n | Version $version-$commit"
+echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
 echo ""
 
 if [ "$1" = '--tweaks' ] && [ ! -e tweaksinstalled ]; then
@@ -218,22 +235,22 @@ if [ "$1" = '--tweaks' ] && [ ! -e tweaksinstalled ]; then
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
     echo "THIS ONLY WORKS ON 15.0-15.3.1"
     echo "IMPORTANT: iMessage will NOT work AT ALL!"
-    echo "DON'T GET ANGRY AT US IF UR DEVICE IS BORKED, ITS UR OWN FAULT AND WE WARNED YOU"
-    echo "DO YOU UNDERSTAND? TYPE YES, I UNDERSTAND TO CONTINUE"
+    echo "DO NOT GET ANGRY AT US IF UR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
+    echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say.' TO CONTINUE"
     read -r answer
-    if [ "$answer" = 'YES, I UNDERSTAND' ]; then
+    if [ "$answer" = 'Yes, do as I say.' ]; then
         echo "Are you REALLY sure? WE WARNED U!"
         echo "Type 'YES, I'm really sure' to continue"
         read -r answer
         if [ "$answer" = 'YES, I'"'"'m really sure' ]; then
-            echo "Enabling tweaks"
+            echo "[*] Enabling tweaks"
             tweaks=1
         else
-            echo "Disabling tweaks"
+            echo "[*] Disabling tweaks"
             tweaks=0
         fi
     else
-        echo "Disabling tweaks"
+        echo "[*] Disabling tweaks"
         tweaks=0
     fi
 fi
@@ -538,17 +555,10 @@ if [ "$os" = 'Darwin' ]; then
     fi
 fi
 
-rm -rf work rdwork
-echo ""
-echo "Done!"
-echo "The device should now boot to iOS"
-echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
-echo "If not, Pogo should be installed to Tips"
-
 if [ $1 = '--tweaks' ] && [ ! -f "tweaksinstalled" ]; then
     echo "[*] Tweaks enabled, running postinstall."
-    echo "[!] please install openssh and curl and wget from sileo ( mineek.github.io/repo ) and press ENTER"
-    read -r
+    echo "[!] Please install OpenSSH, curl, and wget from Sileo (repo is mineek.github.io/repo). Then, press any key to continue"
+    read -n 1 -s
     echo "[*] Installing tweak support, please follow the instructions 100% or unexpected errors may occur"
     "$dir"/iproxy 2222 22 &
     if [ -f ~/.ssh/known_hosts ]; then
@@ -560,28 +570,45 @@ if [ $1 = '--tweaks' ] && [ ! -f "tweaksinstalled" ]; then
     # run the preptweaks.sh script as root
     ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/preptweaks.sh"
     # now tell the user to install preferenceloader from bigboss repo and newterm2
-    echo "[*] ATTENTION: please install preferenceloader from bigboss repo and newterm2, then press ENTER"
-    read -r
+    echo "[*] Please install PreferenceLoader from BigBoss repo and NewTerm 2. Then, press any key to continue"
+    read -n 1 -s
     # now run sbreload
     "$dir"/sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p 2222 "sbreload"
-    echo "[*] Tweak Support installed, you can freely use Sileo now."
+    echo "[*] Tweak support installed, you can freely use Sileo now."
     touch tweaksinstalled 
 fi
 
-# if known hosts file exists, delete it
-if [ -f ~/.ssh/known_hosts ]; then
-    rm ~/.ssh/known_hosts
+if [ ! -f "tweaksinstalled" ]; then
+    # if known hosts file exists, delete it
+    if [ -f ~/.ssh/known_hosts ]; then
+        rm ~/.ssh/known_hosts
+    fi
+
+    # run postboot.sh script
+    if [ -f binaries/postboot.sh ]; then
+        echo "[*] Running postboot"
+        "$dir"/iproxy 2222 22 &
+        scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postboot.sh
+        ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postboot.sh"
+    fi
+
+    # if known hosts file exists, delete it
+    if [ -f ~/.ssh/known_hosts ]; then
+        rm ~/.ssh/known_hosts
+    fi
 fi
 
-# run postboot.sh script
-if [ -f binaries/postboot.sh ]; then
-    echo "[*] Running postboot.sh"
-    "$dir"/iproxy 2222 22 &
-    scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postboot.sh
-    ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postboot.sh"
-fi
+cd logs
+for file in *.log; do
+    mv "$file" SUCCESS_${file}
+done
+cd ..
 
-# if known hosts file exists, delete it
-if [ -f ~/.ssh/known_hosts ]; then
-    rm ~/.ssh/known_hosts
-fi
+rm -rf work rdwork
+echo ""
+echo "Done!"
+echo "The device should now boot to iOS"
+echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
+echo "If not, Pogo should be installed to Tips"
+
+} | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log

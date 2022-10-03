@@ -1,5 +1,5 @@
 # palera1n
-iOS 15.0-15.3.1 **work in progress** tethered checkm8 "jailbreak" ( TWEAK BRANCH )
+iOS 15.0-15.3.1 **work in progress** tethered checkm8 "jailbreak" (TWEAK BRANCH)
 
 # What does this do?
 It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
@@ -13,14 +13,15 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
 # Linux issues
 Linux has some weird usbmuxd issues. We have tried our best to fix them, but there stil are issues. We highly recommend to compile and install [usbmuxd2](https://github.com/tihmstar/usbmuxd2).
 
-Stop making issues about Linux not being able to connect, we are aware.
+Stop making issues about Linux not being able to connect, we are aware. This includes being stuck on waiting for ramdisk to finish booting.
 
 # Prerequisites
 1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
 2. Linux or macOS computer
     - Python 3 is required
 3. iOS 15.0-15.3.1
-4. a brain
+4. A brain
+    - Remember, this is mainly for developers.
 
 # How to use
 1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
@@ -36,7 +37,7 @@ All repos work with the tweaks branch because it uses normal procursus and not r
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
     - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
-    - They also helped me ( mineek ) getting the kernel up and running and with the patches.
+    - Also helped Mineek getting the kernel up and running and with the patches.
 - [Mineek](https://github.com/mineek) for the patching and booting commands, and adding tweak support.
 - [Amy](https://github.com/elihwyma) for the Pogo app
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
