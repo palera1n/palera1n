@@ -63,8 +63,11 @@ _wait() {
                 sleep 1
             done
         fi
-        "$dir"/irecovery -c "setenv auto-boot true"
-        "$dir"/irecovery -c "saveenv"
+        if [[ ! $1 == *"--tweaks"* ]]; then
+            "$dir"/irecovery -c "setenv auto-boot true"
+            "$dir"/irecovery -c "saveenv"
+        fi
+
     fi
 }
 
@@ -157,6 +160,7 @@ fi
 
 if [ "$1" = 'clean' ]; then
     rm -rf boot* work
+    rm -rf tweaksinstalled
     echo "[*] Removed the created boot files"
     exit
 fi
@@ -208,8 +212,34 @@ echo "palera1n | Version $version"
 echo "Written by Nebula | Some code and ramdisk from Nathan | Patching commands and help from Mineek | Loader app by Amy"
 echo ""
 
+if [ "$1" = '--tweaks' ] && [ ! -e tweaksinstalled ]; then
+    echo "!!! WARNING WARNING WARNING !!!"
+    echo "This flag will add tweak support BUT WILL BE TETHERED."
+    echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
+    echo "THIS ONLY WORKS ON 15.0-15.3.1"
+    echo "IMPORTANT: iMessage will NOT work AT ALL!"
+    echo "DON'T GET ANGRY AT US IF UR DEVICE IS BORKED, ITS UR OWN FAULT AND WE WARNED YOU"
+    echo "DO YOU UNDERSTAND? TYPE YES, I UNDERSTAND TO CONTINUE"
+    read -r answer
+    if [ "$answer" = 'YES, I UNDERSTAND' ]; then
+        echo "Are you REALLY sure? WE WARNED U!"
+        echo "Type 'YES, I'm really sure' to continue"
+        read -r answer
+        if [ "$answer" = 'YES, I'"'"'m really sure' ]; then
+            echo "Enabling tweaks"
+            tweaks=1
+        else
+            echo "Disabling tweaks"
+            tweaks=0
+        fi
+    else
+        echo "Disabling tweaks"
+        tweaks=0
+    fi
+fi
+
 # Get device's iOS version from ideviceinfo if in normal mode
-if [ "$1" = '--dfu' ]; then
+if [ "$1" = '--dfu' ] || [ "$1" = '--tweaks' ]; then
     if [ -z "$2" ]; then
         echo "[-] When using --dfu, please pass the version you're device is on"
         exit
@@ -228,7 +258,7 @@ else
 fi
 
 # Put device into recovery mode, and set auto-boot to true
-if [ ! "$1" = '--dfu' ]; then
+if [ ! "$1" = '--dfu' ] && [ ! "$1" = '--tweaks' ]; then
     echo "[*] Switching device into recovery mode..."
     "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
     _wait recovery
@@ -246,10 +276,23 @@ else
 fi
 
 # Have the user put the device into DFU
-if [ ! "$1" = '--dfu' ]; then
+if [ ! "$1" = '--dfu' ] && [ ! "$1" = '--tweaks' ]; then
     _dfuhelper
 fi
 sleep 2
+
+# if the user specified --restorerootfs, execute irecovery -n
+if [ "$1" = '--restorerootfs' ]; then
+    echo "[*] Restoring rootfs..."
+    "$dir"/irecovery -n > "$out"
+    sleep 2
+    echo "[*] Done, your device will boot into iOS now."
+    # clean the boot files bcs we don't need them anymore
+    rm -rf boot*
+    rm -rf work
+    rm -rf tweaksinstalled
+    exit
+fi
 
 # ============
 # Ramdisk
@@ -267,6 +310,10 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot > "$out"
     cd ..
+    # if known hosts file exists, remove it
+    if [ -f ~/.ssh/known_hosts ]; then
+        rm ~/.ssh/known_hosts
+    fi
 
     # Execute the commands once the rd is booted
     if [ "$os" = 'Linux' ]; then
@@ -310,6 +357,16 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper" > "$out"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 $tipsdir/PogoHelper" > "$out"
     fi
+    if [[ $1 == *"--tweaks"* ]]; then
+        # execute nvram boot-args="-v keepsyms=1 serial=3 debug=0xfffffffe launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1 wdt=-1"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 serial=3 debug=0xfffffffe launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1 wdt=-1\"" > "$out"
+        # execute nvram allow-root-hash-mismatch=1
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram allow-root-hash-mismatch=1" > "$out"
+        # execute nvram root-live-fs=1
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram root-live-fs=1" > "$out"
+        # execute nvram auto-boot=false
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" > "$out"
+    fi
     sleep 2
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot" > "$out"
     sleep 1
@@ -318,11 +375,13 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 2
 
     # Switch into recovery, and set auto-boot to true
-    echo "[*] Switching device into recovery mode..."
-    "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
-    _wait recovery
-
-    # Have the user put the device into DFU
+    if [ ! "$1" = "--tweaks" ]; then
+        echo "[*] Switching device into recovery mode..."
+        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
+        _wait recovery
+        # Have the user put the device into DFU
+    fi
+    sleep 10
     _dfuhelper
     sleep 2
 fi
@@ -335,6 +394,11 @@ fi
 if [ ! -e boot-"$deviceid" ]; then
     _pwn
 
+    # if tweaks, set ipswurl to a custom one
+    if [ "$1" = "--tweaks" ]; then
+        read -p "[*] Enter the URL of the OTA ZIP of 15.3b3 of your device: " ipswurl
+    fi
+
     # Downloading files, and decrypting iBSS/iBEC
     mkdir boot-"$deviceid"
 
@@ -343,66 +407,89 @@ if [ ! -e boot-"$deviceid" ]; then
     cd work
 
     echo "[*] Downloading BuildManifest"
-    "$dir"/pzb -g BuildManifest.plist "$ipswurl" > "$out"
+    "$dir"/pzb -g AssetData/boot/BuildManifest.plist "$ipswurl" > "$out"
 
     echo "[*] Downloading and decrypting iBSS"
-    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > "$out"
-    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec > "$out"
+    "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl" > "$out"
+    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" iBSS.dec > "$out"
 
     echo "[*] Downloading and decrypting iBEC"
-    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > "$out"
-    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec > "$out"
+    # download ibec and replace RELEASE with DEVELOPMENT
+    "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl" > "$out"
+    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" iBEC.dec > "$out"
 
     echo "[*] Downloading DeviceTree"
-    "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl" > "$out"
+    "$dir"/pzb -g AssetData/boot/Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl" > "$out"
 
     echo "[*] Downloading AOP"
     if [ "$os" = 'Darwin' ]; then
-       "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
+       "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
     else
-       "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
+       "$dir"/pzb -g AssetData/boot/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
     fi
 
     echo "[*] Downloading trustcache"
     if [ "$os" = 'Darwin' ]; then
-       "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
+       "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
     else
-       "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
+       "$dir"/pzb -g AssetData/boot/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
     fi
 
     echo "[*] Downloading kernelcache"
-    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > "$out"
-
+    if [[ $1 == *"--tweaks"* ]]; then
+        # ask user for 15.1b3 ota zip   
+        read -p "[*] Enter the URL of the OTA ZIP of 15.1b3 of your device: " kernelcacheurl
+        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/release/development/')" "$kernelcacheurl" > "$out"
+    else
+        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > "$out"
+    fi
     echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > "$out"
-    "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1' > "$out"
+    if [[ $1 == *"--tweaks"* ]]; then
+        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched
+    else
+        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0xfffffffe panic-wait-forever=1 wdt=-1' > "$out"
+    fi
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss > "$out"
     "$dir"/img4 -i work/iBEC.patched -o boot-"$deviceid"/iBEC.img4 -M work/IM4M -A -T ibec > "$out"
 
     echo "[*] Patching and signing kernelcache"
-    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]; then
+    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] && [[ ! $1 == *"--tweaks"* ]]; then
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin > "$out"
-    else
+    elif [[ ! $1 == *"--tweaks"* ]]; then
         python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw > "$out"
-    fi
-    "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > "$out"
-    if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]]; then
-        python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p --extra work/kpp.bin -f rkrn --lzss > "$out"
     else
-        python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p -f rkrn --lzss > "$out"
+        echo "[*] Dev kernelcache detected, skipping patching"
     fi
-    python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot-"$deviceid"/kernelcache.img4 -m work/IM4M > "$out"
-
+    if [[ $1 == *"--tweaks"* ]]; then
+        modelwithoutap=$(echo "$model" | sed 's/ap//')
+        bpatchfile=$(find patches -name "$modelwithoutap".bpatch)
+        "$dir"/img4 -i work/kernelcache.development.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P "$bpatchfile" > "$out"
+    else
+        "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o > "$out"
+    fi
+    if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
+        python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p --extra work/kpp.bin -f rkrn --lzss > "$out"
+    elif [[ ! $1 == *"--tweaks"* ]]; then
+        python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p -f rkrn --lzss > "$out"
+    else
+        echo "[*] Dev kernelcache detected, skipping patching 2"
+    fi
+    if [[ ! $1 == *"--tweaks"* ]]; then
+        python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot-"$deviceid"/kernelcache.img4 -m work/IM4M > "$out"
+    else
+        echo "[*] Dev kernelcache detected, skipping rebuild"
+    fi
     echo "[*] Signing DeviceTree"
     "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot-"$deviceid"/devicetree.img4 -M work/IM4M -T rdtr > "$out"
 
-    echo "[*] Signing AOP"
-    if [ "$os" = 'Darwin' ]; then
-       "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
-    else
-       "$dir"/img4 -i work/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
-    fi
+    #echo "[*] Signing AOP"
+    #if [ "$os" = 'Darwin' ]; then
+    #   "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
+    #else
+    #   "$dir"/img4 -i work/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" -o boot-"$deviceid"/aop.img4 -M work/IM4M > "$out"
+    #fi
 
     echo "[*] Patching and signing trustcache"
     if [ "$os" = 'Darwin' ]; then
@@ -457,3 +544,44 @@ echo "Done!"
 echo "The device should now boot to iOS"
 echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
 echo "If not, Pogo should be installed to Tips"
+
+if [ $1 = '--tweaks' ] && [ ! -f "tweaksinstalled" ]; then
+    echo "[*] Tweaks enabled, running postinstall."
+    echo "[!] please install openssh and curl and wget from sileo ( mineek.github.io/repo ) and press ENTER"
+    read -r
+    echo "[*] Installing tweak support, please follow the instructions 100% or unexpected errors may occur"
+    "$dir"/iproxy 2222 22 &
+    if [ -f ~/.ssh/known_hosts ]; then
+        rm ~/.ssh/known_hosts
+    fi
+    echo "[!] If asked for a password, enter 'alpine'."
+    # ssh into device and copy over the preptweaks.sh script from the binaries folder
+    scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/preptweaks.sh mobile@localhost:~/preptweaks.sh
+    # run the preptweaks.sh script as root
+    ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/preptweaks.sh"
+    # now tell the user to install preferenceloader from bigboss repo and newterm2
+    echo "[*] ATTENTION: please install preferenceloader from bigboss repo and newterm2, then press ENTER"
+    read -r
+    # now run sbreload
+    "$dir"/sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p 2222 "sbreload"
+    echo "[*] Tweak Support installed, you can freely use Sileo now."
+    touch tweaksinstalled 
+fi
+
+# if known hosts file exists, delete it
+if [ -f ~/.ssh/known_hosts ]; then
+    rm ~/.ssh/known_hosts
+fi
+
+# run postboot.sh script
+if [ -f binaries/postboot.sh ]; then
+    echo "[*] Running postboot.sh"
+    "$dir"/iproxy 2222 22 &
+    scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postboot.sh
+    ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postboot.sh"
+fi
+
+# if known hosts file exists, delete it
+if [ -f ~/.ssh/known_hosts ]; then
+    rm ~/.ssh/known_hosts
+fi
