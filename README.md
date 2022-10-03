@@ -1,5 +1,5 @@
 # palera1n
-iOS 15.0-15.3.1 **work in progress** tethered checkm8 "jailbreak" ( TWEAK BRANCH )
+iOS 15.0-15.3.1 **work in progress** **tethered** checkm8 "jailbreak" ( TWEAK BRANCH )
 
 # What does this do?
 It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
