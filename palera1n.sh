@@ -456,12 +456,11 @@ if [ ! -e boot-"$deviceid" ]; then
 
     echo "[*] Downloading kernelcache"
     if [[ $1 == *"--tweaks"* ]]; then
-        # ask user for 15.1b3 ota zip   
-        read -p "[*] Enter the URL of the OTA ZIP of 15.1b3 of your device: " kernelcacheurl
-        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/release/development/')" "$kernelcacheurl" > "$out"
+        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/release/development/')" "$ipswurl" > "$out"
     else
         "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" > "$out"
     fi
+    
     echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched > "$out"
     if [[ $1 == *"--tweaks"* ]]; then
