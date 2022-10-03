@@ -36,7 +36,8 @@ All repos work with the tweaks branch because it uses normal procursus and not r
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
     - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
-- [Mineek](https://github.com/mineek) for the patching and booting commands
+    - They also helped me ( mineek ) getting the kernel up and running and with the patches.
+- [Mineek](https://github.com/mineek) for the patching and booting commands, and adding tweak support.
 - [Amy](https://github.com/elihwyma) for the Pogo app
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
