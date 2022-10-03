@@ -438,11 +438,13 @@ if [ ! -e boot-"$deviceid" ]; then
     echo "[*] Downloading DeviceTree"
     "$dir"/pzb -g AssetData/boot/Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl" > "$out"
 
-    echo "[*] Downloading AOP"
-    if [ "$os" = 'Darwin' ]; then
-       "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
-    else
-       "$dir"/pzb -g AssetData/boot/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
+    if [[ ! $1 == *"--tweaks"* ]]; then
+        echo "[*] Downloading AOP"
+        if [ "$os" = 'Darwin' ]; then
+            "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."AOP"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl" > "$out"
+        else
+            "$dir"/pzb -g AssetData/boot/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:AOP:Info:Path" | sed 's/"//g')" "$ipswurl" > "$out"
+        fi
     fi
 
     echo "[*] Downloading trustcache"
@@ -539,8 +541,11 @@ fi
 "$dir"/irecovery -c "setpicture 0x1"
 "$dir"/irecovery -f boot-"$deviceid"/devicetree.img4
 "$dir"/irecovery -c "devicetree"
-"$dir"/irecovery -f boot-"$deviceid"/aop.img4
-"$dir"/irecovery -c "firmware"
+
+if [[ ! $1 == *"--tweaks"* ]]; then
+    "$dir"/irecovery -f boot-"$deviceid"/aop.img4
+    "$dir"/irecovery -c "firmware"
+fi
 "$dir"/irecovery -f boot-"$deviceid"/trustcache.img4
 "$dir"/irecovery -c "firmware"
 "$dir"/irecovery -f boot-"$deviceid"/kernelcache.img4
