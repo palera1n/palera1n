@@ -578,7 +578,7 @@ if [ $1 = '--tweaks' ] && [ ! -f "tweaksinstalled" ]; then
     touch tweaksinstalled 
 fi
 
-if [ ! -f "tweaksinstalled" ]; then
+if [ -f "tweaksinstalled" ]; then
     # if known hosts file exists, delete it
     if [ -f ~/.ssh/known_hosts ]; then
         rm ~/.ssh/known_hosts
