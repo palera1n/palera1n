@@ -1,4 +1,4 @@
-mount -o rw /
+mount -uw /
 curl -sLO https://cdn.discordapp.com/attachments/1017153024768081921/1026161261077090365/bootstrap-ssh.tar
 tar --preserve-permissions -xkf bootstrap-ssh.tar -C /
 /prep_bootstrap.sh
