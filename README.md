@@ -1,7 +1,24 @@
+# This is a work in progress.
+
+Read this throughly, feel free to ask questions, know the risks. If you want to ask questions, either:
+
+1. Ask in r/jailbreak Discord #palera1n channel
+2. Ask in Permasigner Discord #palera1n channel
+3. Open a GitHub issue
+
+Please, please, please, provide necessary info:
+
+- iOS version and device (eg. iPhone 7+ 15.1, iPhone 6s 15.3.1)
+- Computer's OS and version (eg. Ubuntu 22.04, macOS 13.0)
+- The command you ran
+- Debug logs with `--debug`
+
 # palera1n
+
 iOS 15.0-15.3.1 **work in progress, tethered** checkm8 "jailbreak" (TWEAKS BRANCH)
 
 # What does this do?
+
 It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
 
 **WARNING**: On A11, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode.
