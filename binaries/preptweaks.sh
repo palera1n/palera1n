@@ -6,7 +6,8 @@ launchctl unload /Library/LaunchDaemons/com.openssh.sshd.plist && launchctl load
 apt update
 apt upgrade -y
 apt install curl -y
-curl -sLO https://cdn.discordapp.com/attachments/1017153024768081921/1026162195517681788/com.ex.substitute_2.2.0_iphoneos-arm.deb
-curl -sLO https://cdn.discordapp.com/attachments/1017153024768081921/1026162195794497547/com.saurik.substrate.safemode_0.9.6005_iphoneos-arm.deb
-curl -sLO https://cdn.discordapp.com/attachments/1017153024768081921/1026162196104880191/org.coolstar.sileo_2.3_iphoneos-arm.deb
+curl -sLO https://apt.bingner.com/debs/1443.00/com.ex.substitute_2.2.3_iphoneos-arm.deb
+curl -sLO https://apt.bingner.com/debs/1443.00/com.saurik.substrate.safemode_0.9.6005_iphoneos-arm.deb
+curl -sLO https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.swift.libswift_5.0-electra2_iphoneos-arm.deb
+curl -sLO https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.coolstar.sileo_2.3_iphoneos-arm.deb
 dpkg -i *.deb
