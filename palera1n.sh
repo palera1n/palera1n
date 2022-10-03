@@ -4,7 +4,7 @@ mkdir -p logs
 
 {
 
-set -e
+#set -e
 
 # =========
 # Variables
