@@ -1,5 +1,5 @@
 # palera1n
-iOS 15.0-15.3.1 **work in progress** tethered checkm8 "jailbreak" (TWEAK BRANCH)
+iOS 15.0-15.3.1 **work in progress, tethered** checkm8 "jailbreak" (TWEAKS BRANCH)
 
 # What does this do?
 It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
@@ -27,8 +27,8 @@ Stop making issues about Linux not being able to connect, we are aware. This inc
 1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
 2. Run `./palera1n.sh --tweaks <ios version youre on atm>`
     - \[A10+\] Before running, you **must** disable your passcode
-3. Make sure your device is in normal mode, if you didn't start from DFU
-4. Follow the steps
+    - Put you're device in DFU Mode first.
+3. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
 
 # Repos
@@ -37,8 +37,19 @@ All repos work with the tweaks branch because it uses normal procursus and not r
 # Credits
 - [Nathan](https://github.com/verygenericname) for a lot of the code from SSHRD_Script
     - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
+<<<<<<< HEAD
     - Also helped Mineek getting the kernel up and running and with the patches.
 - [Mineek](https://github.com/mineek) for the patching and booting commands, and adding tweak support.
+||||||| 554eb0d
+    - They also helped me ( mineek ) getting the kernel up and running and with the patches.
+- [Mineek](https://github.com/mineek) for the patching and booting commands, and adding tweak support.
+=======
+    - They also helped me ( mineek ) getting the kernel up and running and with the patches.
+    - Helping with adding multiple device support.
+- [Mineek](https://github.com/mineek)
+    - for the patching and booting commands
+    - adding tweak support.
+>>>>>>> 88c9f50f60efafbccb50c7995f94d9971532d0f8
 - [Amy](https://github.com/elihwyma) for the Pogo app
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
