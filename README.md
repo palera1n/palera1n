@@ -13,6 +13,8 @@ Please, please, please, provide necessary info:
 - The command you ran
 - Debug logs with `--debug`
 
+**DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/itsnebulalol/ios15-tweaks) for compatiblity.
+
 # palera1n
 
 iOS 15.0-15.3.1 **work in progress, tethered** checkm8 "jailbreak" (TWEAKS BRANCH)
@@ -61,3 +63,4 @@ All repos work with the tweaks branch because it uses normal procursus and not r
 - [Amy](https://github.com/elihwyma) for the Pogo app
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
+- [F121](https://github.com/F121Live) for helping test
