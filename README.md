@@ -42,7 +42,7 @@ Stop making issues about Linux not being able to connect, we are aware. This inc
     - Remember, this is mainly for developers.
 
 # How to use
-1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
+1. Clone this repo with `git clone -b tweaks --recursive https://github.com/palera1n/palera1n && cd palera1n`
 2. Run `./palera1n.sh --tweaks <ios version youre on atm>`
     - \[A10+\] Before running, you **must** disable your passcode
     - Put your device in DFU Mode before running.
