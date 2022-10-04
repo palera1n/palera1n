@@ -160,6 +160,17 @@ _exit_handler() {
 }
 trap _exit_handler EXIT
 
+# =========
+# Json parser
+# =========
+# get beta url
+_beta_url() {
+    json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/iosFiles/iOS/19x%20-%2015.x/19B5060d.json)
+    sources=$(echo "$json" | $dir/jq -r '.sources')
+    beta_url=$(echo "$sources" | $dir/jq -r --arg deviceid "$deviceid" '.[] | select(.type == "ota" and (.deviceMap | index($deviceid))) | .links[0].url')
+    echo "$beta_url"
+}
+
 # ===========
 # Fixes
 # ===========
@@ -412,7 +423,7 @@ if [ ! -e boot-"$deviceid" ]; then
 
     # if tweaks, set ipswurl to a custom one
     if [ "$1" = "--tweaks" ]; then
-        read -p "[*] Enter the URL of the OTA ZIP of 15.1b3 of your device: " ipswurl
+        ipswurl=$(_beta_url)
     fi
 
     # Downloading files, and decrypting iBSS/iBEC
