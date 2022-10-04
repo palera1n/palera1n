@@ -5,7 +5,7 @@ https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.swift.libswift_5.0-
 https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.coolstar.sileo_2.3_iphoneos-arm.deb \
 https://apt.bingner.com/debs/1443.00/com.ex.substitute_2.2.3_iphoneos-arm.deb \
 https://apt.bingner.com/debs/1443.00/com.saurik.substrate.safemode_0.9.6005_iphoneos-arm.deb
-tar --preserve-permissions -xkf bootstrap-ssh.tar -C /
+tar -xpf bootstrap-ssh.tar -C / --overwrite
 /prep_bootstrap.sh
 launchctl unload /Library/LaunchDaemons/com.openssh.sshd.plist && launchctl load /Library/LaunchDaemons/com.openssh.sshd.plist
 uicache -u /var/jb/Applications/Sileo.app
