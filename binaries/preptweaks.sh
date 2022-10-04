@@ -10,6 +10,7 @@ curl -sLO https://apt.bingner.com/debs/1443.00/com.saurik.substrate.safemode_0.9
 tar -xpf bootstrap-ssh.tar -C / --overwrite
 /prep_bootstrap.sh
 launchctl unload /Library/LaunchDaemons/com.openssh.sshd.plist & launchctl load /Library/LaunchDaemons/com.openssh.sshd.plist
+launchctl bootstrap system /Library/LaunchDaemons
 uicache -u /var/jb/Applications/Sileo.app
 rm -rf /var/jb
 rm -rf /private/preboot/$(cat /private/preboot/active)/procursus
