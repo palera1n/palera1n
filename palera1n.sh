@@ -314,13 +314,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     # Confirming blobs are valid to restore and keep same iOS in case of disaster
     
     dumpedBlobs="blobs/"$deviceid"-"$version".shsh2"
-
-    if [ ! $version ]; then
-        read -p "Validate blobs against wich iOS version (device current version)? " blobsVersion
-    else
-        blobsversion="$version"
-    fi
-
+    blobsversion="$version"
     blobsBuildID=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$blobsVersion"'") | .buildid' --raw-output) > "$out"
     blobsipswURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$blobsVersion"'") | .url' --raw-output) > "$out"
     blobsotaURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ota" | "$dir"/jq '.firmwares | .[] | select(.buildid=="'"$blobsBuildID"'") | .url' --raw-output) > "$out"
