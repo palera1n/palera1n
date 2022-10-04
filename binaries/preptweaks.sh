@@ -1,7 +1,7 @@
 mount -uw /
 mount -uw /private/preboot
-cd /
-mkdir work
+mkdir /work
+cd /work
 curl -sLO https://cdn.discordapp.com/attachments/1017153024768081921/1026161261077090365/bootstrap-ssh.tar
 curl -sLO https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.swift.libswift_5.0-electra2_iphoneos-arm.deb
 curl -sLO https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.coolstar.sileo_2.3_iphoneos-arm.deb
@@ -16,3 +16,5 @@ rm -rf /private/preboot/$(cat /private/preboot/active)/procursus
 apt update
 apt upgrade -y
 dpkg -i *.deb
+cd ..
+rm -rf /work
