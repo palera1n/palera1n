@@ -234,7 +234,6 @@ if [ "$1" = '--tweaks' ] && [ ! -e tweaksinstalled ]; then
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
     echo "THIS ONLY WORKS ON 15.0-15.3.1"
-    echo "IMPORTANT: iMessage will NOT work AT ALL!"
     echo "DO NOT GET ANGRY AT US IF UR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
     echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say.' TO CONTINUE"
     read -r answer
