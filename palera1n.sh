@@ -191,6 +191,10 @@ if [ "$1" = 'clean' ]; then
     rm -rf tweaksinstalled
     echo "[*] Removed the created boot files"
     exit
+elif [ "$1" = 'dfuhelper' ]; then
+    echo "[*] Running DFU helper"
+    _dfuhelper
+    exit
 fi
 
 # ============
@@ -557,9 +561,9 @@ if [ $1 = '--tweaks' ] && [ ! -f "tweaksinstalled" ]; then
     fi
     echo "[!] If asked for a password, enter 'alpine'."
     # ssh into device and copy over the preptweaks.sh script from the binaries folder
-    scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/preptweaks.sh mobile@localhost:~/preptweaks.sh
+    "$dir"/sshpass -p 'alpine' scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/preptweaks.sh mobile@localhost:~/preptweaks.sh
     # run the preptweaks.sh script as root
-    ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/preptweaks.sh"
+    "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/preptweaks.sh"
     # now tell the user to install preferenceloader from bigboss repo and newterm2
     echo "[*] Please install PreferenceLoader from BigBoss repo and NewTerm 2. Then, press any key to continue"
     read -n 1 -s
@@ -576,12 +580,22 @@ if [ -f "tweaksinstalled" ]; then
     fi
 
     # run postboot.sh script
-    if [ -f binaries/postboot.sh ]; then
-        echo "[*] Running postboot"
-        "$dir"/iproxy 2222 22 &
-        scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postboot.sh
-        ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postboot.sh"
+    if [[ "$@" == *"--safe-mode"* ]]; then
+        if [ -f binaries/postbootnosub.sh ]; then
+            echo "[*] Running postboot without Subsitute"
+            "$dir"/iproxy 2222 22 &
+            "$dir"/sshpass -p 'alpine' scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postbootnosub.sh
+            "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postbootnosub.sh"
+        fi
+    else
+        if [ -f binaries/postboot.sh ]; then
+            echo "[*] Running postboot"
+            "$dir"/iproxy 2222 22 &
+            "$dir"/sshpass -p 'alpine' scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postboot.sh
+            "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postboot.sh"
+        fi
     fi
+    
 
     # if known hosts file exists, delete it
     if [ -f ~/.ssh/known_hosts ]; then
