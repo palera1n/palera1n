@@ -309,6 +309,46 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out" 
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
     rm dump.raw
+
+    #blobs validation by iam-theKid
+    # Confirming blobs are valid to restore and keep same iOS in case of disaster
+    
+    dumpedBlobs="blobs/"$deviceid"-"$version".shsh2"
+
+    if [ ! $version ]; then
+        read -p "Validate blobs against wich iOS version (device current version)? " blobsVersion
+    else
+        blobsversion="$version"
+    fi
+
+    blobsBuildID=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$blobsVersion"'") | .buildid' --raw-output) > "$out"
+    blobsipswURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$blobsVersion"'") | .url' --raw-output) > "$out"
+    blobsotaURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ota" | "$dir"/jq '.firmwares | .[] | select(.buildid=="'"$blobsBuildID"'") | .url' --raw-output) > "$out"
+
+    echo "Downloading $deviceid $blobsVersion IPSW BuildManifest.plist..."
+    "$dir"/pzb -g BuildManifest.plist "$blobsipswURL" > "$out"
+    mv BuildManifest.plist work/BuildManifest\_IPSW\_$deviceid\_$blobsVersion\_$blobsBuildID.plist > "$out"
+    
+    echo "Downloading $deviceid $blobsVersion OTA BuildManifest.plist..."
+    "$dir"/pzb -g AssetData/boot/BuildManifest.plist $blobsotaURL > "$out"
+    mv BuildManifest.plist work/BuildManifest\_OTA\_$deviceid\_$blobsVersion\_$blobsBuildID.plist > "$out"
+
+    echo "Validating dumped blobs..."
+    if [[ "$($dir/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$blobsVersion\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
+        echo "\033[32m"
+        "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$blobsVersion\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket'
+        "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$blobsVersion\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2'
+        echo "\033[0m"
+    elif [[ "$($oscheck/img4tool --verify BuildManifest\_IPSW\_$deviceid\_$blobsVersion\_$blobsBuildID.plist -s dumped.shsh | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
+        echo "\033[32m"
+        "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$blobsVersion\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket'
+        "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$blobsVersion\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2'
+        echo "\033[0m "
+    else
+        echo "\033[91m[IMG4TOOL] APTicket is BAD!\033[0m"
+    fi
+    read -p "Press any key to continue..."   
+
     if [[ ! "$@" == *"--no-install"* ]]; then
         #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s1 /mnt1" > "$out"
         #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s6 /mnt6" > "$out"
