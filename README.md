@@ -63,3 +63,6 @@ All repos work with the tweaks branch because it uses normal Procursus and not r
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
 - [F121](https://github.com/F121Live) for helping test
+- [tihmstar](https://github.com/tihmstar) for pzb/original iBoot64Patcher/img4tool
+- [xerub](https://github.com/xerub) for img4lib and restored_external in the ramdisk
+- [Cryptic](https://github.com/Cryptiiiic) for iBoot64Patcher fork
