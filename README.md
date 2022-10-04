@@ -34,6 +34,7 @@ Stop making issues about Linux not being able to connect, we are aware. This inc
 
 # Prerequisites
 1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
+    - You must install the Tips app from the App Store before running the script
 2. Linux or macOS computer
     - Python 3 is required
 3. iOS 15.0-15.3.1
