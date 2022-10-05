@@ -235,7 +235,7 @@ echo "palera1n | Version $version-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
 echo ""
 
-if [ "$1" = '--tweaks']; then
+if [ "$1" = '--tweaks' ]; then
     _check_dfu
 fi
 
@@ -248,10 +248,10 @@ if [ "$1" = '--tweaks' ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimerag
     echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say' TO CONTINUE"
     read -r answer
     if [ "$answer" = 'Yes, do as I say' ]; then
-        echo "Are you REALLY sure? WE WARNED U!"
-        echo "Type 'YES, I'm really sure' to continue"
+        echo "Are you REALLY sure? WE WARNED YOU!"
+        echo "Type 'Yes, I am sure' to continue"
         read -r answer
-        if [ "$answer" = 'Yes, I'"'"'m really sure' ]; then
+        if [ "$answer" = 'Yes, I am sure' ]; then
             echo "[*] Enabling tweaks"
             tweaks=1
             touch .disclaimeragree
