@@ -366,28 +366,74 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out" 
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
     rm dump.raw
+
+    # blobs validation by iam-theKid
+    dumpedBlobs="blobs/"$deviceid"-"$version".shsh2"
+
+    blobsBuildID=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .buildid' --raw-output) > "$out"
+    blobsipswURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output) > "$out"
+    blobsotaURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ota" | "$dir"/jq '.firmwares | .[] | select(.buildid=="'"$blobsBuildID"'") | .url' --raw-output) > "$out"
+
+    "$dir"/pzb -g BuildManifest.plist "$blobsipswURL" > "$out"
+    mv BuildManifest.plist work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist > "$out"
+
+    "$dir"/pzb -g AssetData/boot/BuildManifest.plist $blobsotaURL > "$out"
+    mv BuildManifest.plist work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist > "$out"
+
+    echo "[*] Validating dumped blobs..."
+    if [[ "$($dir/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
+        "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
+        "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2'  > $out
+        echo "[*] Dumped blobs are valid!"
+    elif [[ "$($oscheck/img4tool --verify BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s dumped.shsh | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
+        "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
+        "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2' > $out
+        echo "[*] Dumped blobs are valid!"
+    else
+        echo "[*] Dumped blobs are NOT valid! Trying again..."
+        rm "$dumpedBlobs"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) > "$out" 
+        "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw > "$out"
+        rm dump.raw
+
+        if [[ "$($dir/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
+            "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
+            "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2'  > $out
+            echo "[*] Dumped blobs are valid!"
+        elif [[ "$($oscheck/img4tool --verify BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s dumped.shsh | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
+            "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
+            "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2' > $out
+            echo "[*] Dumped blobs are valid!"
+        else
+            echo "[*] Blobs are still invalid... once your device reboots, retry"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot" > "$out"
+            sleep 1
+            _kill_if_running iproxy
+            exit
+        fi
+    fi
+
     if [[ ! "$@" == *"--no-install"* ]]; then
-        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s1 /mnt1" > "$out"
-        #sleep 1
-        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s6 /mnt6" > "$out"
-        #sleep 1
-        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs -R /dev/disk0s1s3 /mnt7" > "$out"
-        #sleep 1
-        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/libexec/seputil --gigalocker-init" > "$out"
-        #sleep 1
-        #active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cat /mnt6/active" 2> /dev/null)
-        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/libexec/seputil --load /mnt6/$active/usr/standalone/firmware/sep-firmware.img4" > "$out"
-        #sleep 1
-        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s2 /mnt2" > "$out"
-        #sleep 1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems" > "$out"
         sleep 1
         tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
+        sleep 1
+        if [ $tipsdir = "" ]; then
+            echo "[*] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot" > "$out"
+            sleep 1
+            _kill_if_running iproxy
+            exit
+        fi
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cp -rf /usr/local/bin/loader.app/* $tipsdir" > "$out"
+        sleep 1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 33 $tipsdir/Tips" > "$out"
+        sleep 1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper" > "$out"
+        sleep 1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 $tipsdir/PogoHelper" > "$out"
     fi
+
     if [[ $1 == *"--tweaks"* ]]; then
         # execute nvram boot-args="-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1 wdt=-1"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1 wdt=-1\"" > "$out"
@@ -399,18 +445,21 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false" > "$out"
     fi
     sleep 2
+    echo "[*] Done! Rebooting your device"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot" > "$out"
     sleep 1
     _kill_if_running iproxy
-    _wait normal
-    sleep 2
 
     # Switch into recovery, and set auto-boot to true
-    if [ ! "$1" = "--tweaks" ]; then
+    if [ "$1" = "--tweaks" ]; then
+        _wait recovery
+    else
+        _wait normal
+        sleep 2
+
         echo "[*] Switching device into recovery mode..."
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID) > "$out"
         _wait recovery
-        # Have the user put the device into DFU
     fi
     sleep 10
     _dfuhelper
