@@ -9,7 +9,7 @@ set -e
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.0.0"
+version="1.1.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
@@ -179,7 +179,7 @@ fi
 
 if [ "$1" = 'clean' ]; then
     rm -rf boot* work
-    rm -rf tweaksinstalled
+    rm -rf .tweaksinstalled
     echo "[*] Removed the created boot files"
     exit
 elif [ "$1" = 'dfuhelper' ]; then
@@ -235,21 +235,26 @@ echo "palera1n | Version $version-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
 echo ""
 
-if [ "$1" = '--tweaks' ] && [ ! -e tweaksinstalled ]; then
+if [ "$1" = '--tweaks']; then
+    _check_dfu
+fi
+
+if [ "$1" = '--tweaks' ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ]; then
     echo "!!! WARNING WARNING WARNING !!!"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
     echo "THIS ONLY WORKS ON 15.0-15.3.1"
     echo "DO NOT GET ANGRY AT US IF UR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
-    echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say.' TO CONTINUE"
+    echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say' TO CONTINUE"
     read -r answer
-    if [ "$answer" = 'Yes, do as I say.' ]; then
+    if [ "$answer" = 'Yes, do as I say' ]; then
         echo "Are you REALLY sure? WE WARNED U!"
         echo "Type 'YES, I'm really sure' to continue"
         read -r answer
-        if [ "$answer" = 'YES, I'"'"'m really sure' ]; then
+        if [ "$answer" = 'Yes, I'"'"'m really sure' ]; then
             echo "[*] Enabling tweaks"
             tweaks=1
+            touch .disclaimeragree
         else
             echo "[*] Disabling tweaks"
             tweaks=0
@@ -312,7 +317,7 @@ if [ "$1" = '--restorerootfs' ]; then
     # clean the boot files bcs we don't need them anymore
     rm -rf boot*
     rm -rf work
-    rm -rf tweaksinstalled
+    rm -rf .tweaksinstalled
     exit
 fi
 
@@ -327,7 +332,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh 14.8 &> "$out" > "$out"
+    ./sshrd.sh "$version" &> "$out" > "$out"
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot > "$out"
@@ -591,7 +596,7 @@ if [ "$os" = 'Darwin' ]; then
     fi
 fi
 
-if [ $1 = '--tweaks' ] && [ ! -f "tweaksinstalled" ]; then
+if [ $1 = '--tweaks' ] && [ ! -f ".tweaksinstalled" ]; then
     echo "[*] Tweaks enabled, running postinstall."
     echo "[!] Please install OpenSSH, curl, and wget from Sileo (repo is mineek.github.io/repo). Then, press any key to continue"
     read -n 1 -s
@@ -611,10 +616,10 @@ if [ $1 = '--tweaks' ] && [ ! -f "tweaksinstalled" ]; then
     # now run sbreload
     "$dir"/sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p 2222 "sbreload"
     echo "[*] Tweak support installed, you can freely use Sileo now."
-    touch tweaksinstalled 
+    touch .tweaksinstalled 
 fi
 
-if [ -f "tweaksinstalled" ]; then
+if [ -f ".tweaksinstalled" ]; then
     # if known hosts file exists, delete it
     if [ -f ~/.ssh/known_hosts ]; then
         rm ~/.ssh/known_hosts
