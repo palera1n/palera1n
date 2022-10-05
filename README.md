@@ -21,7 +21,7 @@ Stop making issues about Linux not being able to connect, we are aware.
     - Python 3 is required
 
 # How to use
-1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
+1. Clone this repo with `git clone -b rootless --recursive https://github.com/palera1n/palera1n && cd palera1n`
 2. Run `./palera1n.sh`
     - \[A10+\] Before running, you **must** disable your passcode
     - If you want to start from DFU, run `./palera1n.sh --dfu <your iOS version here>`
