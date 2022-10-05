@@ -364,7 +364,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     rm dump.raw
 
     # blobs validation by iam-theKid
-    if [[ "$@" == *"--no-blob-validation"* ]]; then
+    if [[ ! "$@" == *"--no-blob-validation"* ]]; then
         dumpedBlobs="blobs/"$deviceid"-"$version".shsh2"
 
         blobsBuildID=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .buildid' --raw-output) > "$out"
