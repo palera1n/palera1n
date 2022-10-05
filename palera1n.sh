@@ -14,10 +14,10 @@ version="1.0.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
-if [[ "$@" == *"--debug"* ]]; then
-    out=/dev/stdout
-else
+if [[ "$@" == *"--no-debug"* ]]; then
     out=/dev/null
+else
+    out=/dev/stdout
 fi
 
 # =========
