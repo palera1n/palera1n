@@ -134,6 +134,13 @@ _kill_if_running() {
     fi
 }
 
+_beta_url() {
+    json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/osFiles/iOS/19x%20-%2015.x/19B5060d.json)
+    sources=$(echo "$json" | $dir/jq -r '.sources')
+    beta_url=$(echo "$sources" | $dir/jq -r --arg deviceid "$deviceid" '.[] | select(.type == "ota" and (.deviceMap | index($deviceid))) | .links[0].url')
+    echo "$beta_url"
+}
+
 _exit_handler() {
     if [ "$os" = 'Darwin' ]; then
         if [ ! "$1" = '--dfu' ]; then
@@ -151,24 +158,9 @@ _exit_handler() {
     done
     cd ..
 
-    if [[ "$@" == *"--debug"* ]]; then
-        echo "[*] A failure log has been made. If you're going to make a GitHub issue, please attatch the latest log."
-    else
-        echo "[*] A failure log has been made, but you aren't running with --debug. DO NOT send this in a GitHub issue."
-    fi
+    echo "[*] A failure log has been made. If you're going to make a GitHub issue, please attach the latest log."
 }
 trap _exit_handler EXIT
-
-# =========
-# Json parser
-# =========
-# get beta url
-_beta_url() {
-    json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/iosFiles/iOS/19x%20-%2015.x/19B5060d.json)
-    sources=$(echo "$json" | $dir/jq -r '.sources')
-    beta_url=$(echo "$sources" | $dir/jq -r --arg deviceid "$deviceid" '.[] | select(.type == "ota" and (.deviceMap | index($deviceid))) | .links[0].url')
-    echo "$beta_url"
-}
 
 # ===========
 # Fixes
