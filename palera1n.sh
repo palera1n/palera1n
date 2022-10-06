@@ -5,6 +5,8 @@ set -e
 
 {
 
+echo "[*] Command ran: $@"
+
 # =========
 # Variables
 # =========
@@ -358,55 +360,6 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
     rm dump.raw
 
-    # blobs validation by iam-theKid
-    if [[ ! "$@" == *"--no-blob-validation"* ]]; then
-        dumpedBlobs="blobs/"$deviceid"-"$version".shsh2"
-
-        blobsBuildID=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .buildid' --raw-output)
-        blobsipswURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
-        blobsotaURL=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ota" | "$dir"/jq '.firmwares | .[] | select(.buildid=="'"$blobsBuildID"'") | .url' --raw-output)
-
-        "$dir"/pzb -g BuildManifest.plist "$blobsipswURL"
-        mv BuildManifest.plist work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist
-
-        "$dir"/pzb -g AssetData/boot/BuildManifest.plist $blobsotaURL
-        mv BuildManifest.plist work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist
-
-        echo "[*] Validating dumped blobs..."
-        if [[ "$($dir/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
-            "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
-            "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2'  > $out
-            echo "[*] Dumped blobs are valid!"
-        elif [[ "$($dir/img4tool --verify BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
-            "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
-            "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2' > $out
-            echo "[*] Dumped blobs are valid!"
-        else
-            echo "[*] Dumped blobs are NOT valid! Trying again..."
-            rm "$dumpedBlobs"
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) 
-            "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
-            rm dump.raw
-
-            if [[ "$($dir/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
-                "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
-                "$dir"/img4tool --verify work/BuildManifest\_OTA\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2'  > $out
-                echo "[*] Dumped blobs are valid!"
-            elif [[ "$($dir/img4tool --verify BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' | cut -d ' ' -f4)" == "GOOD\!" ]]; then
-                "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'APTicket' > $out
-                "$dir"/img4tool --verify work/BuildManifest\_IPSW\_$deviceid\_$version\_$blobsBuildID.plist -s $dumpedBlobs | grep 'IM4M is valid\|BuildNumber\|\|DeiviceClass\|RestoreBehavior\|Variant\|SHSH2' > $out
-                echo "[*] Dumped blobs are valid!"
-            else
-                echo "[*] Blobs are still invalid... once your device reboots, retry"
-                rm "$dumpedBlobs"
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
-                sleep 1
-                _kill_if_running iproxy
-                exit
-            fi
-        fi
-    fi
-
     if [[ ! "$@" == *"--no-install"* ]]; then
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
         sleep 1
@@ -576,11 +529,15 @@ if [[ "$cpid" == *"0x80"* ]]; then
     sleep 2
 fi
 "$dir"/irecovery -f boot-"$deviceid"/bootlogo.img4
+sleep 1
 "$dir"/irecovery -c "setpicture 0x1"
 "$dir"/irecovery -f boot-"$deviceid"/devicetree.img4
+sleep 1
 "$dir"/irecovery -c "devicetree"
 "$dir"/irecovery -f boot-"$deviceid"/trustcache.img4
+sleep 1
 "$dir"/irecovery -c "firmware"
+sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/kernelcache.img4
 sleep 2
 "$dir"/irecovery -c "bootx"
