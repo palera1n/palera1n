@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+printf "\033c"
 mkdir -p logs
 set -e
 
