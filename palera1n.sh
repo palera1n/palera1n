@@ -327,7 +327,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh "$version" &> "$out"
+    ./sshrd.sh "$version"
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
@@ -339,9 +339,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     # Execute the commands once the rd is booted
     if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
+        sudo "$dir"/iproxy 2222 22 &
     else
-        "$dir"/iproxy 2222 22 &> "$out" >> "$out" &
+        "$dir"/iproxy 2222 22 &
     fi
 
     if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); then
