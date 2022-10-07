@@ -365,7 +365,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         sleep 1
         tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
         sleep 1
-        if [ $tipsdir = "" ]; then
+        if [ "$tipsdir" = "" ]; then
             echo "[*] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
             sleep 1
