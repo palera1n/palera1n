@@ -602,6 +602,8 @@ if [ $1 = '--tweaks' ] && [ ! -f ".tweaksinstalled" ]; then
 fi
 
 if [ -f ".tweaksinstalled" ]; then
+    _wait normal
+    
     # if known hosts file exists, delete it
     if [ -f ~/.ssh/known_hosts ]; then
         rm ~/.ssh/known_hosts
