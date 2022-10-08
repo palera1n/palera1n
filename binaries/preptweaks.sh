@@ -1,5 +1,6 @@
 mount -uw /
 mount -uw /private/preboot
+nvram auto-boot=false
 mkdir /work
 cd /work
 echo "Downloading bootstrap"
