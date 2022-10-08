@@ -132,7 +132,12 @@ _kill_if_running() {
 }
 
 _beta_url() {
-    json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/osFiles/iOS/19x%20-%2015.x/19B5060d.json)
+    if [[ "$deviceid" == *"iPad"* ]]; then
+        json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/osFiles/iPadOS/19x%20-%2015.x/19B5060d.json)
+    else
+        json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/osFiles/iOS/19x%20-%2015.x/19B5060d.json)
+    fi
+
     sources=$(echo "$json" | $dir/jq -r '.sources')
     beta_url=$(echo "$sources" | $dir/jq -r --arg deviceid "$deviceid" '.[] | select(.type == "ota" and (.deviceMap | index($deviceid))) | .links[0].url')
     echo "$beta_url"
@@ -279,10 +284,7 @@ else
         exit
     fi
     echo "Hello, $(_info normal ProductType) on $version!"
-fi
 
-# Put device into recovery mode, and set auto-boot to true
-if [ ! "$1" = '--dfu' ] && [ ! "$1" = '--tweaks' ]; then
     echo "[*] Switching device into recovery mode..."
     "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     _wait recovery
