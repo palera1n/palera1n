@@ -191,6 +191,14 @@ elif [ "$1" = 'dfuhelper' ]; then
     echo "[*] Running DFU helper"
     _dfuhelper
     exit
+elif [ "$1" = '--restorerootfs' ]; then
+    echo "[*] Restoring rootfs..."
+    "$dir"/irecovery -n
+    sleep 2
+    echo "[*] Done, your device will boot into iOS now."
+    # clean the boot files bcs we don't need them anymore
+    rm -rf boot-"$deviceid" work .tweaksinstalled
+    exit
 fi
 
 # ============
@@ -309,17 +317,6 @@ if [ ! "$1" = '--dfu' ] && [ ! "$1" = '--tweaks' ]; then
     _dfuhelper
 fi
 sleep 2
-
-# if the user specified --restorerootfs, execute irecovery -n
-if [ "$1" = '--restorerootfs' ]; then
-    echo "[*] Restoring rootfs..."
-    "$dir"/irecovery -n
-    sleep 2
-    echo "[*] Done, your device will boot into iOS now."
-    # clean the boot files bcs we don't need them anymore
-    rm -rf boot-"$deviceid" work .tweaksinstalled
-    exit
-fi
 
 # ============
 # Ramdisk
