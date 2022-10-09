@@ -604,6 +604,8 @@ fi
 
 if [ -f ".tweaksinstalled" ]; then
     _wait normal
+    sleep 2
+    "$dir"/iproxy 2222 22 &
 
     if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); then
         echo "[*] Waiting for sshd to start"
@@ -622,14 +624,12 @@ if [ -f ".tweaksinstalled" ]; then
     if [[ "$@" == *"--safe-mode"* ]]; then
         if [ -f binaries/postbootnosub.sh ]; then
             echo "[*] Running postboot without Substitute"
-            "$dir"/iproxy 2222 22 &
             scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postbootnosub.sh
             "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postbootnosub.sh"
         fi
     else
         if [ -f binaries/postboot.sh ]; then
             echo "[*] Running postboot"
-            "$dir"/iproxy 2222 22 &
             scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postboot.sh
             "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postboot.sh"
         fi
