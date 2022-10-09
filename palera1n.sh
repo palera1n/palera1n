@@ -11,7 +11,7 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.1.0"
+version="1.1.1"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
