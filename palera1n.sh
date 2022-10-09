@@ -578,7 +578,8 @@ fi
 
 if [ $1 = '--tweaks' ] && [ ! -f ".tweaksinstalled" ]; then
     echo "[*] Tweaks enabled, running postinstall."
-    echo "[!] Please install OpenSSH, curl, and wget from Sileo (repo is mineek.github.io/repo). Then, press any key to continue"
+    echo "[*] Open the Tips app, and click install"
+    echo "[!] Install OpenSSH, curl, and wget from Sileo (add the repo mineek.github.io/repo). Sileo errors are fine. Then, press any key to continue"
     read -n 1 -s
     echo "[*] Installing tweak support, please follow the instructions 100% or unexpected errors may occur"
     "$dir"/iproxy 2222 22 &
@@ -591,7 +592,7 @@ if [ $1 = '--tweaks' ] && [ ! -f ".tweaksinstalled" ]; then
     # run the preptweaks.sh script as root
     "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/preptweaks.sh"
     # now tell the user to install preferenceloader from bigboss repo and newterm2
-    echo "[*] Please install PreferenceLoader from BigBoss repo and NewTerm 2. Then, press any key to continue"
+    echo "[*] Please install PreferenceLoader from BigBoss repo (apt.thebigboss.org/repofiles/cydia) and NewTerm 2. Then, press any key to continue"
     read -n 1 -s
     # now run sbreload
     "$dir"/sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p 2222 "sbreload"
@@ -650,7 +651,12 @@ rm -rf work rdwork
 echo ""
 echo "Done!"
 echo "The device should now boot to iOS"
-echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
-echo "If not, Pogo should be installed to Tips"
+if [ $1 = '--tweaks' ]; then
+    echo "Tweaks have been started, enjoy!"
+    echo "Please refer to https://github.com/itsnebulalol/ios15-tweaks for supported tweaks"
+else
+    echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
+    echo "If not, Pogo should be installed to Tips"
+fi
 
 } | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
