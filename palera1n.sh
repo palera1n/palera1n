@@ -329,7 +329,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh "$version"
+    ./sshrd.sh 14.8
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
