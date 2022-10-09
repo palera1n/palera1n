@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-printf "\033c"
+
 mkdir -p logs
 set -e
 
 {
 
-echo "[*] Command ran: $@"
+echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@"
 
 # =========
 # Variables
@@ -15,6 +15,7 @@ version="1.1.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
+branch=$(git rev-parse --abbrev-ref HEAD)
 
 # =========
 # Functions
@@ -64,11 +65,14 @@ _wait() {
                 sleep 1
             done
         fi
-        if [[ ! $1 == *"--tweaks"* ]]; then
+
+        if [[ $1 == *"--tweaks"* ]]; then
+            "$dir"/irecovery -c "setenv auto-boot false"
+            "$dir"/irecovery -c "saveenv"
+        else
             "$dir"/irecovery -c "setenv auto-boot true"
             "$dir"/irecovery -c "saveenv"
         fi
-
     fi
 }
 
@@ -180,8 +184,7 @@ fi
 # ===========
 
 if [ "$1" = 'clean' ]; then
-    rm -rf boot* work
-    rm -rf .tweaksinstalled
+    rm -rf boot* work .tweaksinstalled
     echo "[*] Removed the created boot files"
     exit
 elif [ "$1" = 'dfuhelper' ]; then
@@ -233,7 +236,7 @@ chmod +x "$dir"/*
 # Start
 # ============
 
-echo "palera1n | Version $version-$commit"
+echo "palera1n | Version $version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
 echo ""
 
@@ -314,9 +317,7 @@ if [ "$1" = '--restorerootfs' ]; then
     sleep 2
     echo "[*] Done, your device will boot into iOS now."
     # clean the boot files bcs we don't need them anymore
-    rm -rf boot*
-    rm -rf work
-    rm -rf .tweaksinstalled
+    rm -rf boot-"$deviceid" work .tweaksinstalled
     exit
 fi
 
@@ -603,7 +604,15 @@ fi
 
 if [ -f ".tweaksinstalled" ]; then
     _wait normal
-    
+
+    if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); then
+        echo "[*] Waiting for sshd to start"
+    fi
+
+    while ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); do
+        sleep 1
+    done
+
     # if known hosts file exists, delete it
     if [ -f ~/.ssh/known_hosts ]; then
         rm ~/.ssh/known_hosts
