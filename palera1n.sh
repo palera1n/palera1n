@@ -137,9 +137,9 @@ _kill_if_running() {
 
 _beta_url() {
     if [[ "$deviceid" == *"iPad"* ]]; then
-        json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/osFiles/iPadOS/19x%20-%2015.x/19B5060d.json)
+        json=$(curl -s 'https://api.appledb.dev/ios/iPadOS;19B5060d.json')
     else
-        json=$(curl -s https://raw.githubusercontent.com/littlebyteorg/appledb/main/osFiles/iOS/19x%20-%2015.x/19B5060d.json)
+        json=$(curl -s 'https://api.appledb.dev/ios/iOS;19B5060d.json')
     fi
 
     sources=$(echo "$json" | $dir/jq -r '.sources')
