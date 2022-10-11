@@ -3,7 +3,7 @@
 Read this throughly, feel free to ask questions, know the risks. If you want to ask questions, either:
 
 1. Ask in r/jailbreak Discord #palera1n channel
-2. Ask in Permasigner Discord #palera1n channel
+2. Ask in Palera1n Discord https://discord.gg/S9eXtPWunG  
 3. Open a GitHub issue
 
 Please, please, please, provide necessary info:
