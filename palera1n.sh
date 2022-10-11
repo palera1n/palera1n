@@ -576,7 +576,7 @@ if [ "$os" = 'Darwin' ]; then
     fi
 fi
 
-if [ $1 = '--tweaks' ] && [ ! -f ".tweaksinstalled" ]; then
+if [ "$1" = '--tweaks' ] && [ ! -f ".tweaksinstalled" ]; then
     echo "[*] Tweaks enabled, running postinstall."
     echo "[*] Open the Tips app, and click install"
     echo "[!] Install OpenSSH, curl, and wget from Sileo (add the repo mineek.github.io/repo). Sileo errors are fine. Then, press any key to continue"
@@ -651,7 +651,7 @@ rm -rf work rdwork
 echo ""
 echo "Done!"
 echo "The device should now boot to iOS"
-if [ $1 = '--tweaks' ]; then
+if [ "$1" = '--tweaks' ]; then
     echo "Tweaks have been started, enjoy!"
     echo "Please refer to https://github.com/itsnebulalol/ios15-tweaks for supported tweaks"
 else
