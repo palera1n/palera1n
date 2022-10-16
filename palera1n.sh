@@ -587,9 +587,9 @@ rm -rf work rdwork
 echo ""
 echo "Done!"
 echo "The device should now boot to iOS"
-echo "If this is ur first time jailbreaking, open Tips app and then press Install"
+echo "If this is your first time jailbreaking, open Tips app and then press Install"
 echo "Otherwise, open Tips app and press Do All in the Tools section"
-echo "If you have any issues, please join the discord server and ask for help"
+echo "If you have any issues, please join the Discord server and ask for help: https://dsc.gg/palera1n"
 echo "Enjoy!"
 
 } | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
