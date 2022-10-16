@@ -1,6 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+- Numerous fixes
+- Let Pogo install tweak support
+
 ## 1.1.1
+
 - Support iPad beta URLs
 - Make sure auto-boot is always set to false (unless restoring rootfs)
 - Wait for sshd to start before running postboot
