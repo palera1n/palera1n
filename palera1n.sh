@@ -329,7 +329,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh 14.8
+    ./sshrd.sh 14.8 `if [ ! "$1" = '--tweaks' ]; then echo "rootless"; fi`
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot

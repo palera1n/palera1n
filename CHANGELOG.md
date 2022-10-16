@@ -2,6 +2,7 @@
 
 ## 1.2.0
 
+- Fix deep sleep bug
 - Numerous fixes
 - Let Pogo install tweak support
 
