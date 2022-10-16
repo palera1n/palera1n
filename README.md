@@ -32,6 +32,8 @@ Linux has some weird usbmuxd issues. We have tried our best to fix them, but the
 
 Stop making issues about Linux not being able to connect, we are aware. This includes being stuck on waiting for ramdisk to finish booting.
 
+When in doubt, use Ubuntu.
+
 # Prerequisites
 1. checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
     - You must install the Tips app from the App Store before running the script
