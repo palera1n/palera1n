@@ -576,71 +576,6 @@ if [ "$os" = 'Darwin' ]; then
     fi
 fi
 
-if [ "$1" = '--tweaks' ] && [ ! -f ".tweaksinstalled" ]; then
-    echo "[*] Tweaks enabled, running postinstall."
-    echo "[*] Open the Tips app, and click install"
-    echo "[!] Install OpenSSH, curl, and wget from Sileo (add the repo mineek.github.io/repo). Sileo errors are fine. Then, press any key to continue"
-    read -n 1 -s
-    echo "[*] Installing tweak support, please follow the instructions 100% or unexpected errors may occur"
-    "$dir"/iproxy 2222 22 &
-    if [ -f ~/.ssh/known_hosts ]; then
-        rm ~/.ssh/known_hosts
-    fi
-    echo "[!] If asked for a password, enter 'alpine'."
-    # ssh into device and copy over the preptweaks.sh script from the binaries folder
-    scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/preptweaks.sh mobile@localhost:~/preptweaks.sh
-    # run the preptweaks.sh script as root
-    "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/preptweaks.sh"
-    # now tell the user to install preferenceloader from bigboss repo and newterm2
-    echo "[*] Please install PreferenceLoader from BigBoss repo (apt.thebigboss.org/repofiles/cydia) and NewTerm 2. Then, press any key to continue"
-    read -n 1 -s
-    # now run sbreload
-    "$dir"/sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p 2222 "sbreload"
-    echo "[*] Tweak support installed, you can freely use Sileo now."
-    touch .tweaksinstalled 
-fi
-
-if [ -f ".tweaksinstalled" ]; then
-    _wait normal
-    sleep 2
-    "$dir"/iproxy 2222 22 &
-
-    if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); then
-        echo "[*] Waiting for sshd to start"
-    fi
-
-    while ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); do
-        sleep 1
-    done
-
-    # if known hosts file exists, delete it
-    if [ -f ~/.ssh/known_hosts ]; then
-        rm ~/.ssh/known_hosts
-    fi
-
-    # run postboot.sh script
-    if [[ "$@" == *"--safe-mode"* ]]; then
-        if [ -f binaries/postbootnosub.sh ]; then
-            echo "[*] Running postboot without Substitute"
-            scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postbootnosub.sh
-            "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postbootnosub.sh"
-        fi
-    else
-        if [ -f binaries/postboot.sh ]; then
-            echo "[*] Running postboot"
-            scp -P2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET binaries/postboot.sh mobile@localhost:~/postboot.sh
-            "$dir"/sshpass -p 'alpine' ssh -p2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=QUIET mobile@localhost "echo 'alpine' | sudo -S sh ~/postboot.sh"
-        fi
-    fi
-
-    # if known hosts file exists, delete it
-    if [ -f ~/.ssh/known_hosts ]; then
-        rm ~/.ssh/known_hosts
-    fi
-
-    _kill_if_running iproxy
-fi
-
 cd logs
 for file in *.log; do
     mv "$file" SUCCESS_${file}
@@ -651,12 +586,9 @@ rm -rf work rdwork
 echo ""
 echo "Done!"
 echo "The device should now boot to iOS"
-if [ "$1" = '--tweaks' ]; then
-    echo "Tweaks have been started, enjoy!"
-    echo "Please refer to https://github.com/itsnebulalol/ios15-tweaks for supported tweaks"
-else
-    echo "If you already have ran palera1n, click Do All in the tools section of Pogo"
-    echo "If not, Pogo should be installed to Tips"
-fi
+echo "If this is ur first time jailbreaking, open Tips app and then press Install"
+echo "Otherwise, open Tips app and press Do All in the Tools section"
+echo "If you have any issues, please join the discord server and ask for help"
+echo "Enjoy!"
 
 } | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
