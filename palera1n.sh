@@ -401,6 +401,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     if [ "$1" = "--tweaks" ]; then
         _wait recovery
     else
+        sleep 5
         _wait normal
         sleep 2
 
