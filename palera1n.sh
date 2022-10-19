@@ -101,7 +101,7 @@ _pwn() {
         echo "[*] Pwning device"
         "$dir"/gaster pwn > "$out"
         sleep 2
-        #"$dir"/gaster reset > "$out"
+        #"$dir"/gaster reset_usb > "$out"
         #sleep 1
     fi
 }
