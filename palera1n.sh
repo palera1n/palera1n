@@ -104,8 +104,8 @@ _pwn() {
         echo "[*] Pwning device"
         "$dir"/gaster pwn
         sleep 2
-        #"$dir"/gaster reset_usb
-        #sleep 1
+        "$dir"/gaster reset_usb
+        sleep 1
     fi
 }
 
@@ -206,6 +206,10 @@ fi
 # ============
 
 # Download gaster
+if [ -e "$dir"/gaster ]; then
+    "$dir"/gaster &> /dev/null > /dev/null | grep -q 'usb_timeout: 10' && rm "$dir"/gaster
+fi
+
 if [ ! -e "$dir"/gaster ]; then
     curl -sLO https://nightly.link/verygenericname/gaster/workflows/makefile/main/gaster-"$os".zip
     unzip gaster-"$os".zip
@@ -545,8 +549,8 @@ fi
 sleep 2
 _pwn
 echo "[*] Booting device"
-"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
-sleep 1
+#"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
+#sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 2
 "$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
