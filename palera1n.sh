@@ -199,6 +199,22 @@ elif [ "$1" = '--restorerootfs' ]; then
     # clean the boot files bcs we don't need them anymore
     rm -rf boot-"$deviceid" work .tweaksinstalled
     exit
+elif [ "$1" = 'update' ]; then
+cat << "LGO"
+              _               __       
+             | |             /_ |      
+  _ __   __ _| | ___ _ __ __ _| |_ __  
+ | '_ \ / _` | |/ _ \ '__/ _` | | '_ \ 
+ | |_) | (_| | |  __/ | | (_| | | | | |
+ | .__/ \__,_|_|\___|_|  \__,_|_|_| |_|
+ | |                                   
+ |_|   
+                                 
+LGO
+    echo "-- $branch | $commit --"
+    echo "[*] Checking for updates..."
+    git pull
+    exit
 fi
 
 # ============
