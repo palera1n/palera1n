@@ -7,8 +7,6 @@ echo "Downloading bootstrap"
 curl -sLO https://cdn.discordapp.com/attachments/1017153024768081921/1026161261077090365/bootstrap-ssh.tar
 echo "Downloading libswift"
 curl -sLO https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.swift.libswift_5.0-electra2_iphoneos-arm.deb
-echo "Downloading Sileo"
-curl -sLO https://github.com/coolstar/Odyssey-bootstrap/raw/master/org.coolstar.sileo_2.3_iphoneos-arm.deb
 echo "Downloading Substitute"
 curl -sLO https://cdn.discordapp.com/attachments/688126487588634630/1026673680387936256/com.ex.substitute_2.3.1_iphoneos-arm.deb
 echo "Downloading Substrate Safe mode"
@@ -23,6 +21,7 @@ rm -rf /var/jb
 rm -rf /private/preboot/$(cat /private/preboot/active)/procursus
 apt update
 apt upgrade -y
+apt install org.coolstar.sileo
 dpkg -i *.deb
 cd ..
 rm -rf /work
