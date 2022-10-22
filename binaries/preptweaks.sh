@@ -21,6 +21,7 @@ rm -rf /var/jb
 rm -rf /private/preboot/$(cat /private/preboot/active)/procursus
 apt update
 apt upgrade -y
+echo "Installing Sileo"
 apt install org.coolstar.sileo
 dpkg -i *.deb
 cd ..
