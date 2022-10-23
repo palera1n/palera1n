@@ -549,8 +549,8 @@ fi
 sleep 2
 _pwn
 echo "[*] Booting device"
-#"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
-#sleep 1
+"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
+sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 2
 "$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
