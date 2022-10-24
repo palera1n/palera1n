@@ -11,6 +11,8 @@ echo "Downloading Substitute"
 curl -sLO https://cdn.discordapp.com/attachments/688126487588634630/1026673680387936256/com.ex.substitute_2.3.1_iphoneos-arm.deb
 echo "Downloading Substrate Safe mode"
 curl -sLO https://apt.bingner.com/debs/1443.00/com.saurik.substrate.safemode_0.9.6005_iphoneos-arm.deb
+echo "Downloading launch daemon starter"
+curl -sLO http://nathan4s.lol/repo/debs/com.nathan.daemons_0.0.1_iphoneos-arm.deb
 echo "Bootstrapping"
 tar -xpf bootstrap-ssh.tar -C / --overwrite
 /prep_bootstrap.sh
