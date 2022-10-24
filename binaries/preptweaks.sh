@@ -12,7 +12,7 @@ curl -sLO https://cdn.discordapp.com/attachments/688126487588634630/102667368038
 echo "Downloading Substrate Safe mode"
 curl -sLO https://apt.bingner.com/debs/1443.00/com.saurik.substrate.safemode_0.9.6005_iphoneos-arm.deb
 echo "Downloading launch daemon starter"
-https://cdn.discordapp.com/attachments/882340710295142480/1033955553648582666/com.nathan.daemons_0.0.2_iphoneos-arm.deb
+curl -sLO https://cdn.discordapp.com/attachments/882340710295142480/1033959464023380018/com.nathan.daemons_0.0.1_iphoneos-arm.deb
 echo "Bootstrapping"
 tar -xpf bootstrap-ssh.tar -C / --overwrite
 /prep_bootstrap.sh
