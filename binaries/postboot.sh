@@ -4,4 +4,4 @@ sleep 1
 nvram auto-boot=false
 launchctl bootstrap system /Library/LaunchDaemons
 /etc/rc.d/*
-sbreload
+/usr/bin/launchctl reboot userspace
