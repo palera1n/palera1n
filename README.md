@@ -3,6 +3,7 @@
     <p>palera1n</p>
 </h1>
 <h3 align="center">An iOS 15.0-15.3.1 work-in-progress, tethered checkm8 jailbreak.</h3>
+<h3 align="center">iOS 15.0-15.7.1 work-in-progress, tethered rootless checkm8 jailbreak.</h3>
 <p align="center">
     <strong><a href="CHANGELOG.md">Change Log</a></strong>
     •
@@ -33,17 +34,21 @@ It boots the device with AMFI patches. On first run, it'll boot a ramdisk which 
 # Prerequisites
 #### Warning: You must install the Tips app from the App Store before running palera1n.
 - A checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
-  - The device must be on iOS 15.0-15.3.1
+  - The device must be on iOS 15.0-15.3.1 for *tweaks*
     - Currently, the best is iOS 15.1.
     - iOS 15.0-15.0.2 and 15.2-15.3.1 have **App Store app launching issues**.
+  - The device can be on iOS 15.0-15.7.1 for *rootless*
+    - Rootless is not a full jailbreak with very limited tweak support, if any.
 - Linux or macOS computer
   - Python 3 must be installed.
 
 # How to use?
 1. Clone this repo with `git clone -b tweaks --recursive https://github.com/palera1n/palera1n && cd palera1n`
+   - `rootless` branch is no longer needed. `tweaks` branch should be used for both applications.
 2. Run `./palera1n.sh --tweaks <your current iOS version>`
    - [A10 and A11] Before running, **you must disable your passcode**.
    - Put your device in DFU mode before running.
+   - `--tweaks` is only supported on iOS 15.0-15.3.1. Please remove it on other versions for no tweaks and rootless jailbreak
 3. Follow the steps on your screen.
 
 # Reports
