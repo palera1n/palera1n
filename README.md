@@ -3,7 +3,6 @@
     <p>palera1n</p>
 </h1>
 <h3 align="center">An iOS 15.0-15.3.1 work-in-progress, tethered checkm8 jailbreak.</h3>
-<h3 align="center">iOS 15.0-15.7.1 work-in-progress, tethered rootless checkm8 jailbreak.</h3>
 <p align="center">
     <strong><a href="CHANGELOG.md">Change Log</a></strong>
     •
