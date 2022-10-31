@@ -48,7 +48,7 @@ It boots the device with AMFI patches. On first run, it'll boot a ramdisk which 
 
 # Reports
 1. Ask in the r/jailbreak Discord #palera1n channel
-2. Ask in the [palera1n Discord](https://discord.gg/4S3yUMxuQH)
+2. Ask in the [palera1n Discord](https://discord.gg/palera1n)
 3. Open a GitHub issue
 
 Please, please, please, provide necessary info:
