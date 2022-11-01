@@ -32,7 +32,7 @@ It boots the device with AMFI patches. On first run, it'll boot a ramdisk which 
 
 # Prerequisites
 #### Warning: You must install the Tips app from the App Store before running palera1n.
-- A checkm8 vulnerable iOS device on iOS 15 (A8X-A11)
+- A checkm8 vulnerable iOS device on iOS 15 (A8-A11)
   - The device must be on iOS 15.0-15.3.1
     - Currently, the best is iOS 15.1.
     - iOS 15.0-15.0.2 and 15.2-15.3.1 have **App Store app launching issues**.
