@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css?963e4c4186">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+
+<h1>Error 404 &ndash; Not Found</h1>
+
+<p>Artifact &#39;gaster-MINGW64_NT-10.0-22000&#39; not found for run #3316563296.
+<p>Check on GitHub: <a rel="nofollow" href="https://github.com/verygenericname/gaster/actions/runs/3316563296#artifacts">https://github.com/verygenericname/gaster/actions/runs/3316563296#artifacts</a></p>
+
+<p><a href="/">Return to the home page</a>
