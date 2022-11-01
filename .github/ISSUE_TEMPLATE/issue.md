@@ -25,7 +25,5 @@ If applicable, add screenshots to help explain your problem.
 Add any other context about the problem here.
 
 **Debug log**
-Please run the script using `--debug` and send a log **inside** the backticks below.
-```
+Please click below and drag-and-drop the latest log in the logs folder here.
 
-```
