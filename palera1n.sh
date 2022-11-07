@@ -543,6 +543,12 @@ if [ ! -e boot-"$deviceid" ]; then
     else
         "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e panic-wait-forever=1'
     fi
+    if [ "$os" = 'Linux' ]; then
+        sed -i 's/\/\kernelcache/\/\kernelcachd/g' iBEC.patched
+    else
+        LC_ALL=C sed -i .bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' iBEC.patched
+        rm *.bak
+    fi
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
     "$dir"/img4 -i work/iBEC.patched -o boot-"$deviceid"/iBEC.img4 -M work/IM4M -A -T ibec
