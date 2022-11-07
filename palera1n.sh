@@ -496,7 +496,11 @@ fi
 # ============
 
 # Actually create the boot files
-if [ ! -e boot-"$deviceid" ]; then
+if [ ! -f boot-"$deviceid"/.fsboot ]; then
+    rm -rf boot-"$deviceid"
+fi
+
+if [ ! -f boot-"$deviceid"/iBEC.img4 ]; then
     _pwn
 
     # if tweaks, set ipswurl to a custom one
@@ -505,6 +509,7 @@ if [ ! -e boot-"$deviceid" ]; then
     fi
 
     # Downloading files, and decrypting iBSS/iBEC
+    rm -rf boot-"$deviceid"
     mkdir boot-"$deviceid"
 
     echo "[*] Converting blob"
@@ -552,6 +557,8 @@ if [ ! -e boot-"$deviceid" ]; then
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
     "$dir"/img4 -i work/iBEC.patched -o boot-"$deviceid"/iBEC.img4 -M work/IM4M -A -T ibec
+
+    touch boot-"$deviceid"/.fsboot
 fi
 
 # ============
