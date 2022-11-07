@@ -6,7 +6,7 @@
 <p align="center">
     <strong><a href="CHANGELOG.md">Change Log</a></strong>
     •
-    <strong><a href="https://discord.gg/4S3yUMxuQH">Discord</a></strong>
+    <strong><a href="https://dsc.gg/palera1n">Discord</a></strong>
     •
     <strong><a href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
@@ -15,6 +15,20 @@
 It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
 
 # Issues
+### Need help?
+If you need help, **please** join our Discord. We disabled issues due to the flood of spam, and difficulty to respond in general. We are much more comfortable on Discord.
+
+Please, please, please, provide necessary info:
+
+- iOS version and device (eg. iPhone 7+ 15.1, iPhone 6s 15.3.1)
+- Computer's OS and version (eg. Ubuntu 22.04, macOS 13.0)
+- The command you ran
+- **Full log from the logs folder**
+
+**DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/itsnebulalol/ios15-tweaks) for compatiblity.
+
+You may join [here](https://dsc.gg/palera1n).
+
 ### Linux
 - Linux has some weird usbmuxd issues. We have tried our best to fix them, but there still are issues. We highly recommend to compile and install usbmuxd2.
 - Stop making issues about Linux not being able to connect, we are aware. This includes being stuck on waiting for ramdisk to finish booting.
@@ -46,22 +60,18 @@ It boots the device with AMFI patches. On first run, it'll boot a ramdisk which 
    - Put your device in DFU mode before running.
 3. Follow the steps on your screen.
 
-# Reports
-1. Ask in the r/jailbreak Discord #palera1n channel
-2. Ask in the [palera1n Discord](https://dsc.gg/palera1n)
-3. Open a GitHub issue
-
-Please, please, please, provide necessary info:
-
-- iOS version and device (eg. iPhone 7+ 15.1, iPhone 6s 15.3.1)
-- Computer's OS and version (eg. Ubuntu 22.04, macOS 13.0)
-- The command you ran
-- Debug logs with `--debug`
-
-**DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/itsnebulalol/ios15-tweaks) for compatiblity.
-
 # Repos
-All repos work with the tweaks branch because it uses normal Procursus and not rootless.
+
+### Tweaks mode
+All repos work when using tweaks mode because it uses normal Procursus and not rootless.
+
+### Rootless 
+Repos need to be updated for rootless, here are some that work currently:
+
+- [Mineek's repo](https://mineek.github.io/repo) contains rootless Procursus packages
+- The official [palera1n repo](https://repo.palera.in) contains miscellaneous packages
+
+If you want to make a rootless repo, use the official [palera1n repo](https://github.com/palera1n/repo) for reference. Every deb should use the `iphoneos-arm64` architecture, and *nothing* should be on the rootfs. Everything should be in /var/jb.
 
 # Credits
 - [Nathan](https://github.com/verygenericname)
