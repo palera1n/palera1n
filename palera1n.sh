@@ -572,6 +572,7 @@ echo "[*] Booting device"
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
 sleep 1
+"$dir"/irecovery -c fsboot
 
 if [ "$os" = 'Darwin' ]; then
     if [ ! "$1" = '--dfu' ]; then
