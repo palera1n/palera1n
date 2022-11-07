@@ -66,7 +66,7 @@ _wait() {
             done
         fi
 
-        if [[ $1 == *"--tweaks"* ]]; then
+        if [ "$1" = "--tweaks" ]; then
             "$dir"/irecovery -c "setenv auto-boot false"
             "$dir"/irecovery -c "saveenv"
         else
@@ -329,8 +329,8 @@ sleep 2
 # Dump blobs, and install pogo if needed
 if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     mkdir -p blobs
-    cd ramdisk
 
+    cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
     ./sshrd.sh 14.8 `if [ ! "$1" = '--tweaks' ]; then echo "rootless"; fi`
@@ -370,7 +370,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
         sleep 1
         if [ "$tipsdir" = "" ]; then
-            echo "[*] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
+            echo "[!] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
             sleep 1
             _kill_if_running iproxy
@@ -387,21 +387,94 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     if [[ $1 == *"--tweaks"* ]]; then
         # execute nvram boot-args="-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1"
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1\""
+        # we no longer need this since we're using local boot
+        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1\""
         # execute nvram allow-root-hash-mismatch=1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram allow-root-hash-mismatch=1"
         # execute nvram root-live-fs=1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram root-live-fs=1"
         # execute nvram auto-boot=false
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
+
+        cd work
+        echo "[*] Downloading BuildManifest"
+        ipswurl=$(_beta_url)
+        "$dir"/pzb -g AssetData/boot/BuildManifest.plist "$ipswurl"
+
+        echo "[*] Getting apticket.der from device"
+        has_active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/active" 2> /dev/null)
+        if [ ! "$has_active" = "/mnt6/active" ]; then
+            echo "[!] Active file does not exist! Please use SSH to create it"
+            echo "    /mnt6/active should contain the name of the UUID in /mnt6"
+            echo "    When done, type reboot in the SSH session, then rerun the script"
+            echo "    ssh root@localhost -p 2222"
+            exit
+        fi
+        active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/active" 2> /dev/null)
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/$active/System/Library/Caches/apticket.der" > apticket.der
+
+        echo "[*] Downloading kernelcache"
+        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/release/development/')" "$ipswurl"
+
+        echo "[*] Patching kernelcache"
+        cd ..
+        modelwithoutap=$(echo "$model" | sed 's/ap//')
+        bpatchfile=$(find ../patches -name "$modelwithoutap".bpatch)
+        "$dir"/img4 -i work/kernelcache.development.* -o work/kernelcache -M work/apticket.der -T rkrn -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
+
+        echo "[*] Placing patched kernelcache"
+        cat work/kernelcache | "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat > /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+
+        rm -rf work
+        mkdir work
+    else
+        cd work
+        echo "[*] Downloading BuildManifest"
+        "$dir"/pzb -g BuildManifest.plist "$ipswurl"
+
+        echo "[*] Getting apticket.der from device"
+        has_active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/active" 2> /dev/null)
+        if [ ! "$has_active" = "/mnt6/active" ]; then
+            echo "[!] Active file does not exist! Please use SSH to create it"
+            echo "    /mnt6/active should contain the name of the UUID in /mnt6"
+            echo "    When done, type reboot in the SSH session, then rerun the script"
+            echo "    ssh root@localhost -p 2222"
+            exit
+        fi
+        active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/active" 2> /dev/null)
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/$active/System/Library/Caches/apticket.der" > apticket.der
+
+        echo "[*] Downloading kernelcache"
+        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+        
+        echo "[*] Patching kernelcache"
+        cd ..
+        if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] then
+            python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin
+        else
+            python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw
+        fi
+        "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o
+        if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
+            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p --extra work/kpp.bin -f rkrn --lzss
+        elif [[ ! $1 == *"--tweaks"* ]]; then
+            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f rkrn --lzss
+        fi
+        "$dir"/img4 -i work/kcache.im4p -o work/kernelcache -M work/apticket.der -T rkrn `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
+
+        echo "[*] Placing patched kernelcache"
+        cat work/kernelcache | "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat > /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+
+        rm -rf work
+        mkdir work
     fi
+
     sleep 2
     echo "[*] Done! Rebooting your device"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
     sleep 1
     _kill_if_running iproxy
 
-    # Switch into recovery, and set auto-boot to true
     if [ "$1" = "--tweaks" ]; then
         _wait recovery
     else
@@ -450,23 +523,6 @@ if [ ! -e boot-"$deviceid" ]; then
         # download ibec and replace RELEASE with DEVELOPMENT
         "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" iBEC.dec
-
-        echo "[*] Downloading DeviceTree"
-        "$dir"/pzb -g AssetData/boot/Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl"
-
-        echo "[*] Downloading trustcache"
-        if [ "$os" = 'Darwin' ]; then
-        "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl"
-        else
-        "$dir"/pzb -g AssetData/boot/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl"
-        fi
-
-        echo "[*] Downloading kernelcache"
-        if [[ $1 == *"--tweaks"* ]]; then
-            "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/release/development/')" "$ipswurl"
-        else
-            "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        fi
     else
         echo "[*] Downloading BuildManifest"
         "$dir"/pzb -g BuildManifest.plist "$ipswurl"
@@ -478,68 +534,18 @@ if [ ! -e boot-"$deviceid" ]; then
         echo "[*] Downloading and decrypting iBEC"
         "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec
-
-        echo "[*] Downloading DeviceTree"
-        "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl"
-
-        echo "[*] Downloading trustcache"
-        if [ "$os" = 'Darwin' ]; then
-            "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl"
-        else
-            "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl"
-        fi
-
-        echo "[*] Downloading kernelcache"
-        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
     fi
 
     echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [[ $1 == *"--tweaks"* ]]; then
-        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched
+        "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
     else
-        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e panic-wait-forever=1'
+        "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e panic-wait-forever=1'
     fi
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
     "$dir"/img4 -i work/iBEC.patched -o boot-"$deviceid"/iBEC.img4 -M work/IM4M -A -T ibec
-
-    echo "[*] Patching and signing kernelcache"
-    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] && [[ ! $1 == *"--tweaks"* ]]; then
-        python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin
-    elif [[ ! $1 == *"--tweaks"* ]]; then
-        python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw
-    fi
-
-    if [[ $1 == *"--tweaks"* ]]; then
-        modelwithoutap=$(echo "$model" | sed 's/ap//')
-        bpatchfile=$(find patches -name "$modelwithoutap".bpatch)
-        "$dir"/img4 -i work/kernelcache.development.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
-    else
-        "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o
-    fi
-
-    if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
-        python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p --extra work/kpp.bin -f rkrn --lzss
-    elif [[ ! $1 == *"--tweaks"* ]]; then
-        python3 -m pyimg4 im4p create -i work/kcache.patched -o work/krnlboot.im4p -f rkrn --lzss
-    fi
-
-    if [[ ! $1 == *"--tweaks"* ]]; then
-        python3 -m pyimg4 img4 create -p work/krnlboot.im4p -o boot-"$deviceid"/kernelcache.img4 -m work/IM4M
-    fi
-
-    echo "[*] Signing DeviceTree"
-    "$dir"/img4 -i work/"$(awk "/""$model""/{x=1}x&&/DeviceTree[.]/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" -o boot-"$deviceid"/devicetree.img4 -M work/IM4M -T rdtr
-
-    echo "[*] Patching and signing trustcache"
-    if [ "$os" = 'Darwin' ]; then
-        "$dir"/img4 -i work/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1 | sed 's/Firmware\///')" -o boot-"$deviceid"/trustcache.img4 -M work/IM4M -T rtsc
-    else
-        "$dir"/img4 -i work/"$("$dir"/PlistBuddy work/BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g'| sed 's/Firmware\///')" -o boot-"$deviceid"/trustcache.img4 -M work/IM4M -T rtsc
-    fi
-
-    "$dir"/img4 -i other/bootlogo.im4p -o boot-"$deviceid"/bootlogo.img4 -M work/IM4M -A -T rlgo
 fi
 
 # ============
@@ -551,27 +557,8 @@ _pwn
 echo "[*] Booting device"
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 1
-"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
-sleep 2
 "$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
 sleep 1
-if [[ "$cpid" == *"0x80"* ]]; then
-    "$dir"/irecovery -c "go"
-    sleep 2
-fi
-"$dir"/irecovery -f boot-"$deviceid"/bootlogo.img4
-sleep 1
-"$dir"/irecovery -c "setpicture 0x1"
-"$dir"/irecovery -f boot-"$deviceid"/devicetree.img4
-sleep 1
-"$dir"/irecovery -c "devicetree"
-"$dir"/irecovery -f boot-"$deviceid"/trustcache.img4
-sleep 1
-"$dir"/irecovery -c "firmware"
-sleep 1
-"$dir"/irecovery -f boot-"$deviceid"/kernelcache.img4
-sleep 2
-"$dir"/irecovery -c "bootx"
 
 if [ "$os" = 'Darwin' ]; then
     if [ ! "$1" = '--dfu' ]; then
