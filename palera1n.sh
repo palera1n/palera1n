@@ -73,6 +73,11 @@ _wait() {
             "$dir"/irecovery -c "setenv auto-boot true"
             "$dir"/irecovery -c "saveenv"
         fi
+
+        if [[ "$@" == *"--semi-tethered"* ]]; then
+            "$dir"/irecovery -c "setenv auto-boot true"
+            "$dir"/irecovery -c "saveenv"
+        fi
     fi
 }
 
@@ -333,7 +338,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh 14.8 `if [ ! "$1" = '--tweaks' ]; then echo "rootless"; fi`
+    ./sshrd.sh 15.7 `if [ ! "$1" = '--tweaks' ]; then echo "rootless"; fi`
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
@@ -365,7 +370,23 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     rm dump.raw
 
     if [[ ! "$@" == *"--no-install"* ]]; then
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
+        # if --semi-tethered is passed, do this
+        if [[ "$@" == *"--semi-tethered"* ]]; then
+            echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s1 /mnt1"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt3"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s6 /mnt6"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt3/"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt1"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt3"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/umount /mnt6"
+            sleep 5
+            echo "[*] fakefs created, continuing..."
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
+        else
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
+        fi
         sleep 1
         tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
         sleep 1
@@ -387,86 +408,15 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     if [[ $1 == *"--tweaks"* ]]; then
         # execute nvram boot-args="-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1"
-        # we no longer need this since we're using local boot
-        #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1\""
+        # "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1\""
         # execute nvram allow-root-hash-mismatch=1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram allow-root-hash-mismatch=1"
         # execute nvram root-live-fs=1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram root-live-fs=1"
         # execute nvram auto-boot=false
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
-
-        cd work
-        echo "[*] Downloading BuildManifest"
-        ipswurl=$(_beta_url)
-        "$dir"/pzb -g AssetData/boot/BuildManifest.plist "$ipswurl"
-
-        echo "[*] Getting apticket.der from device"
-        has_active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/active" 2> /dev/null)
-        if [ ! "$has_active" = "/mnt6/active" ]; then
-            echo "[!] Active file does not exist! Please use SSH to create it"
-            echo "    /mnt6/active should contain the name of the UUID in /mnt6"
-            echo "    When done, type reboot in the SSH session, then rerun the script"
-            echo "    ssh root@localhost -p 2222"
-            exit
+        if [[ ! "$@" == *"--semi-tethered"* ]]; then
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
         fi
-        active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/active" 2> /dev/null)
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/$active/System/Library/Caches/apticket.der" > apticket.der
-
-        echo "[*] Downloading kernelcache"
-        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/release/development/')" "$ipswurl"
-
-        echo "[*] Patching kernelcache"
-        cd ..
-        modelwithoutap=$(echo "$model" | sed 's/ap//')
-        bpatchfile=$(find ../patches -name "$modelwithoutap".bpatch)
-        "$dir"/img4 -i work/kernelcache.development.* -o work/kernelcache -M work/apticket.der -T rkrn -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
-
-        echo "[*] Placing patched kernelcache"
-        cat work/kernelcache | "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat > /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-
-        rm -rf work
-        mkdir work
-    else
-        cd work
-        echo "[*] Downloading BuildManifest"
-        "$dir"/pzb -g BuildManifest.plist "$ipswurl"
-
-        echo "[*] Getting apticket.der from device"
-        has_active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/active" 2> /dev/null)
-        if [ ! "$has_active" = "/mnt6/active" ]; then
-            echo "[!] Active file does not exist! Please use SSH to create it"
-            echo "    /mnt6/active should contain the name of the UUID in /mnt6"
-            echo "    When done, type reboot in the SSH session, then rerun the script"
-            echo "    ssh root@localhost -p 2222"
-            exit
-        fi
-        active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/active" 2> /dev/null)
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/$active/System/Library/Caches/apticket.der" > apticket.der
-
-        echo "[*] Downloading kernelcache"
-        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        
-        echo "[*] Patching kernelcache"
-        cd ..
-        if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] then
-            python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin
-        else
-            python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw
-        fi
-        "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o
-        if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p --extra work/kpp.bin -f rkrn --lzss
-        elif [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f rkrn --lzss
-        fi
-        "$dir"/img4 -i work/kcache.im4p -o work/kernelcache -M work/apticket.der -T rkrn `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
-
-        echo "[*] Placing patched kernelcache"
-        cat work/kernelcache | "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat > /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-
-        rm -rf work
-        mkdir work
     fi
 
     sleep 2
@@ -544,9 +494,13 @@ if [ ! -f boot-"$deviceid"/iBEC.img4 ]; then
     echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [[ $1 == *"--tweaks"* ]]; then
-        "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
+        if [[ "$@" == *"--semi-tethered"* ]]; then
+            "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8 launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
+        else
+            "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
+        fi
     else
-        "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e panic-wait-forever=1'
+        "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e'
     fi
     if [ "$os" = 'Linux' ]; then
         sed -i 's/\/\kernelcache/\/\kernelcachd/g' iBEC.patched
