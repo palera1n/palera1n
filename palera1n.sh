@@ -109,8 +109,8 @@ _pwn() {
         echo "[*] Pwning device"
         "$dir"/gaster pwn
         sleep 2
-        # "$dir"/gaster reset_usb
-        # sleep 1
+        "$dir"/gaster reset
+        sleep 1
     fi
 }
 
@@ -442,7 +442,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         cd ..
         modelwithoutap=$(echo "$model" | sed 's/ap//')
         bpatchfile=$(find ../patches -name "$modelwithoutap".bpatch)
-        "$dir"/img4 -i work/kernelcache.development.* -o work/kernelcache -M work/apticket.der -T rkrn -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
+        "$dir"/img4 -i work/kernelcache.development.* -o work/kernelcache -M work/apticket.der -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
 
         echo "[*] Placing patched kernelcache"
         cat work/kernelcache | "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat > /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
@@ -477,12 +477,12 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
             python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw
         fi
         "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o
-        if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p --extra work/kpp.bin -f rkrn --lzss
+        if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
+            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p --extra work/kpp.bin --lzss
         elif [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f rkrn --lzss
+            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p --lzss
         fi
-        "$dir"/img4 -i work/kcache.im4p -o work/kernelcache -M work/apticket.der -T rkrn `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
+        "$dir"/img4 -i work/kcache.im4p -o work/kernelcache -M work/apticket.der `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
 
         echo "[*] Placing patched kernelcache"
         cat work/kernelcache | "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat > /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
@@ -522,7 +522,7 @@ if [ ! -f boot-"$deviceid"/.fsboot ]; then
     rm -rf boot-"$deviceid"
 fi
 
-if [ ! -f boot-"$deviceid"/iBEC.img4 ]; then
+if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     _pwn
 
     # if tweaks, set ipswurl to a custom one
@@ -546,10 +546,10 @@ if [ ! -f boot-"$deviceid"/iBEC.img4 ]; then
         "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" iBSS.dec
 
-        echo "[*] Downloading and decrypting iBEC"
-        # download ibec and replace RELEASE with DEVELOPMENT
-        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" iBEC.dec
+        echo "[*] Downloading and decrypting iBoot"
+        # download iboot and replace RELEASE with DEVELOPMENT
+        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
+        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" ibot.dec
     else
         echo "[*] Downloading BuildManifest"
         "$dir"/pzb -g BuildManifest.plist "$ipswurl"
@@ -559,30 +559,30 @@ if [ ! -f boot-"$deviceid"/iBEC.img4 ]; then
         "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
 
         echo "[*] Downloading and decrypting iBEC"
-        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec
+        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" ibot.dec
     fi
 
-    echo "[*] Patching and signing iBSS/iBEC"
+    echo "[*] Patching and signing iBSS/iBoot"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [[ $1 == *"--tweaks"* ]]; then
         if [[ "$@" == *"--semi-tethered"* ]]; then
-            "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8 launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
+            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8 launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
         else
-            "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
+            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1'
         fi
     else
-        "$dir"/iBoot64Patcherfsboot iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e'
+        "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e'
     fi
     if [ "$os" = 'Linux' ]; then
-        sed -i 's/\/\kernelcache/\/\kernelcachd/g' iBEC.patched
+        sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
     else
-        LC_ALL=C sed -i .bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' iBEC.patched
+        LC_ALL=C sed -i .bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
         rm *.bak
     fi
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
-    "$dir"/img4 -i work/iBEC.patched -o boot-"$deviceid"/iBEC.img4 -M work/IM4M -A -T ibec
+    "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then echo "ibec"; else echo "ibss"; fi`
 
     touch boot-"$deviceid"/.fsboot
 fi
@@ -596,7 +596,7 @@ _pwn
 echo "[*] Booting device"
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 1
-"$dir"/irecovery -f boot-"$deviceid"/iBEC.img4
+"$dir"/irecovery -f boot-"$deviceid"/ibot.img4
 sleep 1
 "$dir"/irecovery -c fsboot
 
