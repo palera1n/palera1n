@@ -478,9 +478,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         fi
         "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o
         if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f rkrn --extra work/kpp.bin --lzss
+            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
         elif [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f rkrn --lzss
+            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --lzss
         fi
         "$dir"/img4 -i work/kcache.im4p -o work/kernelcache -M work/apticket.der `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
 
