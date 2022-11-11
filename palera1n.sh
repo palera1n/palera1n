@@ -435,7 +435,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         echo "[*] Patching kernelcache"
         cd ..
         modelwithoutap=$(echo "$model" | sed 's/ap//')
-        bpatchfile=$(find ../patches -name "$modelwithoutap".bpatch)
+        bpatchfile=$(find patches -name "$modelwithoutap".bpatch)
         "$dir"/img4 -i work/kernelcache.development.* -o work/kernelcache -M work/apticket.der -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
 
         echo "[*] Placing patched kernelcache"
