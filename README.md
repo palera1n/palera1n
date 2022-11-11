@@ -2,7 +2,7 @@
     <img src="https://avatars.githubusercontent.com/u/114239186?s=100&v=4" alt="palera1n logo">
     <p>palera1n</p>
 </h1>
-<h3 align="center">An iOS 15.0-15.3.1 work-in-progress, tethered checkm8 jailbreak.</h3>
+<h3 align="center">An iOS 15.0-15.3.1 work-in-progress, (semi-)tethered checkm8 jailbreak.</h3>
 <p align="center">
     <strong><a href="CHANGELOG.md">Change Log</a></strong>
     •
@@ -58,6 +58,7 @@ You may join [here](https://dsc.gg/palera1n).
 2. Run `./palera1n.sh --tweaks <your current iOS version>`
    - [A10 and A11] Before running, **you must disable your passcode**.
    - Put your device in DFU mode before running.
+   - If u want to use fakefs (semi-tethered) add `--semi-tethered` to the arguments
 3. Follow the steps on your screen.
 
 # Repos
