@@ -542,7 +542,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
 
         echo "[*] Downloading and decrypting iBoot"
         # download iboot and replace RELEASE with DEVELOPMENT
-        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
+        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//' | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//' | sed 's/RELEASE/DEVELOPMENT/')" ibot.dec
     else
         echo "[*] Downloading BuildManifest"
