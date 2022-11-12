@@ -257,6 +257,12 @@ echo "palera1n | Version $version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
 echo ""
 
+if [ ! "$1" = '--tweaks' ] && [[ "$@" == *"--semi-tethered"* ]]; then
+    echo "[!] --semi-tethered may not be used with rootless"
+    echo "    Rootless is already semi-tethered"
+    exit
+fi
+
 if [ "$1" = '--tweaks' ]; then
     _check_dfu
 fi
@@ -278,12 +284,10 @@ if [ "$1" = '--tweaks' ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimerag
             tweaks=1
             touch .disclaimeragree
         else
-            echo "[*] Disabling tweaks"
-            tweaks=0
+            exit
         fi
     else
-        echo "[*] Disabling tweaks"
-        tweaks=0
+        exit
     fi
 fi
 
