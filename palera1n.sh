@@ -519,8 +519,6 @@ if [ ! -f boot-"$deviceid"/.fsboot ]; then
 fi
 
 if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
-    _pwn
-
     # if tweaks, set ipswurl to a custom one
     if [ "$1" = "--tweaks" ]; then
         ipswurl=$(_beta_url)
