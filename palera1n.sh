@@ -448,7 +448,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -o -e -u
         if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
             python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
-        elif [[ ! $1 == *"--tweaks"* ]]; then
+        elif [[ $1 == *"--tweaks"* ]]; then
             python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
         fi
         "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
