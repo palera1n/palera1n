@@ -109,8 +109,8 @@ _pwn() {
         echo "[*] Pwning device"
         "$dir"/gaster pwn
         sleep 2
-        "$dir"/gaster reset
-        sleep 1
+        #"$dir"/gaster reset
+        #sleep 1
     fi
 }
 
@@ -469,7 +469,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         else
             echo "[!] Custom kernelcache doesn't exist..? Please send a log and report this bug..."
         fi
-        
+
         rm -rf work
         mkdir work
     else
@@ -592,6 +592,8 @@ fi
 sleep 2
 _pwn
 echo "[*] Booting device"
+"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
+sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
