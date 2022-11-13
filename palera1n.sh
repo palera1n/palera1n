@@ -2,7 +2,6 @@
 
 mkdir -p logs
 set -e
-set -o xtrace
 
 {
 
