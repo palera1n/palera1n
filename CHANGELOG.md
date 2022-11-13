@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+- Fully fix deep sleep bug
+- Support 15.0-15.7.1 on all checkm8 devices
+- Increase stability
+- Fix TrollStore, camera, and screen recording
+
 ## 1.2.0
 
 - Fix deep sleep bug
