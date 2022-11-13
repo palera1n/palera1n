@@ -115,6 +115,11 @@ _pwn() {
     fi
 }
 
+_reset() {
+        echo "[*] Resetting DFU state"
+        "$dir"/gaster reset
+}
+
 _dfuhelper() {
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
@@ -589,9 +594,8 @@ fi
 
 sleep 2
 _pwn
+_reset
 echo "[*] Booting device"
-"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
-sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
