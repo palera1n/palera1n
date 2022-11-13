@@ -400,18 +400,28 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         sleep 1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 $tipsdir/PogoHelper"
     fi
-
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
+    # upload binaries/Kernel15Patcher.ios
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 binaries/Kernel15Patcher.ios root@localhost:/mnt1/private/var/root/Kernel15Patcher.ios
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 /mnt1/private/var/root/Kernel15Patcher.ios"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 /mnt1/private/var/root/Kernel15Patcher.ios"
+    # upload kcache.raw
+    echo "[*] Downloading BuildManifest"
+    "$dir"/pzb -g BuildManifest.plist "$ipswurl"
+    echo "[*] Downloading kernelcache"
+    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+    "$dir"/img4 -i kernelcache.release.* -o kcache.raw
+    rm kernelcache.release.*
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 kcache.raw root@localhost:/mnt1/private/var/root/kcache.raw
+    # run Kernel15Patcher.ios kcache.raw kcache.patched
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/mnt1/private/var/root/Kernel15Patcher.ios /mnt1/private/var/root/kcache.raw /mnt1/private/var/root/kcache.patched"
+    # download kcache.patched
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 root@localhost:/mnt1/private/var/root/kcache.patched kcache.patched
+    # kerneldiff kcache.raw kcache.patched
+    python3 kerneldiff.py kcache.raw kcache.patched
+    # remove kcache.raw kcache.patched
+    rm kcache.raw kcache.patched
     if [[ $1 == *"--tweaks"* ]]; then
-        # set funny boot args
-        if [[ "$@" == *"--semi-tethered"* ]]; then
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1 rd=disk0s1s8\""
-        else
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram boot-args=\"-v keepsyms=1 debug=0x2014e launchd_unsecure_cache=1 launchd_missing_exec_no_panic=1 amfi=0xff amfi_allow_any_signature=1 amfi_get_out_of_my_way=1 amfi_allow_research=1 amfi_unrestrict_task_for_pid=1 amfi_unrestricted_local_signing=1 cs_enforcement_disable=1 pmap_cs_allow_modified_code_pages=1 pmap_cs_enforce_coretrust=0 pmap_cs_unrestrict_pmap_cs_disable=1 -unsafe_kernel_text dtrace_dof_mode=1 panic-wait-forever=1 -panic_notify cs_debug=1 PE_i_can_has_debugger=1\""
-        fi
-        # execute nvram allow-root-hash-mismatch=1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram allow-root-hash-mismatch=1"
-        # execute nvram root-live-fs=1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram root-live-fs=1"
         # execute nvram auto-boot=false if not semi-tethered
         if [[ "$@" != *"--semi-tethered"* ]]; then
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
@@ -448,11 +458,6 @@ fi
 if [ ! -e boot-"$deviceid" ]; then
     _pwn
 
-    # if tweaks, set ipswurl to a custom one
-    if [ "$1" = "--tweaks" ]; then
-        ipswurl=$(_beta_url)
-    fi
-
     # Downloading files, and decrypting iBSS/iBEC
     mkdir boot-"$deviceid"
 
@@ -460,65 +465,34 @@ if [ ! -e boot-"$deviceid" ]; then
     "$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
-    if [[ $1 == *"--tweaks"* ]]; then
-        echo "[*] Downloading BuildManifest"
-        "$dir"/pzb -g AssetData/boot/BuildManifest.plist "$ipswurl"
+    echo "[*] Downloading BuildManifest"
+    "$dir"/pzb -g BuildManifest.plist "$ipswurl"
 
-        echo "[*] Downloading and decrypting iBSS"
-        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" iBSS.dec
+    echo "[*] Downloading and decrypting iBSS"
+    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
 
-        echo "[*] Downloading and decrypting iBEC"
-        # download ibec and replace RELEASE with DEVELOPMENT
-        "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/RELEASE/DEVELOPMENT/')" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//' | sed 's/RELEASE/DEVELOPMENT/')" iBEC.dec
+    echo "[*] Downloading and decrypting iBEC"
+    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+    "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec
 
-        echo "[*] Downloading DeviceTree"
-        "$dir"/pzb -g AssetData/boot/Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl"
+    echo "[*] Downloading DeviceTree"
+    "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl"
 
-        echo "[*] Downloading trustcache"
-        if [ "$os" = 'Darwin' ]; then
-        "$dir"/pzb -g AssetData/boot/"$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl"
-        else
-        "$dir"/pzb -g AssetData/boot/"$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl"
-        fi
-
-        echo "[*] Downloading kernelcache"
-        if [[ $1 == *"--tweaks"* ]]; then
-            "$dir"/pzb -g AssetData/boot/"$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/release/development/')" "$ipswurl"
-        else
-            "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        fi
+    echo "[*] Downloading trustcache"
+    if [ "$os" = 'Darwin' ]; then
+        "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl"
     else
-        echo "[*] Downloading BuildManifest"
-        "$dir"/pzb -g BuildManifest.plist "$ipswurl"
-
-        echo "[*] Downloading and decrypting iBSS"
-        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
-
-        echo "[*] Downloading and decrypting iBEC"
-        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$cpid""/{x=1}x&&/iBEC[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBEC.dec
-
-        echo "[*] Downloading DeviceTree"
-        "$dir"/pzb -g Firmware/all_flash/DeviceTree."$model".im4p "$ipswurl"
-
-        echo "[*] Downloading trustcache"
-        if [ "$os" = 'Darwin' ]; then
-            "$dir"/pzb -g "$(/usr/bin/plutil -extract "BuildIdentities".0."Manifest"."StaticTrustCache"."Info"."Path" xml1 -o - BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | head -1)" "$ipswurl"
-        else
-            "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl"
-        fi
-
-        echo "[*] Downloading kernelcache"
-        "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+        "$dir"/pzb -g "$("$dir"/PlistBuddy BuildManifest.plist -c "Print BuildIdentities:0:Manifest:StaticTrustCache:Info:Path" | sed 's/"//g')" "$ipswurl"
     fi
+
+    echo "[*] Downloading kernelcache"
+    "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
 
     echo "[*] Patching and signing iBSS/iBEC"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [[ $1 == *"--tweaks"* ]]; then
-        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched
+        "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e panic-wait-forever=1'
     else
         "$dir"/iBoot64Patcher iBEC.dec iBEC.patched -b '-v keepsyms=1 debug=0x2014e panic-wait-forever=1'
     fi
@@ -534,9 +508,12 @@ if [ ! -e boot-"$deviceid" ]; then
     fi
 
     if [[ $1 == *"--tweaks"* ]]; then
-        modelwithoutap=$(echo "$model" | sed 's/ap//')
-        bpatchfile=$(find patches -name "$modelwithoutap".bpatch)
-        "$dir"/img4 -i work/kernelcache.development.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P "$bpatchfile" `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
+        "$dir"/img4 -i work/kernelcache.release.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P kc.bpatch `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
+        "$dir"/img4 -i boot-"$deviceid"/kernelcache.img4 -o boot-"$deviceid"/kcache.raw
+        "$dir"/img4 -i work/kernelcache.release.* -o work/temp.raw
+        "$dir"/Kernel64Patcher boot-"$deviceid"/kcache.raw work/kcache.patched -o -e -u
+        python3 kerneldiff.py work/temp.raw work/kcache.patched
+        "$dir"/img4 -i work/kernelcache.release.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P kc.bpatch `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
     else
         "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o
     fi
