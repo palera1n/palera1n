@@ -2,6 +2,7 @@
 
 mkdir -p logs
 set -e
+set -o xtrace
 
 {
 
@@ -223,10 +224,10 @@ if [ ! -e "$dir"/gaster ]; then
 fi
 
 # Check for pyimg4
-if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+if ! python3.10 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
     read -n 1 -s
-    python3 -m pip install pyimg4
+    python3.10 -m pip install pyimg4
 fi
 
 # ============
@@ -375,17 +376,14 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     rm dump.raw
 
     if [[ "$@" == *"--semi-tethered"* ]]; then
-        has_disk8=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /dev/disk0s1s8" 2> /dev/null)
-        if [ ! "$has_disk8" = "/dev/disk0s1s8" ]; then
-            echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
-            sleep 2
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
-            sleep 1
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
-            sleep 1
-            echo "[*] fakefs created, continuing..."
-        fi
+        echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
+        sleep 2
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
+        sleep 1
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
+        sleep 1
+        echo "[*] fakefs created, continuing..."
     fi
 
     if [[ ! "$@" == *"--no-install"* ]]; then
@@ -442,9 +440,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/pzb -g "$(awk "/""$cpid""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         mv kernelcache.release.* work/kernelcache
         if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]|| [[ "$deviceid" == *'iPad5'* ]]; then
-            python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
+            python3.10 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
         else
-            python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
+            python3.10 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
         fi
         sleep 1
         "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
@@ -453,9 +451,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -o -e -u
         sleep 1
         if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
+            python3.10 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
         elif [[ $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
+            python3.10 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
         fi
         sleep 1
         "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
@@ -495,15 +493,15 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         echo "[*] Patching kernelcache"
         cd ..
         if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]|| [[ "$deviceid" == *'iPad5'* ]]; then
-            python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin
+            python3.10 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw --extra work/kpp.bin
         else
-            python3 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw
+            python3.10 -m pyimg4 im4p extract -i work/"$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" work/BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" -o work/kcache.raw
         fi
         "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a -o
         if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]] && [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
+            python3.10 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
         elif [[ ! $1 == *"--tweaks"* ]]; then
-            python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --lzss
+            python3.10 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --lzss
         fi
         "$dir"/img4 -i work/kcache.im4p -o work/kernelcache -M work/apticket.der `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
 
