@@ -2,7 +2,7 @@
     <img src="https://avatars.githubusercontent.com/u/114239186?s=100&v=4" alt="palera1n logo">
     <p>palera1n</p>
 </h1>
-<h3 align="center">An iOS 15.0-15.3.1 work-in-progress, tethered checkm8 jailbreak.</h3>
+<h3 align="center">An iOS 15.0-15.7.1 work-in-progress, (semi-)tethered checkm8 jailbreak.</h3>
 <p align="center">
     <strong><a href="CHANGELOG.md">Change Log</a></strong>
     •
@@ -12,7 +12,7 @@
 </p>
 
 # How does it work?
-It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
+It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
 
 # Issues
 ### Need help?
@@ -37,7 +37,6 @@ You may join [here](https://dsc.gg/palera1n).
 - We are **NOT** responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. **If your device is stuck in recovery, please run one of the following:**
    - futurerestore --exit-recovery
    - irecovery -n
-- Using this on iOS 16 has a higher chance of bootlooping you.
 
 ### A10 and A11 devices
 - On A10 and A11, **you must disable your passcode while in the jailbroken state**.
@@ -49,7 +48,6 @@ You may join [here](https://dsc.gg/palera1n).
 - A checkm8 vulnerable iOS device on iOS 15 (A8-A11)
   - The device must be on iOS 15.0-15.3.1
     - Currently, the best is iOS 15.1.
-    - iOS 15.0-15.0.2 and 15.2-15.3.1 have **App Store app launching issues**.
 - Linux or macOS computer
   - Python 3 must be installed.
 
