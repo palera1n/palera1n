@@ -53,7 +53,7 @@ You may join [here](https://dsc.gg/palera1n).
   - Python 3 must be installed.
 
 # How to use?
-1. Clone this repo with `git clone -b tweaks --recursive https://github.com/palera1n/palera1n && cd palera1n`
+1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
 2. Run `./palera1n.sh --tweaks <your current iOS version>`
    - [A10 and A11] Before running, **you must disable your passcode**.
    - Put your device in DFU mode before running.
