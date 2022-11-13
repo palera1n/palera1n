@@ -48,6 +48,7 @@ You may join [here](https://dsc.gg/palera1n).
 - A checkm8 vulnerable iOS device on iOS 15 (A8-A11)
   - The device must be on iOS 15.0-15.3.1
     - Currently, the best is iOS 15.1.
+    - iOS 15.0-15.0.2 and 15.2-15.3.1 have **App Store app launching issues**.
 - Linux or macOS computer
   - Python 3 must be installed.
 
