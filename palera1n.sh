@@ -596,6 +596,7 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
+sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
