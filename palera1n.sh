@@ -375,14 +375,17 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     rm dump.raw
 
     if [[ "$@" == *"--semi-tethered"* ]]; then
-        echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
-        sleep 2
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
-        sleep 1
-        echo "[*] fakefs created, continuing..."
+        has_disk8=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /dev/disk0s1s8" 2> /dev/null)
+        if [ ! "$has_disk8" = "/dev/disk0s1s8" ]; then
+            echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
+            sleep 2
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
+            sleep 1
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
+            sleep 1
+            echo "[*] fakefs created, continuing..."
+        fi
     fi
 
     if [[ ! "$@" == *"--no-install"* ]]; then
@@ -431,6 +434,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         echo "[*] Patching the kernel"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
+        sleep 1
         # download the kernel
         echo "[*] Downloading BuildManifest"
         "$dir"/pzb -g BuildManifest.plist "$ipswurl"
@@ -442,19 +446,30 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         else
             python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
         fi
+        sleep 1
         "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/mnt1/private/var/root/Kernel15Patcher.ios /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched"
         "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
         "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -o -e -u
+        sleep 1
         if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
             python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
         elif [[ $1 == *"--tweaks"* ]]; then
             python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
         fi
+        sleep 1
         "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd -M /mnt6/$active/System/Library/Caches/apticket.der"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p"
 
+        sleep 1
+        has_kernelcachd=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd" 2> /dev/null)
+        if [ "$has_kernelcachd" = "/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd" ]; then
+            echo "[*] Custom kernelcache now exists!"
+        else
+            echo "[!] Custom kernelcache doesn't exist..? Please send a log and report this bug..."
+        fi
+        
         rm -rf work
         mkdir work
     else
