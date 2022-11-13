@@ -84,12 +84,12 @@ _wait() {
 _check_dfu() {
     if [ "$os" = 'Darwin' ]; then
         if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
+            echo "[-] Connected device is not in DFU mode, please rerun the script and try again"
             exit
         fi
     else
         if ! (lsusb 2> /dev/null | grep 'DFU Mode' >> /dev/null); then
-            echo "[-] Device didn't go in DFU mode, please rerun the script and try again"
+            echo "[-] Connected device is not in DFU mode, please rerun the script and try again"
             exit
         fi
     fi
