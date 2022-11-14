@@ -51,6 +51,8 @@ You may join [here](https://dsc.gg/palera1n).
   - Python 3 must be installed.
 
 # How to use?
+A better tutorial can be found [here](https://ios.cfw.guide/installing-palera1n).
+
 1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
 2. Run `./palera1n.sh --tweaks <your current iOS version>` (run with `sudo` if you're on linux)
    - [A10 and A11] Before running, **you must disable your passcode**.
