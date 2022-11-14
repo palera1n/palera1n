@@ -544,7 +544,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     fi
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
-    "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$cpid" == *"0x80"* ]]; then echo "ibec"; else echo "ibec"; fi`
+    "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
 
     touch boot-"$deviceid"/.fsboot
 fi
