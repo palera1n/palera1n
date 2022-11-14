@@ -484,8 +484,13 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
     _kill_if_running iproxy
 
-    if [ "$1" = "--tweaks" ]; then
-        _wait recovery
+    if [[ "$@" == *"--semi-tethered"* ]]; then
+        sleep 5
+        _wait normal
+        sleep 2
+
+        echo "[*] Switching device into recovery mode..."
+        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     else
         sleep 5
         _wait normal
@@ -493,8 +498,8 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
         echo "[*] Switching device into recovery mode..."
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
-        _wait recovery
     fi
+    _wait recovery
     sleep 10
     _dfuhelper
     sleep 2
