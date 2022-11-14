@@ -596,7 +596,7 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
-if [[ "$cpid" == *"0x80"* ]]; then
+if [[ "$cpid" == *"0x801"* ]]; then
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
 sleep 1
