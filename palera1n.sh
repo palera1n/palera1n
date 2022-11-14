@@ -384,7 +384,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
         sleep 2
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
         sleep 1
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
         sleep 1
@@ -571,7 +571,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     echo "[*] Patching and signing iBSS/iBoot"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [[ "$@" == *"--semi-tethered"* ]]; then
-        "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8'
+        "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7'
     else
         "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e'
     fi
@@ -583,7 +583,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     fi
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
-    "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then echo "ibec"; else echo "ibss"; fi`
+    "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$cpid" == *"0x80"* ]]; then echo "ibss"; else echo "ibec"; fi`
 
     touch boot-"$deviceid"/.fsboot
 fi
@@ -596,12 +596,19 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
+if [[ "$cpid" == *"0x80"* ]]; then
+sleep 1
+"$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+sleep 1
+"$dir"/irecovery -c fsboot
+else
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
 sleep 1
 "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
 sleep 1
 "$dir"/irecovery -c fsboot
+fi
 
 if [ "$os" = 'Darwin' ]; then
     if [ ! "$1" = '--dfu' ]; then
