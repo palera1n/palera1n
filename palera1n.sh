@@ -2,7 +2,10 @@
 
 mkdir -p logs
 set -e
-set -o xtrace
+
+if [[ "$@" == *"--debug"* ]]; then
+    set -o xtrace
+fi
 
 {
 
@@ -597,17 +600,17 @@ _pwn
 _reset
 echo "[*] Booting device"
 if [[ "$cpid" == *"0x801"* ]]; then
-sleep 1
-"$dir"/irecovery -f boot-"$deviceid"/ibot.img4
-sleep 1
-"$dir"/irecovery -c fsboot
+    sleep 1
+    "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+    sleep 1
+    "$dir"/irecovery -c fsboot
 else
-sleep 1
-"$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
-sleep 1
-"$dir"/irecovery -f boot-"$deviceid"/ibot.img4
-sleep 1
-"$dir"/irecovery -c fsboot
+    sleep 1
+    "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
+    sleep 1
+    "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+    sleep 1
+    "$dir"/irecovery -c fsboot
 fi
 
 if [ "$os" = 'Darwin' ]; then
