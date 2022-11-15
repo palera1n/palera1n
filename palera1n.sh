@@ -384,19 +384,21 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     rm dump.raw
 
     if [[ "$@" == *"--semi-tethered"* ]]; then
-        echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
-        sleep 2
-        if [[ "$@" == *"--no-baseband"* ]]; then 
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
-        else
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
+        if [[ ! "$@" == *"--skip-fakefs"* ]]; then
+            echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
+            sleep 2
+            if [[ "$@" == *"--no-baseband"* ]]; then 
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
+            else
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
+            fi
+            
+            sleep 1
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
+            sleep 1
+            echo "[*] fakefs created, continuing..."
         fi
-        
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
-        sleep 1
-        echo "[*] fakefs created, continuing..."
     fi
 
     if [[ ! "$@" == *"--no-install"* ]]; then
