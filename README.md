@@ -12,7 +12,7 @@
 </p>
 
 # How does it work?
-It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
+It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
 
 # Issues
 ### Need help?
@@ -25,7 +25,7 @@ Please, please, please, provide necessary info:
 - The command you ran
 - **Full log from the logs folder**
 
-**DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/itsnebulalol/ios15-tweaks) for compatiblity.
+**DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/ImUltik/ios15-tweaks) for compatiblity.
 
 You may join [here](https://dsc.gg/palera1n).
 
@@ -37,28 +37,27 @@ You may join [here](https://dsc.gg/palera1n).
 - We are **NOT** responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. **If your device is stuck in recovery, please run one of the following:**
    - futurerestore --exit-recovery
    - irecovery -n
-- Using this on iOS 16 has a higher chance of bootlooping you.
 
 ### A10 and A11 devices
 - On A10 and A11, **you must disable your passcode while in the jailbroken state**.
   - On A10, this can be fixed in the future by implementing blackbird.
   - On A11, we don't have a SEP exploit yet.
+  - If you run tweaks, do not use any tweak that is able to lock your device with a passcode, this can be dangerous and may bootloop/respringloop your device.
 
 # Prerequisites
 #### Warning: You must install the Tips app from the App Store before running palera1n.
 - A checkm8 vulnerable iOS device on iOS 15 (A8-A11)
-  - The device must be on iOS 15.0-15.3.1
-    - Currently, the best is iOS 15.1.
-    - iOS 15.0-15.0.2 and 15.2-15.3.1 have **App Store app launching issues**.
+  - The device must be on iOS 15.0-15.7.1
 - Linux or macOS computer
   - Python 3 must be installed.
 
 # How to use?
-1. Clone this repo with `git clone -b tweaks --recursive https://github.com/palera1n/palera1n && cd palera1n`
-2. Run `./palera1n.sh --tweaks <your current iOS version>`
+A better tutorial can be found [here](https://ios.cfw.guide/installing-palera1n).
+
+1. Clone this repo with `git clone --recursive https://github.com/ImUltik/palera1n && cd palera1n`
+2. Run `./palera1n.sh --tweaks <your current iOS version>` (run with `sudo` if you're on linux)
    - [A10 and A11] Before running, **you must disable your passcode**.
    - Put your device in DFU mode before running.
-   - If u want to use fakefs (semi-tethered) add `--semi-tethered` to the arguments
 3. Follow the steps on your screen.
 
 # Repos
@@ -82,11 +81,13 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [Mineek](https://github.com/mineek)
     - For the patching and booting commands
     - Adding tweak support
-- [Ferry](https://github.com/Imultik) For personal changes and other stuff
+- [Ferry](https://github.com/ImUltik) personal changes, other stuff in ramdisk or binaries
 - [Amy](https://github.com/elihwyma) for the Pogo app
+- [checkra1n](https://github.com/checkra1n) for the base of the kpf
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
 - [F121](https://github.com/F121Live) for helping test
+- [m1sta](https://github.com/m1stadev) for pyimg4
 - [tihmstar](https://github.com/tihmstar) for pzb/original iBoot64Patcher/img4tool
 - [xerub](https://github.com/xerub) for img4lib and restored_external in the ramdisk
 - [Cryptic](https://github.com/Cryptiiiic) for iBoot64Patcher fork
