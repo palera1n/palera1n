@@ -431,24 +431,6 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         fi
     fi
     sleep 2
-    # mkdir /mnt1/palera1n
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/mkdir /mnt1/palera1n"
-    # upload rootfs/palera1n/bin/* to /mnt1/palera1n/bin
-    # mkdir /mnt1/palera1n/bin
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/mkdir /mnt1/palera1n/bin"
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 rootfs/palera1n/bin/* root@localhost:/mnt1/palera1n/bin
-    # upload rootfs/palera1n/bootstrap/* to /mnt1/palera1n/bootstrap
-    # mkdir /mnt1/palera1n/bootstrap
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/mkdir /mnt1/palera1n/bootstrap"
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 rootfs/palera1n/bootstrap/* root@localhost:/mnt1/palera1n/bootstrap
-    # upload rootfs/palera1n/jbloader to /mnt1/palera1n/jbloader
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 rootfs/palera1n/jbloader root@localhost:/mnt1/palera1n/jbloader
-    # mkdir /mnt1/jbin
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/mkdir /mnt1/jbin"
-    # upload rootfs/jbin/* to /mnt1/jbin
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 rootfs/jbin/* root@localhost:/mnt1/jbin
-    # chmod 755 /mnt1/palera1n/jbloader /mnt1/palera1n/bin/* /mnt1/palera1n/bootstrap/*
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 /mnt1/palera1n/jbloader /mnt1/palera1n/bin/* /mnt1/palera1n/bootstrap/*"
     echo "[*] Done! Rebooting your device"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
     sleep 1
@@ -532,7 +514,7 @@ if [ ! -e boot-"$deviceid" ]; then
         "$dir"/img4 -i work/kernelcache.release.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P kc.bpatch `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
         "$dir"/img4 -i boot-"$deviceid"/kernelcache.img4 -o boot-"$deviceid"/kcache.raw
         "$dir"/img4 -i work/kernelcache.release.* -o work/temp.raw
-        "$dir"/Kernel64Patcher boot-"$deviceid"/kcache.raw work/kcache.patched -o -e -u -l
+        "$dir"/Kernel64Patcher boot-"$deviceid"/kcache.raw work/kcache.patched -o -e -u
         python3 kerneldiff.py work/temp.raw work/kcache.patched
         "$dir"/img4 -i work/kernelcache.release.* -o boot-"$deviceid"/kernelcache.img4 -M work/IM4M -T rkrn -P kc.bpatch `if [ "$os" = 'Linux' ]; then echo "-J"; fi`
     else
