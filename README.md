@@ -82,6 +82,7 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [Mineek](https://github.com/mineek)
     - For the patching and booting commands
     - Adding tweak support
+- [Ferry](https://github.com/Imultik) For personal changes and other stuff
 - [Amy](https://github.com/elihwyma) for the Pogo app
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing bootstrap
