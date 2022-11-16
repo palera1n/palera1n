@@ -551,12 +551,24 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [[ "$@" == *"--semi-tethered"* ]]; then
         if [[ "$@" == *"--no-baseband"* ]]; then 
-            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7'
+            if [[ "$@" == *"--verbose"* ]]; then
+                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7'
+            else
+                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7'
+            fi
         else
-            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8'
+            if [[ "$@" == *"--verbose"* ]]; then
+                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8'
+            else
+                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s8'
+            fi
         fi
     else
-        "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e'
+        if [[ "$@" == *"--verbose"* ]]; then
+            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e'
+        else
+            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e'
+        fi
     fi
     if [ "$os" = 'Linux' ]; then
         sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
@@ -567,6 +579,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
     "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
+    "$dir"/img4 -i other/bootlogo.im4p -o boot-"$deviceid"/bootlogo.img4 -M work/IM4M -A -T rlgo
 
     touch boot-"$deviceid"/.fsboot
 fi
@@ -589,6 +602,10 @@ else
     "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+    sleep 1
+    "$dir"/irecovery -f boot-"$deviceid"/bootlogo.img4
+    sleep 1
+    "$dir"/irecovery -c "setpicture 0x1"
     sleep 1
     "$dir"/irecovery -c fsboot
 fi
