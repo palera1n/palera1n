@@ -89,3 +89,4 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [tihmstar](https://github.com/tihmstar) for pzb/original iBoot64Patcher/img4tool
 - [xerub](https://github.com/xerub) for img4lib and restored_external in the ramdisk
 - [Cryptic](https://github.com/Cryptiiiic) for iBoot64Patcher fork
+- [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc)
