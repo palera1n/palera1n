@@ -3,10 +3,6 @@
 mkdir -p logs
 set -e
 
-if [[ "$@" == *"--debug"* ]]; then
-    set -o xtrace
-fi
-
 {
 
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@"
@@ -20,6 +16,8 @@ os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
+max_args=1
+arg_count=0
 
 # =========
 # Functions
@@ -30,6 +28,106 @@ step() {
         sleep 1
     done
     printf '\r\e[0m%s (0)\n' "$2"
+}
+
+print_help() {
+    cat << EOF
+Usage: $0 [Options] [ subcommand | iOS version ]
+iOS 15.0-15.7.1 jailbreak tool for checkm8 devices
+
+Options:
+    --help              Print this help
+    --tweaks            Enable tweaks
+    --semi-tethered     When used with --tweaks, make the jailbreak semi-tethered instead of tethered
+    --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
+    --no-baseband       When used with --semi-tethered, allows the fakefs to be created correctly on no baseband devices
+    --skip-fakefs       Don't create the fakefs even if --semi-tethered is specified
+    --no-install        Skip murdering Tips app
+    --restorerootfs     Restore the root fs on tethered
+    --debug             Debug the script
+    --verbose           Enable verbose boot on the device
+
+Subcommands:
+    dfuhelper           An alias for --dfuhelper
+    clean               Deletes the created boot files
+
+The iOS version argument should be the iOS version of your device.
+It is required when starting from DFU mode.
+EOF
+}
+
+parse_opt() {
+    case "$1" in
+        --)
+            no_more_opts=1
+            ;;
+        --tweaks)
+            tweaks=1
+            ;;
+        --semi-tethered)
+            semi_tethered=1
+            ;;
+        --dfuhelper)
+            dfuhelper=1
+            ;;
+        --skip-fakefs)
+            skip_fakefs=1
+            ;;
+        --no-baseband)
+            no_baseband=1
+            ;;
+        --no-install)
+            no_install=1
+            ;;
+        --verbose)
+            verbose=1
+            ;;
+        --dfu)
+            dfu=1
+            ;;
+        --restorerootfs)
+            restorerootfs=1
+            ;;
+        --debug)
+            debug=1
+            ;;
+        --help)
+            print_help
+            exit 0
+            ;;
+        *)
+            echo "[-] Unknown option $1. Use $0 --help for help."
+            exit 1;
+    esac
+}
+
+parse_arg() {
+    ((arg_count++))
+    echo "$1"
+    case "$1" in
+        dfuhelper)
+            dfuhelper=1
+            ;;
+        clean)
+            clean=1
+            ;;
+        *)
+            version="$1"
+            ;;
+    esac
+}
+
+parse_cmdline() {
+    for arg in $@; do
+        if [[ "$arg" == --* ]] && [ -z "$no_more_opts" ]; then
+            parse_opt "$arg";
+        elif [ "$arg_count" -lt "$max_args" ]; then
+            parse_arg "$arg";
+        else
+            echo "[-] Too many arguments. Use $0 --help for help.";
+            exit 1;
+        fi
+    done
 }
 
 _wait() {
@@ -70,7 +168,7 @@ _wait() {
             done
         fi
 
-        if [ "$1" = "--tweaks" ]; then
+        if [ "$tweaks" = "1" ]; then
             "$dir"/irecovery -c "setenv auto-boot false"
             "$dir"/irecovery -c "saveenv"
         else
@@ -78,7 +176,7 @@ _wait() {
             "$dir"/irecovery -c "saveenv"
         fi
 
-        if [[ "$@" == *"--semi-tethered"* ]]; then
+        if [ "$semi_tethered" = "1" ]; then
             "$dir"/irecovery -c "setenv auto-boot true"
             "$dir"/irecovery -c "saveenv"
         fi
@@ -163,7 +261,7 @@ _beta_url() {
 
 _exit_handler() {
     if [ "$os" = 'Darwin' ]; then
-        if [ ! "$1" = '--dfu' ]; then
+        if [ -z "$dfu" ]; then
             defaults write -g ignore-devices -bool false
             defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
             killall Finder
@@ -191,28 +289,6 @@ if [ "$os" = 'Darwin' ]; then
     defaults write -g ignore-devices -bool true
     defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
     killall Finder
-fi
-
-# ===========
-# Subcommands
-# ===========
-
-if [ "$1" = 'clean' ]; then
-    rm -rf boot* work .tweaksinstalled
-    echo "[*] Removed the created boot files"
-    exit
-elif [ "$1" = 'dfuhelper' ]; then
-    echo "[*] Running DFU helper"
-    _dfuhelper
-    exit
-elif [ "$1" = '--restorerootfs' ]; then
-    echo "[*] Restoring rootfs..."
-    "$dir"/irecovery -n
-    sleep 2
-    echo "[*] Done, your device will boot into iOS now."
-    # clean the boot files bcs we don't need them anymore
-    rm -rf boot-"$deviceid" work .tweaksinstalled
-    exit
 fi
 
 # ============
@@ -266,17 +342,45 @@ echo "palera1n | Version $version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
 echo ""
 
-if [ ! "$1" = '--tweaks' ] && [[ "$@" == *"--semi-tethered"* ]]; then
-    echo "[!] --semi-tethered may not be used with rootless"
-    echo "    Rootless is already semi-tethered"
+parse_cmdline "$@"
+
+if [ "$debug" = "1" ]; then
+    set -o xtrace
+fi
+
+# ===========
+# Subcommands
+# ===========
+
+if [ "$clean" = "1" ]; then
+    rm -rf boot* work .tweaksinstalled
+    echo "[*] Removed the created boot files"
+    exit
+elif [ "$dfuhelper" = "1" ]; then
+    echo "[*] Running DFU helper"
+    _dfuhelper
+    exit
+elif [ "$restorerootfs" = "1" ]; then
+    echo "[*] Restoring rootfs..."
+    "$dir"/irecovery -n
+    sleep 2
+    echo "[*] Done, your device will boot into iOS now."
+    # clean the boot files bcs we don't need them anymore
+    rm -rf boot-"$deviceid" work .tweaksinstalled
     exit
 fi
 
-if [ "$1" = '--tweaks' ]; then
+if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
+    echo "[!] --semi-tethered may not be used with rootless"
+    echo "    Rootless is already semi-tethered"
+    exit 1;
+fi
+
+if [ "$tweaks" = "1" ]; then
     _check_dfu
 fi
 
-if [ "$1" = '--tweaks' ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [[ ! "$@" == *"--semi-tethered"* ]]; then
+if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ]; then
     echo "!!! WARNING WARNING WARNING !!!"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
@@ -301,12 +405,10 @@ if [ "$1" = '--tweaks' ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimerag
 fi
 
 # Get device's iOS version from ideviceinfo if in normal mode
-if [ "$1" = '--dfu' ] || [ "$1" = '--tweaks' ]; then
-    if [ -z "$2" ]; then
+if [ "$dfu" = "1" ] || [ "$tweaks" = "1" ]; then
+    if [ -z "$version" ]; then
         echo "[-] When using --dfu, please pass the version you're device is on"
         exit
-    else
-        version=$2
     fi
 else
     _wait normal
@@ -335,7 +437,7 @@ else
 fi
 
 # Have the user put the device into DFU
-if [ ! "$1" = '--dfu' ] && [ ! "$1" = '--tweaks' ]; then
+if [ -z "$dfu" ] && [ -z "$tweaks" ]; then
     _dfuhelper
 fi
 sleep 2
@@ -344,7 +446,7 @@ sleep 2
 # Ramdisk
 # ============
 
-# Dump blobs, and install pogo if needed
+# Dump blobs, and install pogo if needed 
 if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     mkdir -p blobs
 
@@ -383,12 +485,12 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
     rm dump.raw
 
-    if [[ "$@" == *"--semi-tethered"* ]]; then
-        if [[ ! "$@" == *"--skip-fakefs"* ]]; then
+    if [ "$semi_tethered" = "1" ]; then
+        if [ -z "$skip_fakefs" ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
             sleep 2
-            if [[ "$@" == *"--no-baseband"* ]]; then 
+            if [ "$skip_baseband" = "1" ]; then 
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
             else
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
@@ -401,7 +503,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         fi
     fi
 
-    if [[ ! "$@" == *"--no-install"* ]]; then
+    if [ -z "$no_install" ]; then
         tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
         sleep 1
         if [ "$tipsdir" = "" ]; then
@@ -430,7 +532,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram root-live-fs=1"
-    if [[ "$@" == *"--semi-tethered"* ]]; then
+    if [ "$semi_tethered" = "1" ]; then
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true"
     else
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
@@ -474,7 +576,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
-    elif [[ $1 == *"--tweaks"* ]]; then
+    elif [ "$tweaks" = "1" ]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
     fi
     sleep 1
@@ -499,13 +601,13 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
     _kill_if_running iproxy
 
-    if [[ "$@" == *"--semi-tethered"* ]]; then
+    if [ "$semi_tethered" = "1" ]; then
         _wait normal
         sleep 5
 
         echo "[*] Switching device into recovery mode..."
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
-    elif [ ! "$1" = '--tweaks' ]; then
+    elif [ -z "$tweaks" ]; then
         _wait normal
         sleep 5
 
@@ -549,22 +651,22 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
 
     echo "[*] Patching and signing iBSS/iBoot"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
-    if [[ "$@" == *"--semi-tethered"* ]]; then
-        if [[ "$@" == *"--no-baseband"* ]]; then 
-            if [[ "$@" == *"--verbose"* ]]; then
+    if [ "$semi_tethered" = "1" ]; then
+        if [ "$no_baseband" = "1" ]; then 
+            if [ "$verbose" = "1" ]; then
                 "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7'
             else
                 "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7'
             fi
         else
-            if [[ "$@" == *"--verbose"* ]]; then
+            if [ "$verbose" = "1" ]; then
                 "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8'
             else
                 "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s8'
             fi
         fi
     else
-        if [[ "$@" == *"--verbose"* ]]; then
+        if [ "$verbose" = "1" ]; then
             "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e'
         else
             "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e'
@@ -611,7 +713,7 @@ else
 fi
 
 if [ "$os" = 'Darwin' ]; then
-    if [ ! "$1" = '--dfu' ]; then
+    if [ -z "$dfu" ]; then
         defaults write -g ignore-devices -bool false
         defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
         killall Finder
