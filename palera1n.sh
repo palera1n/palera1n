@@ -533,7 +533,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     mkdir boot-"$deviceid"
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
+    "$dir"/img4tool -e -s '$(pwd)/blobs/"$deviceid"-"$version".shsh2' -m work/IM4M
     cd work
 
     echo "[*] Downloading BuildManifest"
