@@ -43,6 +43,7 @@ Options:
     --no-baseband       When used with --semi-tethered, allows the fakefs to be created correctly on no baseband devices
     --skip-fakefs       Don't create the fakefs even if --semi-tethered is specified
     --no-install        Skip murdering Tips app
+    --dfu               Indicate that the device is connected in DFU mode
     --restorerootfs     Restore the root fs on tethered
     --debug             Debug the script
     --verbose           Enable verbose boot on the device
