@@ -103,7 +103,7 @@ parse_opt() {
 }
 
 parse_arg() {
-    ((arg_count++))
+    arg_count=$((arg_count + 1))
     case "$1" in
         dfuhelper)
             dfuhelper=1
