@@ -104,7 +104,6 @@ parse_opt() {
 
 parse_arg() {
     ((arg_count++))
-    echo "$1"
     case "$1" in
         dfuhelper)
             dfuhelper=1
