@@ -93,8 +93,6 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [m1sta](https://github.com/m1stadev) for pyimg4
 - [tihmstar](https://github.com/tihmstar) for pzb/original iBoot64Patcher/img4tool
 - [xerub](https://github.com/xerub) for img4lib and restored_external in the ramdisk
-- [Cryptic](https://github.com/Cryptiiiic) for iBoot64Patcher fork, and liboffsetfinder64 fork
-- [iBoot64Patcher](https://github.com/Cryptiiiic/iBoot64Patcher)
-- [liboffsetfinder64](https://github.com/Cryptiiiic/liboffsetfinder64)
+- [Cryptic](https://github.com/Cryptiiiic) for [iBoot64Patcher](https://github.com/Cryptiiiic/iBoot64Patcher) fork, and [liboffsetfinder64](https://github.com/Cryptiiiic/liboffsetfinder64) fork
 - [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
 - [Nick Chan](https://github.com/asdfugil) general help with patches.
