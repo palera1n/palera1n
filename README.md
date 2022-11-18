@@ -86,7 +86,7 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
     - For patchfinders for RELEASE kernels
     - [Kernel15Patcher](https://github.com/mineek/PongoOS/tree/iOS15/checkra1n/Kernel15Patcher)
     - [Kernel64Patcher](https://github.com/mineek/Kernel64Patcher)
-- [Amy](https://github.com/elihwyma) for the Pogo app
+- [Amy](https://github.com/elihwyma) for the [Pogo](https://github.com/elihwyma/Pogo) app
 - [checkra1n](https://github.com/checkra1n) for the base of the kpf
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing [bootstrap](https://github.com/ProcursusTeam/Procursus)
@@ -97,3 +97,4 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [Cryptic](https://github.com/Cryptiiiic) for [iBoot64Patcher](https://github.com/Cryptiiiic/iBoot64Patcher) fork, and [liboffsetfinder64](https://github.com/Cryptiiiic/liboffsetfinder64) fork
 - [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
 - [Nick Chan](https://github.com/asdfugil) general help with patches.
+- [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)
