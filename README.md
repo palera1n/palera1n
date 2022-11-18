@@ -77,6 +77,8 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
     - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
     - Also helped Mineek getting the kernel up and running and with the patches
     - Helping with adding multiple device support
+    - Fixing issues relating to camera.. etc by switching to fsboot
+    - https://github.com/verygenericname/iBoot64Patcher
 - [Mineek](https://github.com/mineek)
     - For the patching and booting commands
     - Adding tweak support
