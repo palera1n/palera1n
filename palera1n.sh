@@ -433,7 +433,13 @@ deviceid=$(_info recovery PRODUCT)
 if [ ! "$ipsw" = "" ]; then
     ipswurl=$ipsw
 else
-    ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/15.7.1 | jq '.[0] | .buildid' --raw-output)
+    if [[ "$deviceid" == *"iPad"* ]]; then
+        os=iPadOS
+    else
+        os=iOS
+    fi
+    ipswurl=$(curl -sL https://api.appledb.dev/ios/$os\;$buildid.json | jq -r .devices[\"$deviceid\"].ipsw)
 fi
 
 # Have the user put the device into DFU
