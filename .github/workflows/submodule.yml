@@ -18,10 +18,10 @@ jobs:
         submodules: true
 
     - name: Update submodules
-      shell: bash
       run: |
-        git submodule update --init --recursive
-        git submodule update --remote --merge
+        cd ramdisk
+        git pull origin main
+        cd ..
 
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
