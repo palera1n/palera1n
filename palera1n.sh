@@ -681,8 +681,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     if [ "$os" = 'Linux' ]; then
         sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
     else
-        LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
-        rm *.bak
+        LC_ALL=C sed -i -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
     fi
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
