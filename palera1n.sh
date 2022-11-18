@@ -654,22 +654,22 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     if [ "$semi_tethered" = "1" ]; then
         if [ "$no_baseband" = "1" ]; then 
             if [ "$verbose" = "1" ]; then
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7'
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -f -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7'
             else
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7'
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -f -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7'
             fi
         else
             if [ "$verbose" = "1" ]; then
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8'
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -f -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8'
             else
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s8'
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -f -b 'keepsyms=1 debug=0x2014e rd=disk0s1s8'
             fi
         fi
     else
         if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e'
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -f -b '-v keepsyms=1 debug=0x2014e'
         else
-            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e'
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -f -b 'keepsyms=1 debug=0x2014e'
         fi
     fi
     if [ "$os" = 'Linux' ]; then
