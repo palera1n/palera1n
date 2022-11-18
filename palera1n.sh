@@ -433,7 +433,7 @@ deviceid=$(_info recovery PRODUCT)
 if [ ! "$ipsw" = "" ]; then
     ipswurl=$ipsw
 else
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/15.7.1 | jq '.[0] | .buildid' --raw-output)
+    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | jq '.[0] | .buildid' --raw-output)
     if [[ "$deviceid" == *"iPad"* ]]; then
         os=iPadOS
     else
