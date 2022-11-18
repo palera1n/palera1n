@@ -74,17 +74,17 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 
 # Credits
 - [Nathan](https://github.com/verygenericname)
-    - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
+    - The ramdisk that dumps blobs is a slimmed down version of [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script)
     - Also helped Mineek getting the kernel up and running and with the patches
     - Helping with adding multiple device support
     - Fixing issues relating to camera.. etc by switching to fsboot
-    - https://github.com/verygenericname/iBoot64Patcher
+    - [iBoot64Patcher fork](https://github.com/verygenericname/iBoot64Patcher)
 - [Mineek](https://github.com/mineek)
     - For the patching and booting commands
     - Adding tweak support
     - For patchfinders for RELEASE kernels
-    - https://github.com/mineek/PongoOS/tree/iOS15/checkra1n/Kernel15Patcher
-    - https://github.com/mineek/Kernel64Patcher
+    - [Kernel15Patcher](https://github.com/mineek/PongoOS/tree/iOS15/checkra1n/Kernel15Patcher)
+    - [Kernel64Patcher](https://github.com/mineek/Kernel64Patcher)
 - [Amy](https://github.com/elihwyma) for the Pogo app
 - [checkra1n](https://github.com/checkra1n) for the base of the kpf
 - [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
@@ -94,7 +94,7 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [tihmstar](https://github.com/tihmstar) for pzb/original iBoot64Patcher/img4tool
 - [xerub](https://github.com/xerub) for img4lib and restored_external in the ramdisk
 - [Cryptic](https://github.com/Cryptiiiic) for iBoot64Patcher fork, and liboffsetfinder64 fork
-- https://github.com/Cryptiiiic/iBoot64Patcher
-- https://github.com/Cryptiiiic/liboffsetfinder64
+- [iBoot64Patcher](https://github.com/Cryptiiiic/iBoot64Patcher)
+- [liboffsetfinder64](https://github.com/Cryptiiiic/liboffsetfinder64)
 - [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
 - [Nick Chan](https://github.com/asdfugil) general help with patches.
