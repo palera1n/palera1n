@@ -46,6 +46,7 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --verbose           Enable verbose boot on the device
+    --A8X               Fix no such file or directory on iPadAir2
 
 Subcommands:
     dfuhelper           An alias for --dfuhelper
@@ -94,6 +95,9 @@ parse_opt() {
         --help)
             print_help
             exit 0
+            ;;
+        --A8X)
+            A8X=1
             ;;
         *)
             echo "[-] Unknown option $1. Use $0 --help for help."
@@ -510,6 +514,8 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         echo "[*] Removing Jailbreak"
         if [ "$no_baseband" = "1" ]; then
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
+        if [ "$A8X" = "1" ]; then
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s6 > /dev/null || true"
         else
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s8 > /dev/null || true"
         fi
@@ -537,6 +543,8 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
             sleep 2
             if [ "$no_baseband" = "1" ]; then 
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
+            if [ "$A8X" = "1" ]; then 
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s6 /mnt8"
             else
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
             fi
@@ -692,6 +700,12 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
                 "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7' -f
             else
                 "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7' -f
+            fi
+        if [ "$A8X" = "1" ]; then 
+            if [ "$verbose" = "1" ]; then
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s6' -f
+            else
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s6' -f
             fi
         else
             if [ "$verbose" = "1" ]; then
