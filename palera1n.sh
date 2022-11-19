@@ -491,13 +491,10 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     done
 
     echo "[*] Testing for baseband presence"
-    if [ "$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [ "${cpid}" == *"0x7001"* ]; then
+    if ["${cpid}" == *"0x7001"*]; then
+        disk = 6
+    elif [ "$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ] && [ ! "$disk" == 6]; then
         disk = 7
-    else
-        if [ "${cpid}" == *"0x7001"* ]; then
-            disk = 6
-        else
-            disk = 7
     fi
 
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
