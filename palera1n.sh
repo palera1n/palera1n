@@ -559,13 +559,16 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     if [ "$restorerootfs" = "1" ]; then
         echo "[*] Removing Jailbreak"
         if [ "$no_baseband" = "1" ]; then
-                remote_cmd "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
+            remote_cmd "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
         else
-                remote_cmd "/sbin/apfs_deletefs disk0s1s8 > /dev/null || true"
+            remote_cmd "/sbin/apfs_deletefs disk0s1s8 > /dev/null || true"
         fi
         remote_cmd "rm -f /mnt2/jb"
         remote_cmd "rm -rf /mnt2/cache /mnt2/lib"
         remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+        if [ -z "$semi_tethered" ]; then
+            remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache"
+        fi
         remote_cmd "/bin/sync"
         remote_cmd "/usr/sbin/nvram auto-boot=true"
         rm -f BuildManifest.plist
@@ -640,13 +643,20 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
     remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-    remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
+    if [ "$semi_tethered" = "1" ]; then
+        remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
+    else
+        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
+    fi
     sleep 1
+
     # download the kernel
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$ipswurl"
+
     echo "[*] Downloading kernelcache"
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+    
     mv kernelcache.release.* work/kernelcache
     if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]|| [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
