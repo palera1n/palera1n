@@ -43,7 +43,7 @@ Options:
     --skip-fakefs       Don't create the fakefs even if --semi-tethered is specified
     --no-install        Skip murdering Tips app
     --dfu               Indicate that the device is connected in DFU mode
-    --restorerootfs     Restore the root fs on tethered
+    --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --verbose           Enable verbose boot on the device
 
@@ -359,14 +359,6 @@ elif [ "$dfuhelper" = "1" ]; then
     echo "[*] Running DFU helper"
     _dfuhelper
     exit
-elif [ "$restorerootfs" = "1" ]; then
-    echo "[*] Restoring rootfs..."
-    "$dir"/irecovery -n
-    sleep 2
-    echo "[*] Done, your device will boot into iOS now."
-    # clean the boot files bcs we don't need them anymore
-    rm -rf boot-"$deviceid" work .tweaksinstalled
-    exit
 fi
 
 if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
@@ -379,7 +371,7 @@ if [ "$tweaks" = "1" ]; then
     _check_dfu
 fi
 
-if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ]; then
+if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ] && [ -z "$restorerootfs" ]; then
     echo "!!! WARNING WARNING WARNING !!!"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
@@ -451,6 +443,10 @@ else
     ipswurl=$(curl -sL https://api.appledb.dev/ios/$os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
 fi
 
+if [ "$restorerootfs" = "1" ]; then
+    rm -rf "blobs/"$deviceid"-"$version".shsh2" "boot-$deviceid" work .tweaksinstalled
+fi
+
 # Have the user put the device into DFU
 if [ -z "$dfu" ] && [ -z "$tweaks" ]; then
     _dfuhelper
@@ -468,7 +464,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh 15.6 `if [ ! "$1" = '--tweaks' ]; then echo "rootless"; fi`
+    ./sshrd.sh 15.6 `if [ -z "$tweaks" ]; then echo "rootless"; fi`
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
@@ -498,9 +494,38 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         no_baseband=1
     fi
 
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
+
+    has_active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/active" 2> /dev/null)
+    if [ ! "$has_active" = "/mnt6/active" ]; then
+        echo "[!] Active file does not exist! Please use SSH to create it"
+        echo "    /mnt6/active should contain the name of the UUID in /mnt6"
+        echo "    When done, type reboot in the SSH session, then rerun the script"
+        echo "    ssh root@localhost -p 2222"
+        exit
+    fi
+    active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/active" 2> /dev/null)
+
+    if [ "$restorerootfs" = "1" ]; then
+        echo "[*] Removing Jailbreak"
+        if [ "$no_baseband" = "1" ]; then
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
+        else
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s8 > /dev/null || true"
+        fi
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt2/jb"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cache /mnt2/lib"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/sync"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true"
+        rm -f BuildManifest.plist
+        echo "[*] Done! Rebooting your device"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
+        exit;
+    fi
+
     echo "[*] Dumping blobs and installing Pogo"
     sleep 1
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) 
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
     rm dump.raw
@@ -557,16 +582,6 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     else
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
     fi
-
-    has_active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/active" 2> /dev/null)
-    if [ ! "$has_active" = "/mnt6/active" ]; then
-        echo "[!] Active file does not exist! Please use SSH to create it"
-        echo "    /mnt6/active should contain the name of the UUID in /mnt6"
-        echo "    When done, type reboot in the SSH session, then rerun the script"
-        echo "    ssh root@localhost -p 2222"
-        exit
-    fi
-    active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/active" 2> /dev/null)
 
     "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 binaries/Kernel15Patcher.ios root@localhost:/mnt1/private/var/root/Kernel15Patcher.ios
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 /mnt1/private/var/root/Kernel15Patcher.ios"
