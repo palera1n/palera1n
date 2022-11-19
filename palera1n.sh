@@ -18,6 +18,7 @@ commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
 max_args=1
 arg_count=0
+disk = 8
 
 # =========
 # Functions
@@ -46,7 +47,6 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --verbose           Enable verbose boot on the device
-    --A8X               Fix no such file or directory on iPadAir2
 
 Subcommands:
     dfuhelper           An alias for --dfuhelper
@@ -95,9 +95,6 @@ parse_opt() {
         --help)
             print_help
             exit 0
-            ;;
-        --A8X)
-            no_baseband=2
             ;;
         *)
             echo "[-] Unknown option $1. Use $0 --help for help."
@@ -494,8 +491,10 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     done
 
     echo "[*] Testing for baseband presence"
-    if [ "$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
-        no_baseband=1
+    if ["${cpid}" == *"0x7001"*]; then
+        disk = 6
+    elif [ "$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ] && [ ! "$disk" == 6]; then
+        disk = 7
     fi
 
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
@@ -512,13 +511,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     if [ "$restorerootfs" = "1" ]; then
         echo "[*] Removing Jailbreak"
-        if [ "$no_baseband" = "1" ]; then
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
-        elif [ "$no_baseband" = "2" ]; then
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s6 > /dev/null || true"
-        else
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s8 > /dev/null || true"
-        fi
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s${disk} > /dev/null || true"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt2/jb"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -rf /mnt2/cache /mnt2/lib"
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
@@ -541,13 +534,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
             sleep 2
-            if [ "$no_baseband" = "1" ]; then 
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
-            elif [ "$no_baseband" = "2" ]; then 
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s6 /mnt8"
-            else
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
-            fi
+            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s${disk} /mnt8"
             
             sleep 1
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
@@ -695,24 +682,10 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     echo "[*] Patching and signing iBSS/iBoot"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [ "$semi_tethered" = "1" ]; then
-        if [ "$no_baseband" = "1" ]; then 
-            if [ "$verbose" = "1" ]; then
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7' -f
-            else
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7' -f
-            fi
-        elif [ "$no_baseband" = "2" ]; then 
-            if [ "$verbose" = "1" ]; then
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s6' -f
-            else
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s6' -f
-            fi
+        if [ "$verbose" = "1" ]; then
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
         else
-            if [ "$verbose" = "1" ]; then
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8' -f
-            else
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s8' -f
-            fi
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
         fi
     else
         if [ "$verbose" = "1" ]; then
