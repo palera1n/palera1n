@@ -446,6 +446,9 @@ else
     fi
 
     buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
+    if [ "$buildid" == "19B75" ]; then
+        buildid=19B74
+    fi
     ipswurl=$(curl -sL https://api.appledb.dev/ios/$os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
 fi
 
