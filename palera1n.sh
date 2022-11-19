@@ -23,7 +23,7 @@ arg_count=0
 # Functions
 # =========
 remote_cmd() {
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost $@
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
 }
 remote_cp() {
     "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
