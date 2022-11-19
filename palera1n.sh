@@ -42,6 +42,7 @@ Options:
     --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
     --skip-fakefs       Don't create the fakefs even if --semi-tethered is specified
     --no-install        Skip murdering Tips app
+    --no-baseband       Indicate that the device does not have a baseband
     --dfu               Indicate that the device is connected in DFU mode
     --restorerootfs     Restore the root fs on tethered
     --debug             Debug the script
@@ -74,7 +75,7 @@ parse_opt() {
             skip_fakefs=1
             ;;
         --no-baseband)
-            echo "[!] Baseband presence is now detected automatically, and this option no longer do anything."
+            no_baseband=1
             ;;
         --no-install)
             no_install=1
