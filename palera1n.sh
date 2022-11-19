@@ -47,7 +47,6 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --verbose           Enable verbose boot on the device
-    --A8X               Fix no such file or directory on iPadAir2
 
 Subcommands:
     dfuhelper           An alias for --dfuhelper
@@ -96,9 +95,6 @@ parse_opt() {
         --help)
             print_help
             exit 0
-            ;;
-        --A8X)
-            disk = 6
             ;;
         *)
             echo "[-] Unknown option $1. Use $0 --help for help."
@@ -495,7 +491,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     done
 
     echo "[*] Testing for baseband presence"
-    if [ "$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ] && [ ! "$disk" == 6]; then
+    if ["${cpid}" == *"0x7001"*]; then
+        disk = 6
+    elif [ "$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ] && [ ! "$disk" == 6]; then
         disk = 7
     fi
 
