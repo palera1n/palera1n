@@ -367,10 +367,6 @@ if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
     exit 1;
 fi
 
-if [ "$tweaks" = "1" ]; then
-    _check_dfu
-fi
-
 if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ] && [ -z "$restorerootfs" ]; then
     echo "!!! WARNING WARNING WARNING !!!"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
@@ -396,7 +392,7 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
 fi
 
 # Get device's iOS version from ideviceinfo if in normal mode
-if [ "$dfu" = "1" ] || [ "$tweaks" = "1" ]; then
+if [ "$dfu" = "1" ]; then
     if [ -z "$version" ]; then
         echo "[-] When using --dfu, please pass the version you're device is on"
         exit
@@ -448,7 +444,7 @@ if [ "$restorerootfs" = "1" ]; then
 fi
 
 # Have the user put the device into DFU
-if [ -z "$dfu" ] && [ -z "$tweaks" ]; then
+if [ -z "$dfu" ]; then
     _dfuhelper
 fi
 sleep 2
