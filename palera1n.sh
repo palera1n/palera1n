@@ -512,8 +512,6 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     if [ "$restorerootfs" = "1" ]; then
         echo "[*] Removing Jailbreak"
-        if [ "$no_baseband" = "1" ]; then
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
         if [ "$A8X" = "1" ]; then
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s6 > /dev/null || true"
         else
@@ -541,8 +539,6 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
             sleep 2
-            if [ "$no_baseband" = "1" ]; then 
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
             if [ "$A8X" = "1" ]; then 
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s6 /mnt8"
             else
