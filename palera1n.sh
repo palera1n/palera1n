@@ -40,7 +40,6 @@ Options:
     --tweaks            Enable tweaks
     --semi-tethered     When used with --tweaks, make the jailbreak semi-tethered instead of tethered
     --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
-    --no-baseband       When used with --semi-tethered, allows the fakefs to be created correctly on no baseband devices
     --skip-fakefs       Don't create the fakefs even if --semi-tethered is specified
     --no-install        Skip murdering Tips app
     --dfu               Indicate that the device is connected in DFU mode
@@ -75,7 +74,7 @@ parse_opt() {
             skip_fakefs=1
             ;;
         --no-baseband)
-            no_baseband=1
+            echo "[!] Baseband presence is now detected automatically, and this option no longer do anything."
             ;;
         --no-install)
             no_install=1
@@ -494,6 +493,11 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         sleep 1
     done
 
+    echo "[*] Testing for baseband presence"
+    if [ "$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
+        no_baseband=1
+    fi
+
     echo "[*] Dumping blobs and installing Pogo"
     sleep 1
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
@@ -506,7 +510,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
             sleep 2
-            if [ "$skip_baseband" = "1" ]; then 
+            if [ "$no_baseband" = "1" ]; then 
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
             else
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
