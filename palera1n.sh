@@ -512,7 +512,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     if [ "$restorerootfs" = "1" ]; then
         echo "[*] Removing Jailbreak"
-        if [ "$A8X" = "1" ]; then
+        if [ "$no_baseband" = "1" ]; then
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
+        elif [ "$no_baseband" = "2" ]; then
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s6 > /dev/null || true"
         else
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/apfs_deletefs disk0s1s8 > /dev/null || true"
@@ -539,7 +541,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
             "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
             sleep 2
-            if [ "$A8X" = "1" ]; then 
+            if [ "$no_baseband" = "1" ]; then 
+                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
+            elif [ "$no_baseband" = "2" ]; then 
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s6 /mnt8"
             else
                 "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
@@ -697,7 +701,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
             else
                 "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7' -f
             fi
-        if [ "$A8X" = "1" ]; then 
+        elif [ "$no_baseband" = "2" ]; then 
             if [ "$verbose" = "1" ]; then
                 "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s6' -f
             else
