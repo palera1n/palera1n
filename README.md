@@ -74,7 +74,7 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 
 # Credits
 - [Nathan](https://github.com/verygenericname)
-    - The ramdisk that dumps blobs is a slimmed down version of [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script)
+    - The ramdisk that dumps blobs, installs pogo to tips app, and duplicates rootfs is a slimmed down version of [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script)
     - For modified [restored_external](https://github.com/verygenericname/sshrd_SSHRD_Script)
     - Also helped Mineek getting the kernel up and running and with the patches
     - Helping with adding multiple device support
