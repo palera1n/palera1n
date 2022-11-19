@@ -97,7 +97,7 @@ parse_opt() {
             exit 0
             ;;
         --A8X)
-            A8X=1
+            no_baseband=2
             ;;
         *)
             echo "[-] Unknown option $1. Use $0 --help for help."
