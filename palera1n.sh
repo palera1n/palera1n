@@ -537,8 +537,10 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/iproxy 2222 22 &
     fi
 
-    _wait ramdisk
-
+    while ! (remote_cmd "echo connected" &> /dev/null); do
+        sleep 1
+    done
+    
     echo "[*] Testing for baseband presence"
     if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
         no_baseband=1
