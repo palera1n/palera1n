@@ -249,7 +249,8 @@ _wait() {
 
 _dfuhelper() {
     local step_one;
-    if [[ "$1" = 0x801* ]]; then
+    deviceid=$(_info normal ProductType)
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step_one="Hold volume down + side button"
     else
         step_one="Hold home + power button"
@@ -261,7 +262,11 @@ _dfuhelper() {
     sleep 3
     "$dir"/irecovery -c "reset"
     step 1 "Keep holding"
-    step 10 'Release side button, but keep holding volume down'
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        step 10 'Release side button, but keep holding volume down'
+    else
+        step 10 'Release power button, but keep holding home button'
+    fi
     sleep 1
     
     if [ "$(get_device_mode)" = "dfu" ]; then
@@ -280,18 +285,6 @@ _kill_if_running() {
             killall $1
         fi
     fi
-}
-
-_beta_url() {
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        json=$(curl -s 'https://api.appledb.dev/ios/iPadOS;19B5060d.json')
-    else
-        json=$(curl -s 'https://api.appledb.dev/ios/iOS;19B5060d.json')
-    fi
-
-    sources=$(echo "$json" | $dir/jq -r '.sources')
-    beta_url=$(echo "$sources" | $dir/jq -r --arg deviceid "$deviceid" '.[] | select(.type == "ota" and (.deviceMap | index($deviceid))) | .links[0].url')
-    echo "$beta_url"
 }
 
 _exit_handler() {
@@ -661,7 +654,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
     
     mv kernelcache.release.* work/kernelcache
-    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]|| [[ "$deviceid" == *'iPad5'* ]]; then
+    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
     else
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
@@ -816,8 +809,10 @@ if [ "$os" = 'Darwin' ]; then
 fi
 
 cd logs
-for file in *.log; do
-    mv "$file" SUCCESS_${file}
+for file in *.log; do 
+    if [[ "$file" != "SUCCESS_"* ]]; then 
+        sudo mv "$file" SUCCESS_${file}
+    fi
 done
 cd ..
 
