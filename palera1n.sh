@@ -444,6 +444,7 @@ if [ "$(get_device_mode)" = "ramdisk" ]; then
     else
         "$dir"/iproxy 2222 22 &
     fi
+    sleep 1
     remote_cmd "/usr/sbin/nvram auto-boot=false"
     remote_cmd "/sbin/reboot"
     _kill_if_running iproxy
