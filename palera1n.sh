@@ -250,7 +250,7 @@ _wait() {
 
 _dfuhelper() {
     local step_one;
-    deviceid=$(_info normal ProductType)
+    deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step_one="Hold volume down + side button"
     else
@@ -274,6 +274,7 @@ _dfuhelper() {
         echo "[*] Device entered DFU!"
     else
         echo "[-] Device did not enter DFU mode, rerun the script and try again"
+        return -1
     fi
 }
 
@@ -500,7 +501,10 @@ fi
 # Have the user put the device into DFU
 if [ "$(get_device_mode)" != "dfu" ]; then
     recovery_fix_auto_boot;
-    _dfuhelper "$cpid"
+    _dfuhelper "$cpid" || {
+        echo "[-] failed to enter DFU mode, run palera1n.sh again"
+        exit -1
+    }
 fi
 sleep 2
 
@@ -520,9 +524,15 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
     cd ..
-    # if known hosts file exists, remove it
+    # remove special lines from known_hosts
     if [ -f ~/.ssh/known_hosts ]; then
-        rm ~/.ssh/known_hosts
+        if [ "$os" = "Darwin" ]; then
+            sed -i.bak '/localhost/d' ~/.ssh/known_hosts
+            sed -i.bak '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        elif [ "$os" = "Linux" ]; then
+            sed -i '/localhost/d' ~/.ssh/known_hosts
+            sed -i '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        fi
     fi
 
     # Execute the commands once the rd is booted
@@ -585,7 +595,8 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     if [ "$semi_tethered" = "1" ]; then
         if [ -z "$skip_fakefs" ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
+            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1" && {
+                
             sleep 2
             remote_cmd "/sbin/mount_apfs /dev/disk0s1s${disk} /mnt8"
             
@@ -593,6 +604,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
             remote_cmd "cp -a /mnt1/. /mnt8/"
             sleep 1
             echo "[*] fakefs created, continuing..."
+            } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
         fi
     fi
 
@@ -802,7 +814,11 @@ fi
 cd logs
 for file in *.log; do 
     if [[ "$file" != "SUCCESS_"* ]]; then 
-        sudo mv "$file" SUCCESS_${file}
+        if [ "$os" = 'Linux' ]; then
+            sudo mv "$file" SUCCESS_${file}
+        else
+            mv "$file" SUCCESS_${file}
+        fi
     fi
 done
 cd ..
