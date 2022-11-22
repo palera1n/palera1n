@@ -18,6 +18,7 @@ commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
 max_args=1
 arg_count=0
+disk=8
 
 # =========
 # Functions
@@ -249,7 +250,8 @@ _wait() {
 
 _dfuhelper() {
     local step_one;
-    if [[ "$1" = 0x801* ]]; then
+    deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step_one="Hold volume down + side button"
     else
         step_one="Hold home + power button"
@@ -261,13 +263,18 @@ _dfuhelper() {
     sleep 3
     "$dir"/irecovery -c "reset"
     step 1 "Keep holding"
-    step 10 'Release side button, but keep holding volume down'
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        step 10 'Release side button, but keep holding volume down'
+    else
+        step 10 'Release power button, but keep holding home button'
+    fi
     sleep 1
     
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device entered DFU!"
     else
         echo "[-] Device did not enter DFU mode, rerun the script and try again"
+        return -1
     fi
 }
 
@@ -280,18 +287,6 @@ _kill_if_running() {
             killall $1
         fi
     fi
-}
-
-_beta_url() {
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        json=$(curl -s 'https://api.appledb.dev/ios/iPadOS;19B5060d.json')
-    else
-        json=$(curl -s 'https://api.appledb.dev/ios/iOS;19B5060d.json')
-    fi
-
-    sources=$(echo "$json" | $dir/jq -r '.sources')
-    beta_url=$(echo "$sources" | $dir/jq -r --arg deviceid "$deviceid" '.[] | select(.type == "ota" and (.deviceMap | index($deviceid))) | .links[0].url')
-    echo "$beta_url"
 }
 
 _exit_handler() {
@@ -506,7 +501,10 @@ fi
 # Have the user put the device into DFU
 if [ "$(get_device_mode)" != "dfu" ]; then
     recovery_fix_auto_boot;
-    _dfuhelper "$cpid"
+    _dfuhelper "$cpid" || {
+        echo "[-] failed to enter DFU mode, run palera1n.sh again"
+        exit -1
+    }
 fi
 sleep 2
 
@@ -526,9 +524,15 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
     cd ..
-    # if known hosts file exists, remove it
+    # remove special lines from known_hosts
     if [ -f ~/.ssh/known_hosts ]; then
-        rm ~/.ssh/known_hosts
+        if [ "$os" = "Darwin" ]; then
+            sed -i.bak '/localhost/d' ~/.ssh/known_hosts
+            sed -i.bak '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        elif [ "$os" = "Linux" ]; then
+            sed -i '/localhost/d' ~/.ssh/known_hosts
+            sed -i '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        fi
     fi
 
     # Execute the commands once the rd is booted
@@ -543,8 +547,14 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     done
     
     echo "[*] Testing for baseband presence"
-    if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
-        no_baseband=1
+    if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [ "${cpid}" == *"0x7001"* ]; then
+        disk=7
+    elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
+        if [ "${cpid}" == *"0x7001"* ]; then
+            disk=6
+        else
+            disk=7
+        fi
     fi
 
     remote_cmd "/usr/bin/mount_filesystems"
@@ -561,11 +571,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     if [ "$restorerootfs" = "1" ]; then
         echo "[*] Removing Jailbreak"
-        if [ "$no_baseband" = "1" ]; then
-            remote_cmd "/sbin/apfs_deletefs disk0s1s7 > /dev/null || true"
-        else
-            remote_cmd "/sbin/apfs_deletefs disk0s1s8 > /dev/null || true"
-        fi
+        remote_cmd "/sbin/apfs_deletefs disk0s1s${disk} > /dev/null || true"
         remote_cmd "rm -f /mnt2/jb"
         remote_cmd "rm -rf /mnt2/cache /mnt2/lib"
         remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
@@ -589,18 +595,16 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     if [ "$semi_tethered" = "1" ]; then
         if [ -z "$skip_fakefs" ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
+            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1" && {
+                
             sleep 2
-            if [ "$no_baseband" = "1" ]; then 
-                remote_cmd "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
-            else
-                remote_cmd "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
-            fi
+            remote_cmd "/sbin/mount_apfs /dev/disk0s1s${disk} /mnt8"
             
             sleep 1
             remote_cmd "cp -a /mnt1/. /mnt8/"
             sleep 1
             echo "[*] fakefs created, continuing..."
+            } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
         fi
     fi
 
@@ -661,7 +665,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
     
     mv kernelcache.release.* work/kernelcache
-    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]|| [[ "$deviceid" == *'iPad5'* ]]; then
+    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
     else
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
@@ -749,18 +753,10 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     echo "[*] Patching and signing iBSS/iBoot"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [ "$semi_tethered" = "1" ]; then
-        if [ "$no_baseband" = "1" ]; then 
-            if [ "$verbose" = "1" ]; then
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7' -f
-            else
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7' -f
-            fi
+        if [ "$verbose" = "1" ]; then
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
         else
-            if [ "$verbose" = "1" ]; then
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8' -f
-            else
-                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s8' -f
-            fi
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
         fi
     else
         if [ "$verbose" = "1" ]; then
@@ -816,8 +812,14 @@ if [ "$os" = 'Darwin' ]; then
 fi
 
 cd logs
-for file in *.log; do
-    mv "$file" SUCCESS_${file}
+for file in *.log; do 
+    if [[ "$file" != "SUCCESS_"* ]]; then 
+        if [ "$os" = 'Linux' ]; then
+            sudo mv "$file" SUCCESS_${file}
+        else
+            mv "$file" SUCCESS_${file}
+        fi
+    fi
 done
 cd ..
 
