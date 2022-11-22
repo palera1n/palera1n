@@ -98,3 +98,4 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
 - [Nick Chan](https://github.com/asdfugil) general help with patches.
 - [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)
+- Serena for helping with boot ramdisk.
