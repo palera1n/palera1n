@@ -228,7 +228,7 @@ get_device_mode() {
     elif [ "$os" = "Darwin" ]; then
         usbserials=$(system_profiler SPUSBDataType | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
     fi
-    if grep -qE 'ramdisk tool (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{1,4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
+    if grep -qE '(ramdisk tool|SSHRD_Script) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
         device_mode=ramdisk
     fi
     echo "$device_mode"
@@ -323,6 +323,21 @@ fi
 # Dependencies
 # ============
 
+# Check for required commands
+if [ "$os" = 'Linux' ]; then
+    linux_cmds='lsusb'
+fi
+
+for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
+    if ! command -v "${cmd}" > /dev/null; then
+        echo "[-] Command '${cmd}' not installed, please install it!";
+        cmd_not_found=1
+    fi
+done
+if [ "$cmd_not_found" = "1" ]; then
+    exit 1
+fi
+
 # Download gaster
 if [ -e "$dir"/gaster ]; then
     "$dir"/gaster &> /dev/null > /dev/null | grep -q 'usb_timeout: 5' && rm "$dir"/gaster
@@ -386,6 +401,7 @@ fi
 if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
     echo "[!] --semi-tethered may not be used with rootless"
     echo "    Rootless is already semi-tethered"
+    >&2 echo "Hint: to use tweaks on semi-tethered, specify the --tweaks option"
     exit 1;
 fi
 
@@ -439,7 +455,7 @@ if [ "$(get_device_mode)" = "ramdisk" ]; then
     else
         "$dir"/iproxy 2222 22 &
     fi
-    sleep 1
+    sleep 2
     remote_cmd "/usr/sbin/nvram auto-boot=false"
     remote_cmd "/sbin/reboot"
     _kill_if_running iproxy
@@ -545,7 +561,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     while ! (remote_cmd "echo connected" &> /dev/null); do
         sleep 1
     done
-    
+
     echo "[*] Testing for baseband presence"
     if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [ "${cpid}" == *"0x7001"* ]; then
         disk=7
@@ -574,10 +590,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         remote_cmd "/sbin/apfs_deletefs disk0s1s${disk} > /dev/null || true"
         remote_cmd "rm -f /mnt2/jb"
         remote_cmd "rm -rf /mnt2/cache /mnt2/lib"
+        remote_cmd "rm -rf /mnt6/$active/procursus"
         remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-        if [ -z "$semi_tethered" ]; then
-            remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache"
-        fi
+        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache 2> /dev/null || true"
         remote_cmd "/bin/sync"
         remote_cmd "/usr/sbin/nvram auto-boot=true"
         rm -f BuildManifest.plist
