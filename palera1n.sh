@@ -652,7 +652,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #remote_cmd "/usr/sbin/nvram root-live-fs=1"
-    if [ "$semi_tethered" = "1" ]; then
+    if [ "$semi_tethered" = "1" ] || [ -z "$tweaks" ]; then
         remote_cmd "/usr/sbin/nvram auto-boot=true"
     else
         remote_cmd "/usr/sbin/nvram auto-boot=false"
@@ -665,7 +665,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
     remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-    if [ "$semi_tethered" = "1" ]; then
+    if [ "$semi_tethered" = "1" ] || [ -z "$tweaks" ]; then
         remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
     else
         remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
@@ -693,7 +693,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
-    elif [ "$tweaks" = "1" ]; then
+    else
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
     fi
     sleep 1
