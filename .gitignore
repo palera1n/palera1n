@@ -1,6 +1,6 @@
 .DS_Store
 */.DS_Store
-binaries/Linux/gaster
+binaries/Linux/*/gaster
 binaries/Darwin/gaster
 work
 rdwork

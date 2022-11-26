@@ -13,7 +13,12 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
 version="1.3.0"
 os=$(uname)
-dir="$(pwd)/binaries/$os"
+arch=$(uname -m)
+if [ "$os" = "Linux" ]; then
+    dir="$(pwd)/binaries/Linux/$arch"
+else
+    dir="$(pwd)/binaries/Darwin"
+fi
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
 max_args=1
@@ -344,10 +349,13 @@ if [ -e "$dir"/gaster ]; then
 fi
 
 if [ ! -e "$dir"/gaster ]; then
-    curl -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os".zip
-    unzip gaster-"$os".zip
+    if [ "$os" = 'Linux' ]; then
+        extrapath="-${arch}"
+    fi
+    curl -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os$extrapath".zip
+    unzip gaster-"$os$extrapath".zip
     mv gaster "$dir"/
-    rm -rf gaster gaster-"$os".zip
+    rm -rf gaster gaster-"$os$extrapath".zip
 fi
 
 # Check for pyimg4
@@ -362,7 +370,7 @@ fi
 # ============
 
 # Update submodules
-git submodule update --init --recursive
+#git submodule update --init --recursive
 
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
