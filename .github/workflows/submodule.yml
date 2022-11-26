@@ -20,7 +20,7 @@ jobs:
     - name: Update submodules
       run: |
         cd ramdisk
-        git pull origin main
+        git pull origin HEAD:main
         cd ..
 
     - name: Commit changes
