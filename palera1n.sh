@@ -814,14 +814,10 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
-if [[ "$cpid" == *"0x801"* ]]; then
-    sleep 1
-    "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
-    sleep 1
-    "$dir"/irecovery -c fsboot
-else
+if [[ "$cpid" != *"0x801"* ]]; then
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
+fi
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
     sleep 1
@@ -830,7 +826,6 @@ else
     "$dir"/irecovery -c "setpicture 0x1"
     sleep 1
     "$dir"/irecovery -c fsboot
-fi
 
 if [ "$os" = 'Darwin' ]; then
     defaults write -g ignore-devices -bool false
