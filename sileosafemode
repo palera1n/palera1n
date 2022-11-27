@@ -4,7 +4,7 @@ if [[ "$OSTYPE" =~ ^darwin ]]; then
 fi
 
 if [[ "$OSTYPE" =~ ^linux ]]; then
-    ./binaries/Darwin/iproxy 2222 22
+    ./binaries/Linux/iproxy 2222 22
 fi
 rm ~/.ssh/known_hosts
 ssh root@localhost -p 2222
