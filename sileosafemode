@@ -1,0 +1,14 @@
+read -p "Connect your device, then press space to put Sileo into safe mode"
+if [[ "$OSTYPE" =~ ^darwin ]]; then
+    ./binaries/Darwin/iproxy 2222 22
+fi
+
+if [[ "$OSTYPE" =~ ^linux ]]; then
+    ./binaries/Darwin/iproxy 2222 22
+fi
+rm ~/.ssh/known_hosts
+ssh root@localhost -p 2222
+killall -11 SpringBoard
+read -p "Sileo should now be in safe mode, press space to exit"
+exit
+exit
