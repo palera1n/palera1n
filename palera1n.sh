@@ -795,9 +795,13 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         rm *.bak
     fi
     cd ..
-    "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
-    "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
+    python3 -m pyimg4 im4p create -i work/iBSS.patched -o work/iBSS.patched.im4p -f ibss
+    python3 -m pyimg4 img4 create -p work/iBSS.patched.im4p -m work/IM4M -o boot-"$deviceid"/iBSS.img4
+    python3 -m pyimg4 im4p create -i work/ibot.patched -o work/ibot.patched.im4p -f `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
+    python3 -m pyimg4 img4 create -p work/ibot.patched.im4p -m work/IM4M -o boot-"$deviceid"/ibot.img4
     "$dir"/img4 -i other/bootlogo.im4p -o boot-"$deviceid"/bootlogo.img4 -M work/IM4M -A -T rlgo
+    python3 -m pyimg4 im4p create -i other/bootlogo.im4p -o work/bootlogo.im4p -f ibss
+    python3 -m pyimg4 img4 create -p work/bootlogo.im4p -m work/IM4M -o boot-"$deviceid"/bootlogo.img4
 
     touch boot-"$deviceid"/.fsboot
 fi
