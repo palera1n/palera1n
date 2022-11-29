@@ -820,9 +820,9 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         fi
     else
         if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v' -l
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v' -f
         else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -l
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -f
         fi
     fi
 
@@ -855,6 +855,11 @@ else
     "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
     sleep 4
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+fi
+
+if [ -z "$semi_tethered" ]; then
+    sleep 2
+    "$dir"/irecovery -c fsboot
 fi
 
 cd logs
