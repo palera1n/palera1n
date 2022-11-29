@@ -684,7 +684,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     if [ "$tweaks" = "1" ]; then
         sleep 1
-        remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8 || true"
+        if [ "$semi_tethered" = "1" ]; then
+            remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8 || true"
+        else
+            disk=1
+        fi
 
         # iOS 16 stuff
         if [[ "$version" == *"16"* ]]; then
@@ -700,24 +704,24 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
                 remote_cmd "/sbin/mount_apfs -o ro $app_disk /mnt9"
                 sleep 1
 
-                remote_cmd "rm -rf /mnt8/System/Cryptexes/App /mnt8/System/Cryptexes/OS"
+                remote_cmd "rm -rf /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
                 sleep 1
-                remote_cmd "mkdir /mnt8/System/Cryptexes/App /mnt8/System/Cryptexes/OS"
+                remote_cmd "mkdir /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
                 sleep 1
-                remote_cmd "cp -a /mnt9/. /mnt8/System/Cryptexes/App"
+                remote_cmd "cp -a /mnt9/. /mnt1/System/Cryptexes/App"
                 sleep 1
-                remote_cmd "cp -a /mnt2/. /mnt8/System/Cryptexes/OS"
+                remote_cmd "cp -a /mnt2/. /mnt1/System/Cryptexes/OS"
                 sleep 1
-                remote_cmd "rm -rf /mnt8/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld"
+                remote_cmd "rm -rf /mnt1/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld"
                 sleep 1
-                remote_cmd "cp -a /mnt2/System/Library/Caches/com.apple.dyld /mnt8/System/Library/Caches/"
+                remote_cmd "cp -a /mnt2/System/Library/Caches/com.apple.dyld /mnt1/System/Library/Caches/"
             fi
         fi
 
         echo "[*] Copying files to rootfs"
-        remote_cmd "rm -rf /mnt8/jbin /mnt8/palera1n"
+        remote_cmd "rm -rf /mnt$disk/jbin /mnt$disk/palera1n"
         sleep 1
-        remote_cmd "mkdir -p /mnt8/jbin/binpack /mnt8/jbin/loader.app /mnt8/palera1n"
+        remote_cmd "mkdir -p /mnt$disk/jbin/binpack /mnt$disk/jbin/loader.app /mnt$disk/palera1n"
         sleep 1
 
         # download loader
