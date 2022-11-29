@@ -44,7 +44,6 @@ You may join [here](https://dsc.gg/palera1n).
   - On A11, we don't have a SEP exploit yet.
 
 # Prerequisites
-#### Warning: You must install the Tips app from the App Store before running palera1n.
 - A checkm8 vulnerable iOS device on iOS 15 (A8-A11)
   - The device must be on iOS 15.0-15.7.1
 - Linux or macOS computer
@@ -74,7 +73,7 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 
 # Credits
 - [Nathan](https://github.com/verygenericname)
-    - The ramdisk that dumps blobs, installs pogo to tips app, and duplicates rootfs is a slimmed down version of [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script)
+    - The ramdisk that dumps blobs, copies files, and duplicates rootfs is a slimmed down version of [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script)
     - For modified [restored_external](https://github.com/verygenericname/sshrd_SSHRD_Script)
     - Also helped Mineek getting the kernel up and running and with the patches
     - Helping with adding multiple device support
@@ -96,5 +95,5 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [xerub](https://github.com/xerub) for [img4lib](https://github.com/xerub/img4lib) and [restored_external](https://github.com/xerub/sshrd) in the ramdisk
 - [Cryptic](https://github.com/Cryptiiiic) for [iBoot64Patcher](https://github.com/Cryptiiiic/iBoot64Patcher) fork, and [liboffsetfinder64](https://github.com/Cryptiiiic/liboffsetfinder64) fork
 - [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
-- [Nick Chan](https://github.com/asdfugil) general help with patches.
+- [Nick Chan](https://github.com/asdfugil) general help with patches and the base of the custom launchd/[haxx](https://github.com/asdfugil/haxx)
 - [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)

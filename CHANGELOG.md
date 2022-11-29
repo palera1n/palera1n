@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.0
+
+- Add 16.0-16.1.1 support
+- Uicache loader app on boot (no more Tips app hijacking)
+- Fix deviceid finding
+- Use apticket.der over dumping rdisk1
+- Add info.json for palera1n-info tweak
+- Fix rootless
+- Semi-tethered WebKit fix on iOS 16
+- Switch to local boot over fsboot
+
 ## 1.3.0
 
 - Fully fix deep sleep bug
@@ -9,7 +20,6 @@
 
 ## 1.2.0
 
-- Fix deep sleep bug
 - Numerous fixes
 - Let Pogo install tweak support
 

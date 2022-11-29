@@ -11,3 +11,5 @@ BuildManifest.plist
 blobs
 tweaksinstalled
 logs
+dump.raw
+other/rootfs/jbin/loader.app
