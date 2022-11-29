@@ -181,7 +181,7 @@ _reset() {
 
 get_device_mode() {
     if [ "$os" = "Darwin" ]; then
-        apples="$(system_profiler SPUSBDataType | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r)"
+        apples="$(system_profiler SPUSBDataType 2> /dev/null | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r)"
     elif [ "$os" = "Linux" ]; then
         apples="$(lsusb  | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2)"
     fi
@@ -229,7 +229,7 @@ get_device_mode() {
     if [ "$os" = "Linux" ]; then
         usbserials=$(cat /sys/bus/usb/devices/*/serial)
     elif [ "$os" = "Darwin" ]; then
-        usbserials=$(system_profiler SPUSBDataType | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
+        usbserials=$(system_profiler SPUSBDataType 2> /dev/null| grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
     fi
     if grep -qE '(ramdisk tool|SSHRD_Script) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
         device_mode=ramdisk
