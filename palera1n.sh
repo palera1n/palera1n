@@ -32,10 +32,10 @@ remote_cp() {
 
 step() {
     for i in $(seq "$1" -1 1); do
-        printf '\r\e[1;36m%s (%d) ' "$2" "$i"
+        printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
         sleep 1
     done
-    printf '\r\e[0m%s (0)\n' "$2"
+    printf '\r\e[K\e[0m%s (0)\n' "$2"
 }
 
 print_help() {
