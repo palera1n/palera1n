@@ -727,11 +727,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
-        curl -LO https://nightly.link/palera1n/loader/workflows/build/main/loader.zip
-        unzip loader.zip -d .
+        curl -LO https://nightly.link/palera1n/loader/workflows/build/main/palera1n.zip
+        unzip palera1n.zip -d .
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
-        rm -rf loader.zip palera1n.ipa Payload
+        rm -rf palera1n.zip loader.zip palera1n.ipa Payload
         cd ../../..
 
         sleep 1

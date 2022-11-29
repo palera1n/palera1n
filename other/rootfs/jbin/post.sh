@@ -1,12 +1,13 @@
 binpack=/jbin/binpack
 
 # wait for springboard to load
+$binpack/bin/sleep 15
 while ! (/bin/ps -auroot | $binpack/usr/bin/grep SpringBoard 2> /dev/null > /dev/null); do
     $binpack/bin/sleep 1
 done
 
 # wait to be safe
-$binpack/bin/sleep 5
+$binpack/bin/sleep 15
 
 # uicache loader app
 $binpack/bin/mkdir -p /var/.palera1n
