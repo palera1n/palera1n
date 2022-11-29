@@ -700,24 +700,24 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
                 remote_cmd "/sbin/mount_apfs -o ro $app_disk /mnt9"
                 sleep 1
 
-                remote_cmd "rm -rf /mnt$disk/System/Cryptexes/App /mnt$disk/System/Cryptexes/OS"
+                remote_cmd "rm -rf /mnt8/System/Cryptexes/App /mnt8/System/Cryptexes/OS"
                 sleep 1
-                remote_cmd "mkdir /mnt$disk/System/Cryptexes/App /mnt$disk/System/Cryptexes/OS"
+                remote_cmd "mkdir /mnt8/System/Cryptexes/App /mnt8/System/Cryptexes/OS"
                 sleep 1
-                remote_cmd "cp -a /mnt9/. /mnt$disk/System/Cryptexes/App"
+                remote_cmd "cp -a /mnt9/. /mnt8/System/Cryptexes/App"
                 sleep 1
-                remote_cmd "cp -a /mnt2/. /mnt$disk/System/Cryptexes/OS"
+                remote_cmd "cp -a /mnt2/. /mnt8/System/Cryptexes/OS"
                 sleep 1
-                remote_cmd "rm -rf /mnt$disk/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld"
+                remote_cmd "rm -rf /mnt8/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld"
                 sleep 1
-                remote_cmd "cp -a /mnt2/System/Library/Caches/com.apple.dyld /mnt$disk/System/Library/Caches/"
+                remote_cmd "cp -a /mnt2/System/Library/Caches/com.apple.dyld /mnt8/System/Library/Caches/"
             fi
         fi
 
         echo "[*] Copying files to rootfs"
-        remote_cmd "rm -rf /mnt$disk/jbin /mnt$disk/palera1n"
+        remote_cmd "rm -rf /mnt8/jbin /mnt8/palera1n"
         sleep 1
-        remote_cmd "mkdir -p /mnt$disk/jbin/binpack /mnt$disk/jbin/loader.app /mnt$disk/palera1n"
+        remote_cmd "mkdir -p /mnt8/jbin/binpack /mnt8/jbin/loader.app /mnt8/palera1n"
         sleep 1
 
         # download loader
