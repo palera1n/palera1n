@@ -741,7 +741,7 @@ fi
 # ============
 
 # Actually create the boot files
-if [ ! -f boot-"$deviceid"/.fsboot ]; then
+if [ ! -f boot-"$deviceid"/.local ]; then
     rm -rf boot-"$deviceid"
 fi
 
@@ -769,15 +769,15 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [ "$semi_tethered" = "1" ]; then
         if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -l
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v rd=disk0s1s${disk}" -l
         else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -l
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "rd=disk0s1s${disk}" -l
         fi
     else
         if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e' -l
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v' -l
         else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e' -l
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -l
         fi
     fi
     if [ "$os" = 'Linux' ]; then
@@ -789,9 +789,8 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
     "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
-    "$dir"/img4 -i other/bootlogo.im4p -o boot-"$deviceid"/bootlogo.img4 -M work/IM4M -A -T rlgo
 
-    touch boot-"$deviceid"/.fsboot
+    touch boot-"$deviceid"/.local
 fi
 
 # ============
