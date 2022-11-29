@@ -31,11 +31,14 @@ remote_cp() {
 }
 
 step() {
-    for i in $(seq "$1" -1 1); do
-        printf '\r\e[1;36m%s (%d) ' "$2" "$i"
+    for i in $(seq "$1" -1 0); do
+        if [ "$(get_device_mode)" = "dfu" ]; then
+            break
+        fi
+        printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
         sleep 1
     done
-    printf '\r\e[0m%s (0)\n' "$2"
+    printf '\e[0m\n'
 }
 
 print_help() {
@@ -262,7 +265,7 @@ _dfuhelper() {
     step 4 "$step_one" &
     sleep 3
     "$dir"/irecovery -c "reset"
-    step 1 "Keep holding"
+    wait
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step 10 'Release side button, but keep holding volume down'
     else
