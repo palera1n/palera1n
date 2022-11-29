@@ -769,15 +769,15 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [ "$semi_tethered" = "1" ]; then
         if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -l
         else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -l
         fi
     else
         if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e' -f
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e' -l
         else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e' -f
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e' -l
         fi
     fi
     if [ "$os" = 'Linux' ]; then
@@ -806,18 +806,12 @@ if [[ "$cpid" == *"0x801"* ]]; then
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
     sleep 1
-    "$dir"/irecovery -c fsboot
 else
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
     sleep 1
-    "$dir"/irecovery -f boot-"$deviceid"/bootlogo.img4
-    sleep 1
-    "$dir"/irecovery -c "setpicture 0x1"
-    sleep 1
-    "$dir"/irecovery -c fsboot
 fi
 
 if [ "$os" = 'Darwin' ]; then
