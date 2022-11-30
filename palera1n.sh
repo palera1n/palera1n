@@ -189,11 +189,7 @@ get_device_mode() {
     local usbserials=""
     for apple in $apples; do
         case "$apple" in
-            12ab)
-            device_mode=normal
-            device_count=$((device_count+1))
-            ;;
-            12a8)
+            12a8|12aa|12ab)
             device_mode=normal
             device_count=$((device_count+1))
             ;;
