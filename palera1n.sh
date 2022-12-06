@@ -746,8 +746,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         } > work/info.json
         sleep 1
         remote_cp work/info.json root@localhost:/mnt$disk/palera1n
-        remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/haxx"
-        remote_cmd "chmod +x /mnt$disk/jbin/launchd /mnt$disk/jbin/haxx /mnt$disk/jbin/post.sh"
+        remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
+        remote_cmd "chmod +x /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/post.sh"
         remote_cmd "tar -xvf /mnt$disk/jbin/binpack/binpack.tar -C /mnt$disk/jbin/binpack/"
         sleep 1
         remote_cmd "rm /mnt$disk/jbin/binpack/binpack.tar"
