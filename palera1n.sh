@@ -644,9 +644,9 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         sleep 1
         remote_cmd "/usr/sbin/chown 33 $tipsdir/Tips"
         sleep 1
-        remote_cmd "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper"
+        remote_cmd "/bin/chmod 755 $tipsdir/Tips $tipsdir/palera1nHelper"
         sleep 1
-        remote_cmd "/usr/sbin/chown 0 $tipsdir/PogoHelper"
+        remote_cmd "/usr/sbin/chown 0 $tipsdir/palera1nHelper"
     fi
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
