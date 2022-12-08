@@ -34,6 +34,7 @@ You may join [here](https://dsc.gg/palera1n).
 Thank you so much to our Patreons that make the future development possible! You may sub [here](https://patreon.com/palera1n), if you'd like to.
 
 <a href="https://github.com/samh06"><img width=64 src="https://user-images.githubusercontent.com/18669106/206333607-881d7ca1-f3bf-4e18-b620-25de0c527315.png"></img></a>
+<a href="https://havoc.app"><img width=64 src="https://docs.havoc.app/img/standard_icon.png"></img></a>
 
 # Warning
 - We are **NOT** responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. **If your device is stuck in recovery, please run one of the following:**
