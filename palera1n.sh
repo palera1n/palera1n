@@ -54,7 +54,7 @@ Options:
     --no-baseband       Indicate that the device does not have a baseband
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
-    --verbose           Enable verbose boot on the device
+    --serial            Enable serial output on the device (only needed for testing with a serial cable)
 
 Subcommands:
     dfuhelper           An alias for --dfuhelper
@@ -85,8 +85,8 @@ parse_opt() {
         --no-baseband)
             no_baseband=1
             ;;
-        --verbose)
-            verbose=1
+        --serial)
+            serial=1
             ;;
         --dfu)
             echo "[!] DFU mode devices are now automatically detected and --dfu is deprecated"
@@ -789,8 +789,20 @@ fi
 # ============
 
 # Actually create the boot files
-if [ ! -f boot-"$deviceid"/.local ]; then
-    rm -rf boot-"$deviceid"
+if [[ "$version" == *"16"* ]]; then
+    fs=disk1s$disk
+else
+    fs=disk0s1s$disk
+fi
+
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+    if [ ! -f boot-"$deviceid"/.payload ]; then
+        rm -rf boot-"$deviceid"
+    fi
+else
+    if [ ! -f boot-"$deviceid"/.local ]; then
+        rm -rf boot-"$deviceid"
+    fi
 fi
 
 if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
@@ -805,47 +817,68 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$ipswurl"
 
-    echo "[*] Downloading and decrypting iBSS"
-    "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-    "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
-
     echo "[*] Downloading and decrypting iBoot"
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
     "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
-    echo "[*] Patching and signing iBSS/iBoot"
-    if [[ "$version" == *"16"* ]]; then
-        fs=disk1s$disk
-    else
-        fs=disk0s1s$disk
-    fi
-
-    "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
-    if [ "$semi_tethered" = "1" ]; then
-        if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v rd=$fs" -l
+    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+        echo "[*] Patching and signing iBoot"
+        if [ "$serial" = "1" ]; then
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "serial=3"
         else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "rd=$fs" -l
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v"
         fi
-    else
-        if [ "$verbose" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v' -f
+
+        if [[ "$deviceid" == iPhone9,[1-4] ]]; then
+            "$dir"/iBootpatch2 --t8010 ibot.patched ibot.patched2
         else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -f
+            "$dir"/iBootpatch2 --t8015 ibot.patched ibot.patched2
         fi
-    fi
 
-    if [ "$os" = 'Linux' ]; then
-        sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
+        if [ "$os" = 'Linux' ]; then
+            sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
+        else
+            LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
+            rm *.bak
+        fi
+
+        cd ..
+        "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T ibss
+
+        touch boot-"$deviceid"/.payload
     else
-        LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
-        rm *.bak
-    fi
-    cd ..
-    "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M blobs/"$deviceid"-"$version".der -A -T ibss
-    "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
+        echo "[*] Downloading and decrypting iBSS"
+        "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+        "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
 
-    touch boot-"$deviceid"/.local
+        echo "[*] Patching and signing iBSS/iBoot"
+        "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
+        if [ "$semi_tethered" = "1" ]; then
+            if [ "$serial" = "1" ]; then
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "serial=3 rd=$fs" -l
+            else
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v rd=$fs" -l
+            fi
+        else
+            if [ "$serial" = "1" ]; then
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "serial=3" -f
+            else
+                "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v" -f
+            fi
+        fi
+
+        if [ "$os" = 'Linux' ]; then
+            sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
+        else
+            LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
+            rm *.bak
+        fi
+        cd ..
+        "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M blobs/"$deviceid"-"$version".der -A -T ibss
+        "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
+
+        touch boot-"$deviceid"/.local
+    fi
 fi
 
 # ============
@@ -856,14 +889,31 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
-if [[ "$cpid" == *"0x801"* ]]; then
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+    sleep 3
+    "$dir"/irecovery -c "dorwx"
+    sleep 2
+    if [[ "$deviceid" == iPhone9,[1-4] ]]; then
+        "$dir"/irecovery -f other/payload/payload_t8010.bin
+    else
+        "$dir"/irecovery -f other/payload/payload_t8015.bin
+    fi
+    sleep 3
+    "$dir"/irecovery -c "go"
+    sleep 1
+    "$dir"/irecovery -c "go boot $fs"
 else
-    sleep 1
-    "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
-    sleep 4
-    "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+    if [[ "$cpid" == *"0x801"* ]]; then
+        sleep 1
+        "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+    else
+        sleep 1
+        "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
+        sleep 4
+        "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
+    fi
 fi
 
 if [ -z "$semi_tethered" ]; then
