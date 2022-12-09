@@ -176,7 +176,7 @@ _reset() {
 
 get_device_mode() {
     if [ "$os" = "Darwin" ]; then
-        apples="$(system_profiler SPUSBDataType | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r 2> /dev/null)"
+        apples="$(system_profiler SPUSBDataType 2> /dev/null | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r)"
     elif [ "$os" = "Linux" ]; then
         apples="$(lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2)"
     fi
@@ -224,7 +224,7 @@ get_device_mode() {
     if [ "$os" = "Linux" ]; then
         usbserials=$(cat /sys/bus/usb/devices/*/serial)
     elif [ "$os" = "Darwin" ]; then
-        usbserials=$(system_profiler SPUSBDataType | grep 'Serial Number' | cut -d: -f2- | sed 's/ //' 2> /dev/null)
+        usbserials=$(system_profiler SPUSBDataType 2> /dev/null | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
     fi
     if grep -qE 'ramdisk tool (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{1,4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
         device_mode=ramdisk
@@ -258,7 +258,7 @@ _dfuhelper() {
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
-    "$dir"/irecovery -c "reset"
+    "$dir"/irecovery -c "reset" &
     step 1 "Keep holding"
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step 10 'Release side button, but keep holding volume down'
@@ -386,7 +386,7 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
     echo "THIS ONLY WORKS ON 15.0-15.7.1"
-    echo "DO NOT GET ANGRY AT US IF UR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
+    echo "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
     echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say' TO CONTINUE"
     read -r answer
     if [ "$answer" = 'Yes, do as I say' ]; then
@@ -398,9 +398,11 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
             tweaks=1
             touch .disclaimeragree
         else
+            echo "[-] Please type it exactly if you'd like to proceed. Otherwise, remove --tweaks, or add --semi-tethered"
             exit
         fi
     else
+        echo "[-] Please type it exactly if you'd like to proceed. Otherwise, remove --tweaks, or add --semi-tethered"
         exit
     fi
 fi
@@ -616,6 +618,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
+    remote_cmd "rm -f /mnt1/private/var/root/kpf"
     if [[ "$version" == *"16"* ]]; then
         if [ "$semi_tethered" = "1" ]; then
             remote_cp binaries/Kernel16Patcher-nolivefs.ios root@localhost:/mnt1/private/var/root/kpf
@@ -747,7 +750,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         sleep 1
         remote_cp work/info.json root@localhost:/mnt$disk/palera1n
         remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
-        remote_cmd "chmod +x /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/post.sh"
+        remote_cmd "chmod +x /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
         remote_cmd "tar -xvf /mnt$disk/jbin/binpack/binpack.tar -C /mnt$disk/jbin/binpack/"
         sleep 1
         remote_cmd "rm /mnt$disk/jbin/binpack/binpack.tar"
@@ -811,6 +814,12 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
     echo "[*] Patching and signing iBSS/iBoot"
+    if [[ "$version" == *"16"* ]]; then
+        fs=disk1s$disk
+    else
+        fs=disk0s1s$disk
+    fi
+
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
     if [ "$semi_tethered" = "1" ]; then
         if [ "$verbose" = "1" ]; then
