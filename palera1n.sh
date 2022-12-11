@@ -511,6 +511,7 @@ fi
 
 if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     mkdir -p blobs
+    _kill_if_running iproxy
 
     cd ramdisk
     chmod +x sshrd.sh
