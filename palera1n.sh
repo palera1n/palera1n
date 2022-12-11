@@ -722,9 +722,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         fi
 
         echo "[*] Copying files to rootfs"
-        remote_cmd "rm -rf /mnt$disk/jbin /mnt$disk/palera1n"
+        remote_cmd "rm -rf /mnt$disk/jbin /mnt$disk/.installed_palera1n"
         sleep 1
-        remote_cmd "mkdir -p /mnt$disk/jbin/binpack /mnt$disk/jbin/loader.app /mnt$disk/palera1n"
+        remote_cmd "mkdir -p /mnt$disk/jbin/binpack /mnt$disk/jbin/loader.app"
         sleep 1
 
         # download loader
@@ -743,13 +743,12 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             echo "{"
             echo "    \"version\": \"${version} (${commit}_${branch})\","
             echo "    \"args\": \"$@\","
-            echo "    \"pc\": \"$(uname) $(uname -r)\","
-
+            echo "    \"pc\": \"$(uname) $(uname -r)\""
             echo "}"
-        } > work/info.json
+        } > work/.installed_palera1n
         sleep 1
-        remote_cp work/info.json root@localhost:/mnt$disk/palera1n
-        remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
+        remote_cp work/.installed_palera1n root@localhost:/mnt$disk
+        remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/jb.dylib"
         remote_cmd "chmod +x /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
         remote_cmd "tar -xvf /mnt$disk/jbin/binpack/binpack.tar -C /mnt$disk/jbin/binpack/"
         sleep 1
