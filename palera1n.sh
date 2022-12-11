@@ -25,18 +25,25 @@ fs=disk0s1s$disk
 # Functions
 # =========
 remote_cmd() {
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+    sleep 1
+    "$dir"/sshpass -p "alpine" ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+    sleep 1
 }
 remote_cp() {
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
+    sleep 1
+    "$dir"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P2222 $@
+    sleep 1
 }
 
 step() {
-    for i in $(seq "$1" -1 1); do
-        printf '\r\e[1;36m%s (%d) ' "$2" "$i"
+    for i in $(seq "$1" -1 0); do
+        if [ "$(get_device_mode)" = "dfu" ]; then
+            break
+        fi
+        printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
         sleep 1
     done
-    printf '\r\e[0m%s (0)\n' "$2"
+    printf '\e[0m\n'
 }
 
 print_help() {
@@ -183,11 +190,7 @@ get_device_mode() {
     local usbserials=""
     for apple in $apples; do
         case "$apple" in
-            12ab)
-            device_mode=normal
-            device_count=$((device_count+1))
-            ;;
-            12a8)
+            12a8|12aa|12ab)
             device_mode=normal
             device_count=$((device_count+1))
             ;;
@@ -225,7 +228,7 @@ get_device_mode() {
     elif [ "$os" = "Darwin" ]; then
         usbserials=$(system_profiler SPUSBDataType 2> /dev/null | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
     fi
-    if grep -qE 'ramdisk tool (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{1,4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
+    if grep -qE '(ramdisk tool|SSHRD_Script) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
         device_mode=ramdisk
     fi
     echo "$device_mode"
@@ -270,6 +273,7 @@ _dfuhelper() {
         echo "[*] Device entered DFU!"
     else
         echo "[-] Device did not enter DFU mode, rerun the script and try again"
+        return -1
     fi
 }
 
@@ -307,6 +311,21 @@ trap _exit_handler EXIT
 # ============
 # Dependencies
 # ============
+
+# Check for required commands
+if [ "$os" = 'Linux' ]; then
+    linux_cmds='lsusb'
+fi
+
+for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
+    if ! command -v "${cmd}" > /dev/null; then
+        echo "[-] Command '${cmd}' not installed, please install it!";
+        cmd_not_found=1
+    fi
+done
+if [ "$cmd_not_found" = "1" ]; then
+    exit 1
+fi
 
 # Download gaster
 if [ -e "$dir"/gaster ]; then
@@ -371,6 +390,7 @@ fi
 if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
     echo "[!] --semi-tethered may not be used with rootless"
     echo "    Rootless is already semi-tethered"
+    >&2 echo "Hint: to use tweaks on semi-tethered, specify the --tweaks option"
     exit 1;
 fi
 
@@ -432,7 +452,7 @@ if [ "$(get_device_mode)" = "ramdisk" ]; then
     else
         "$dir"/iproxy 2222 22 &
     fi
-    sleep 1
+    sleep 2
     remote_cmd "/usr/sbin/nvram auto-boot=false"
     remote_cmd "/sbin/reboot"
     _kill_if_running iproxy
@@ -494,7 +514,10 @@ fi
 # Have the user put the device into DFU
 if [ "$(get_device_mode)" != "dfu" ]; then
     recovery_fix_auto_boot;
-    _dfuhelper "$cpid"
+    _dfuhelper "$cpid" || {
+        echo "[-] failed to enter DFU mode, run palera1n.sh again"
+        exit -1
+    }
 fi
 sleep 2
 
@@ -521,10 +544,15 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
     cd ..
-
-    # if known hosts file exists, remove it
+    # remove special lines from known_hosts
     if [ -f ~/.ssh/known_hosts ]; then
-        rm ~/.ssh/known_hosts
+        if [ "$os" = "Darwin" ]; then
+            sed -i.bak '/localhost/d' ~/.ssh/known_hosts
+            sed -i.bak '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        elif [ "$os" = "Linux" ]; then
+            sed -i '/localhost/d' ~/.ssh/known_hosts
+            sed -i '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        fi
     fi
 
     # Execute the commands once the rd is booted
@@ -599,7 +627,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     if [ "$semi_tethered" = "1" ]; then
         if [ -z "$skip_fakefs" ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
+            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1" && {
+                
             sleep 2
             remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
             
@@ -607,6 +636,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             remote_cmd "cp -a /mnt1/. /mnt8/"
             sleep 1
             echo "[*] fakefs created, continuing..."
+            } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
         fi
     fi
 
@@ -686,7 +716,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
-    elif [ "$tweaks" = "1" ]; then
+    else
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
     fi
     sleep 1

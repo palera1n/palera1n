@@ -29,19 +29,18 @@ Please, please, please, provide necessary info:
 
 You may join [here](https://dsc.gg/palera1n).
 
-### Linux
-- Linux has some weird usbmuxd issues. We have tried our best to fix them, but there still are issues. We highly recommend to compile and install usbmuxd2.
-- Stop making issues about Linux not being able to connect, we are aware. This includes being stuck on waiting for ramdisk to finish booting.
+# Patreons
 
-### Warning
+Thank you so much to our Patreons that make the future development possible! You may sub [here](https://patreon.com/palera1n), if you'd like to.
+
+<a href="https://github.com/samh06"><img width=64 src="https://user-images.githubusercontent.com/18669106/206333607-881d7ca1-f3bf-4e18-b620-25de0c527315.png"></img></a>
+<a href="https://havoc.app"><img width=64 src="https://docs.havoc.app/img/standard_icon.png"></img></a>
+<a href="https://twitter.com/yyyyyy_public"><img width=64 src="https://pbs.twimg.com/profile_images/1429332550112079876/dQQgsURc_400x400.jpg"></img></a>
+
+# Warning
 - We are **NOT** responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. **If your device is stuck in recovery, please run one of the following:**
    - futurerestore --exit-recovery
    - irecovery -n
-
-### A10 and A11 devices
-- On A10 and A11, **you must disable your passcode while in the jailbroken state**.
-  - On A10, this can be fixed in the future by implementing blackbird.
-  - On A11, we don't have a SEP exploit yet.
 
 # Prerequisites
 - A checkm8 vulnerable iOS device on iOS 15 (A8-A11)
@@ -49,14 +48,14 @@ You may join [here](https://dsc.gg/palera1n).
 - Linux or macOS computer
   - Python 3 must be installed.
 
-# How to use?
-A better tutorial can be found [here](https://ios.cfw.guide/installing-palera1n).
+### A10 and A11 devices
+- On A10 and A11, **you must disable your passcode while in the jailbroken state**.
+  - On A10, this can be fixed in the future by implementing blackbird.
+  - On A11, we don't have a SEP exploit yet.
 
-1. Clone this repo with `git clone --recursive https://github.com/palera1n/palera1n && cd palera1n`
-2. Run `./palera1n.sh --tweaks <your current iOS version>` (run with `sudo` if you're on linux)
-   - [A10 and A11] Before running, **you must disable your passcode**.
-   - Put your device in DFU mode before running.
-3. Follow the steps on your screen.
+# How to use?
+
+A tutorial can be found [here](https://ios.cfw.guide/installing-palera1n).
 
 # Repos
 
@@ -72,6 +71,7 @@ Repos need to be updated for rootless, here are some that work currently:
 If you want to make a rootless repo, use the official [palera1n repo](https://github.com/palera1n/repo) for reference. Every deb should use the `iphoneos-arm64` architecture, and *nothing* should be on the rootfs. Everything should be in /var/jb.
 
 # Credits
+
 - [Nathan](https://github.com/verygenericname)
     - The ramdisk that dumps blobs, copies files, and duplicates rootfs is a slimmed down version of [SSHRD_Script](https://github.com/verygenericname/SSHRD_Script)
     - For modified [restored_external](https://github.com/verygenericname/sshrd_SSHRD_Script)
@@ -98,3 +98,4 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
 - [Nick Chan](https://github.com/asdfugil) general help with patches and the base of the custom launchd/[haxx](https://github.com/asdfugil/haxx)
 - [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)
+- [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.
