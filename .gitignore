@@ -16,3 +16,4 @@ other/rootfs/jbin/loader.app
 .rd_in_progress
 logs
 .disclaimeragree
+.fs-*

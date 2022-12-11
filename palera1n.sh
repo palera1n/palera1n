@@ -25,14 +25,11 @@ fs=disk0s1s$disk
 # Functions
 # =========
 remote_cmd() {
-    sleep 1
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
-    sleep 1
 }
+
 remote_cp() {
-    sleep 1
     "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
-    sleep 1
 }
 
 step() {
@@ -796,6 +793,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         remote_cmd "rm /mnt$disk/jbin/binpack/binpack.tar"
     fi
 
+    echo "$disk" > .fs-"$deviceid"
+
     rm -rf work BuildManifest.plist
     mkdir work
     rm .rd_in_progress
@@ -829,6 +828,7 @@ fi
 # ============
 
 # Actually create the boot files
+disk=$(cat .fs-"$deviceid")
 if [[ "$version" == *"16"* ]]; then
     fs=disk1s$disk
 else

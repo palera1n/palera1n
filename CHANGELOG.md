@@ -2,14 +2,15 @@
 
 ## 1.4.0
 
-- Add 16.0-16.1.1 support
-- Uicache loader app on boot (no more Tips app hijacking)
+- Does not mount user data partition for iPhone X compatibility, isn't even really needed anymore
+- Deploys files to the rootfs (fakefs if needed)
 - Fix deviceid finding
-- Use apticket.der over dumping rdisk1
-- Add info.json for palera1n-info tweak
+- Use apticket.der because dumping rdisk seems to freeze
+- Add /.installed_palera1n with info
+- uicache loader app on boot (no more Tips app hijacking)
 - Fix rootless
-- Semi-tethered WebKit fix on iOS 16
-- Switch to local boot over fsboot
+- Semi-tethered webkit fix on 16
+- Switch to local boot
 
 ## 1.3.0
 
