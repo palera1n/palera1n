@@ -26,12 +26,12 @@ fs=disk0s1s$disk
 # =========
 remote_cmd() {
     sleep 1
-    "$dir"/sshpass -p "alpine" ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
     sleep 1
 }
 remote_cp() {
     sleep 1
-    "$dir"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P2222 $@
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
     sleep 1
 }
 
@@ -692,19 +692,16 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
             if [ "$semi_tethered" = "1" ]; then
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h
             else
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -h
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h
             fi
         else
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a
-        fi
-        sleep 1
-        if [ "$os" = 'Linux' ]; then
-            sed -i 's/\/sbin\/launchd/\/jbin\/launchd/g' work/kcache.patched2
-        else
-            LC_ALL=C sed -i.bak -e 's/\/sbin\/launchd/\/jbin\/launchd/g' work/kcache.patched2
-            rm *.bak
+            if [[ "$version" == *"15.7."* ]]; then
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -l -t
+            else
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -l
+            fi
         fi
     else
         "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -a
