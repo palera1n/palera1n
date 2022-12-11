@@ -20,7 +20,6 @@ max_args=1
 arg_count=0
 disk=8
 fs=disk0s1s$disk
-rd_in_progress=0
 
 # =========
 # Functions
@@ -504,6 +503,12 @@ sleep 2
 # ============
 
 # Dump blobs, and install pogo if needed 
+if [ -f blobs/"$deviceid"-"$version".der ]; then
+    if [ -f .rd_in_progress ]; then
+        rm blobs/"$deviceid"-"$version".der
+    fi
+fi
+
 if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     mkdir -p blobs
 
@@ -532,7 +537,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         sleep 1
     done
 
-    rd_in_progress=1
+    touch .rd_in_progress
     
     if [ "$tweaks" = "1" ]; then
         echo "[*] Testing for baseband presence"
@@ -757,7 +762,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     rm -rf work BuildManifest.plist
     mkdir work
-    rd_in_progress=0
+    rm .rd_in_progress
 
     sleep 2
     echo "[*] Phase 1 done! Rebooting your device (if it doesn't reboot, you may force reboot)"
