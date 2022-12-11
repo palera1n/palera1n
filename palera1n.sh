@@ -692,21 +692,24 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
             if [ "$semi_tethered" = "1" ]; then
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u
             else
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -h
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -h
             fi
         else
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e
+            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a
         fi
-    fi
-    sleep 1
-    if [ "$os" = 'Linux' ]; then
-        sed -i 's/\/sbin\/launchd/\/jbin\/launchd/g' ibot.patched
+        sleep 1
+        if [ "$os" = 'Linux' ]; then
+            sed -i 's/\/sbin\/launchd/\/jbin\/launchd/g' work/kcache.patched2
+        else
+            LC_ALL=C sed -i.bak -e 's/\/sbin\/launchd/\/jbin\/launchd/g' work/kcache.patched2
+            rm *.bak
+        fi
     else
-        LC_ALL=C sed -i.bak -e 's/\/sbin\/launchd/\/jbin\/launchd/g' ibot.patched
-        rm *.bak
+        "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -a
     fi
+    
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
