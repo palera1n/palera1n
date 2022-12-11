@@ -667,10 +667,21 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -l
+            if [ "$semi_tethered" = "1" ]; then
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u
+            else
+                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -h
+            fi
         else
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -l
+            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e
         fi
+    fi
+    sleep 1
+    if [ "$os" = 'Linux' ]; then
+        sed -i 's/\/sbin\/launchd/\/jbin\/launchd/g' ibot.patched
+    else
+        LC_ALL=C sed -i.bak -e 's/\/sbin\/launchd/\/jbin\/launchd/g' ibot.patched
+        rm *.bak
     fi
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
@@ -700,32 +711,32 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         fi
 
         # iOS 16 stuff
-        if [[ "$version" == *"16"* ]]; then
-            if [ -z "$semi_tethered" ]; then
-                echo "[*] Performing iOS 16 fixes"
-                sleep 1
-                os_disk=$(remote_cmd "/usr/sbin/hdik /mnt6/cryptex1/current/os.dmg | head -3 | tail -1 | sed 's/ .*//'")
-                sleep 1
-                app_disk=$(remote_cmd "/usr/sbin/hdik /mnt6/cryptex1/current/app.dmg | head -3 | tail -1 | sed 's/ .*//'")
-                sleep 1
-                remote_cmd "/sbin/mount_apfs -o ro $os_disk /mnt2"
-                sleep 1
-                remote_cmd "/sbin/mount_apfs -o ro $app_disk /mnt9"
-                sleep 1
+        # if [[ "$version" == *"16"* ]]; then
+        #     if [ -z "$semi_tethered" ]; then
+        #         echo "[*] Performing iOS 16 fixes"
+        #         sleep 1
+        #         os_disk=$(remote_cmd "/usr/sbin/hdik /mnt6/cryptex1/current/os.dmg | head -3 | tail -1 | sed 's/ .*//'")
+        #         sleep 1
+        #         app_disk=$(remote_cmd "/usr/sbin/hdik /mnt6/cryptex1/current/app.dmg | head -3 | tail -1 | sed 's/ .*//'")
+        #         sleep 1
+        #         remote_cmd "/sbin/mount_apfs -o ro $os_disk /mnt2"
+        #         sleep 1
+        #         remote_cmd "/sbin/mount_apfs -o ro $app_disk /mnt9"
+        #         sleep 1
 
-                remote_cmd "rm -rf /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
-                sleep 1
-                remote_cmd "mkdir /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
-                sleep 1
-                remote_cmd "cp -a /mnt9/. /mnt1/System/Cryptexes/App"
-                sleep 1
-                remote_cmd "cp -a /mnt2/. /mnt1/System/Cryptexes/OS"
-                sleep 1
-                remote_cmd "rm -rf /mnt1/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld"
-                sleep 1
-                remote_cmd "cp -a /mnt2/System/Library/Caches/com.apple.dyld /mnt1/System/Library/Caches/"
-            fi
-        fi
+        #         remote_cmd "rm -rf /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
+        #         sleep 1
+        #         remote_cmd "mkdir /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
+        #         sleep 1
+        #         remote_cmd "cp -a /mnt9/. /mnt1/System/Cryptexes/App"
+        #         sleep 1
+        #         remote_cmd "cp -a /mnt2/. /mnt1/System/Cryptexes/OS"
+        #         sleep 1
+        #         remote_cmd "rm -rf /mnt1/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld"
+        #         sleep 1
+        #         remote_cmd "cp -a /mnt2/System/Library/Caches/com.apple.dyld /mnt1/System/Library/Caches/"
+        #     fi
+        # fi
 
         echo "[*] Copying files to rootfs"
         remote_cmd "rm -rf /mnt$disk/jbin /mnt$disk/.installed_palera1n"
