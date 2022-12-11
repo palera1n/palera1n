@@ -24,14 +24,11 @@ disk=8
 # Functions
 # =========
 remote_cmd() {
-    sleep 1
-    "$dir"/sshpass -p "alpine" ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
-    sleep 1
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
 }
+
 remote_cp() {
-    sleep 1
-    "$dir"/sshpass -p "alpine" scp -o StrictHostKeyChecking=no -P2222 $@
-    sleep 1
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
 }
 
 step() {
