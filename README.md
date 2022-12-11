@@ -96,6 +96,7 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [xerub](https://github.com/xerub) for [img4lib](https://github.com/xerub/img4lib) and [restored_external](https://github.com/xerub/sshrd) in the ramdisk
 - [Cryptic](https://github.com/Cryptiiiic) for [iBoot64Patcher](https://github.com/Cryptiiiic/iBoot64Patcher) fork, and [liboffsetfinder64](https://github.com/Cryptiiiic/liboffsetfinder64) fork
 - [libimobiledevice](https://github.com/libimobiledevice) for several tools used in this project (irecovery, ideviceenterrecovery etc), and [nikias](https://github.com/nikias) for keeping it up to date
-- [Nick Chan](https://github.com/asdfugil) general help with patches and the base of the custom launchd/[haxx](https://github.com/asdfugil/haxx)
+- [Nick Chan](https://github.com/asdfugil) general help with patches and iBoot payload stuff
+- [Dora](https://github.com/dora2ios) for iBoot payload and iBootpatcher2
 - [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)
 - [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.

@@ -394,17 +394,11 @@ if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
     exit 1;
 fi
 
-if [ -z "$tweaks" ] && [ "$restorerootfs" = "1" ]; then
-    echo "[!] --restorerootfs may not be used with rootless"
-    echo "    You can click Remove in Pogo to get rid of the jailbreak"
-    exit 1;
-fi
-
 if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ] && [ -z "$restorerootfs" ]; then
     echo "!!! WARNING WARNING WARNING !!!"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
-    echo "THIS ONLY WORKS ON 15.0-15.7.1"
+    echo "THIS WORKS ON 15.0-16.2"
     echo "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
     echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say' TO CONTINUE"
     read -r answer
