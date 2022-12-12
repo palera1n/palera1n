@@ -718,13 +718,15 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     if [ "$tweaks" = "1" ]; then
         sleep 1
         if [ "$semi_tethered" = "1" ]; then
-            remote_cmd "/sbin/mount_apfs /dev/$fs /mnt$disk || true"
+            remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8 || true"
+            di=8
         else
             disk=1
+            di=1
         fi
 
         if [[ "$version" == *"16"* ]]; then
-            remote_cmd "ln -s /System/Cryptexes/OS/System/Library/Caches/com.apple.dyld /mnt$disk/System/Library/Caches/"
+            remote_cmd "ln -s /System/Cryptexes/OS/System/Library/Caches/com.apple.dyld /mnt$di/System/Library/Caches/"
         fi
 
         # iOS 16 stuff
@@ -756,9 +758,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # fi
 
         echo "[*] Copying files to rootfs"
-        remote_cmd "rm -rf /mnt$disk/jbin /mnt$disk/.installed_palera1n"
+        remote_cmd "rm -rf /mnt$di/jbin /mnt$di/.installed_palera1n"
         sleep 1
-        remote_cmd "mkdir -p /mnt$disk/jbin/binpack /mnt$disk/jbin/loader.app"
+        remote_cmd "mkdir -p /mnt$di/jbin/binpack /mnt$di/jbin/loader.app"
         sleep 1
 
         # download loader
@@ -779,7 +781,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         cd ../../..
 
         sleep 1
-        remote_cp -r other/rootfs/* root@localhost:/mnt$disk
+        remote_cp -r other/rootfs/* root@localhost:/mnt$di
         {
             echo "{"
             echo "    \"version\": \"${version} (${commit}_${branch})\","
@@ -788,16 +790,16 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             echo "}"
         } > work/.installed_palera1n
         sleep 1
-        remote_cp work/.installed_palera1n root@localhost:/mnt$disk
+        remote_cp work/.installed_palera1n root@localhost:/mnt$di
 
-        remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/jb.dylib"
-        remote_cmd "chmod +rwx /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/post.sh"
-        remote_cmd "tar -xvf /mnt$disk/jbin/binpack/binpack.tar -C /mnt$disk/jbin/binpack/"
+        remote_cmd "ldid -s /mnt$di/jbin/launchd /mnt$di/jbin/jbloader /mnt$di/jbin/jb.dylib"
+        remote_cmd "chmod +rwx /mnt$di/jbin/launchd /mnt$di/jbin/jbloader /mnt$di/jbin/post.sh"
+        remote_cmd "tar -xvf /mnt$di/jbin/binpack/binpack.tar -C /mnt$di/jbin/binpack/"
         sleep 1
-        remote_cmd "rm /mnt$disk/jbin/binpack/binpack.tar"
+        remote_cmd "rm /mnt$di/jbin/binpack/binpack.tar"
     fi
 
-    echo "$disk" > .fs-"$deviceid"
+    echo "$di" > .fs-"$deviceid"
 
     rm -rf work BuildManifest.plist
     mkdir work
