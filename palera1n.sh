@@ -718,9 +718,13 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     if [ "$tweaks" = "1" ]; then
         sleep 1
         if [ "$semi_tethered" = "1" ]; then
-            remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8 || true"
+            remote_cmd "/sbin/mount_apfs /dev/$fs /mnt$disk || true"
         else
             disk=1
+        fi
+
+        if [[ "$version" == *"16"* ]]; then
+            remote_cmd "ln -s /System/Cryptexes/OS/System/Library/Caches/com.apple.dyld /mnt$disk/System/Library/Caches/"
         fi
 
         # iOS 16 stuff
