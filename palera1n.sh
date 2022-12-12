@@ -601,7 +601,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         exit;
     fi
 
-    echo "[*] Dumping blobs and installing Pogo"
+    echo "[*] Dumping blobs and installing Loader"
     sleep 1
     remote_cmd "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) 
     "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
