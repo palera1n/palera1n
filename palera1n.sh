@@ -492,11 +492,11 @@ else
         device=iPhone
     fi
 
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
+    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq --arg device "$device" '[.[] | select(.identifier | startswith($device)) | .buildid][0]' --raw-output)
     if [ "$buildid" == "19B75" ]; then
         buildid=19B74
     fi
-    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r --arg deviceid "$deviceid" '.devices[$deviceid].ipsw')
 fi
 
 if [ "$restorerootfs" = "1" ]; then
