@@ -9,13 +9,16 @@
 - Add /.installed_palera1n with info
 - uicache loader app on boot (no more Tips app hijacking)
 - Fix rootless
-- Semi-tethered webkit fix on 16
+- Webkit fix on 16
 - Switch to local boot
+- Fix home button on iPhone 7(+) and 8(+)
+- Increase stability
+- Supports 15.0-16.2 on all checkm8 devices
 
 ## 1.3.0
 
 - Fully fix deep sleep bug
-- Support 15.0-15.7.1 on all checkm8 devices
+- Supports 15.0-15.7.1 on all checkm8 devices
 - Increase stability
 - Fix TrollStore, camera, and screen recording
 
