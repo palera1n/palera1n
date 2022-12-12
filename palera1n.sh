@@ -726,6 +726,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         fi
 
         if [[ "$version" == *"16"* ]]; then
+            remote_cmd "rm -f /mnt$di/System/Library/Caches/com.apple.dyld"
             remote_cmd "ln -s /System/Cryptexes/OS/System/Library/Caches/com.apple.dyld /mnt$di/System/Library/Caches/"
         fi
 
