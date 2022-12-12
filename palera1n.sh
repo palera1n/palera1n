@@ -868,14 +868,14 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         fi
 
         if [ "$os" = 'Linux' ]; then
-            sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
+            sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched2
         else
-            LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
+            LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched2
             rm *.bak
         fi
 
         cd ..
-        "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T ibss
+        "$dir"/img4 -i work/ibot.patched2 -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T ibss
 
         touch boot-"$deviceid"/.payload
     else
