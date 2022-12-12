@@ -620,14 +620,13 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         if [ -z "$skip_fakefs" ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
             remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1" && {
+                sleep 2
+                remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
                 
-            sleep 2
-            remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
-            
-            sleep 1
-            remote_cmd "cp -a /mnt1/. /mnt8/"
-            sleep 1
-            echo "[*] fakefs created, continuing..."
+                sleep 1
+                remote_cmd "cp -a /mnt1/. /mnt8/"
+                sleep 1
+                echo "[*] fakefs created, continuing..."
             } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
         fi
     fi
@@ -646,18 +645,18 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
-    remote_cmd "rm -f /mnt1/private/var/root/kpf"
+    remote_cmd "rm -f /mnt6/$active/kpf"
     if [[ "$version" == *"16"* ]]; then
         if [ "$semi_tethered" = "1" ]; then
-            remote_cp binaries/Kernel16Patcher-nolivefs.ios root@localhost:/mnt1/private/var/root/kpf
+            remote_cp binaries/Kernel16Patcher-nolivefs.ios root@localhost:/mnt6/$active/kpf
         else
-            remote_cp binaries/Kernel16Patcher.ios root@localhost:/mnt1/private/var/root/kpf
+            remote_cp binaries/Kernel16Patcher.ios root@localhost:/mnt6/$active/kpf
         fi
     else
-        remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt1/private/var/root/kpf
+        remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt6/$active/kpf
     fi
-    remote_cmd "/usr/sbin/chown 0 /mnt1/private/var/root/kpf"
-    remote_cmd "/bin/chmod 755 /mnt1/private/var/root/kpf"
+    remote_cmd "/usr/sbin/chown 0 /mnt6/$active/kpf"
+    remote_cmd "/bin/chmod 755 /mnt6/$active/kpf"
 
     remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
     if [ "$tweaks" = "1" ]; then
@@ -685,7 +684,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     fi
     sleep 1
     remote_cp work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
-    remote_cmd "/mnt1/private/var/root/kpf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched"
+    remote_cmd "/mnt6/$active/kpf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched"
     remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
@@ -828,7 +827,14 @@ else
     fs=disk0s1s$disk
 fi
 
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+boot_args=""
+if [ "$serial" = "1" ]; then
+    boot_args="serial=3"
+else
+    boot_args="-v"
+fi
+
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10"* ]]; then
     if [ ! -f boot-"$deviceid"/.payload ]; then
         rm -rf boot-"$deviceid"
     fi
@@ -854,13 +860,9 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
     "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
-    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10"* ]]; then
         echo "[*] Patching and signing iBoot"
-        if [ "$serial" = "1" ]; then
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "serial=3"
-        else
-            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v"
-        fi
+        "$dir"/iBoot64Patcher ibot.dec ibot.patched
 
         if [[ "$deviceid" == iPhone9,[1-4] ]]; then
             "$dir"/iBootpatch2 --t8010 ibot.patched ibot.patched2
@@ -922,7 +924,7 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10"* ]]; then
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
     sleep 3
@@ -935,6 +937,10 @@ if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || 
     fi
     sleep 3
     "$dir"/irecovery -c "go"
+    sleep 1
+    "$dir"/irecovery -c "go xargs $boot_args"
+    sleep 1
+    "$dir"/irecovery -c "go xfb"
     sleep 1
     "$dir"/irecovery -c "go boot $fs"
 else

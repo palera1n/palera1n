@@ -13,5 +13,8 @@ if [ -d "/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld" ]; then
     fi
 fi
 
+# respring
+$binpack/usr/bin/killall -9 SpringBoard
+
 echo "[post.sh] done"
 exit
