@@ -2,7 +2,7 @@
     <img src="https://avatars.githubusercontent.com/u/114239186?s=100&v=4" alt="palera1n logo">
     <p>palera1n</p>
 </h1>
-<h3 align="center">An iOS 15.0-15.7.1 work-in-progress, (semi-)tethered checkm8 jailbreak.</h3>
+<h3 align="center">An iOS 15.0-16.2 work-in-progress, (semi-)tethered checkm8 jailbreak.</h3>
 <p align="center">
     <strong><a href="CHANGELOG.md">Change Log</a></strong>
     •
@@ -43,8 +43,8 @@ Thank you so much to our Patreons that make the future development possible! You
    - irecovery -n
 
 # Prerequisites
-- A checkm8 vulnerable iOS device on iOS 15 (A8-A11)
-  - The device must be on iOS 15.0-15.7.1
+- A checkm8 vulnerable iOS device on iOS 15 or 16 (A8-A11)
+  - The device must be on iOS 15.0-16.2
 - Linux or macOS computer
   - Python 3 must be installed.
 
