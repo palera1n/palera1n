@@ -694,11 +694,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
                 "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h
             fi
         else
-            if [[ "$version" == *"15.7."* ]]; then
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -l -t
-            else
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -l
-            fi
+            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -l
         fi
     else
         "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -a
