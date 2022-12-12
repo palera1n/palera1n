@@ -765,6 +765,13 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
+        
+        # download jbinit files
+        rm -f jb.dylib jbinit jbloader launchd
+        curl -L https://nightly.link/palera1n/jbinit/workflows/build/main/rootfs.zip -o rfs.zip
+        unzip rfs.zip -d .
+        unzip rootfs.zip -d .
+        rm rfs.zip rootfs.zip
         cd ../../..
 
         sleep 1
@@ -778,8 +785,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         } > work/.installed_palera1n
         sleep 1
         remote_cp work/.installed_palera1n root@localhost:/mnt$disk
+
         remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/jb.dylib"
-        remote_cmd "chmod +rwx /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
+        remote_cmd "chmod +rwx /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/post.sh"
         remote_cmd "tar -xvf /mnt$disk/jbin/binpack/binpack.tar -C /mnt$disk/jbin/binpack/"
         sleep 1
         remote_cmd "rm /mnt$disk/jbin/binpack/binpack.tar"
@@ -853,14 +861,22 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
-    echo "[*] Downloading BuildManifest"
-    "$dir"/pzb -g BuildManifest.plist "$ipswurl"
-
-    echo "[*] Downloading and decrypting iBoot"
-    "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-    "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
-
+    # Do payload if on iPhone 7-10
     if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10"* ]]; then
+        if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
+            newipswurl="$ipswurl"
+        else
+            buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("'iPhone'")) | .buildid][0]' --raw-output)
+            newipswurl=$(curl -sL https://api.appledb.dev/ios/iOS\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+        fi
+
+        echo "[*] Downloading BuildManifest"
+        "$dir"/pzb -g BuildManifest.plist "$newipswurl"
+
+        echo "[*] Downloading and decrypting iBoot"
+        "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$newipswurl"
+        "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
+
         echo "[*] Patching and signing iBoot"
         "$dir"/iBoot64Patcher ibot.dec ibot.patched
 
@@ -882,9 +898,16 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
 
         touch boot-"$deviceid"/.payload
     else
+        echo "[*] Downloading BuildManifest"
+        "$dir"/pzb -g BuildManifest.plist "$ipswurl"
+
         echo "[*] Downloading and decrypting iBSS"
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
+        
+        echo "[*] Downloading and decrypting iBoot"
+        "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+        "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
         echo "[*] Patching and signing iBSS/iBoot"
         "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
