@@ -46,7 +46,7 @@ step() {
 print_help() {
     cat << EOF
 Usage: $0 [Options] [ subcommand | iOS version ]
-iOS 15.0-15.7.1 jailbreak tool for checkm8 devices
+iOS 15.0-16.2 jailbreak tool for checkm8 devices
 
 Options:
     --help              Print this help
@@ -247,6 +247,7 @@ _wait() {
 
 _dfuhelper() {
     local step_one;
+    deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step_one="Hold volume down + side button"
     else
@@ -258,7 +259,7 @@ _dfuhelper() {
     step 4 "$step_one" &
     sleep 3
     "$dir"/irecovery -c "reset" &
-    step 1 "Keep holding"
+    wait
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step 10 'Release side button, but keep holding volume down'
     else
@@ -368,7 +369,7 @@ chmod +x "$dir"/*
 # ============
 
 echo "palera1n | Version $version-$branch-$commit"
-echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
+echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
 echo ""
 
 version=""
@@ -561,10 +562,10 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     
     if [ "$tweaks" = "1" ]; then
         echo "[*] Testing for baseband presence"
-        if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [ "${cpid}" == *"0x7001"* ]; then
+        if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [ "${cpid}" == *"0x700"* ]; then
             disk=7
         elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
-            if [ "${cpid}" == *"0x7001"* ]; then
+            if [ "${cpid}" == *"0x700"* ]; then
                 disk=6
             else
                 disk=7
