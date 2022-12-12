@@ -499,7 +499,7 @@ else
 fi
 
 if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled
+    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
 fi
 
 # Have the user put the device into DFU
@@ -688,11 +688,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
-            if [ "$semi_tethered" = "1" ]; then
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h
-            else
-                "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h
-            fi
+            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h
         else
             "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -l
         fi
@@ -783,7 +779,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         sleep 1
         remote_cp work/.installed_palera1n root@localhost:/mnt$disk
         remote_cmd "ldid -s /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader /mnt$disk/jbin/jb.dylib"
-        remote_cmd "chmod +x /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
+        remote_cmd "chmod +rwx /mnt$disk/jbin/launchd /mnt$disk/jbin/jbloader"
         remote_cmd "tar -xvf /mnt$disk/jbin/binpack/binpack.tar -C /mnt$disk/jbin/binpack/"
         sleep 1
         remote_cmd "rm /mnt$disk/jbin/binpack/binpack.tar"
