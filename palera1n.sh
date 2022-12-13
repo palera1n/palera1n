@@ -600,7 +600,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     if [ "$restorerootfs" = "1" ]; then
         echo "[*] Removing Jailbreak"
-        remote_cmd "/sbin/apfs_deletefs $fs > /dev/null || true"
+        if [ ! "$fs" = "disk1s1" ] || [ ! "$fs" = "disk0s1s1" ]; then
+            remote_cmd "/sbin/apfs_deletefs $fs > /dev/null || true"
+        fi
         remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
         remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache || true"
         remote_cmd "/bin/sync"
@@ -622,13 +624,12 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         if [ -z "$skip_fakefs" ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
             remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1" && {
-                sleep 2
-                remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
-                
-                sleep 1
-                remote_cmd "cp -a /mnt1/. /mnt8/"
-                sleep 1
-                echo "[*] fakefs created, continuing..."
+            sleep 2
+            remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
+            sleep 1
+            remote_cmd "cp -a /mnt1/. /mnt8/"
+            sleep 1
+            echo "[*] fakefs created, continuing..."
             } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
         fi
     fi
