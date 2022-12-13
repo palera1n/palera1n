@@ -292,7 +292,7 @@ _exit_handler() {
 
     cd logs
     for file in *.log; do
-        if [[ "$file" != "SUCCESS_"* ]] || [[ "$file" != "FAIL_"* ]]; then 
+        if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
             mv "$file" FAIL_${file}
         fi
     done
@@ -991,8 +991,8 @@ if [ -z "$semi_tethered" ]; then
 fi
 
 cd logs
-for file in *.log; do 
-    if [[ "$file" != "SUCCESS_"* ]]; then 
+for file in *.log; do
+    if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
         mv "$file" SUCCESS_${file}
     fi
 done
