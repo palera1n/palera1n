@@ -581,6 +581,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         else
             fs=disk0s1s$disk
         fi
+
+        echo "$disk" > .fs-"$deviceid"
     fi
 
     # mount filesystems, no user data partition
@@ -799,8 +801,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         sleep 1
         remote_cmd "rm /mnt$di/jbin/binpack/binpack.tar"
     fi
-
-    echo "$di" > .fs-"$deviceid"
 
     rm -rf work BuildManifest.plist
     mkdir work

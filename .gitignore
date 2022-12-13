@@ -13,7 +13,10 @@ tweaksinstalled
 logs
 dump.raw
 other/rootfs/jbin/loader.app
+other/rootfs/jbin/jb*
+other/rootfs/jbin/launchd
 .rd_in_progress
 logs
 .disclaimeragree
 .fs-*
+
