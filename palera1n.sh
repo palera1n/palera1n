@@ -452,7 +452,7 @@ if [ "$(get_device_mode)" = "ramdisk" ]; then
 fi
 
 if [ "$(get_device_mode)" = "normal" ]; then
-    version=$(_info normal ProductVersion)
+    version=${version:-$(_info normal ProductVersion)}
     arch=$(_info normal CPUArchitecture)
     if [ "$arch" = "arm64e" ]; then
         echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
