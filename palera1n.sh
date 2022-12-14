@@ -827,7 +827,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     fi
     _wait recovery
-    _dfuhelper
+    _dfuhelper "$cpid"
     sleep 2
 fi
 
