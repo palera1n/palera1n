@@ -652,7 +652,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     echo "[*] Patching the kernel"
     remote_cmd "rm -f /mnt6/$active/kpf"
     if [[ "$version" == *"16"* ]]; then
-        if [ "$semi_tethered" = "1" ]; then
         remote_cp binaries/Kernel16Patcher.ios root@localhost:/mnt6/$active/kpf
     else
         remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt6/$active/kpf
