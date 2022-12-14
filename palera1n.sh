@@ -691,7 +691,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h -d
+            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -o -u -l -t -h
         else
             "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -a -l
         fi
