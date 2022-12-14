@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 mkdir -p logs
-set -e
+set -e 
+
+log="$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
+cd logs
+touch "$log"
+cd ..
 
 {
 
@@ -292,11 +297,7 @@ _exit_handler() {
 
     if [ -d "logs" ]; then
         cd logs
-        for file in *.log; do
-            if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
-                mv "$file" FAIL_${file}
-            fi
-        done
+        mv "$log" FAIL_${log}
         cd ..
     fi
 
@@ -991,11 +992,7 @@ fi
 
 if [ -d "logs" ]; then
     cd logs
-    for file in *.log; do
-        if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
-            mv "$file" SUCCESS_${file}
-        fi
-    done
+     mv "$log" SUCCESS_${log}
     cd ..
 fi
 
@@ -1009,4 +1006,4 @@ echo "Otherwise, press Do All in the settings section of the app"
 echo "If you have any issues, please join the Discord server and ask for help: https://dsc.gg/palera1n"
 echo "Enjoy!"
 
-} | tee logs/"$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
+} | tee logs/${log}
