@@ -290,13 +290,15 @@ _exit_handler() {
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
 
-    cd logs
-    for file in *.log; do
-        if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
-            mv "$file" FAIL_${file}
-        fi
-    done
-    cd ..
+    if [ -d "logs" ]; then
+        cd logs
+        for file in *.log; do
+            if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
+                mv "$file" FAIL_${file}
+            fi
+        done
+        cd ..
+    fi
 
     echo "[*] A failure log has been made. If you're going ask for help, please attach the latest log."
 }
@@ -991,13 +993,15 @@ if [ -z "$semi_tethered" ]; then
     "$dir"/irecovery -c fsboot
 fi
 
-cd logs
-for file in *.log; do
-    if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
-        mv "$file" SUCCESS_${file}
-    fi
-done
-cd ..
+if [ -d "logs" ]; then
+    cd logs
+    for file in *.log; do
+        if [[ "$file" != "SUCCESS_"* ]] && [[ "$file" != "FAIL_"* ]]; then
+            mv "$file" SUCCESS_${file}
+        fi
+    done
+    cd ..
+fi
 
 rm -rf work rdwork
 echo ""
