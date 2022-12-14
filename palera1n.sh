@@ -13,7 +13,8 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
 version="1.2.0"
 os=$(uname)
-dir="$(pwd)/binaries/$os"
+rootDir="$(pwd)"
+dir="$rootDir/binaries/$os"
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
 
@@ -158,11 +159,11 @@ _exit_handler() {
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
 
-    cd logs
+    pushd "$rootDir/logs"
     for file in *.log; do
         mv "$file" FAIL_${file}
     done
-    cd ..
+	 popd
 
     echo "[*] A failure log has been made. If you're going to make a GitHub issue, please attach the latest log."
 }
