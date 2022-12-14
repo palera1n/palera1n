@@ -983,11 +983,11 @@ else
         sleep 4
         "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
     fi
-fi
 
-if [ -z "$semi_tethered" ]; then
-    sleep 2
-    "$dir"/irecovery -c fsboot
+    if [ -z "$semi_tethered" ]; then
+       sleep 2
+       "$dir"/irecovery -c fsboot
+    fi
 fi
 
 if [ -d "logs" ]; then
