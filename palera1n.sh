@@ -110,6 +110,10 @@ _pwn() {
 }
 
 _dfuhelper() {
+    echo "[*] To get into DFU mode, you will be guided through 2 steps:"
+    echo "[*] 1. Hold volume down + side button for 4 seconds"
+    echo "[*] 2. Release side button, then keep holding volume down for 10 seconds"
+	 echo ""
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
     step 3 "Get ready"
