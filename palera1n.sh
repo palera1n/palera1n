@@ -868,8 +868,8 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
-    # Do payload if on iPhone 7-10
-    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10"* ]]; then
+    # Do payload if on iPhone 7 or 8
+    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
         if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
             newipswurl="$ipswurl"
         else
