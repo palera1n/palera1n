@@ -849,7 +849,7 @@ else
     boot_args="-v"
 fi
 
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10"* ]]; then
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
     if [ ! -f boot-"$deviceid"/.payload ]; then
         rm -rf boot-"$deviceid"
     fi
@@ -954,7 +954,7 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10"* ]]; then
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
     sleep 3
