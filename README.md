@@ -11,7 +11,7 @@
     <strong><a href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
 
-TUI WILL BE MADE IN Bubbletea
+TUI WILL BE MADE IN (still deciding)
 
 # How does it work?
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
