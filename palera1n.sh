@@ -626,7 +626,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     if [ "$semi_tethered" = "1" ]; then
         if [ -z "$skip_fakefs" ]; then
             echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1" && {
+            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v Xystem /dev/disk0s1" && {
             sleep 2
             remote_cmd "/sbin/mount_apfs /dev/$fs /mnt8"
             sleep 1
