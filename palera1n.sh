@@ -63,6 +63,7 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
+    --swift             Log swift checkpoints
 
 Subcommands:
     dfuhelper           An alias for --dfuhelper
@@ -104,6 +105,9 @@ parse_opt() {
             ;;
         --debug)
             debug=1
+            ;;
+        --swift)
+            swift=1
             ;;
         --help)
             print_help
@@ -385,6 +389,9 @@ fi
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
     echo "[*] Removed the created boot files"
+    if [ "$swift" = "1" ]; then
+        echo "SWIFT - CLEAN"
+    fi
     exit
 fi
 
@@ -534,9 +541,15 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
+    if [ -z "$swift" ]; then
+        echo "SWIFT - RAMDISK"
+    fi
     ./sshrd.sh `if [[ "$version" == *"16"* ]]; then echo "16.0.3"; else echo "15.6"; fi` `if [ -z "$tweaks" ]; then echo "rootless"; fi`
 
     echo "[*] Booting ramdisk"
+    if [ -z "$swift" ]; then
+        echo "SWIFT - BOOTRD"
+    fi
     ./sshrd.sh boot
     cd ..
     # remove special lines from known_hosts
@@ -808,6 +821,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     sleep 2
     echo "[*] Phase 1 done! Rebooting your device (if it doesn't reboot, you may force reboot)"
+    if [ -z "$swift" ]; then
+        echo "SWIFT - PHASE1"
+    fi
     remote_cmd "/sbin/reboot"
     sleep 1
     _kill_if_running iproxy
@@ -867,6 +883,10 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     #echo "[*] Converting blob"
     #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
+
+    if [ -z "$swift"]; then
+        echo "SWIFT - CREATINGBOOT"
+    fi
 
     # Do payload if on iPhone 7 or 8
     if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
@@ -944,6 +964,10 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
 
         touch boot-"$deviceid"/.local
     fi
+
+    if [ -z "$swift"]; then
+        echo "SWIFT - CREATINGBOOTDONE"
+    fi
 fi
 
 # ============
@@ -954,6 +978,9 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
+if [ -z "$swift"]; then
+    echo "SWIFT - BOOT"
+fi
 if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
@@ -1005,5 +1032,8 @@ echo "If this is your first time jailbreaking, open the new palera1n app, then p
 echo "Otherwise, press Do All in the settings section of the app"
 echo "If you have any issues, please join the Discord server and ask for help: https://dsc.gg/palera1n"
 echo "Enjoy!"
+if [ -z "$swift" ]; then
+    echo "SWIFT - DONE"
+fi
 
 } 2>&1 | tee logs/${log}
