@@ -16,7 +16,7 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.4.0"
+version="1.4.1"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
@@ -853,7 +853,7 @@ else
     boot_args="-v"
 fi
 
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
     if [ ! -f boot-"$deviceid"/.payload ]; then
         rm -rf boot-"$deviceid"
     fi
@@ -872,8 +872,8 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
-    # Do payload if on iPhone 7 or 8
-    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+    # Do payload if on iPhone 7-X
+    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
         if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
             newipswurl="$ipswurl"
         else
@@ -958,7 +958,7 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == iPhone10,[1-2] ]] || [[ "$deviceid" == iPhone10,[4-5] ]]; then
+if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
     sleep 3

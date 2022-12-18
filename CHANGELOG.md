@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1
+- ibot.patched fix
+- Use payload on the X
+- Other random changes/fixes
+
 ## 1.4.0
 
 - Does not mount user data partition for iPhone X compatibility, isn't even really needed anymore
