@@ -1006,4 +1006,4 @@ echo "Otherwise, press Do All in the settings section of the app"
 echo "If you have any issues, please join the Discord server and ask for help: https://dsc.gg/palera1n"
 echo "Enjoy!"
 
-} | tee logs/${log}
+} 2>&1 | tee logs/${log}
