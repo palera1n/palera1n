@@ -19,4 +19,4 @@ other/rootfs/jbin/launchd
 logs
 .disclaimeragree
 .fs-*
-
+other/rootfs/jbin/binpack

@@ -783,6 +783,10 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         rm rfs.zip rootfs.zip
         cd ../../..
 
+        # download binpack
+        mkdir -p other/rootfs/jbin/binpack
+        curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
+
         sleep 1
         remote_cp -r other/rootfs/* root@localhost:/mnt$di
         {
