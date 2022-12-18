@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 mkdir -p logs
-set -e 
+set -e
 
 log="$(date +%T)"-"$(date +%F)"-"$(uname)"-"$(uname -r)".log
 cd logs
@@ -10,7 +10,7 @@ cd ..
 
 {
 
-echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@"
+echo "[*] Command ran:$(if [ $EUID = 0 ]; then echo " sudo"; fi) ./palera1n.sh $*"
 
 # =========
 # Variables
@@ -34,7 +34,7 @@ remote_cmd() {
 }
 
 remote_cp() {
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 "$@"
 }
 
 step() {
@@ -91,7 +91,6 @@ parse_opt() {
             skip_fakefs=1
             ;;
         --no-baseband)
-            no_baseband=1
             ;;
         --serial)
             serial=1
@@ -131,7 +130,7 @@ parse_arg() {
 }
 
 parse_cmdline() {
-    for arg in $@; do
+    for arg in "$@"; do
         if [[ "$arg" == --* ]] && [ -z "$no_more_opts" ]; then
             parse_opt "$arg";
         elif [ "$arg_count" -lt "$max_args" ]; then
@@ -160,9 +159,9 @@ recovery_fix_auto_boot() {
 
 _info() {
     if [ "$1" = 'recovery' ]; then
-        echo $("$dir"/irecovery -q | grep "$2" | sed "s/$2: //")
+        "$dir"/irecovery -q | grep "$2" | sed "s/$2: //"
     elif [ "$1" = 'normal' ]; then
-        echo $("$dir"/ideviceinfo | grep "$2: " | sed "s/$2: //")
+        "$dir"/ideviceinfo | grep "$2: " | sed "s/$2: //"
     fi
 }
 
@@ -252,14 +251,14 @@ _wait() {
 
 _dfuhelper() {
     local step_one;
-    deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
+    deviceid=${deviceid:-$(_info normal ProductType)}
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
         step_one="Hold volume down + side button"
     else
         step_one="Hold home + power button"
     fi
     echo "[*] Press any key when ready for DFU mode"
-    read -n 1 -s
+    read -r -n 1 -s
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
@@ -271,23 +270,21 @@ _dfuhelper() {
         step 10 'Release power button, but keep holding home button'
     fi
     sleep 1
-    
+
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device entered DFU!"
     else
         echo "[-] Device did not enter DFU mode, rerun the script and try again"
-        return -1
+        return 255
     fi
 }
 
 _kill_if_running() {
-    if (pgrep -u root -xf "$1" &> /dev/null > /dev/null); then
+    if pgrep -u root -xf "$1" &> /dev/null; then
         # yes, it's running as root. kill it
-        sudo killall $1
-    else
-        if (pgrep -x "$1" &> /dev/null > /dev/null); then
-            killall $1
-        fi
+        sudo killall "$1"
+    elif pgrep -x "$1" &> /dev/null; then
+        killall "$1"
     fi
 }
 
@@ -297,7 +294,7 @@ _exit_handler() {
 
     if [ -d "logs" ]; then
         cd logs
-        mv "$log" FAIL_${log}
+        mv "$log" "FAIL_${log}"
         cd ..
     fi
 
@@ -330,7 +327,7 @@ fi
 
 # Download gaster
 if [ -e "$dir"/gaster ]; then
-    "$dir"/gaster &> /dev/null > /dev/null | grep -q 'usb_timeout: 5' && rm "$dir"/gaster
+    "$dir"/gaster | grep -q 'usb_timeout: 5' && rm "$dir"/gaster
 fi
 
 if [ ! -e "$dir"/gaster ]; then
@@ -343,7 +340,7 @@ fi
 # Check for pyimg4
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
-    read -n 1 -s
+    read -r -n 1 -s
     python3 -m pip install pyimg4
 fi
 
@@ -426,7 +423,7 @@ echo "[*] Waiting for devices"
 while [ "$(get_device_mode)" = "none" ]; do
     sleep 1;
 done
-echo $(echo "[*] Detected $(get_device_mode) mode device" | sed 's/dfu/DFU/')
+echo "[*] Detected $(get_device_mode) mode device" | sed 's/dfu/DFU/'
 
 if grep -E 'pongo|checkra1n_stage2|diag' <<< "$(get_device_mode)"; then
     echo "[-] Detected device in unsupported mode '$(get_device_mode)'"
@@ -464,7 +461,7 @@ if [ "$(get_device_mode)" = "normal" ]; then
     echo "Hello, $(_info normal ProductType) on $version!"
 
     echo "[*] Switching device into recovery mode..."
-    "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+    "$dir"/ideviceenterrecovery "$(_info normal UniqueDeviceID)"
     _wait recovery
 fi
 
@@ -495,15 +492,15 @@ else
         device=iPhone
     fi
 
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
+    buildid=$(curl -sL "https://api.ipsw.me/v4/ipsw/$version" | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
     if [ "$buildid" == "19B75" ]; then
         buildid=19B74
     fi
-    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+    ipswurl=$(curl -sL "https://api.appledb.dev/ios/$device_os;$buildid.json" | "$dir"/jq -r .devices\[\""$deviceid"\"\].ipsw)
 fi
 
 if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
+    rm -rf "blobs/$deviceid-$version.der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
 fi
 
 # Have the user put the device into DFU
@@ -511,7 +508,7 @@ if [ "$(get_device_mode)" != "dfu" ]; then
     recovery_fix_auto_boot;
     _dfuhelper "$cpid" || {
         echo "[-] failed to enter DFU mode, run palera1n.sh again"
-        exit -1
+        exit 255
     }
 fi
 sleep 2
@@ -520,7 +517,7 @@ sleep 2
 # Ramdisk
 # ============
 
-# Dump blobs, and install pogo if needed 
+# Dump blobs, and install pogo if needed
 if [ -f blobs/"$deviceid"-"$version".der ]; then
     if [ -f .rd_in_progress ]; then
         rm blobs/"$deviceid"-"$version".der
@@ -534,7 +531,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh `if [[ "$version" == *"16"* ]]; then echo "16.0.3"; else echo "15.6"; fi` `if [ -z "$tweaks" ]; then echo "rootless"; fi`
+    ./sshrd.sh "$(if [[ "$version" == *"16"* ]]; then echo "16.0.3"; else echo "15.6"; fi)" "$(if [ -z "$tweaks" ]; then echo "rootless"; fi)"
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
@@ -562,7 +559,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     done
 
     touch .rd_in_progress
-    
+
     if [ "$tweaks" = "1" ]; then
         echo "[*] Testing for baseband presence"
         if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
@@ -618,8 +615,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     echo "[*] Dumping apticket"
     sleep 1
-    remote_cp root@localhost:/mnt6/$active/System/Library/Caches/apticket.der blobs/"$deviceid"-"$version".der
-    #remote_cmd "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) 
+    remote_cp root@localhost:"/mnt6/$active/System/Library/Caches/apticket.der" blobs/"$deviceid"-"$version".der
+    #remote_cmd "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000))
     #"$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
     #rm dump.raw
 
@@ -633,7 +630,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             remote_cmd "cp -a /mnt1/. /mnt8/"
             sleep 1
             echo "[*] fakefs created, continuing..."
-            } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
+            } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it"
         fi
     fi
 
@@ -653,9 +650,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     echo "[*] Patching the kernel"
     remote_cmd "rm -f /mnt6/$active/kpf"
     if [[ "$version" == *"16"* ]]; then
-        remote_cp binaries/Kernel16Patcher.ios root@localhost:/mnt6/$active/kpf
+        remote_cp binaries/Kernel16Patcher.ios root@localhost:"/mnt6/$active/kpf"
     else
-        remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt6/$active/kpf
+        remote_cp binaries/Kernel15Patcher.ios root@localhost:"/mnt6/$active/kpf"
     fi
     remote_cmd "/usr/sbin/chown 0 /mnt6/$active/kpf"
     remote_cmd "/bin/chmod 755 /mnt6/$active/kpf"
@@ -676,7 +673,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     echo "[*] Downloading kernelcache"
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-    
+
     echo "[*] Patching kernelcache"
     mv kernelcache.release.* work/kernelcache
     if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
@@ -685,9 +682,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
     fi
     sleep 1
-    remote_cp work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
+    remote_cp work/kcache.raw root@localhost:"/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/"
     remote_cmd "/mnt6/$active/kpf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched"
-    remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
+    remote_cp root@localhost:"/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched" work/
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
             "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -l -t -h -d
@@ -697,7 +694,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     else
         "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -a
     fi
-    
+
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
@@ -705,7 +702,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
     fi
     sleep 1
-    remote_cp work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
+    remote_cp work/kcache.im4p root@localhost:"/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/"
     remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd -M /mnt6/$active/System/Library/Caches/apticket.der"
     remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p"
 
@@ -774,7 +771,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
-        
+
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
         curl -L https://nightly.link/palera1n/jbinit/workflows/build/main/rootfs.zip -o rfs.zip
@@ -788,7 +785,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         {
             echo "{"
             echo "    \"version\": \"${version} (${commit}_${branch})\","
-            echo "    \"args\": \"$@\","
+            echo "    \"args\": \"$*\","
             echo "    \"pc\": \"$(uname) $(uname -r)\""
             echo "}"
         } > work/.installed_palera1n
@@ -817,13 +814,13 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         sleep 5
 
         echo "[*] Switching device into recovery mode..."
-        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+        "$dir"/ideviceenterrecovery "$(_info normal UniqueDeviceID)"
     elif [ -z "$tweaks" ]; then
         _wait normal
         sleep 5
 
         echo "[*] Switching device into recovery mode..."
-        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+        "$dir"/ideviceenterrecovery "$(_info normal UniqueDeviceID)"
     fi
     _wait recovery
     _dfuhelper "$cpid"
@@ -873,8 +870,8 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
             newipswurl="$ipswurl"
         else
-            buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("'iPhone'")) | .buildid][0]' --raw-output)
-            newipswurl=$(curl -sL https://api.appledb.dev/ios/iOS\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+            buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("iPhone")) | .buildid][0]' --raw-output)
+            newipswurl=$(curl -sL "https://api.appledb.dev/ios/iOS;$buildid.json" | "$dir"/jq -r .devices\[\""$deviceid"\"\].ipsw)
         fi
 
         echo "[*] Downloading BuildManifest"
@@ -897,7 +894,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
             sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched2
         else
             LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched2
-            rm *.bak
+            rm -- *.bak
         fi
 
         cd ..
@@ -911,7 +908,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         echo "[*] Downloading and decrypting iBSS"
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
-        
+
         echo "[*] Downloading and decrypting iBoot"
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
@@ -936,11 +933,11 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
             sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
         else
             LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
-            rm *.bak
+            rm -- *.bak
         fi
         cd ..
         "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M blobs/"$deviceid"-"$version".der -A -T ibss
-        "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
+        "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T "$(if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi)"
 
         touch boot-"$deviceid"/.local
     fi
@@ -992,7 +989,7 @@ fi
 
 if [ -d "logs" ]; then
     cd logs
-     mv "$log" SUCCESS_${log}
+    mv "$log" "SUCCESS_${log}"
     cd ..
 fi
 
@@ -1006,4 +1003,4 @@ echo "Otherwise, press Do All in the settings section of the app"
 echo "If you have any issues, please join the Discord server and ask for help: https://dsc.gg/palera1n"
 echo "Enjoy!"
 
-} 2>&1 | tee logs/${log}
+} 2>&1 | tee "logs/${log}"
