@@ -30,11 +30,11 @@ fs=disk0s1s$disk
 # Functions
 # =========
 remote_cmd() {
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p6413 root@localhost "$@"
 }
 
 remote_cp() {
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P6413 $@
 }
 
 step() {
@@ -443,9 +443,9 @@ if [ "$(get_device_mode)" = "ramdisk" ]; then
     _kill_if_running iproxy
     echo "[*] Rebooting device in SSH Ramdisk"
     if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 2222 22 &
+        sudo "$dir"/iproxy 6413 22 &
     else
-        "$dir"/iproxy 2222 22 &
+        "$dir"/iproxy 6413 22 &
     fi
     sleep 2
     remote_cmd "/usr/sbin/nvram auto-boot=false"
@@ -552,9 +552,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     # Execute the commands once the rd is booted
     if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 2222 22 &
+        sudo "$dir"/iproxy 6413 22 &
     else
-        "$dir"/iproxy 2222 22 &
+        "$dir"/iproxy 6413 22 &
     fi
 
     while ! (remote_cmd "echo connected" &> /dev/null); do
@@ -596,7 +596,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         echo "[!] Active file does not exist! Please use SSH to create it"
         echo "    /mnt6/active should contain the name of the UUID in /mnt6"
         echo "    When done, type reboot in the SSH session, then rerun the script"
-        echo "    ssh root@localhost -p 2222"
+        echo "    ssh root@localhost -p 6413"
         exit
     fi
     active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
