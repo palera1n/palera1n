@@ -563,7 +563,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     touch .rd_in_progress
     
-    if [ "$tweaks" = "1" ]; then
+    if [ "$tweaks" = "1" ] || [ "$restorerootfs" = "1" ]; then
         echo "[*] Testing for baseband presence"
         if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
             disk=7
