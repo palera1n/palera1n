@@ -334,7 +334,7 @@ if [ -e "$dir"/gaster ]; then
 fi
 
 if [ ! -e "$dir"/gaster ]; then
-    curl -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os".zip
+    curl -sLO https://static.palera.in/deps/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
     rm -rf gaster gaster-"$os".zip
@@ -769,7 +769,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
-        curl -LO https://nightly.link/palera1n/loader/workflows/build/main/palera1n.zip
+        curl -LO https://static.palera.in/deps/loader.zip
         unzip palera1n.zip -d .
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
@@ -777,7 +777,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
-        curl -L https://nightly.link/palera1n/jbinit/workflows/build/main/rootfs.zip -o rfs.zip
+        curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip
