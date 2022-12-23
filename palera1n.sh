@@ -770,7 +770,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         cd other/rootfs/jbin
         rm -rf loader.app
         curl -LO https://static.palera.in/deps/loader.zip
-        unzip palera1n.zip -d .
+        unzip loader.zip -d .
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
