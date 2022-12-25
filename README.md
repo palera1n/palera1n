@@ -37,6 +37,9 @@ Thank you so much to our Patreons that make the future development possible! You
 <a href="https://havoc.app"><img width=64 src="https://docs.havoc.app/img/standard_icon.png"></img></a>
 <a href="https://twitter.com/yyyyyy_public"><img width=64 src="https://pbs.twimg.com/profile_images/1429332550112079876/dQQgsURc_400x400.jpg"></img></a>
 <a href="https://twitter.com/0xSp00kyb0t"><img width=64 src="https://pbs.twimg.com/profile_images/1603601553226620935/1t4yD1bD_400x400.jpg"></img></a>
+<a href="https://chariz.com"><img width=64 src="https://chariz.com/img/favicon.png"></img></a>
+<a href="https://twitter.com/stars6220"><img width=64 src="https://pbs.twimg.com/profile_images/1606990218925670400/Y4JBl6OS_400x400.jpg"></img></a>
+<a href="https://github.com/beast9265"><img width=64 src="https://avatars.githubusercontent.com/u/79794946?v=4"></img></a>
 
 # Warning
 - We are **NOT** responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. **If your device is stuck in recovery, please run one of the following:**
