@@ -286,7 +286,8 @@ _kill_if_running() {
         sudo killall $1
     else
         if (pgrep -x "$1" &> /dev/null > /dev/null); then
-            killall $1
+            killall -q $1
+            sudo killall -q $1
         fi
     fi
 }
