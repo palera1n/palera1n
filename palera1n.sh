@@ -143,6 +143,12 @@ parse_cmdline() {
     done
 }
 
+block_amp_device_agent() {
+    if [ "$os" = "Darwin" ]; then
+        "$dir"/ampblocker start -f
+    fi
+}
+
 recovery_fix_auto_boot() {
     if [ "$tweaks" = "1" ]; then
         "$dir"/irecovery -c "setenv auto-boot false"
@@ -301,6 +307,10 @@ _exit_handler() {
         cd ..
     fi
 
+    if [ "$os" = "Darwin" ]; then
+        "$dir"/ampblocker stop -f
+    fi
+
     echo "[*] A failure log has been made. If you're going ask for help, please attach the latest log."
 }
 trap _exit_handler EXIT
@@ -377,6 +387,9 @@ echo ""
 
 version=""
 parse_cmdline "$@"
+if [ "$os" = "Darwin" ]; then 
+    "$dir"/ampblocker start -f
+fi
 
 if [ "$debug" = "1" ]; then
     set -o xtrace
@@ -510,6 +523,9 @@ fi
 if [ "$(get_device_mode)" != "dfu" ]; then
     recovery_fix_auto_boot;
     _dfuhelper "$cpid" || {
+        if [ "$os" = "Darwin" ]; then
+            "$dir"/ampblocker start -f
+        fi
         echo "[-] failed to enter DFU mode, run palera1n.sh again"
         exit -1
     }
@@ -613,6 +629,10 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         rm -f BuildManifest.plist
         echo "[*] Done! Rebooting your device"
         remote_cmd "/sbin/reboot"
+        if [ "$os" = "Darwin" ]; then
+            "$dir"/ampblocker stop -f
+        fi
+
         exit;
     fi
 
@@ -998,6 +1018,10 @@ if [ -d "logs" ]; then
     cd logs
      mv "$log" SUCCESS_${log}
     cd ..
+fi
+
+if [ "$os" = "Darwin" ]; then 
+    "$dir"/ampblocker stop -f
 fi
 
 rm -rf work rdwork
