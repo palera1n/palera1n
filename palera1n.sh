@@ -30,11 +30,11 @@ fs=disk0s1s$disk
 # Functions
 # =========
 remote_cmd() {
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -o ProxyCommand='inetcat 22' root@localhost "$@"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -o ProxyCommand='${dir}/inetcat 22' root@localhost "$@"
 }
 
 remote_cp() {
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -o ProxyCommand='inetcat 22' $@
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -o ProxyCommand='${dir}/inetcat 22' $@
 }
 
 step() {
@@ -581,7 +581,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         echo "[!] Active file does not exist! Please use SSH to create it"
         echo "    /mnt6/active should contain the name of the UUID in /mnt6"
         echo "    When done, type reboot in the SSH session, then rerun the script"
-        echo "    ssh root@localhost -o ProxyCommand='inetcat 22'"
+        echo "    ssh root@localhost -o ProxyCommand='${dir}/inetcat 22'"
         exit
     fi
     active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
