@@ -30,11 +30,11 @@ fs=disk0s1s$disk
 # Functions
 # =========
 remote_cmd() {
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p6413 root@localhost "$@"
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -o ProxyCommand='inetcat 22' root@localhost "$@"
 }
 
 remote_cp() {
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P6413 $@
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -o ProxyCommand='inetcat 22' $@
 }
 
 step() {
@@ -440,17 +440,10 @@ fi
 
 if [ "$(get_device_mode)" = "ramdisk" ]; then
     # If a device is in ramdisk mode, perhaps iproxy is still running?
-    _kill_if_running iproxy
     echo "[*] Rebooting device in SSH Ramdisk"
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
-    fi
     sleep 2
     remote_cmd "/usr/sbin/nvram auto-boot=false"
     remote_cmd "/sbin/reboot"
-    _kill_if_running iproxy
     _wait recovery
 fi
 
@@ -529,7 +522,6 @@ fi
 
 if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     mkdir -p blobs
-    _kill_if_running iproxy
 
     cd ramdisk
     chmod +x sshrd.sh
@@ -548,13 +540,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             sed -i '/localhost/d' ~/.ssh/known_hosts
             sed -i '/127\.0\.0\.1/d' ~/.ssh/known_hosts
         fi
-    fi
-
-    # Execute the commands once the rd is booted
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
     fi
 
     while ! (remote_cmd "echo connected" &> /dev/null); do
@@ -596,7 +581,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         echo "[!] Active file does not exist! Please use SSH to create it"
         echo "    /mnt6/active should contain the name of the UUID in /mnt6"
         echo "    When done, type reboot in the SSH session, then rerun the script"
-        echo "    ssh root@localhost -p 6413"
+        echo "    ssh root@localhost -o ProxyCommand='inetcat 22'"
         exit
     fi
     active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
@@ -814,7 +799,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     echo "[*] Phase 1 done! Rebooting your device (if it doesn't reboot, you may force reboot)"
     remote_cmd "/sbin/reboot"
     sleep 1
-    _kill_if_running iproxy
 
     if [ "$semi_tethered" = "1" ]; then
         _wait normal
