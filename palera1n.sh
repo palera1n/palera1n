@@ -143,6 +143,17 @@ parse_cmdline() {
     done
 }
 
+restart_amp() {
+    echo bruh
+    if [ "$os" = "Darwin" ]; then
+        "$dir"/ampblocker stop -f
+    fi
+    kill -- -$$
+}
+
+trap 'restart_amp' 2
+
+
 block_amp_device_agent() {
     if [ "$os" = "Darwin" ]; then
         "$dir"/ampblocker start -f
@@ -314,6 +325,16 @@ _exit_handler() {
     echo "[*] A failure log has been made. If you're going ask for help, please attach the latest log."
 }
 trap _exit_handler EXIT
+
+restart_amp() {
+    echo bruh
+    if [ "$os" = "Darwin" ]; then
+        "$dir"/ampblocker stop -f
+    fi
+    kill -- -$$
+}
+
+trap 'restart_amp' SIGINT SIGKILL SIGTERM SIGHUP
 
 # ===========
 # Fixes
