@@ -31,17 +31,17 @@ fs=disk0s1s$disk
 # =========
 remote_cmd() {
     if [ "$os" = 'Linux' ]; then
-        "$dir"/sshpass -p 'alpine' ssh -o ProxyCommand='sudo ${dir}/inetcat 22' -o StrictHostKeyChecking=no root@localhost "$@"
+        "$dir"/sshpass -p 'alpine' ssh -o ProxyCommand="sudo ${dir}/inetcat 22" -o StrictHostKeyChecking=no root@localhost "$@"
     else
-        "$dir"/sshpass -p 'alpine' ssh -o ProxyCommand='${dir}/inetcat 22' -o StrictHostKeyChecking=no root@localhost "$@"
+        "$dir"/sshpass -p 'alpine' ssh -o ProxyCommand="${dir}/inetcat 22" -o StrictHostKeyChecking=no root@localhost "$@"
     fi
 }
 
 remote_cp() {
     if [ "$os" = 'Linux' ]; then
-        "$dir"/sshpass -p 'alpine' scp -o ProxyCommand='sudo ${dir}/inetcat 22' -o StrictHostKeyChecking=no $@
+        "$dir"/sshpass -p 'alpine' scp -o ProxyCommand="sudo ${dir}/inetcat 22" -o StrictHostKeyChecking=no $@
     else
-        "$dir"/sshpass -p 'alpine' scp -o ProxyCommand='${dir}/inetcat 22' -o StrictHostKeyChecking=no $@
+        "$dir"/sshpass -p 'alpine' scp -o ProxyCommand="${dir}/inetcat 22" -o StrictHostKeyChecking=no $@
     fi
 }
 
