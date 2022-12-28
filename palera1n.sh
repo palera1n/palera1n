@@ -143,23 +143,6 @@ parse_cmdline() {
     done
 }
 
-restart_amp() {
-    echo bruh
-    if [ "$os" = "Darwin" ]; then
-        "$dir"/ampblocker stop -f
-    fi
-    kill -- -$$
-}
-
-trap 'restart_amp' 2
-
-
-block_amp_device_agent() {
-    if [ "$os" = "Darwin" ]; then
-        "$dir"/ampblocker start -f
-    fi
-}
-
 recovery_fix_auto_boot() {
     if [ "$tweaks" = "1" ]; then
         "$dir"/irecovery -c "setenv auto-boot false"
