@@ -106,3 +106,4 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [Dora](https://github.com/dora2-iOS) for iBoot payload and iBootpatcher2
 - [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)
 - [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.
+- [staturnz](https://github.com/staturnzz) for [ampblocker](https://github.com/staturnzz/ampblocker)
