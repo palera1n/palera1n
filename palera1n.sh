@@ -621,9 +621,9 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         fi
 
         if [ "$os" = 'Linux' ]; then
-            sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched2
+            sed -i 's/\/\kernelcachd/\/\kernelcache/g' ibot.patched2
         else
-            LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched2
+            LC_ALL=C sed -i.bak -e 's/s\/\kernelcachd/s\/\kernelcache/g' ibot.patched2
             rm *.bak
         fi
 
@@ -672,7 +672,7 @@ if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
     sleep 1
     "$dir"/irecovery -c "go xfb"
     sleep 1
-    "$dir"/irecovery -c "go boot $fs"
+    "$dir"/irecovery -c "go boot md0"
 else
     echo "Sorry, this device is not supported yet on rootless."
     exit 1
