@@ -343,7 +343,7 @@ chmod +x "$dir"/*
 # ============
 
 echo "palera1n | Version $version-$branch-$commit"
-echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
+echo "Written by Nebula and Mineek | Help from Nathan, Nick Chan and Sunsetplooshi"
 echo ""
 
 version=""
@@ -441,7 +441,7 @@ else
 fi
 
 if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
+    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled
 fi
 
 # Have the user put the device into DFU
@@ -463,106 +463,11 @@ if [[ "$deviceid" != iPhone9,[1-4] ]] && [[ "$deviceid" != "iPhone10,"* ]]; then
 fi
 
 # ============
-# Ramdisk
-# ============
-
-# Dump blobs, and install pogo if needed 
-if [ -f blobs/"$deviceid"-"$version".der ]; then
-    if [ -f .rd_in_progress ]; then
-        rm blobs/"$deviceid"-"$version".der
-    fi
-fi
-
-if [ ! -f blobs/"$deviceid"-"$version".der ]; then
-    mkdir -p blobs
-    _kill_if_running iproxy
-
-    cd ramdisk
-    chmod +x sshrd.sh
-    echo "[*] Creating ramdisk"
-    ./sshrd.sh `if [[ "$version" == *"16"* ]]; then echo "16.0.3"; else echo "15.6"; fi`
-
-    echo "[*] Booting ramdisk"
-    ./sshrd.sh boot
-    cd ..
-    # remove special lines from known_hosts
-    if [ -f ~/.ssh/known_hosts ]; then
-        if [ "$os" = "Darwin" ]; then
-            sed -i.bak '/localhost/d' ~/.ssh/known_hosts
-            sed -i.bak '/127\.0\.0\.1/d' ~/.ssh/known_hosts
-        elif [ "$os" = "Linux" ]; then
-            sed -i '/localhost/d' ~/.ssh/known_hosts
-            sed -i '/127\.0\.0\.1/d' ~/.ssh/known_hosts
-        fi
-    fi
-
-    # Execute the commands once the rd is booted
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
-    fi
-
-    while ! (remote_cmd "echo connected" &> /dev/null); do
-        sleep 1
-    done
-
-    touch .rd_in_progress
-    
-    disk=1
-    if [[ "$version" == *"16"* ]]; then
-        fs=disk1s$disk
-    else
-        fs=disk0s1s$disk
-    fi
-
-    echo "$disk" > .fs-"$deviceid"
-
-    # mount filesystems, no user data partition
-    remote_cmd "/usr/bin/mount_filesystems_nouser"
-
-    has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
-    if [ ! "$has_active" = "/mnt6/active" ]; then
-        echo "[!] Active file does not exist! Please use SSH to create it"
-        echo "    /mnt6/active should contain the name of the UUID in /mnt6"
-        echo "    When done, type reboot in the SSH session, then rerun the script"
-        echo "    ssh root@localhost -p 6413"
-        exit
-    fi
-    active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
-
-    echo "[*] Dumping apticket"
-    sleep 1
-    remote_cp root@localhost:/mnt6/$active/System/Library/Caches/apticket.der blobs/"$deviceid"-"$version".der
-
-    remote_cmd "/usr/sbin/nvram auto-boot=true"
-
-    rm -rf work BuildManifest.plist
-    mkdir work
-    rm .rd_in_progress
-
-    sleep 2
-    echo "[*] Phase 1 done! Rebooting your device (if it doesn't reboot, you may force reboot)"
-    remote_cmd "/sbin/reboot"
-    sleep 1
-    _kill_if_running iproxy
-
-    _wait normal
-    sleep 5
-
-    echo "[*] Switching device into recovery mode..."
-    "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
-    _wait recovery
-    _dfuhelper "$cpid"
-    sleep 2
-fi
-
-# ============
 # Boot create
 # ============
 
 # Actually create the boot files
-disk=$(cat .fs-"$deviceid")
+disk=1
 if [[ "$version" == *"16"* ]]; then
     fs=disk1s$disk
 else
@@ -591,8 +496,8 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     rm -rf boot-"$deviceid"
     mkdir boot-"$deviceid"
 
-    #echo "[*] Converting blob"
-    #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
+    echo "[*] blob moment"
+    "$dir"/img4tool -e -s $(pwd)/shsh/"$cpid".shsh2 -m blobs/"$deviceid"-"$version".der
     cd work
 
     # Do payload if on iPhone 7-X
@@ -688,8 +593,11 @@ rm -rf work rdwork
 echo ""
 echo "Done!"
 echo "The device should now boot to iOS"
-echo "Rootless is WIP, not all tweaks work, and some may cause bootloops"
+echo "Rootless is WIP, not all tweaks work, and some may even cause bootloops"
+echo "=============================================================="
 echo "To bootstrap please use ./bootstrap.sh in the rootless folder"
+echo "=============================================================="
 echo "Enjoy!"
+echo " <3 from the palera1n team"
 
 } 2>&1 | tee logs/${log}
