@@ -40,6 +40,8 @@ dpkg -i preferenceloader_2.2.6-1debug_iphoneos-arm64.deb > /dev/null
 apt-get update -o Acquire::AllowInsecureRepositories=true
 apt-get dist-upgrade -y --allow-downgrades --allow-unauthenticated
 
+echo "deb https://mineek.github.io/rootlessrepo/ ./" > /var/jb/etc/apt/sources.list.d/mineek.list
+
 clean
 
 echo "Done!"
