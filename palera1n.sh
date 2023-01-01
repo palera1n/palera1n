@@ -496,8 +496,10 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     rm -rf boot-"$deviceid"
     mkdir boot-"$deviceid"
 
+    mkdir blobs
+
     echo "[*] blob moment"
-    "$dir"/img4tool -e -s $(pwd)/shsh/"$cpid".shsh2 -m blobs/"$deviceid"-"$version".der
+    "$dir"/img4tool -e -s shsh/"$cpid".shsh -m blobs/"$deviceid"-"$version".der
     cd work
 
     # Do payload if on iPhone 7-X
