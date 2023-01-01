@@ -9,7 +9,7 @@ echo "Downloading resources..."
 IPROXY=$(iproxy 28605 44 >/dev/null 2>&1 & echo $!)
 curl -sLOOOOO https://apt.procurs.us/bootstraps/1900/bootstrap-ssh-iphoneos-arm64.tar.zst \
 https://raw.githubusercontent.com/elihwyma/Pogo/1724d2864ca55bc598fa96bee62acad875fe5990/Pogo/Required/org.coolstar.sileonightly_2.4_iphoneos-arm64.deb \
-https://cdn.discordapp.com/attachments/1028398976640229380/1059121048597037096/ellekit_0.1.36.g254a244_iphoneos-arm64_2023-01-01.deb \
+https://cdn.discordapp.com/attachments/1028398976640229380/1059180752689958972/ellekit_0.1.37.ged0b3bb_iphoneos-arm64_2023-01-01.deb \
 https://cdn.discordapp.com/attachments/1028398976640229380/1056844445892481074/preferenceloader_2.2.6-1debug_iphoneos-arm64.deb
 
 unzstd bootstrap-ssh-iphoneos-arm64.tar.zst
