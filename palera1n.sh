@@ -10,8 +10,11 @@ cd ..
 
 {
 
-echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@"
-
+COMMAND=$(echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@")
+gum style \
+        --foreground 212 --border-foreground 212 --border double \
+        --align center --margin "1 1" --padding "1 2" \
+        "$COMMAND"
 # =========
 # Variables
 # =========
@@ -993,13 +996,14 @@ if [ -d "logs" ]; then
 fi
 
 rm -rf work rdwork
-echo ""
-echo "Done!"
-echo "The device should now boot to iOS"
-echo "When you unlock the device, it will respring about 30 seconds after"
-echo "If this is your first time jailbreaking, open the new palera1n app, then press Install"
-echo "Otherwise, press Do All in the settings section of the app"
-echo "If you have any issues, please join the Discord server and ask for help: https://dsc.gg/palera1n"
-echo "Enjoy!"
+clear
+DONE=$(gum style --height 5 --width 25 --padding '1 3' --border double --border-foreground 57  "Done!" "The device should now boot to $(gum style --foreground 212 "iOS")")
+UNLOCK=$(gum style --width 25 --padding '1 3' --border double --border-foreground 212 "When you unlock the device, it will respring about $(gum style --foreground "#04B575" "30 seconds") later.")
+FIRST=$(gum style  --height 5 --width 35 --padding '1 8' --border double --border-foreground 255 "If this is your first time jailbreaking," "open the new palera1n app, then press $(gum style --foreground 57 "Install").")
+ISSUE=$(gum style  --height 7 --width 35 --padding '1 5' --border double --border-foreground 120  "If you have any issues, please join the $(gum style --foreground 212 "Discord") server" "and ask for help:" "$(gum style --foreground 212 "https://dsc.gg/palera1n")")
+ENJOY=$(gum style --width 50 --align center --padding "1 1" --border double --border-foreground 57 $(gum style --foreground 212 "Enjoy!"))
 
+DONE_UNLOCK=$(gum join "$DONE" "$UNLOCK")
+FIRST_ISSUE=$(gum join "$FIRST" "$ISSUE")
+gum join --align center --vertical "$DONE_UNLOCK" "$FIRST_ISSUE" "$ENJOY"
 } 2>&1 | tee logs/${log}

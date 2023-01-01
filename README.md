@@ -50,7 +50,7 @@ Thank you so much to our Patreons that make the future development possible! You
 - A checkm8 vulnerable iOS device on iOS 15 or 16 (A8-A11)
   - The device must be on iOS 15.0-16.2
 - Linux or macOS computer
-  - Python 3 must be installed.
+  - Python 3 and gum must be installed.
 
 ### A10 and A11 devices
 - On A10 and A11, **you must disable your passcode while in the jailbroken state**.
@@ -106,3 +106,5 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [Dora](https://github.com/dora2-iOS) for iBoot payload and iBootpatcher2
 - [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)
 - [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.
+- [Oliver Tzeng](https://github.com/olivertzeng) for helping improve the script with gum
+- [charmbracelet](https://github.com/charmbracelet)for the gum library
