@@ -134,17 +134,6 @@ _info() {
     fi
 }
 
-_pwn() {
-    pwnd=$(_info recovery PWND)
-    if [ "$pwnd" = "" ]; then
-        echo "[*] Pwning device"
-        "$dir"/gaster pwn
-        sleep 2
-        #"$dir"/gaster reset
-        #sleep 1
-    fi
-}
-
 _reset() {
     echo "[*] Resetting DFU state"
     "$dir"/gaster reset
@@ -439,7 +428,6 @@ sleep 2
 # ============
 
 sleep 2
-_pwn
 _reset
 echo "[*] Booting device"
 if [ "$version" = "15"* ]; then
