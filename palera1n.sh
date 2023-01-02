@@ -15,16 +15,13 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # =========
 # Variables
 # =========
-ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.4.1"
+version="1.5.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
 max_args=1
 arg_count=0
-disk=1
-fs=disk0s1s$disk
 
 # =========
 # Functions
@@ -311,11 +308,15 @@ if [ ! -e "$dir"/gaster ]; then
     rm -rf gaster gaster-"$os".zip
 fi
 
-# Check for pyimg4
-if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
-    echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
-    read -n 1 -s
-    python3 -m pip install pyimg4
+# Download checkra1n
+if [ ! -e "$dir"/checkra1n ]; then
+    link="https://assets.checkra.in/downloads/preview/0.1337.0/checkra1n-"
+    if [ "$os" = 'Darwin' ]; then
+        link="${link}macos"
+    fi
+    curl -sLO "${link}"
+    mv checkra1n* "$dir"/checkra1n
+    chmod +x "$dir"/checkra1n
 fi
 
 # ============
@@ -344,6 +345,11 @@ chmod +x "$dir"/*
 
 echo "palera1n | Version $version-$branch-$commit"
 echo "Written by Nebula and Mineek | Help from Nathan, Nick Chan and Ploosh"
+echo "Special thanks to the checkra1n team for their hard work, open source code and inspiration"
+echo "Even though we use checkra1n, we are not affiliated with them in any way, shape or form."
+echo "This tool is not endorsed by checkra1n, and is not supported by them."
+echo "palera1n is provided as-is, without warranty of any kind, express or implied."
+echo "palera1n is not responsible for any damage, data loss, or any other issues that may occur to your device(s)."
 echo ""
 
 version=""
@@ -418,32 +424,6 @@ if [ "$dfuhelper" = "1" ]; then
     exit
 fi
 
-if [ ! "$ipsw" = "" ]; then
-    ipswurl=$ipsw
-else
-    #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        device_os=iPadOS
-        device=iPad
-    elif [[ "$deviceid" == *"iPod"* ]]; then
-        device_os=iOS
-        device=iPod
-    else
-        device_os=iOS
-        device=iPhone
-    fi
-
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
-    if [ "$buildid" == "19B75" ]; then
-        buildid=19B74
-    fi
-    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
-fi
-
-if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled
-fi
-
 # Have the user put the device into DFU
 if [ "$(get_device_mode)" != "dfu" ]; then
     recovery_fix_auto_boot;
@@ -455,101 +435,6 @@ fi
 sleep 2
 
 # ============
-# Checks
-# ============
-if [[ "$deviceid" != iPhone9,[1-4] ]] && [[ "$deviceid" != "iPhone10,"* ]]; then
-    echo "[-] This device is unsupported on rootless for now."
-    exit
-fi
-
-# ============
-# Boot create
-# ============
-
-# Actually create the boot files
-disk=1
-if [[ "$version" == *"16"* ]]; then
-    fs=disk1s$disk
-else
-    fs=disk0s1s$disk
-fi
-
-boot_args="rootdev=md0"
-if [ "$serial" = "1" ]; then
-    boot_args="serial=3 rootdev=md0"
-else
-    boot_args="-v rootdev=md0"
-fi
-
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
-    if [ ! -f boot-"$deviceid"/.payload ]; then
-        rm -rf boot-"$deviceid"
-    fi
-else
-    if [ ! -f boot-"$deviceid"/.local ]; then
-        rm -rf boot-"$deviceid"
-    fi
-fi
-
-if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
-    # Downloading files, and decrypting iBSS/iBEC
-    rm -rf boot-"$deviceid"
-    mkdir boot-"$deviceid"
-
-    mkdir blobs
-
-    echo "[*] blob moment"
-    "$dir"/img4tool -e -s shsh/"$cpid".shsh -m blobs/"$deviceid"-"$version".der
-    cd work
-
-    # Do payload if on iPhone 7-X
-    if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
-        if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
-            newipswurl="$ipswurl"
-        else
-            buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("'iPhone'")) | .buildid][0]' --raw-output)
-            newipswurl=$(curl -sL https://api.appledb.dev/ios/iOS\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
-        fi
-
-        echo "[*] Downloading BuildManifest"
-        "$dir"/pzb -g BuildManifest.plist "$newipswurl"
-
-        echo "[*] Downloading and decrypting iBoot"
-        "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$newipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
-
-        echo "[*] Patching and signing iBoot"
-        "$dir"/iBoot64Patcher ibot.dec ibot.patched
-
-        if [[ "$deviceid" == iPhone9,[1-4] ]]; then
-            "$dir"/iBootpatch2 --t8010 ibot.patched ibot.patched2
-        else
-            "$dir"/iBootpatch2 --t8015 ibot.patched ibot.patched2
-        fi
-
-        if [ "$os" = 'Linux' ]; then
-            sed -i 's/\/\kernelcachd/\/\kernelcache/g' ibot.patched2
-        else
-            LC_ALL=C sed -i.bak -e 's/s\/\kernelcachd/s\/\kernelcache/g' ibot.patched2
-            rm *.bak
-        fi
-
-        cd ..
-        "$dir"/img4 -i work/ibot.patched2 -o boot-"$deviceid"/ibot.img4 -M blobs/"$deviceid"-"$version".der -A -T ibss
-
-        touch boot-"$deviceid"/.payload
-    else
-        echo "Sorry, this device is not supported yet on rootless."
-        exit 1
-    fi
-    if [[ "$version" == "15"* ]]; then
-        "$dir"/img4 -i other/rootless/rd15.dmg -o boot-"$deviceid"/rd.img4 -M blobs/"$deviceid"-"$version".der -A -T rdsk
-    elif [[ "$version" == "16"* ]]; then
-        "$dir"/img4 -i other/rootless/rd16.dmg -o boot-"$deviceid"/rd.img4 -M blobs/"$deviceid"-"$version".der -A -T rdsk
-    fi
-fi
-
-# ============
 # Boot device
 # ============
 
@@ -557,32 +442,10 @@ sleep 2
 _pwn
 _reset
 echo "[*] Booting device"
-if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
-    sleep 1
-    "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
-    sleep 3
-    "$dir"/irecovery -f boot-"$deviceid"/rd.img4
-    sleep 1
-    "$dir"/irecovery -c "ramdisk"
-    sleep 1
-    "$dir"/irecovery -c "dorwx"
-    sleep 2
-    if [[ "$deviceid" == iPhone9,[1-4] ]]; then
-        "$dir"/irecovery -f other/payload/payload_t8010.bin
-    else
-        "$dir"/irecovery -f other/payload/payload_t8015.bin
-    fi
-    sleep 3
-    "$dir"/irecovery -c "go"
-    sleep 1
-    "$dir"/irecovery -c "go xargs $boot_args"
-    sleep 1
-    "$dir"/irecovery -c "go xfb"
-    sleep 1
-    "$dir"/irecovery -c "go boot md0"
+if [ "$version" = "15"* ]; then
+    "$dir"/checkra1n -r other/rootless/rd15.dmg -k other/pongo.bin -K other/checkra1n-kpf-pongo
 else
-    echo "Sorry, this device is not supported yet on rootless."
-    exit 1
+    "$dir"/checkra1n -r other/rootless/rd16.dmg -k other/pongo.bin -K other/checkra1n-kpf-pongo
 fi
 
 if [ -d "logs" ]; then
@@ -591,7 +454,6 @@ if [ -d "logs" ]; then
     cd ..
 fi
 
-rm -rf work rdwork
 echo ""
 echo "Done!"
 echo "The device should now boot to iOS"
@@ -601,5 +463,9 @@ echo "To bootstrap please use ./bootstrap.sh in the rootless folder"
 echo "=============================================================="
 echo "Enjoy!"
 echo " <3 from the palera1n team"
+echo "=============================================================="
+echo "Even though this is using checkra1n, it is not affiliated with"
+echo "checkra1n or the checkra1n team in any way, shape or form."
+echo "=============================================================="
 
 } 2>&1 | tee logs/${log}

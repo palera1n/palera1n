@@ -12,7 +12,8 @@
 </p>
 
 # How does it work?
-It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
+This uses checkra1n's recently released 0.1337.0 to boot PongoOS, load a custom ramdisk and install the jailbreak. Note that we are NOT affiliated with checkra1n, and this is a completely separate project.
+We have gotten permission from checkra1n to use their binaries, and we are very thankful for that, this couldn't have been possible without them.
 
 # Issues
 ### Need help?
