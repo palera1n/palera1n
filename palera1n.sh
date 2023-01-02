@@ -56,6 +56,7 @@ Options:
     --no-baseband       Indicate that the device does not have a baseband
     --debug             Debug the script
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
+    --rootfull          Enable rootfull mode
 
 Subcommands:
     dfuhelper           An alias for --dfuhelper
@@ -82,6 +83,9 @@ parse_opt() {
             ;;
         --debug)
             debug=1
+            ;;
+        --rootfull)
+            rootfull=1
             ;;
         --help)
             print_help
@@ -348,6 +352,16 @@ if [ "$debug" = "1" ]; then
     set -o xtrace
 fi
 
+if [ "$rootfull" = "1" ]; then
+    echo "[*] WARNING: This will switch back to the old rootfull method, which is TETHERED for now!"
+    echo "[*] ARE YOU 100% SURE YOU WANT TO CONTINUE? (y/n)"
+    read -n 1 -s
+    if [ "$REPLY" != "y" ]; then
+        echo "[-] Exiting"
+        exit 1
+    fi
+fi
+
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
     echo "[*] Removed the created boot files"
@@ -430,7 +444,10 @@ sleep 2
 sleep 2
 _reset
 echo "[*] Booting device"
-if [ "$version" = "15"* ]; then
+# if rootfull, use "$dir"/checkra1n -r other/rootedramdisk.dmg -k other/pongo.bin -K other/checkra1n-kpf-pongo
+if [ "$rootfull" = "1" ]; then
+    "$dir"/checkra1n -r other/rootedramdisk.dmg -k other/pongo.bin -K other/checkra1n-kpf-pongo
+elif [ "$version" = "15"* ]; then
     "$dir"/checkra1n -r other/rootless/rd15.dmg -k other/pongo.bin -K other/checkra1n-kpf-pongo
 else
     "$dir"/checkra1n -r other/rootless/rd16.dmg -k other/pongo.bin -K other/checkra1n-kpf-pongo
