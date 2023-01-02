@@ -362,6 +362,13 @@ if [ "$rootfull" = "1" ]; then
     fi
 fi
 
+if [ "$rootfull" = "1" ]; then
+    echo "[!] After the jailbreak is done, you'll need to manually bootstrap."
+    echo "[!] You can do this by running 'iproxy 1337 1337' and then"
+    echo "[!] running 'nc 127.1 1337' and typing 'bootstrap' and pressing enter."
+    echo "[!] After a few seconds Sileo and Substitute will be installed."
+fi
+
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
     echo "[*] Removed the created boot files"
