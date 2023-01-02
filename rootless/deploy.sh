@@ -17,13 +17,21 @@ mv ellekit*.deb ellekit_rootless.deb
 
 echo "Copying resources to your device..."
 echo "Default password is: alpine"
-scp -qP28605 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" bootstrap-ssh-iphoneos-arm64.tar \
-org.coolstar.sileonightly_2.4_iphoneos-arm64.deb \
-ellekit_rootless.deb \
-preferenceloader_2.2.6-1debug_iphoneos-arm64.deb \
-src/iphoneos-arm64/install.sh \
-root@127.0.0.1:/var/root/
-
+if scp -O /dev/null /dev/zero 2>/dev/null; then
+    scp -O -qP28605 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" bootstrap-ssh-iphoneos-arm64.tar \
+    org.coolstar.sileonightly_2.4_iphoneos-arm64.deb \
+    ellekit_rootless.deb \
+    preferenceloader_2.2.6-1debug_iphoneos-arm64.deb \
+    src/iphoneos-arm64/install.sh \
+    root@127.0.0.1:/var/root/
+else
+    scp -qP28605 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" bootstrap-ssh-iphoneos-arm64.tar \
+    org.coolstar.sileonightly_2.4_iphoneos-arm64.deb \
+    ellekit_rootless.deb \
+    preferenceloader_2.2.6-1debug_iphoneos-arm64.deb \
+    src/iphoneos-arm64/install.sh \
+    root@127.0.0.1:/var/root/
+fi
 
 echo "Bootstrapping your device..."
 ssh -qp28605 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" root@127.0.0.1 "/var/pkg/bin/bash /var/root/install.sh"
