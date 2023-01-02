@@ -303,7 +303,7 @@ fi
 
 # Download checkra1n
 if [ ! -e "$dir"/checkra1n ]; then
-    link="https://assets.checkra.in/downloads/preview/0.1337.0/checkra1n-"
+    link="https://assets.checkra.in/downloads/preview/0.1337.0/checkra1n-linux-x86_64"
     if [ "$os" = 'Darwin' ]; then
         link="${link}macos"
     fi
