@@ -306,7 +306,8 @@ if [ ! -e "$dir"/checkra1n ]; then
     link="https://assets.checkra.in/downloads/preview/0.1337.0/checkra1n-"
     if [ "$os" = 'Darwin' ]; then
         link="${link}macos"
-    fi
+    else
+        link="${link}linux-x86_64"
     curl -sLO "${link}"
     mv checkra1n* "$dir"/checkra1n
     chmod +x "$dir"/checkra1n
