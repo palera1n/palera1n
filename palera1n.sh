@@ -308,6 +308,7 @@ if [ ! -e "$dir"/checkra1n ]; then
         link="${link}macos"
     else
         link="${link}linux-x86_64"
+    fi
     curl -sLO "${link}"
     mv checkra1n* "$dir"/checkra1n
     chmod +x "$dir"/checkra1n
