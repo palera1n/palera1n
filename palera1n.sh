@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+pushd $(dirname "$0")
+
 mkdir -p logs
 set -e 
 
@@ -18,9 +20,9 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
 version="1.4.1"
 os=$(uname)
-dir="$(dirname "$0")/binaries/$os"
-commit=$(git -C $(dirname "$0") rev-parse --short HEAD)
-branch=$(git -C $(dirname "$0") rev-parse --abbrev-ref HEAD)
+dir="$(pwd)/binaries/$os"
+commit=$(git rev-parse --short HEAD)
+branch=$(git rev-parse --abbrev-ref HEAD)
 max_args=1
 arg_count=0
 disk=8
@@ -352,7 +354,7 @@ fi
 # ============
 
 # Update submodules
-git -C $(dirname "$0") submodule update --init --recursive
+git submodule update --init --recursive
 
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
@@ -869,7 +871,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     mkdir boot-"$deviceid"
 
     #echo "[*] Converting blob"
-    #"$dir"/img4tool -e -s  $(dirname "$0")/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
+    #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
     # Do payload if on iPhone 7-X
@@ -1011,3 +1013,5 @@ echo "If you have any issues, please join the Discord server and ask for help: h
 echo "Enjoy!"
 
 } 2>&1 | tee logs/${log}
+
+popd
