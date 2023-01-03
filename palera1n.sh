@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+pushd $(dirname "$0")
+
 mkdir -p logs
 set -e 
 
@@ -483,3 +485,6 @@ echo "checkra1n or the checkra1n team in any way, shape or form."
 echo "=============================================================="
 
 } 2>&1 | tee logs/${log}
+
+popd
+
