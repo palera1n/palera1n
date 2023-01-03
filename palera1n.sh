@@ -19,8 +19,8 @@ ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND T
 version="1.4.1"
 os=$(uname)
 dir="$(dirname "$0")/binaries/$os"
-commit=$(git rev-parse --short HEAD)
-branch=$(git rev-parse --abbrev-ref HEAD)
+commit=$(git -C $(dirname "$0") rev-parse --short HEAD)
+branch=$(git -C $(dirname "$0") rev-parse --abbrev-ref HEAD)
 max_args=1
 arg_count=0
 disk=8
@@ -352,7 +352,7 @@ fi
 # ============
 
 # Update submodules
-git submodule update --init --recursive
+git -C $(dirname "$0") submodule update --init --recursive
 
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
@@ -869,7 +869,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     mkdir boot-"$deviceid"
 
     #echo "[*] Converting blob"
-    #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
+    #"$dir"/img4tool -e -s  $(dirname "$0")/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
     # Do payload if on iPhone 7-X
