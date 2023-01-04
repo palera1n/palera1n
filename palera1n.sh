@@ -885,11 +885,13 @@ echo "[*] Booting PongoOS"
 
 if [ "$os" = "Darwin" ]; then
     CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
+    sleep 2
+    cat boot.txt | "$dir"/pongoterm
 else
     sudo CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
+    sleep 2
+    cat boot.txt | sudo "$dir"/pongoterm
 fi
-
-"$dir"/pongoterm < boot.txt
 
 if [ -d "logs" ]; then
     cd logs
