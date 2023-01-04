@@ -1,5 +1,5 @@
 fuse lock
-xargs -v keepsyms=1 debug=0x2014e
+xargs -v keepsyms=1 debug=0x2014e serial=3
 xfb
 sep auto
 bootux
