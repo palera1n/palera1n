@@ -772,8 +772,6 @@ fi
 # ============
 
 sleep 2
-_pwn
-_reset
 echo "[*] Booting device"
 if [ "$os" = "Darwin" ]; then
     pa1n_url=https://assets.checkra.in/downloads/preview/0.1337.0/checkra1n-macos
