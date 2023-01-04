@@ -887,10 +887,22 @@ if [ "$os" = "Darwin" ]; then
     CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
     sleep 2
     cat boot.txt | "$dir"/pongoterm
+    if [[ "$version" == *"16"* ]]; then
+        echo "dtpatch16 $disk" | "$dir"/pongoterm
+    else
+        echo "dtpatch $disk" | "$dir"/pongoterm
+    fi
+    cat boot2.txt | "$dir"/pongoterm
 else
     sudo CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
     sleep 2
     cat boot.txt | sudo "$dir"/pongoterm
+    if [[ "$version" == *"16"* ]]; then
+        echo "dtpatch16 $disk" | sudo "$dir"/pongoterm
+    else
+        echo "dtpatch $disk" | sudo "$dir"/pongoterm
+    fi
+    cat boot2.txt | sudo "$dir"/pongoterm
 fi
 
 if [ -d "logs" ]; then
