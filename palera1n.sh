@@ -608,8 +608,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         if [ ! "$fs" = "disk1s1" ] || [ ! "$fs" = "disk0s1s1" ]; then
             remote_cmd "/sbin/apfs_deletefs $fs > /dev/null || true"
         fi
-        remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache || true"
         remote_cmd "/bin/sync"
         remote_cmd "/usr/sbin/nvram auto-boot=true"
         rm -f BuildManifest.plist
@@ -651,74 +649,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         remote_cmd "/usr/sbin/nvram auto-boot=true"
     fi
 
-    # lets actually patch the kernel
-    echo "[*] Patching the kernel"
-    remote_cmd "rm -f /mnt6/$active/kpf"
-    if [[ "$version" == *"16"* ]]; then
-        remote_cp binaries/Kernel16Patcher.ios root@localhost:/mnt6/$active/kpf
-    else
-        remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt6/$active/kpf
-    fi
-    remote_cmd "/usr/sbin/chown 0 /mnt6/$active/kpf"
-    remote_cmd "/bin/chmod 755 /mnt6/$active/kpf"
-
-    remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-    if [ "$tweaks" = "1" ]; then
-        if [ "$semi_tethered" = "1" ]; then
-            remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
-        else
-            remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak || true"
-        fi
-    fi
-    sleep 1
-
-    # download the kernel
-    echo "[*] Downloading BuildManifest"
-    "$dir"/pzb -g BuildManifest.plist "$ipswurl"
-
-    echo "[*] Downloading kernelcache"
-    "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-    
-    echo "[*] Patching kernelcache"
-    mv kernelcache.release.* work/kernelcache
-    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
-        python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
-    else
-        python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
-    fi
-    sleep 1
-    remote_cp work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
-    remote_cmd "/mnt6/$active/kpf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched"
-    remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
-    if [ "$tweaks" = "1" ]; then
-        if [[ "$version" == *"16"* ]]; then
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -l -t -h -d
-        else
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -l
-        fi
-    else
-        "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -a
-    fi
-    
-    sleep 1
-    if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
-        python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
-    else
-        python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
-    fi
-    sleep 1
-    remote_cp work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
-    remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd -M /mnt6/$active/System/Library/Caches/apticket.der"
-    remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p"
-
-    sleep 1
-    has_kernelcachd=$(remote_cmd "ls /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd" 2> /dev/null)
-    if [ "$has_kernelcachd" = "/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd" ]; then
-        echo "[*] Custom kernelcache now exists!"
-    else
-        echo "[!] Custom kernelcache doesn't exist..? Please send a log and report this bug..."
-    fi
-
     if [ "$tweaks" = "1" ]; then
         sleep 1
         if [ "$semi_tethered" = "1" ]; then
@@ -733,34 +663,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             remote_cmd "rm -rf /mnt$di/System/Library/Caches/com.apple.dyld"
             remote_cmd "ln -s /System/Cryptexes/OS/System/Library/Caches/com.apple.dyld /mnt$di/System/Library/Caches/"
         fi
-
-        # iOS 16 stuff
-        # if [[ "$version" == *"16"* ]]; then
-        #     if [ -z "$semi_tethered" ]; then
-        #         echo "[*] Performing iOS 16 fixes"
-        #         sleep 1
-        #         os_disk=$(remote_cmd "/usr/sbin/hdik /mnt6/cryptex1/current/os.dmg | head -3 | tail -1 | sed 's/ .*//'")
-        #         sleep 1
-        #         app_disk=$(remote_cmd "/usr/sbin/hdik /mnt6/cryptex1/current/app.dmg | head -3 | tail -1 | sed 's/ .*//'")
-        #         sleep 1
-        #         remote_cmd "/sbin/mount_apfs -o ro $os_disk /mnt2"
-        #         sleep 1
-        #         remote_cmd "/sbin/mount_apfs -o ro $app_disk /mnt9"
-        #         sleep 1
-
-        #         remote_cmd "rm -rf /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
-        #         sleep 1
-        #         remote_cmd "mkdir /mnt1/System/Cryptexes/App /mnt1/System/Cryptexes/OS"
-        #         sleep 1
-        #         remote_cmd "cp -a /mnt9/. /mnt1/System/Cryptexes/App"
-        #         sleep 1
-        #         remote_cmd "cp -a /mnt2/. /mnt1/System/Cryptexes/OS"
-        #         sleep 1
-        #         remote_cmd "rm -rf /mnt1/System/Cryptexes/OS/System/Library/Caches/com.apple.dyld"
-        #         sleep 1
-        #         remote_cmd "cp -a /mnt2/System/Library/Caches/com.apple.dyld /mnt1/System/Library/Caches/"
-        #     fi
-        # fi
 
         echo "[*] Copying files to rootfs"
         remote_cmd "rm -rf /mnt$di/jbin /mnt$di/.installed_palera1n"
