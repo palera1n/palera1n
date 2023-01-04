@@ -782,6 +782,7 @@ else
 fi
 
 curl -sLo "$dir"/checkra1n "$pa1n_url"
+chmod +x "$dir"/checkra1n
 
 echo "[*] Booting PongoOS"
 
