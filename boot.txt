@@ -1,0 +1,8 @@
+/send binaries/checkra1n-kpf-pongo
+modload
+kpf
+fuse lock
+xargs -v keepsyms=1
+xfb
+sep auto
+bootux
