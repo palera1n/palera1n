@@ -1,0 +1,5 @@
+fuse lock
+xargs -v keepsyms=1 debug=0x2014e
+xfb
+sep auto
+bootux
