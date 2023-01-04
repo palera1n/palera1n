@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+pushd $(dirname "$0")
+
 mkdir -p logs
 set -e 
 
@@ -1025,3 +1027,5 @@ echo "If you have any issues, please join the Discord server and ask for help: h
 echo "Enjoy!"
 
 } 2>&1 | tee logs/${log}
+
+popd
