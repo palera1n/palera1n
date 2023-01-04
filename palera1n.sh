@@ -773,6 +773,8 @@ fi
 
 sleep 2
 echo "[*] Booting device"
+if [ ! -e "$dir"/gaster ]; then
+
 if [ "$os" = "Darwin" ]; then
     pa1n_url=https://assets.checkra.in/downloads/preview/0.1337.0/checkra1n-macos
 else
@@ -780,6 +782,8 @@ else
 fi
 
 curl -sLo "$dir"/checkra1n "$pa1n_url"
+
+fi
 chmod +x "$dir"/checkra1n
 
 echo "[*] Booting PongoOS"
