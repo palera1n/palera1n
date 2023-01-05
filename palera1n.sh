@@ -791,13 +791,9 @@ CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
 sleep 2
 
 echo "/send binaries/checkra1n-kpf-pongo" | "$dir"/pongoterm
-sleep 1
 echo "modload" | "$dir"/pongoterm
-sleep 1
 echo "kpf" | "$dir"/pongoterm
-sleep 2
 echo "/send binaries/dtpatcher" | "$dir"/pongoterm
-sleep 1
 echo "modload" | "$dir"/pongoterm
 
 if [[ "$version" == *"16"* ]]; then
@@ -806,17 +802,11 @@ else
     echo "dtpatch $disk" | "$dir"/pongoterm
 fi
 
-sleep 1
 echo "fuse lock" | "$dir"/pongoterm
-sleep 1
 echo "xargs $boot_args keepsyms=1 debug=0x2014e" | "$dir"/pongoterm
-sleep 1
 echo "xfb" | "$dir"/pongoterm
-sleep 1
 echo "sep auto" | "$dir"/pongoterm
-sleep 3
-echo "bootux" | "$dir"/pongoterm || true
-sleep 1
+echo "bootux" | "$dir"/pongoterm || true > /dev/null
 
 if [ -d "logs" ]; then
     cd logs
