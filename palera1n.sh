@@ -806,7 +806,7 @@ echo "fuse lock" | "$dir"/pongoterm
 echo "xargs $boot_args keepsyms=1 debug=0x2014e" | "$dir"/pongoterm
 echo "xfb" | "$dir"/pongoterm
 echo "sep auto" | "$dir"/pongoterm
-echo "bootux" | "$dir"/pongoterm > /dev/null || true
+echo "bootux" | "$dir"/pongoterm &> /dev/null || true
 
 if [ -d "logs" ]; then
     cd logs
