@@ -772,8 +772,7 @@ fi
 # ============
 
 sleep 2
-echo "[*] Booting device"
-if [ ! -e "$dir"/gaster ]; then
+if [ ! -e "$dir"/checkra1n ]; then
 
 if [ "$os" = "Darwin" ]; then
     pa1n_url=https://assets.checkra.in/downloads/preview/0.1337.0/checkra1n-macos
@@ -788,27 +787,36 @@ chmod +x "$dir"/checkra1n
 
 echo "[*] Booting PongoOS"
 
-if [ "$os" = "Darwin" ]; then
-    CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
-    sleep 2
-    cat boot.txt | "$dir"/pongoterm
-    if [[ "$version" == *"16"* ]]; then
-        echo "dtpatch16 $disk" | "$dir"/pongoterm
-    else
-        echo "dtpatch $disk" | "$dir"/pongoterm
-    fi
-    cat boot2.txt | "$dir"/pongoterm
+CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
+sleep 2
+
+echo "/send binaries/checkra1n-kpf-pongo" | "$dir"/pongoterm
+sleep 1
+echo "modload" | "$dir"/pongoterm
+sleep 1
+echo "kpf" | "$dir"/pongoterm
+sleep 2
+echo "/send binaries/dtpatcher" | "$dir"/pongoterm
+sleep 1
+echo "modload" | "$dir"/pongoterm
+
+if [[ "$version" == *"16"* ]]; then
+    echo "dtpatch16 $disk" | "$dir"/pongoterm
 else
-    sudo CHECKRA1N_EARLY_EXIT=1 "$dir"/checkra1n -Vvp
-    sleep 2
-    cat boot.txt | sudo "$dir"/pongoterm
-    if [[ "$version" == *"16"* ]]; then
-        echo "dtpatch16 $disk" | sudo "$dir"/pongoterm
-    else
-        echo "dtpatch $disk" | sudo "$dir"/pongoterm
-    fi
-    cat boot2.txt | sudo "$dir"/pongoterm
+    echo "dtpatch $disk" | "$dir"/pongoterm
 fi
+
+sleep 1
+echo "fuse lock" | "$dir"/pongoterm
+sleep 1
+echo "xargs -v keepsyms=1 debug=0x2014e serial=3" | "$dir"/pongoterm
+sleep 1
+echo "xfb" | "$dir"/pongoterm
+sleep 1
+echo "sep auto" | "$dir"/pongoterm
+sleep 3
+echo "bootux" | "$dir"/pongoterm || true
+sleep 1
 
 if [ -d "logs" ]; then
     cd logs
