@@ -809,7 +809,7 @@ fi
 sleep 1
 echo "fuse lock" | "$dir"/pongoterm
 sleep 1
-echo "xargs -v keepsyms=1 debug=0x2014e serial=3" | "$dir"/pongoterm
+echo "xargs $boot_args keepsyms=1 debug=0x2014e" | "$dir"/pongoterm
 sleep 1
 echo "xfb" | "$dir"/pongoterm
 sleep 1
