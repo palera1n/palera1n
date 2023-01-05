@@ -18,7 +18,8 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.4.1"
+p1version="1.4.1"
+version=""
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
@@ -388,11 +389,9 @@ chmod +x "$dir"/*
 # Start
 # ============
 
-echo "palera1n | Version $version-$branch-$commit"
+echo "palera1n | Version $p1version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
 echo ""
-
-version=""
 
 if [ "$debug" = "1" ]; then
     set -o xtrace
