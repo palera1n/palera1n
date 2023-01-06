@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+pushd $(dirname "$0")
+
 mkdir -p logs
 set -e 
 
@@ -477,6 +479,11 @@ echo "[*] Getting device info..."
 cpid=$(_info recovery CPID)
 model=$(_info recovery MODEL)
 deviceid=$(_info recovery PRODUCT)
+
+if (( 0x8020 <= cpid )) && (( cpid < 0x8720 )); then
+    echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
+    exit
+fi
 
 if [ "$dfuhelper" = "1" ]; then
     echo "[*] Running DFU helper"
@@ -1007,3 +1014,5 @@ DONE_UNLOCK=$(gum join "$DONE" "$UNLOCK")
 FIRST_ISSUE=$(gum join "$FIRST" "$ISSUE")
 gum join --align center --vertical "$DONE_UNLOCK" "$FIRST_ISSUE" "$ENJOY"
 } 2>&1 | tee logs/${log}
+
+popd
