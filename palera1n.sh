@@ -148,6 +148,7 @@ parse_cmdline() {
 recovery_fix_auto_boot() {
     if [ "$tweaks" = "1" ]; then
         "$dir"/irecovery -c "setenv auto-boot false"
+        "$dir"/irecovery -c "setenv auto-boot-once true"
         "$dir"/irecovery -c "saveenv"
     else
         "$dir"/irecovery -c "setenv auto-boot true"
