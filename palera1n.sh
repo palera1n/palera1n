@@ -146,19 +146,8 @@ parse_cmdline() {
 }
 
 recovery_fix_auto_boot() {
-    if [ "$tweaks" = "1" ]; then
-        "$dir"/irecovery -c "setenv auto-boot false"
-        "$dir"/irecovery -c "setenv auto-boot-once true"
-        "$dir"/irecovery -c "saveenv"
-    else
-        "$dir"/irecovery -c "setenv auto-boot true"
-        "$dir"/irecovery -c "saveenv"
-    fi
-
-    if [ "$semi_tethered" = "1" ]; then
-        "$dir"/irecovery -c "setenv auto-boot true"
-        "$dir"/irecovery -c "saveenv"
-    fi
+    "$dir"/irecovery -c "setenv auto-boot true"
+    "$dir"/irecovery -c "saveenv"
 }
 
 _info() {
@@ -608,11 +597,17 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         exit
     fi
     active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
+    
 
     if [ "$restorerootfs" = "1" ]; then
         echo "[*] Removing Jailbreak"
         if [ ! "$fs" = "disk1s1" ] || [ ! "$fs" = "disk0s1s1" ]; then
             remote_cmd "/sbin/apfs_deletefs $fs > /dev/null || true"
+        fi
+        if [ "$tweaks" = "1" ]; then
+            if [ -z "$semi_tethered" ]; then
+                remote_cmd "snaputil -n rom.apple.os.update-$active com.apple.os.update-$active /mnt1" || true
+            fi
         fi
         remote_cmd "/bin/sync"
         remote_cmd "/usr/sbin/nvram auto-boot=true"
@@ -620,6 +615,12 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         echo "[*] Done! Rebooting your device"
         remote_cmd "/sbin/reboot"
         exit;
+    fi
+    
+    if [ "$tweaks" = "1" ]; then
+        if [ -z "$semi_tethered" ]; then
+            remote_cmd "snaputil -n com.apple.os.update-$active rom.apple.os.update-$active /mnt1"
+        fi
     fi
 
     echo "[*] Dumping apticket"
@@ -645,15 +646,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #remote_cmd "/usr/sbin/nvram root-live-fs=1"
-    if [ "$tweaks" = "1" ]; then
-        if [ "$semi_tethered" = "1" ]; then
-            remote_cmd "/usr/sbin/nvram auto-boot=true"
-        else
-            remote_cmd "/usr/sbin/nvram auto-boot=false"
-        fi
-    else
-        remote_cmd "/usr/sbin/nvram auto-boot=true"
-    fi
+    remote_cmd "/usr/sbin/nvram auto-boot=true"
 
     if [ "$tweaks" = "1" ]; then
         sleep 1
