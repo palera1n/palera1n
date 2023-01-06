@@ -1,5 +1,0 @@
-/send binaries/checkra1n-kpf-pongo
-modload
-kpf
-/send binaries/dtpatcher
-modload
