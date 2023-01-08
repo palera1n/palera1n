@@ -604,9 +604,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         if [ ! "$fs" = "disk1s1" ] || [ ! "$fs" = "disk0s1s1" ]; then
             remote_cmd "/sbin/apfs_deletefs $fs > /dev/null || true"
         fi
+        remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache || true"
         if [ "$tweaks" = "1" ]; then
             if [ -z "$semi_tethered" ]; then
-                remote_cmd "snaputil -n rom.apple.os.update-$active com.apple.os.update-$active /mnt1" || true
+                remote_cmd "snaputil -n rom.apple.os.update-$active com.apple.os.update-$active /mnt1 || true"
             fi
         fi
         remote_cmd "/bin/sync"
