@@ -489,6 +489,11 @@ cpid=$(_info recovery CPID)
 model=$(_info recovery MODEL)
 deviceid=$(_info recovery PRODUCT)
 
+if (( 0x8020 <= cpid )) && (( cpid < 0x8720 )); then
+    echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
+    exit
+fi
+
 if [ "$dfuhelper" = "1" ]; then
     echo "[*] Running DFU helper"
     _dfuhelper "$cpid"
