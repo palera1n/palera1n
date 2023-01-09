@@ -7,5 +7,8 @@ $binpack/usr/bin/uicache -p /jbin/loader.app
 # respring
 $binpack/usr/bin/killall -9 SpringBoard
 
+# load launch daemons
+/usr/bin/launchctl bootstrap system /Library/LaunchDaemons
+
 echo "[post.sh] done"
 exit
