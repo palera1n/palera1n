@@ -604,6 +604,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         if [ ! "$fs" = "disk1s1" ] || [ ! "$fs" = "disk0s1s1" ]; then
             remote_cmd "/sbin/apfs_deletefs $fs > /dev/null || true"
         fi
+        if [ "$tweaks" = "1" ]; then
+            if [ -z "$semi_tethered" ]; then
+                remote_cmd "snaputil -n rom.apple.os.update-$active com.apple.os.update-$active /mnt1 || true"
+            fi
+        fi
         remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
         remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache || true"
         remote_cmd "/bin/sync"
@@ -638,6 +643,12 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #remote_cmd "/usr/sbin/nvram root-live-fs=1"
     remote_cmd "/usr/sbin/nvram auto-boot=true"
+
+    if [ "$tweaks" = "1" ]; then
+        if [ -z "$semi_tethered" ]; then
+            remote_cmd "snaputil -n com.apple.os.update-$active rom.apple.os.update-$active /mnt1 || true"
+        fi
+    fi
 
     if [ "$tweaks" = "1" ]; then
         sleep 1
