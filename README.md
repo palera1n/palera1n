@@ -48,7 +48,7 @@ Thank you so much to our Patreons that make the future development possible! You
 
 # Prerequisites
 - A checkm8 vulnerable iOS device on iOS 15 or 16 (A8-A11)
-  - The device must be on iOS 15.0-16.2
+  - The device must be on iOS 15.0-16.3
 - Linux or macOS computer
   - Python 3 must be installed.
 
