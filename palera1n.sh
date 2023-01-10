@@ -606,11 +606,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         fi
         remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
         remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache || true"
-        if [ "$tweaks" = "1" ]; then
-            if [ -z "$semi_tethered" ]; then
-                remote_cmd "snaputil -n rom.apple.os.update-$active com.apple.os.update-$active /mnt1 || true"
-            fi
-        fi
         remote_cmd "/bin/sync"
         remote_cmd "/usr/sbin/nvram auto-boot=true"
         rm -f BuildManifest.plist
@@ -619,12 +614,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         exit;
     fi
     
-    if [ "$tweaks" = "1" ]; then
-        if [ -z "$semi_tethered" ]; then
-            remote_cmd "snaputil -n com.apple.os.update-$active rom.apple.os.update-$active /mnt1"
-        fi
-    fi
-
     echo "[*] Dumping apticket"
     sleep 1
     remote_cp root@localhost:/mnt6/$active/System/Library/Caches/apticket.der blobs/"$deviceid"-"$version".der
