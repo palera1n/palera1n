@@ -18,7 +18,8 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.4.1"
+p1version="1.4.1"
+version=""
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
@@ -27,6 +28,7 @@ max_args=1
 arg_count=0
 disk=8
 fs=disk0s1s$disk
+nosudo=0
 
 # =========
 # Functions
@@ -65,6 +67,7 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
+	--nosudo			Bypass sudo requirement on Linux
 
 Subcommands:
     dfuhelper           An alias for --dfuhelper
@@ -111,7 +114,10 @@ parse_opt() {
             print_help
             exit 0
             ;;
-        *)
+        --nosudo)
+			nosudo=1
+			;;
+		*)
             echo "[-] Unknown option $1. Use $0 --help for help."
             exit 1;
     esac
@@ -307,6 +313,16 @@ _exit_handler() {
 }
 trap _exit_handler EXIT
 
+# Run as root if on linux
+
+parse_cmdline "$@"
+
+if [ "$os" = 'Linux' ] && [ "$nosudo" = '0' ] && [ "$EUID" != 0 ]; then
+	echo Command was not run as root, trying with sudo, use --nosudo to bypass
+	sudo ./palera1n.sh $@
+	exit $?
+fi
+
 # ===========
 # Fixes
 # ===========
@@ -373,12 +389,9 @@ chmod +x "$dir"/*
 # Start
 # ============
 
-echo "palera1n | Version $version-$branch-$commit"
+echo "palera1n | Version $p1version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
 echo ""
-
-version=""
-parse_cmdline "$@"
 
 if [ "$debug" = "1" ]; then
     set -o xtrace
