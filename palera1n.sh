@@ -12,8 +12,11 @@ cd ..
 
 {
 
-echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@"
-
+COMMAND=$(echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@")
+gum style \
+        --foreground 212 --border-foreground 212 --border double \
+        --align center --margin "1 1" --padding "1 2" \
+        "$COMMAND"
 # =========
 # Variables
 # =========
@@ -32,11 +35,19 @@ fs=disk0s1s$disk
 # Functions
 # =========
 remote_cmd() {
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p6413 root@localhost "$@"
+    if [ "$os" = 'Linux' ]; then
+        "$dir"/sshpass -p 'alpine' ssh -o ProxyCommand="sudo ${dir}/inetcat 22" -o StrictHostKeyChecking=no root@localhost "$@"
+    else
+        "$dir"/sshpass -p 'alpine' ssh -o ProxyCommand="${dir}/inetcat 22" -o StrictHostKeyChecking=no root@localhost "$@"
+    fi
 }
 
 remote_cp() {
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P6413 $@
+    if [ "$os" = 'Linux' ]; then
+        "$dir"/sshpass -p 'alpine' scp -o ProxyCommand="sudo ${dir}/inetcat 22" -o StrictHostKeyChecking=no $@
+    else
+        "$dir"/sshpass -p 'alpine' scp -o ProxyCommand="${dir}/inetcat 22" -o StrictHostKeyChecking=no $@
+    fi
 }
 
 step() {
@@ -288,7 +299,8 @@ _kill_if_running() {
         sudo killall $1
     else
         if (pgrep -x "$1" &> /dev/null > /dev/null); then
-            killall $1
+            killall -q $1
+            sudo killall -q $1
         fi
     fi
 }
@@ -441,18 +453,10 @@ if [ "$(get_device_mode)" != "normal" ] && [ -z "$version" ] && [ "$dfuhelper" !
 fi
 
 if [ "$(get_device_mode)" = "ramdisk" ]; then
-    # If a device is in ramdisk mode, perhaps iproxy is still running?
-    _kill_if_running iproxy
     echo "[*] Rebooting device in SSH Ramdisk"
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
-    fi
     sleep 2
     remote_cmd "/usr/sbin/nvram auto-boot=false"
     remote_cmd "/sbin/reboot"
-    _kill_if_running iproxy
     _wait recovery
 fi
 
@@ -536,7 +540,6 @@ fi
 
 if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     mkdir -p blobs
-    _kill_if_running iproxy
 
     cd ramdisk
     chmod +x sshrd.sh
@@ -558,12 +561,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     fi
 
     # Execute the commands once the rd is booted
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
-    fi
-
     while ! (remote_cmd "echo connected" &> /dev/null); do
         sleep 1
     done
@@ -603,7 +600,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         echo "[!] Active file does not exist! Please use SSH to create it"
         echo "    /mnt6/active should contain the name of the UUID in /mnt6"
         echo "    When done, type reboot in the SSH session, then rerun the script"
-        echo "    ssh root@localhost -p 6413"
         exit
     fi
     active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
@@ -821,7 +817,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     echo "[*] Phase 1 done! Rebooting your device (if it doesn't reboot, you may force reboot)"
     remote_cmd "/sbin/reboot"
     sleep 1
-    _kill_if_running iproxy
 
     if [ "$semi_tethered" = "1" ]; then
         _wait normal
@@ -1008,15 +1003,16 @@ if [ -d "logs" ]; then
 fi
 
 rm -rf work rdwork
-echo ""
-echo "Done!"
-echo "The device should now boot to iOS"
-echo "When you unlock the device, it will respring about 30 seconds after"
-echo "If this is your first time jailbreaking, open the new palera1n app, then press Install"
-echo "Otherwise, press Do All in the settings section of the app"
-echo "If you have any issues, please join the Discord server and ask for help: https://dsc.gg/palera1n"
-echo "Enjoy!"
+clear
+DONE=$(gum style --height 5 --width 25 --padding '1 3' --border double --border-foreground 57  "Done!" "The device should now boot to $(gum style --foreground 212 "iOS")")
+UNLOCK=$(gum style --width 25 --padding '1 3' --border double --border-foreground 212 "When you unlock the device, it will respring about $(gum style --foreground "#04B575" "30 seconds") later.")
+FIRST=$(gum style  --height 5 --width 35 --padding '1 8' --border double --border-foreground 255 "If this is your first time jailbreaking," "open the new palera1n app, then press $(gum style --foreground 57 "Install").")
+ISSUE=$(gum style  --height 7 --width 35 --padding '1 5' --border double --border-foreground 120  "If you have any issues, please join the $(gum style --foreground 212 "Discord") server" "and ask for help:" "$(gum style --foreground 212 "https://dsc.gg/palera1n")")
+ENJOY=$(gum style --width 50 --align center --padding "1 1" --border double --border-foreground 57 $(gum style --foreground 212 "Enjoy!"))
 
+DONE_UNLOCK=$(gum join "$DONE" "$UNLOCK")
+FIRST_ISSUE=$(gum join "$FIRST" "$ISSUE")
+gum join --align center --vertical "$DONE_UNLOCK" "$FIRST_ISSUE" "$ENJOY"
 } 2>&1 | tee logs/${log}
 
 popd
