@@ -614,7 +614,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         remote_cmd "/bin/sync"
         remote_cmd "/usr/sbin/nvram auto-boot=true"
         rm -f BuildManifest.plist
-        echo "[*] Done! Rebooting your device"
+        echo "[*] Done! Rebooting your device (if it doesn't reboot, you may force reboot)"
         remote_cmd "/sbin/reboot"
         exit;
     fi
