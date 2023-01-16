@@ -1,0 +1,181 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <fcntl.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <ctype.h>
+
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/ioctl.h>
+#include <signal.h>
+#include <pthread.h>
+#include <errno.h>
+#include <inttypes.h>
+
+#include <libimobiledevice/libimobiledevice.h>
+#include <libimobiledevice/lockdown.h>
+#include <libimobiledevice/diagnostics_relay.h>
+#include <plist/plist.h>
+#include <libirecovery.h>
+#include <usbmuxd.h>
+
+#include "ANSI-color-codes.h"
+#include "common.h"
+
+#define FORMAT_KEY_VALUE 1
+#define FORMAT_XML 2
+
+#define NOHOME (info->cpid == 0x8015 || (info->cpid == 0x8010 && (info->bdid == 0x08 || info->bdid == 0x0a || info->bdid == 0x0c || info->bdid == 0x0e)))
+
+int spin = 1;
+uint64_t ecid_wait_for_dfu = 0;
+
+void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
+    for (int i = time2; i < time; i++) {
+        printf(CYN "\r\e[K%s (%d)" CRESET, text, time - i + time2);
+        fflush(stdout);
+        sleep(1);
+		if (cond != NULL && cond(cond_arg)) return;
+    }
+    printf(CYN "\r%s (%d)" CRESET, text, time2);
+	if (time2 == 0) puts("");
+}
+
+int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
+	devinfo_t dev;
+	int ret;
+	ret = devinfo_cmd(&dev, usbmuxd_device->udid);
+	if (ret != 0) {
+		LOG(LOG_ERROR, "Unable to get device information");
+		return 0;
+	}
+	if (strcmp(dev.CPUArchitecture, "arm64")) {
+		devinfo_free(&dev);
+		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
+		return -1;
+	}
+	if (strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
+		char passcode_state = 0;
+		ret = passstat_cmd(&passcode_state, usbmuxd_device->udid);
+		if (ret != 0) {
+			LOG(LOG_ERROR, "Failed to get passcode state");
+			devinfo_free(&dev);
+			return -1;
+		}
+		if (passcode_state) {
+			LOG(LOG_ERROR, "Passcode must be disabled on this device");
+			devinfo_free(&dev);
+			return -1;
+		}
+	}
+	LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
+	enter_recovery_cmd(usbmuxd_device->udid);
+	devinfo_free(&dev);
+	return 0;
+}
+
+static bool conditional(uint64_t ecid) {
+	return ecid_wait_for_dfu == ecid;
+}
+
+void* connected_recovery_mode(struct irecv_device_info* info) {
+	int ret;
+	if (!cpid_is_arm64(info->cpid)) {
+		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
+		return NULL;
+	}
+	
+	ret = autoboot_cmd(info->ecid);
+	if (ret) {
+		LOG(LOG_ERROR, "Cannot set auto-boot back to true");
+		return NULL;
+	}
+	LOG(LOG_INFO, "Press any key when ready for DFU mode");
+	getchar();
+	if (NOHOME) 
+		step(4, 2, "Hold Volume Down + Side button", NULL, 0);
+	else
+		step(4, 2, "Hold Home + Power Button", NULL, 0);
+	
+	ret = exitrecv_cmd(info->ecid);
+	if (ret) {
+		LOG(LOG_ERROR, "Cannot exit recovery mode");
+		return NULL;
+	}
+	printf("\r\e[K");
+	ecid_wait_for_dfu = info->ecid;
+	bool nohome = NOHOME;
+	if (nohome) 
+		step(2, 0, "Hold Volume Down + Side button", NULL, 0);
+	else
+		step(2, 0, "Hold Home + Power Button", NULL, 0);
+	if (nohome) 
+		step(10, 0, "Hold Volume Down button", conditional, info->ecid);
+	else
+		step(10, 0, "Hold Home button", conditional, info->ecid);
+	if (ecid_wait_for_dfu != info->ecid) {
+		LOG(LOG_INFO, "Device entered DFU mode successfully");
+	} else {
+		LOG(LOG_WARNING, "Whoops, device did not enter DFU mode");
+		LOG(LOG_INFO, "Waiting for device to reconnect...");
+		return NULL;
+	}
+	return NULL;
+}
+
+void* connected_dfu_mode(struct irecv_device_info* info) {
+	
+	unsubscribe_cmd();
+	if (ecid_wait_for_dfu == info->ecid) ecid_wait_for_dfu = 0;
+	spin = 0;
+	return NULL;
+}
+
+void device_event_cb(const usbmuxd_event_t *event, void *userdata) {
+	switch (event->event) {
+	case UE_DEVICE_ADD:
+		LOG(LOG_VERBOSE, "Normal mode device connected");
+		connected_normal_mode(&event->device);
+		break;
+	case UE_DEVICE_REMOVE:
+		LOG(LOG_VERBOSE, "Normal mode device disconnected");
+		break;
+	}
+}
+
+void irecv_device_event_cb(const irecv_device_event_t *event, void *userdata) {
+	pthread_t recovery_thread, dfu_thread;
+	switch(event->type) {
+		case IRECV_DEVICE_ADD:
+		if (event->mode == IRECV_K_RECOVERY_MODE_1 || event->mode == IRECV_K_RECOVERY_MODE_2 || event->mode == IRECV_K_RECOVERY_MODE_3 || event->mode == IRECV_K_RECOVERY_MODE_4) {
+			LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
+			pthread_create(&recovery_thread, NULL, (void* (*)(void*))connected_recovery_mode, event->device_info);
+		} else if (event->mode == IRECV_K_DFU_MODE) {
+			LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
+			pthread_create(&dfu_thread, NULL, (void* (*)(void*))connected_dfu_mode, event->device_info);
+		}
+		break;
+		case IRECV_DEVICE_REMOVE:
+		if (event->mode == IRECV_K_RECOVERY_MODE_1 || event->mode == IRECV_K_RECOVERY_MODE_2 || event->mode == IRECV_K_RECOVERY_MODE_3 || event->mode == IRECV_K_RECOVERY_MODE_4) {
+			LOG(LOG_VERBOSE, "Recovery mode device %ld disconnected", event->device_info->serial_string);
+		} else if (event->mode == IRECV_K_DFU_MODE) {
+			LOG(LOG_VERBOSE, "DFU mode device %ld disconnected", event->device_info->ecid);
+		}
+		break;
+	}
+}
+
+void *dfuhelper(void *ptr) {
+	// idevice_set_debug_level(1);
+	// irecv_set_debug_level(1);
+	subscribe_cmd(device_event_cb, irecv_device_event_cb);
+	while (spin) {
+		sleep(1);
+	};
+	return 0;
+}

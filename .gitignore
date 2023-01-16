@@ -1,0 +1,8 @@
+dep_root/**
+contrib/**
+!dep_root/.keep
+!contrib/.keep
+contrib/
+*.o
+.vscode
+checkra1n*
