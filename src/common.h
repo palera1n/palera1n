@@ -57,4 +57,5 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid);
 int autoboot_cmd(const uint64_t ecid);
 int exitrecv_cmd(const uint64_t ecid);
 
+void exec_checkra1n();
 #endif

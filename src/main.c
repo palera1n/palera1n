@@ -57,5 +57,6 @@ int main(int argc, char* argv[]) {
 	pthread_t dfuhelper_thread;
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
+	exec_checkra1n();
 	return 0;
 }

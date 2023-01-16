@@ -40,7 +40,7 @@ void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond
         printf(CYN "\r\e[K%s (%d)" CRESET, text, time - i + time2);
         fflush(stdout);
         sleep(1);
-		if (cond != NULL && cond(cond_arg)) return;
+		if (cond != NULL && cond(cond_arg)) pthread_exit(NULL);
     }
     printf(CYN "\r%s (%d)" CRESET, text, time2);
 	if (time2 == 0) puts("");
@@ -80,11 +80,12 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 }
 
 static bool conditional(uint64_t ecid) {
-	return ecid_wait_for_dfu == ecid;
+	return ecid_wait_for_dfu != ecid;
 }
 
 void* connected_recovery_mode(struct irecv_device_info* info) {
 	int ret;
+	uint64_t ecid;
 	if (!cpid_is_arm64(info->cpid)) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		return NULL;
@@ -109,17 +110,18 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	}
 	printf("\r\e[K");
 	ecid_wait_for_dfu = info->ecid;
+	ecid = info->ecid;
 	bool nohome = NOHOME;
 	if (nohome) 
 		step(2, 0, "Hold Volume Down + Side button", NULL, 0);
 	else
 		step(2, 0, "Hold Home + Power Button", NULL, 0);
 	if (nohome) 
-		step(10, 0, "Hold Volume Down button", conditional, info->ecid);
+		step(10, 0, "Hold Volume Down button", conditional, ecid);
 	else
-		step(10, 0, "Hold Home button", conditional, info->ecid);
+		step(10, 0, "Hold Home button", conditional, ecid);
+	ecid_wait_for_dfu = 0;
 	if (ecid_wait_for_dfu != info->ecid) {
-		LOG(LOG_INFO, "Device entered DFU mode successfully");
 	} else {
 		LOG(LOG_WARNING, "Whoops, device did not enter DFU mode");
 		LOG(LOG_INFO, "Waiting for device to reconnect...");
@@ -129,9 +131,11 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 }
 
 void* connected_dfu_mode(struct irecv_device_info* info) {
-	
+	if (ecid_wait_for_dfu == info->ecid) {
+		ecid_wait_for_dfu = 0;
+		LOG(LOG_INFO, "Device entered DFU mode successfully");
+	}
 	unsubscribe_cmd();
-	if (ecid_wait_for_dfu == info->ecid) ecid_wait_for_dfu = 0;
 	spin = 0;
 	return NULL;
 }
@@ -150,6 +154,7 @@ void device_event_cb(const usbmuxd_event_t *event, void *userdata) {
 
 void irecv_device_event_cb(const irecv_device_event_t *event, void *userdata) {
 	pthread_t recovery_thread, dfu_thread;
+	
 	switch(event->type) {
 		case IRECV_DEVICE_ADD:
 		if (event->mode == IRECV_K_RECOVERY_MODE_1 || event->mode == IRECV_K_RECOVERY_MODE_2 || event->mode == IRECV_K_RECOVERY_MODE_3 || event->mode == IRECV_K_RECOVERY_MODE_4) {
@@ -161,10 +166,8 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void *userdata) {
 		}
 		break;
 		case IRECV_DEVICE_REMOVE:
-		if (event->mode == IRECV_K_RECOVERY_MODE_1 || event->mode == IRECV_K_RECOVERY_MODE_2 || event->mode == IRECV_K_RECOVERY_MODE_3 || event->mode == IRECV_K_RECOVERY_MODE_4) {
-			LOG(LOG_VERBOSE, "Recovery mode device %ld disconnected", event->device_info->serial_string);
-		} else if (event->mode == IRECV_K_DFU_MODE) {
-			LOG(LOG_VERBOSE, "DFU mode device %ld disconnected", event->device_info->ecid);
+		if (event->device_info->ecid == ecid_wait_for_dfu) {
+			LOG(LOG_VERBOSE, "Recovery mode device %ld disconnected", event->device_info->ecid);
 		}
 		break;
 	}

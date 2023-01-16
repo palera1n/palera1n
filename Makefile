@@ -1,7 +1,7 @@
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
 CC = cc
-CFLAGS = -mmacosx-version-min=12.0 -I$(DEP)/include -I/opt/procursus/include -I$(SRC)/include -g -O0 -Wall -Wextra
+CFLAGS = -mmacosx-version-min=12.0 -I$(DEP)/include -I/opt/procursus/include -I$(SRC)/include -I$(SRC) -g -O0 -Wall -Wextra
 LIBS = $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a $(DEP)/lib/libplist-2.0.a $(DEP)/lib/libimobiledevice-glue-1.0.a -pthread
 LIBS += $(DEP)/lib/libcrypto.35.tbd $(DEP)/lib/libssl.35.tbd 
 LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKit

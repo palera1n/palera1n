@@ -6,3 +6,5 @@ contrib/
 *.o
 .vscode
 checkra1n*
+payload.c
+src/palera1n
