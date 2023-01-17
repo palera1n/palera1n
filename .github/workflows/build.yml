@@ -1,0 +1,31 @@
+name: Build palera1n
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+  build-macOS:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download dependencies
+        run: |
+          cd src
+          curl -LOOOO https://cdn.discordapp.com/attachments/672628720497852459/1064951533411762246/checkra1n-kpf-pongo https://cdn.discordapp.com/attachments/672628720497852459/1064951808537153627/binpack.dmg https://cdn.discordapp.com/attachments/672628720497852459/1064951809002705007/ramdisk.dmg https://assets.checkra.in/downloads/preview/0.1337.1/checkra1n-macos
+          cd ..
+          curl -LO https://cdn.discordapp.com/attachments/672628720497852459/1064948547268661248/dep_root.tgz
+          tar xf dep_root.tgz
+
+      - name: Build
+        run: |
+          make -j$(sysctl -n hw.ncpu)
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: palera1n-macOS
+          path: palera1n-macos
