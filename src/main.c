@@ -161,7 +161,7 @@ int usage(int e)
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
-			"\t-f, --fakefs <root device>\tBoots fakefs on <root device>\n",
+			"\t-f, --fakefs <root device>\t\tBoots fakefs on <root device>\n",
 			getprogname());
 	exit(e);
 }
