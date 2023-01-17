@@ -127,6 +127,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		LOG(LOG_INFO, "Waiting for device to reconnect...");
 		return NULL;
 	}
+	pthread_exit(NULL);
 	return NULL;
 }
 
@@ -137,6 +138,7 @@ void* connected_dfu_mode(struct irecv_device_info* info) {
 	}
 	unsubscribe_cmd();
 	spin = 0;
+	pthread_exit(NULL);
 	return NULL;
 }
 

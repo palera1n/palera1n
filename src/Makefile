@@ -1,6 +1,6 @@
 all: palera1n
 
-OBJECTS = main.o dfuhelper.o lockdown_helper.o devhelper.o exec_checkra1n.o checkra1n.o
+OBJECTS = main.o dfuhelper.o lockdown_helper.o devhelper.o exec_checkra1n.o pongo_usb.o checkra1n.o
 LIPO = lipo
 
 checkra1n: checkra1n-macos
@@ -10,8 +10,9 @@ else
 	$(LIPO) -thin x86_64 -output checkra1n checkra1n-macos
 endif
 
-checkra1n.c: checkra1n
+checkra1n.c: checkra1n checkra1n-kpf-pongo
 	xxd -iC checkra1n > checkra1n.c
+	xxd -iC checkra1n-kpf-pongo >> checkra1n.c
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $<

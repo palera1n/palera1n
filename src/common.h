@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <usbmuxd.h>
 #include <libirecovery.h>
+#include <libusb-1.0/libusb.h>
 
 #define LOG(loglevel, ...) p1_log(loglevel, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define CLEAR() printf("\33[2K\r");
@@ -17,8 +18,7 @@ typedef enum {
 	LOG_ERROR = 1,
 	LOG_WARNING = 2,
 	LOG_INFO = 3,
-	LOG_VERBOSE = 4,
-	LOG_DEBUG = 5
+	LOG_VERBOSE = 4
 } log_level_t;
 
 typedef struct {
@@ -40,6 +40,10 @@ typedef struct {
 
 // set this value to 0 gracefully exit
 extern int spin;
+extern int verbose;
+
+extern bool dfuhelper_only;
+extern bool pongo_exit;
 
 void* dfuhelper(void* ptr);
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char* __restrict format, ...);
@@ -58,4 +62,16 @@ int autoboot_cmd(const uint64_t ecid);
 int exitrecv_cmd(const uint64_t ecid);
 
 void exec_checkra1n();
+
+typedef int usb_ret_t;
+typedef libusb_device_handle *usb_device_handle_t;
+
+#define USB_RET_SUCCESS         LIBUSB_SUCCESS
+#define USB_RET_NOT_RESPONDING  LIBUSB_ERROR_OTHER
+
+extern void* pongo_usb_callback(void* arg);
+usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint32_t wLength, void *data, uint32_t *wLenDone);
+usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len);
+const char *usb_strerror(usb_ret_t err);
+int wait_for_pongo();
 #endif
