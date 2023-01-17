@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr,
 					"Windows not really using for manipulating OSX images,\n"
 					"compiled in mingw tool for this working unstable and incorrectly\n");
-			assert(strcmp("windows", argv[index]));
+			return -2;
 		}
 		else
 		{
