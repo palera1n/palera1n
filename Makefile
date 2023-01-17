@@ -17,7 +17,7 @@ palera1n:
 clean:
 	$(MAKE) -C src clean
 
-dist:
+macos-dist:
 	$(MAKE) clean
 	$(MAKE) all CFLAGS='-arch arm64 $(CFLAGS)'
 	cp src/palera1n palera1n-arm64
