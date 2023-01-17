@@ -114,7 +114,7 @@ static struct option longopts[] = {
 	{"boot-args", required_argument, NULL, 'e'},
 	{"rootfs", required_argument, NULL, 'f'},
 	{"rootless", required_argument, NULL, 'l'},
-	{"demote", required_argument, NULL, 'l'},
+	{"demote", required_argument, NULL, 'd'},
 	{NULL, 0, NULL, 0}};
 
 int usage(int e)
