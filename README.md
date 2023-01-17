@@ -14,7 +14,7 @@
 # How does it work?
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
 
-# Issues
+# Issues with using palera1n
 ### Need help?
 If you need help, **please** join our Discord. We disabled issues due to the flood of spam, and difficulty to respond in general. We are much more comfortable on Discord.
 
@@ -28,6 +28,14 @@ Please, please, please, provide necessary info:
 **DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/itsnebulalol/ios15-tweaks) for compatiblity.
 
 You may join [here](https://dsc.gg/palera1n).
+### Common issues
+
+- "jbInit DIED!"
+  - This can be rectified by running `sudo rm -rf blobs` if on Linux, or `rm -rf blobs` if on macOS.
+
+- (Linux) Device not entering recovery mode automatically. 
+  - This can be rectified by downloading an older version of libssl from [here](http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb) and installing it with `sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.16_amd64.deb`
+
 
 # Patreons
 
@@ -43,18 +51,19 @@ Thank you so much to our Patreons that make the future development possible! You
 
 # Warning
 - We are **NOT** responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. **If your device is stuck in recovery, please run one of the following:**
-   - futurerestore --exit-recovery
-   - irecovery -n
+   - `futurerestore --exit-recovery`
+   - `irecovery -n`
 
 # Prerequisites
 - A checkm8 vulnerable iOS device on iOS 15 or 16 (A8-A11)
   - The device must be on iOS 15.0-16.2
 - Linux or macOS computer
   - Python 3 must be installed.
+  - macOS must be 10.15 or later.
 
 ### A10 and A11 devices
 - On A10 and A11, **you must disable your passcode while in the jailbroken state**.
-  - On iOS 16 A10+, if you EVER enabled a passcode on 16, you have to reset through the settings app/restore with a computer
+  - On iOS 16 A10+, if you EVER enabled a passcode on 16, you have to reset through the settings app/restore with a computer. You may take a backup of your device with no passcode enabled then restore to it (after restoring first).
   - On A10, this can be fixed in the future by implementing blackbird.
   - On A11, we don't have a SEP exploit yet.
 
@@ -65,10 +74,10 @@ A tutorial can be found [here](https://ios.cfw.guide/installing-palera1n).
 # Repos
 
 ### Tweaks mode
-All repos work when using tweaks mode because it uses normal Procursus and not rootless.
+All repos work when using tweaks mode because it uses the rootful Procursus bootstrap, unless specifying rootless.
 
 ### Rootless 
-Repos need to be updated for rootless, here are some that work currently:
+Repos will need to be updated for rootless, here are some that work currently:
 
 - [Mineek's repo](https://mineek.github.io/repo) contains rootless Procursus packages
 - The official [palera1n repo](https://repo.palera.in) contains miscellaneous packages
