@@ -149,7 +149,7 @@ int usage(int e)
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
 			"\t-P, --start-from-pongo\t\t\tStart with a PongoOS USB Device attached\n"
 			"\t-V, --debug-logging\t\t\tEnable debug logging\n"
-			"\t\tThis option can be repeated for extra verbosity\n"
+			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n",
 			getprogname());
 	exit(e);
