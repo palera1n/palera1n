@@ -141,17 +141,16 @@ static struct option longopts[] = {
 int usage(int e)
 {
 	fprintf(stderr,
-			"Usage: %s [-Dhp]\n"
+			"Usage: %s [-DhpPV] [-e boot arguments]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
-			"\n"
-			"\t-D, --dfuhelper-only\tExit after entering DFU\n"
-			"\t-h, --help\t\tShow this help\n"
-			"\t-p, --pongo-shell\tBoots to PongoOS shell\n"
-			"\t-P, --start-from-pongo\tStart with a PongoOS USB Device attached\n"
-			"\t-V, --debug-logging\tEnable debug logging\n"
+			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
+			"\t-h, --help\t\t\t\tShow this help\n"
+			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
+			"\t-P, --start-from-pongo\t\t\tStart with a PongoOS USB Device attached\n"
+			"\t-V, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity\n"
-			"\t-e, --boot-args\tXNU boot arguments\n",
+			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n",
 			getprogname());
 	exit(e);
 }
