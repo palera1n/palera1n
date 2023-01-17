@@ -26,6 +26,7 @@
 #define CMD_LEN_MAX 512
 
 int verbose = 0;
+char xargs_cmd[0x270] = "xargs serial=3 wdt=-1";
 
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char *__restrict format, ...)
 {
@@ -120,7 +121,7 @@ void *pongo_usb_callback(void *arg)
 	upload_pongo_file(handle, checkra1n_kpf_pongo, checkra1n_kpf_pongo_len);
 	issue_pongo_command(handle, "modload");
 	issue_pongo_command(handle, "dtpatch disk0s1s8");
-	issue_pongo_command(handle, "xargs serial=3 wdt=-1");
+	issue_pongo_command(handle, xargs_cmd);
 	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
 	spin = false;
@@ -134,6 +135,7 @@ static struct option longopts[] = {
 	{"pongo-shell", no_argument, NULL, 'p'},
 	{"start-from-pongo", no_argument, NULL, 'P'},
 	{"debug-logging", no_argument, NULL, 'V'},
+	{"boot-args", required_argument, NULL, 'e'},
 	{NULL, 0, NULL, 0}};
 
 int usage(int e)
@@ -148,7 +150,8 @@ int usage(int e)
 			"\t-p, --pongo-shell\tBoots to PongoOS shell\n"
 			"\t-P, --start-from-pongo\tStart with a PongoOS USB Device attached\n"
 			"\t-V, --debug-logging\tEnable debug logging\n"
-			"\t\tThis option can be repeated for extra verbosity\n",
+			"\t\tThis option can be repeated for extra verbosity\n"
+			"\t-e, --boot-args\tXNU boot arguments\n",
 			getprogname());
 	exit(e);
 }
@@ -161,7 +164,7 @@ int main(int argc, char *argv[])
 {
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPV", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpPVe:", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -179,6 +182,9 @@ int main(int argc, char *argv[])
 			assert(0);
 		case 'V':
 			verbose++;
+			break;
+		case 'e':
+			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
 			break;
 		default:
 			usage(1);
