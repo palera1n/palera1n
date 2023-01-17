@@ -373,6 +373,8 @@ bad:
 	{
 		if (ret == USB_RET_NOT_RESPONDING)
 			return 0;
+        if (!strncmp("boot", command, 4) && ret == USB_RET_IO)
+            return 0;
 		LOG(LOG_ERROR, "USB error: %s", usb_strerror(ret));
 		return ret;
 	}
