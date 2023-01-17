@@ -39,8 +39,9 @@ void exec_checkra1n() {
 		LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		unlink(checkra1n_path);
 	}
-	char* args = "-pvE";
-	if (verbose < 2) args = "-pE";
+	char args[0x10] = "-pE";
+	if (demote) strcat(args, "d");
+	if (verbose >= 2) strcat(args, "v");
 	pid_t pid;
 	char* checkra1n_argv[] = {
 		checkra1n_path,

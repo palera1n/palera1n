@@ -12,9 +12,11 @@ else
 	$(LIPO) -thin $(shell arch) -output checkra1n checkra1n-macos
 endif
 
-checkra1n.c: checkra1n checkra1n-kpf-pongo
+checkra1n.c: checkra1n checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
 	xxd -iC checkra1n > checkra1n.c
 	xxd -iC checkra1n-kpf-pongo >> checkra1n.c
+	xxd -iC ramdisk.dmg >> checkra1n.c
+	xxd -iC binpack.dmg >> checkra1n.c
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $<

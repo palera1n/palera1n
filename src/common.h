@@ -41,6 +41,7 @@ typedef struct {
 // set this value to 0 gracefully exit
 extern int spin;
 extern int verbose;
+extern int demote;
 
 extern bool dfuhelper_only;
 extern bool pongo_exit;

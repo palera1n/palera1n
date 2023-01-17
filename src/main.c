@@ -30,6 +30,7 @@
 int verbose = 0;
 int enable_fakefs = 0;
 int do_pongo_sleep = 0;
+int demote = 0;
 char xargs_cmd[0x270] = "xargs serial=3 wdt=-1";
 char fakefs[512];
 
@@ -73,6 +74,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 
 int issue_pongo_command(usb_device_handle_t handle, char *command)
 {
+	sleep(1);
 	int ret;
 	size_t len = strlen(command);
 	if (len > (CMD_LEN_MAX - 2)) {
@@ -87,7 +89,6 @@ int issue_pongo_command(usb_device_handle_t handle, char *command)
 	if (ret)
 		goto bad;
 	ret = USBControlTransfer(handle, 0x21, 3, 0, 0, (uint32_t)len, buf, NULL);
-	sleep(1);
 bad:
 	if (ret != USB_RET_SUCCESS) {
 		if (ret == USB_RET_NOT_RESPONDING)
@@ -109,7 +110,7 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 			LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
 		}
 	}
-	sleep(1);
+	sleep(2);
 	return ret;
 }
 
@@ -120,15 +121,20 @@ void *pongo_usb_callback(void *arg)
 	if (found_pongo) return NULL;
 	found_pongo = 1;
 	usb_device_handle_t handle = *(usb_device_handle_t *)arg;
-	sleep(1);
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
 	upload_pongo_file(handle, checkra1n_kpf_pongo, checkra1n_kpf_pongo_len);
 	issue_pongo_command(handle, "modload");
+	issue_pongo_command(handle, "kpf_flags 0x00000000");
+	issue_pongo_command(handle, "checkra1n_flags 0x00000000");
 	if (enable_fakefs) {
 		issue_pongo_command(handle, fakefs);
 	} else {
-		assert(0);
+		strcat(xargs_cmd, " rootdev=md0");
+		upload_pongo_file(handle, ramdisk_dmg, ramdisk_dmg_len);
+		issue_pongo_command(handle, "ramdisk");
+		upload_pongo_file(handle, binpack_dmg, binpack_dmg_len);
+		issue_pongo_command(handle, "overlay");
 	}
 	issue_pongo_command(handle, xargs_cmd);
 	issue_pongo_command(handle, "bootx");
@@ -146,12 +152,14 @@ static struct option longopts[] = {
 	{"debug-logging", no_argument, NULL, 'V'},
 	{"boot-args", required_argument, NULL, 'e'},
 	{"rootfs", required_argument, NULL, 'f'},
+	{"rootless", required_argument, NULL, 'l'},
+	{"demote", required_argument, NULL, 'l'},
 	{NULL, 0, NULL, 0}};
 
 int usage(int e)
 {
 	fprintf(stderr,
-			"Usage: %s [-DhpPv] [-e boot arguments] [-f root device]\n"
+			"Usage: %s [-DhpPvld] [-e boot arguments] [-f root device]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
@@ -161,7 +169,9 @@ int usage(int e)
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
-			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n",
+			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n"
+			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
+			"\t-d, --demote\t\t\t\tDemote\n",
 			getprogname());
 	exit(e);
 }
@@ -174,7 +184,7 @@ int main(int argc, char *argv[])
 {
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPve:f:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpPve:f:ld", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -199,6 +209,12 @@ int main(int argc, char *argv[])
 		case 'f':
 			snprintf(fakefs, sizeof(fakefs), "dtpatch %s", optarg);
 			enable_fakefs = 1;
+			break;
+		case 'l':
+			enable_fakefs = 0;
+			break;
+		case 'd':
+			demote = 1;
 			break;
 		default:
 			usage(1);
@@ -226,9 +242,9 @@ int main(int argc, char *argv[])
     	putenv("LIBUSB_DEBUG=3");
 	}
 	if (verbose >= 4) putenv("LIBUSB_DEBUG=4");
-	LOG(LOG_INFO, "Waiting for devices");
 	if (start_from_pongo == true)
 		goto pongo;
+	LOG(LOG_INFO, "Waiting for devices");
 	do_pongo_sleep = 1;
 	pthread_t dfuhelper_thread;
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
@@ -241,6 +257,7 @@ int main(int argc, char *argv[])
 pongo:
 	spin = true;
 	if (do_pongo_sleep) sleep(2);
+	else LOG(LOG_INFO, "Waiting for PongoOS devices...");
 	wait_for_pongo();
 	while (spin) {
 		sleep(1);

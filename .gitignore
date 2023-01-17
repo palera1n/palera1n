@@ -10,3 +10,5 @@ payload.c
 src/palera1n
 palera1n*
 !checkra1n.h
+src/binpack.dmg
+src/ramdisk.dmg
