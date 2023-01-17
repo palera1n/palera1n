@@ -52,6 +52,7 @@ void exec_checkra1n() {
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		unlink(checkra1n_path);
+		return;
 	}
 	unlink(checkra1n_path);
 	waitpid(pid, NULL, 0);

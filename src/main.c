@@ -41,8 +41,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	va_start(args, format);
 	if (verbose >= 2)
 		printf(BLU "%s:%d: " BMAG "%s(): \n--> " WHT, fname, lineno, fxname);
-	switch (loglevel)
-	{
+	switch (loglevel) {
 	case LOG_FATAL:
 		printf(BRED "[!] " RED);
 		break;
@@ -55,12 +54,10 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	case LOG_INFO:
 		printf(BCYN "[Info] " CYN);
 		break;
-	case LOG_VERBOSE:
-		if (verbose >= 1)
-			printf(BWHT "[Verbose] " WHT);
-		break;
 	default:
-		assert(0);
+		assert(loglevel >= 0);
+		if (verbose >= (loglevel - 3))
+			printf(BWHT "[Verbose] " WHT);
 		break;
 	}
 	if (verbose >= 1 || loglevel < LOG_VERBOSE)
@@ -72,54 +69,14 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	return ret;
 }
 
-int issue_pongo_command(usb_device_handle_t handle, char *command)
-{
-	sleep(1);
-	int ret;
-	size_t len = strlen(command);
-	if (len > (CMD_LEN_MAX - 2)) {
-		LOG(LOG_ERROR, "Pongo command %s too long (max %d)", command, CMD_LEN_MAX - 2);
-		return EINVAL;
-	}
-	LOG(LOG_VERBOSE, "Executing PongoOS command: '%s'", command);
-	char buf[512];
-	snprintf(buf, 512, "%s\n", command);
-	len = strlen(buf);
-	ret = USBControlTransfer(handle, 0x21, 4, 1, 0, 0, NULL, NULL);
-	if (ret)
-		goto bad;
-	ret = USBControlTransfer(handle, 0x21, 3, 0, 0, (uint32_t)len, buf, NULL);
-bad:
-	if (ret != USB_RET_SUCCESS) {
-		if (ret == USB_RET_NOT_RESPONDING)
-			return 0;
-		LOG(LOG_ERROR, "USB error: %s", usb_strerror(ret));
-		return ret;
-	}
-	else
-		return ret;
-}
-
-int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned int buf_len)
-{
-	int ret = 0;
-	ret = USBControlTransfer(handle, 0x21, 1, 0, 0, 4, &buf_len, NULL);
-	if (ret == USB_RET_SUCCESS) {
-		ret = USBBulkUpload(handle, buf, buf_len);
-		if (ret == USB_RET_SUCCESS) {
-			LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
-		}
-	}
-	sleep(2);
-	return ret;
-}
-
 int found_pongo = 0;
 
 void *pongo_usb_callback(void *arg)
 {
-	if (found_pongo) return NULL;
+	if (found_pongo)
+		return NULL;
 	found_pongo = 1;
+	LOG(LOG_INFO, "Found PongoOS USB Device");
 	usb_device_handle_t handle = *(usb_device_handle_t *)arg;
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
@@ -127,9 +84,12 @@ void *pongo_usb_callback(void *arg)
 	issue_pongo_command(handle, "modload");
 	issue_pongo_command(handle, "kpf_flags 0x00000000");
 	issue_pongo_command(handle, "checkra1n_flags 0x00000000");
-	if (enable_fakefs) {
+	if (enable_fakefs)
+	{
 		issue_pongo_command(handle, fakefs);
-	} else {
+	}
+	else
+	{
 		strcat(xargs_cmd, " rootdev=md0");
 		upload_pongo_file(handle, ramdisk_dmg, ramdisk_dmg_len);
 		issue_pongo_command(handle, "ramdisk");
@@ -137,7 +97,8 @@ void *pongo_usb_callback(void *arg)
 		issue_pongo_command(handle, "overlay");
 	}
 	issue_pongo_command(handle, xargs_cmd);
-	issue_pongo_command(handle, "bootx");
+	issue_pongo_command(handle, "kpf");
+	issue_pongo_command(handle, "bootux");
 	LOG(LOG_INFO, "Booting Kernel...");
 	spin = false;
 	exit(0);
@@ -236,12 +197,14 @@ int main(int argc, char *argv[])
 			usage(1);
 		}
 	}
-	if (verbose >= 3) {
+	if (verbose >= 3)
+	{
 		irecv_set_debug_level(1);
 		idevice_set_debug_level(1);
-    	putenv("LIBUSB_DEBUG=3");
+		putenv("LIBUSB_DEBUG=3");
 	}
-	if (verbose >= 4) putenv("LIBUSB_DEBUG=4");
+	if (verbose >= 4)
+		putenv("LIBUSB_DEBUG=4");
 	if (start_from_pongo == true)
 		goto pongo;
 	LOG(LOG_INFO, "Waiting for devices");
@@ -256,10 +219,13 @@ int main(int argc, char *argv[])
 		return 0;
 pongo:
 	spin = true;
-	if (do_pongo_sleep) sleep(2);
-	else LOG(LOG_INFO, "Waiting for PongoOS devices...");
+	if (do_pongo_sleep)
+		sleep(2);
+	else
+		LOG(LOG_INFO, "Waiting for PongoOS devices...");
 	wait_for_pongo();
-	while (spin) {
+	while (spin)
+	{
 		sleep(1);
 	}
 	return 0;

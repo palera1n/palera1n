@@ -18,7 +18,8 @@ typedef enum {
 	LOG_ERROR = 1,
 	LOG_WARNING = 2,
 	LOG_INFO = 3,
-	LOG_VERBOSE = 4
+	LOG_VERBOSE = 4,
+	LOG_VERBOSE2 = 5
 } log_level_t;
 
 typedef struct {
@@ -75,4 +76,6 @@ usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, 
 usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len);
 const char *usb_strerror(usb_ret_t err);
 int wait_for_pongo();
+int issue_pongo_command();
+int upload_pongo_file();
 #endif

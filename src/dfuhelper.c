@@ -144,6 +144,7 @@ void* connected_dfu_mode(struct irecv_device_info* info) {
 }
 
 void device_event_cb(const usbmuxd_event_t *event, void *userdata) {
+	if (event->device.conn_type != CONNECTION_TYPE_USB) return;
 	switch (event->event) {
 	case UE_DEVICE_ADD:
 		LOG(LOG_VERBOSE, "Normal mode device connected");
