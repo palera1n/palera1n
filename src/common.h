@@ -70,7 +70,7 @@ typedef libusb_device_handle *usb_device_handle_t;
 
 #define USB_RET_SUCCESS         LIBUSB_SUCCESS
 #define USB_RET_NOT_RESPONDING  LIBUSB_ERROR_OTHER
-#define USB_RET_IO				LIBUSB_ERROR_IO
+#define USB_RET_IO              LIBUSB_ERROR_IO
 
 extern void* pongo_usb_callback(void* arg);
 usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint32_t wLength, void *data, uint32_t *wLenDone);
