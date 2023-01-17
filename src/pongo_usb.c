@@ -83,6 +83,7 @@ usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len)
         {
             return r;
         }
+#if defined(__linux__)
         // We only get here on ENOMEM
         FILE *f = fopen("/sys/module/usbcore/parameters/usbfs_memory_mb", "r");
         if(f)
@@ -101,9 +102,10 @@ usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len)
             maxLen = (uint32_t)(max << 19);
         }
         else
+#endif
         {
-            // Just 8MB by default?
-            maxLen = 0x800000;
+            // Just 1MB by default?
+            maxLen = 0x100000;
         }
     }
     // If we get here, we have to chunk our data
@@ -144,12 +146,15 @@ static int FoundDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_e
         return r;
     }
 
+/* nah there would not be a kernel driver for pongoOS in Darwin */
+#if !defined(__APPLE__)
     r = libusb_detach_kernel_driver(handle, 0);
     if(r != LIBUSB_SUCCESS && r != LIBUSB_ERROR_NOT_FOUND)
     {
         ERR("libusb_detach_kernel_driver: %s", libusb_error_name(r));
         return r;
     }
+#endif
 
     r = libusb_set_configuration(handle, 1);
     if(r != LIBUSB_SUCCESS)

@@ -6,8 +6,10 @@ LIPO = lipo
 checkra1n: checkra1n-macos
 ifneq (,$(findstring arm64, $(CFLAGS)))
 	$(LIPO) -thin arm64 -output checkra1n checkra1n-macos
-else
+else ifneq (,$(findstring x86_64, $(CFLAGS)))
 	$(LIPO) -thin x86_64 -output checkra1n checkra1n-macos
+else
+	$(LIPO) -thin $(shell arch) -output checkra1n checkra1n-macos
 endif
 
 checkra1n.c: checkra1n checkra1n-kpf-pongo
