@@ -25,8 +25,14 @@ jobs:
         run: |
           make -j$(sysctl -n hw.ncpu) macos-dist
 
-      - name: Upload artifact
+      - name: Upload macOS build
         uses: actions/upload-artifact@v3.1.0
         with:
           name: palera1n-macOS
           path: palera1n-macos
+
+      - name: Upload macOS debug symbols
+        uses: actions/upload-artifact@v2
+        with:
+          name: palera1n-macos.dSYM
+          path: palera1n-macos.dSYM

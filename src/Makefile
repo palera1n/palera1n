@@ -25,6 +25,6 @@ palera1n: $(OBJECTS)
 	$(CC) $(OBJECTS) $(CFLAGS) $(LDFLAGS) -o palera1n
 
 clean:
-	rm -f *.o palera1n checkra1n
+	rm -rf *.o palera1n checkra1n palera1n.dSYM
 
 .PHONY: all clean
