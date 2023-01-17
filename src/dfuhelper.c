@@ -134,6 +134,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 void* connected_dfu_mode(struct irecv_device_info* info) {
 	if (ecid_wait_for_dfu == info->ecid) {
 		ecid_wait_for_dfu = 0;
+		puts("");
 		LOG(LOG_INFO, "Device entered DFU mode successfully");
 	}
 	unsubscribe_cmd();

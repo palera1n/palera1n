@@ -39,12 +39,14 @@ void exec_checkra1n() {
 		LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		unlink(checkra1n_path);
 	}
+	char* args = "-pvE";
+	if (verbose < 2) args = "-pE";
+	pid_t pid;
 	char* checkra1n_argv[] = {
 		checkra1n_path,
-		"-pvE",
+		args,
 		NULL
 	};
-	pid_t pid;
 	ret = posix_spawn(&pid, checkra1n_path, NULL, NULL, checkra1n_argv, environ);
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
