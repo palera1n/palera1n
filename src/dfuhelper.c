@@ -90,7 +90,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		return NULL;
 	}
-	
+	sleep(1);
 	ret = autoboot_cmd(info->ecid);
 	if (ret) {
 		LOG(LOG_ERROR, "Cannot set auto-boot back to true");

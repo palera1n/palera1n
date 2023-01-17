@@ -346,7 +346,7 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid) {
 	irecv_client_t client = NULL;
 	irecv_error_t err = irecv_open_with_ecid(&client, ecid);
 	if (err != IRECV_E_SUCCESS) {
-		LOG(LOG_ERROR, "libirecovery error: %d\n", err);
+		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
 		return -1;
 	}
 	int mode = 0;
@@ -356,7 +356,7 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid) {
 	irecv_device_t device;
 	err = irecv_devices_get_device_by_client(client, &device);
 	if (err != IRECV_E_SUCCESS) {
-		LOG(LOG_ERROR, "libirecovery error: %d\n", err);
+		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
 		return -1;
 	}
 	info->mode = mode;
@@ -378,7 +378,7 @@ int autoboot_cmd(const uint64_t ecid) {
 		irecv_close(client);
 		return 0;
 	} else { 
-		LOG(LOG_ERROR, "libirecovery error: %d\n", err);
+		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
 		return -1;
 	}
 }
@@ -393,7 +393,7 @@ int exitrecv_cmd(const uint64_t ecid) {
 		irecv_close(client);
 		return 0;
 	} else {
-		LOG(LOG_ERROR, "libirecovery error: %d\n", err);
+		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
 		return -1;
 	}
 }
