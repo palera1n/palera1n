@@ -23,7 +23,7 @@ jobs:
 
       - name: Build
         run: |
-          make -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu) macos-dist
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3.1.0
