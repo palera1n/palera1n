@@ -16,7 +16,7 @@ jobs:
       - name: Download dependencies
         run: |
           cd src
-          curl -LOOOO https://cdn.discordapp.com/attachments/672628720497852459/1064954768021274694/checkra1n-kpf-pongo https://assets.checkra.in/downloads/preview/0.1337.1/checkra1n-macos https://cdn.discordapp.com/attachments/672628720497852459/1065116692067397743/binpack.dmg https://cdn.discordapp.com/attachments/672628720497852459/1065117683361792100/ramdisk.dmg
+          curl -LOOOO https://cdn.discordapp.com/attachments/672628720497852459/1064954768021274694/checkra1n-kpf-pongo https://assets.checkra.in/downloads/preview/0.1337.1/checkra1n-macos https://cdn.discordapp.com/attachments/672628720497852459/1065189871251111966/binpack.dmg https://cdn.discordapp.com/attachments/672628720497852459/1065189871636983848/ramdisk.dmg
           cd ..
           curl -LO https://cdn.discordapp.com/attachments/672628720497852459/1064948547268661248/dep_root.tgz
           tar xf dep_root.tgz
@@ -30,7 +30,7 @@ jobs:
         with:
           name: palera1n-macOS
           path: palera1n-macos
-      
+
       - name: Upload macOS x86_64 build
         uses: actions/upload-artifact@v3.1.0
         with:
