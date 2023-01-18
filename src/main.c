@@ -24,6 +24,7 @@
 
 #if defined(__APPLE__)
 #include <mach-o/loader.h>
+#include <mach-o/ldsyms.h>
 #else
 #define MH_MAGIC 0xfeedface
 #define MH_CIGAM 0xcefaedfe
@@ -219,6 +220,32 @@ int override_file(override_file_t *finfo, unsigned char orig[], unsigned int *or
 	return 0;
 }
 
+int build_checks() {
+#if defined(__APPLE__)
+	struct mach_header_64* c1_header = (struct mach_header_64*)&checkra1n[0];
+	if (c1_header->magic != MH_MAGIC_64 && c1_header->magic != MH_CIGAM_64) {
+		LOG(LOG_FATAL, "Broken build: checkra1n is not a thin Mach-O");
+		return -1;
+	}
+	if (c1_header->cputype != _mh_execute_header.cputype) {
+		LOG(LOG_FATAL, "Broken build: checkra1n CPU type is not the same as %s CPU type", getprogname());
+		return -1;
+	}
+#endif
+	struct mach_header_64 *kpf_hdr = (struct mach_header_64 *)checkra1n_kpf_pongo;
+	if (kpf_hdr->magic != MH_MAGIC_64 && kpf_hdr->magic != MH_CIGAM_64) {
+		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not thin 64-bit Mach-O");
+		return -1;
+	} else if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
+		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not a kext bundle");
+		return -1;
+	} else if (kpf_hdr->cputype != CPU_TYPE_ARM64) {
+		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: CPU type is not arm64");
+		return -1;
+	}
+	return 0;
+}
+
 bool dfuhelper_only = false;
 bool pongo_exit = false;
 bool start_from_pongo = false;
@@ -226,6 +253,7 @@ bool palerain_version = false;
 
 int main(int argc, char *argv[])
 {
+	if (build_checks()) return -1;
 	int opt;
 	int index;
 	while ((opt = getopt_long(argc, argv, "DhpPvldse:f:o:r:K:", longopts, NULL)) != -1)

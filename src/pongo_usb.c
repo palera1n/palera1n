@@ -296,7 +296,6 @@ static void io_start(stuff_t *stuff)
 
 static void io_stop(stuff_t *stuff)
 {
-    LOG(LOG_VERBOSE, "PongoOS USB Device disconnected");
     int r = pthread_cancel(stuff->th);
     if(r != 0)
     {
