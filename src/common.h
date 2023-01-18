@@ -20,7 +20,9 @@ typedef enum {
 	LOG_WARNING = 2,
 	LOG_INFO = 3,
 	LOG_VERBOSE = 4,
-	LOG_VERBOSE2 = 5
+	LOG_VERBOSE2 = 5,
+	LOG_VERBOSE3 = 6,
+	LOG_VERBOSE4 = 7,
 } log_level_t;
 
 typedef struct {
@@ -39,6 +41,15 @@ typedef struct {
 	char display_name[0x20];
 	char iboot_ver[0x20];
 } recvinfo_t;
+
+typedef struct {
+	uint32_t magic; /* 0xd803b376*/
+	unsigned char* ptr; /* pointer to the override file in memory */
+	unsigned int len; /* length of override file */
+	unsigned char* orig_ptr; /* pointer to the overriden file */
+	unsigned int orig_len; /* length of the overriden file */
+	int fd; /* file descriptor of the override file */
+} override_file_t;
 
 // set this value to 0 gracefully exit
 extern int spin;

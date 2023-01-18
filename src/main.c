@@ -18,8 +18,36 @@
 #include <inttypes.h>
 #include <getopt.h>
 #include <errno.h>
+#include <sys/mman.h>
 
 #include <libimobiledevice/libimobiledevice.h>
+
+#if defined(__APPLE__)
+#include <mach-o/loader.h>
+#else
+#define MH_MAGIC 0xfeedface
+#define MH_CIGAM 0xcefaedfe
+#define MH_KEXT_BUNDLE 0xb
+
+typedef int cpu_type_t;
+typedef int cpu_subtype_t;
+
+#define CPU_ARCH_ABI64          0x01000000
+#define CPU_TYPE_ARM            ((cpu_type_t) 12)
+#define CPU_TYPE_ARM64          (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+
+struct mach_header_64
+{
+	uint32_t magic;			  /* mach magic number identifier */
+	cpu_type_t cputype;		  /* cpu specifier */
+	cpu_subtype_t cpusubtype; /* machine specifier */
+	uint32_t filetype;		  /* type of file */
+	uint32_t ncmds;			  /* number of load commands */
+	uint32_t sizeofcmds;	  /* the size of all the load commands */
+	uint32_t flags;			  /* flags */
+	uint32_t reserved;		  /* reserved */
+};
+#endif
 
 #include "ANSI-color-codes.h"
 #include "common.h"
@@ -27,6 +55,7 @@
 #include "kerninfo.h"
 
 #define CMD_LEN_MAX 512
+#define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
 int enable_fakefs = 0;
@@ -35,6 +64,10 @@ int demote = 0;
 char xargs_cmd[0x270] = "xargs serial=3 wdt=-1";
 char checkrain_flags_cmd[0x20] = "checkra1n_flags 0x0";
 char fakefs[512];
+
+override_file_t override_ramdisk;
+override_file_t override_kpf;
+override_file_t override_overlay;
 
 uint32_t checkrain_flags = 0;
 
@@ -45,7 +78,8 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	va_start(args, format);
 	if (verbose >= 2 && verbose >= (loglevel - 3))
 		printf(BLU "%s:%d: " BMAG "%s(): \n--> " WHT, fname, lineno, fxname);
-	switch (loglevel) {
+	switch (loglevel)
+	{
 	case LOG_FATAL:
 		printf(BRED "[!] " RED);
 		break;
@@ -88,9 +122,12 @@ void *pongo_usb_callback(void *arg)
 	issue_pongo_command(handle, "modload");
 	issue_pongo_command(handle, "kpf_flags 0x00000000");
 	issue_pongo_command(handle, checkrain_flags_cmd);
-	if (enable_fakefs) {
+	if (enable_fakefs)
+	{
 		issue_pongo_command(handle, fakefs);
-	} else {
+	}
+	else
+	{
 		strcat(xargs_cmd, " rootdev=md0");
 		upload_pongo_file(handle, ramdisk_dmg, ramdisk_dmg_len);
 		issue_pongo_command(handle, "ramdisk");
@@ -103,7 +140,6 @@ void *pongo_usb_callback(void *arg)
 	issue_pongo_command(handle, "bootux");
 	LOG(LOG_INFO, "Booting Kernel...");
 	spin = false;
-	exit(0);
 	return NULL;
 }
 
@@ -120,12 +156,15 @@ static struct option longopts[] = {
 	{"force-revert", no_argument, NULL, checkrain_option_force_revert},
 	{"safe-mode", no_argument, NULL, 's'},
 	{"version", no_argument, NULL, palerain_option_version},
+	{"override-overlay", required_argument, NULL, 'o'},
+	{"override-ramdisk", required_argument, NULL, 'r'},
+	{"override-kpf", required_argument, NULL, 'K'},
 	{NULL, 0, NULL, 0}};
 
 int usage(int e)
 {
 	fprintf(stderr,
-			"Usage: %s [-DhpPvlds] [-e boot arguments] [-f root device]\n"
+			"Usage: %s [-DhpPvlds] [-e boot arguments] [-f root device] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -140,9 +179,44 @@ int usage(int e)
 			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n"
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
 			"\t-s, --safe-mode\t\t\t\tEnter safe mode (on rootless)\n"
-			"\t-d, --demote\t\t\t\tDemote\n",
+			"\t-d, --demote\t\t\t\tDemote\n"
+			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
+			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
+			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n",
 			getprogname());
 	exit(e);
+}
+
+int override_file(override_file_t *finfo, unsigned char orig[], unsigned int *orig_len, char *filename)
+{
+	int ret = 0;
+	int fd = open(filename, O_RDONLY);
+	if (fd == -1)
+	{
+		LOG(LOG_ERROR, "Cannot open file %s: %d (%s)\n", filename, errno, strerror(errno));
+		return errno;
+	}
+	struct stat st;
+	ret = fstat(fd, &st);
+	if (ret)
+	{
+		LOG(LOG_ERROR, "Cannot fstat fd from file %s: %d (%s)\n", filename, errno, strerror(errno));
+		return errno;
+	}
+	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
+	if (addr == MAP_FAILED) {
+		LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", filename, errno, strerror(errno));
+		return errno;
+	}
+	finfo->magic = OVERRIDE_MAGIC;
+	finfo->fd = fd;
+	finfo->len = (unsigned int)st.st_size;;
+	finfo->ptr = (unsigned char*)addr;
+	finfo->orig_len = *orig_len;
+	finfo->orig_ptr = orig;
+	orig = (unsigned char*)addr;
+	*orig_len = (unsigned int)st.st_size;
+	return 0;
 }
 
 bool dfuhelper_only = false;
@@ -154,7 +228,7 @@ int main(int argc, char *argv[])
 {
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPvldse:f:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpPvldse:f:o:r:K:", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -189,6 +263,29 @@ int main(int argc, char *argv[])
 		case 's':
 			checkrain_flags |= checkrain_option_safemode;
 			break;
+		case 'o':
+			if (override_file(&override_overlay, binpack_dmg, &binpack_dmg_len, optarg))
+				return 1;
+			break;
+		case 'r':
+			if (override_file(&override_ramdisk, ramdisk_dmg, &ramdisk_dmg_len, optarg))
+				return 1;
+			break;
+		case 'K':
+			if (override_file(&override_kpf, checkra1n_kpf_pongo, &checkra1n_kpf_pongo_len, optarg))
+				return 1;
+			struct mach_header_64* hdr = (struct mach_header_64*)override_kpf.ptr;
+			if (hdr->magic != MH_MAGIC_64 && hdr->magic != MH_CIGAM_64) {
+				LOG(LOG_ERROR, "Invalid kernel patchfinder: Not thin 64-bit Mach-O");
+				goto cleanup;
+			} else if (hdr->filetype != MH_KEXT_BUNDLE) {
+				LOG(LOG_ERROR, "Invalid kernel patchfinder: Not a kext bundle");
+				goto cleanup;
+			} else if (hdr->cputype != CPU_TYPE_ARM64) {
+				LOG(LOG_ERROR, "Invalid kernel patchfinder: CPU type is not arm64");
+				goto cleanup;
+			}
+			break;
 		case checkrain_option_force_revert:
 			checkrain_flags |= checkrain_option_force_revert;
 			break;
@@ -200,13 +297,17 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	if (palerain_version) {
+	if (palerain_version)
+	{
 		printf("palera1n %s\n", PALERAIN_VERSION);
 		return 0;
 	}
 	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);
 	LOG(LOG_VERBOSE2, "checkrain_flags: %s\n", checkrain_flags_cmd);
-	
+	LOG(LOG_VERBOSE4, "binpack_dmg @ %p", binpack_dmg);
+	LOG(LOG_VERBOSE4, "ramdisk_dmg @ %p", ramdisk_dmg);
+	LOG(LOG_VERBOSE4, "checkra1n_kpf_pongo @ %p", checkra1n_kpf_pongo);
+
 	for (index = optind; index < argc; index++)
 	{
 		if (!strcmp("windows", argv[index]))
@@ -252,6 +353,19 @@ pongo:
 	while (spin)
 	{
 		sleep(1);
+	}
+cleanup:
+	if (override_kpf.magic == OVERRIDE_MAGIC) {
+		munmap(override_kpf.ptr, (size_t)override_kpf.len);
+		close(override_kpf.fd);
+	}
+	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
+		munmap(override_ramdisk.ptr, (size_t)override_ramdisk.len);
+		close(override_ramdisk.fd);
+	}
+	if (override_overlay.magic == OVERRIDE_MAGIC) {
+		munmap(override_overlay.ptr, (size_t)override_overlay.len);
+		close(override_overlay.fd);
 	}
 	return 0;
 }
