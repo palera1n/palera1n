@@ -11,6 +11,7 @@ else ifneq (,$(findstring x86_64, $(CFLAGS)))
 else
 	$(LIPO) -thin $(shell arch) -output checkra1n checkra1n-macos
 endif
+	file checkra1n
 
 checkra1n.c: checkra1n checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
 	xxd -iC checkra1n > checkra1n.c
