@@ -35,13 +35,13 @@ jobs:
         uses: actions/upload-artifact@v3.1.0
         with:
           name: palera1n-macOS (x86_64)
-          path: palera1n-macos
+          path: palera1n-x86_64
 
       - name: Upload macOS arm64 build
         uses: actions/upload-artifact@v3.1.0
         with:
           name: palera1n-macOS (arm64)
-          path: palera1n-macos
+          path: palera1n-arm64
 
       - name: Upload macOS universal debug symbols
         uses: actions/upload-artifact@v2
