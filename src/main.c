@@ -43,7 +43,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	int ret = 0;
 	va_list args;
 	va_start(args, format);
-	if (verbose >= 2)
+	if (verbose >= 2 && verbose >= (loglevel - 3))
 		printf(BLU "%s:%d: " BMAG "%s(): \n--> " WHT, fname, lineno, fxname);
 	switch (loglevel) {
 	case LOG_FATAL:
