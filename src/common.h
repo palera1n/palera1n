@@ -12,6 +12,7 @@
 
 #define LOG(loglevel, ...) p1_log(loglevel, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define CLEAR() printf("\33[2K\r");
+#define palerain_option_version 129
 
 typedef enum {
 	LOG_FATAL = 0,
@@ -41,7 +42,7 @@ typedef struct {
 
 // set this value to 0 gracefully exit
 extern int spin;
-extern int verbose;
+extern unsigned int verbose;
 extern int demote;
 
 extern bool dfuhelper_only;
