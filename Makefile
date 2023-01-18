@@ -45,7 +45,7 @@ macos-dist:
 	mkdir -p palera1n-macos.dSYM/Contents/Resources/DWARF
 	cp palera1n-arm64.dSYM/Contents/Info.plist palera1n-macos.dSYM/Contents
 	lipo -create -arch arm64 palera1n-arm64.dSYM/Contents/Resources/DWARF/palera1n -arch x86_64 palera1n-x86_64.dSYM/Contents/Resources/DWARF/palera1n -output palera1n-macos.dSYM/Contents/Resources/DWARF/palera1n-macos
-	$(STRIP) palera1n-macos
+	#$(STRIP) palera1n-macos
 	codesign -s - --force palera1n-macos
 
 distclean: clean

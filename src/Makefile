@@ -11,7 +11,6 @@ else ifneq (,$(findstring x86_64, $(CFLAGS)))
 else
 	$(LIPO) -thin $(shell arch) -output checkra1n checkra1n-macos
 endif
-	file checkra1n
 
 checkra1n.c: checkra1n checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
 	xxd -iC checkra1n > checkra1n.c
@@ -26,6 +25,6 @@ palera1n: $(OBJECTS)
 	$(CC) $(OBJECTS) $(CFLAGS) $(LDFLAGS) -o palera1n
 
 clean:
-	rm -rf *.o palera1n checkra1n palera1n.dSYM
+	rm -rf *.o palera1n checkra1n checkra1n.c palera1n.dSYM
 
 .PHONY: all clean
