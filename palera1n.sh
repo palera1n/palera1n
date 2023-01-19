@@ -253,6 +253,7 @@ _wait() {
     fi
 }
 
+dfuhelper_first_try=true
 _dfuhelper() {
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
@@ -261,24 +262,28 @@ _dfuhelper() {
     else
         step_one="Hold home + power button"
     fi
-    echo "[*] Press any key when ready for DFU mode"
-    read -n 1 -s
+    if $dfuhelper_first_try; then
+        echo "[*] Press any key when ready for DFU mode"
+        read -n 1 -s
+        dfuhelper_first_try=false
+    fi
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
     "$dir"/irecovery -c "reset" &
     wait
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        step 10 'Release side button, but keep holding volume down'
+        step 6 'Release side button, but keep holding volume down'
     else
-        step 10 'Release power button, but keep holding home button'
+        step 6 'Release power button, but keep holding home button'
     fi
     sleep 1
     
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device entered DFU!"
+        dfuhelper_first_try=true
     else
-        echo "[-] Device did not enter DFU mode, rerun the script and try again"
+        echo "[-] Device did not enter DFU mode"
         return -1
     fi
 }
@@ -454,6 +459,7 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
     fi
 fi
 
+function _wait_for_device() {
 # Get device's iOS version from ideviceinfo if in normal mode
 echo "[*] Waiting for devices"
 while [ "$(get_device_mode)" = "none" ]; do
@@ -514,7 +520,11 @@ fi
 
 if [ "$dfuhelper" = "1" ]; then
     echo "[*] Running DFU helper"
-    _dfuhelper "$cpid"
+    _dfuhelper "$cpid" || {
+        echo "[-] Failed to enter DFU mode, trying again"
+        sleep 3
+        _wait_for_device
+    }
     exit
 fi
 
@@ -550,11 +560,14 @@ fi
 if [ "$(get_device_mode)" != "dfu" ]; then
     recovery_fix_auto_boot;
     _dfuhelper "$cpid" || {
-        echo "[-] failed to enter DFU mode, run palera1n.sh again"
-        exit -1
+        echo "[-] Failed to enter DFU mode, trying again"
+        sleep 3
+        _wait_for_device
     }
 fi
 sleep 2
+}
+_wait_for_device
 
 # ============
 # Ramdisk
@@ -878,7 +891,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     fi
     _wait recovery
-    _dfuhelper "$cpid"
+    _dfuhelper "$cpid" || {
+        echo "[-] Failed to enter DFU mode, trying again"
+        sleep 3
+        _wait_for_device
+    }
     sleep 2
 fi
 
