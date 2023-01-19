@@ -460,112 +460,112 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
 fi
 
 function _wait_for_device() {
-# Get device's iOS version from ideviceinfo if in normal mode
-echo "[*] Waiting for devices"
-while [ "$(get_device_mode)" = "none" ]; do
-    sleep 1;
-done
-echo $(echo "[*] Detected $(get_device_mode) mode device" | sed 's/dfu/DFU/')
+    # Get device's iOS version from ideviceinfo if in normal mode
+    echo "[*] Waiting for devices"
+    while [ "$(get_device_mode)" = "none" ]; do
+        sleep 1;
+    done
+    echo $(echo "[*] Detected $(get_device_mode) mode device" | sed 's/dfu/DFU/')
 
-if grep -E 'pongo|checkra1n_stage2|diag' <<< "$(get_device_mode)"; then
-    echo "[-] Detected device in unsupported mode '$(get_device_mode)'"
-    exit 1;
-fi
-
-if [ "$(get_device_mode)" != "normal" ] && [ -z "$version" ] && [ "$dfuhelper" != "1" ]; then
-    echo "[-] You must pass the version your device is on when not starting from normal mode"
-    exit
-fi
-
-if [ "$(get_device_mode)" = "ramdisk" ]; then
-    # If a device is in ramdisk mode, perhaps iproxy is still running?
-    _kill_if_running iproxy
-    echo "[*] Rebooting device in SSH Ramdisk"
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
+    if grep -E 'pongo|checkra1n_stage2|diag' <<< "$(get_device_mode)"; then
+        echo "[-] Detected device in unsupported mode '$(get_device_mode)'"
+        exit 1;
     fi
-    sleep 2
-    remote_cmd "/usr/sbin/nvram auto-boot=false"
-    remote_cmd "/sbin/reboot"
-    _kill_if_running iproxy
-    _wait recovery
-fi
 
-if [ "$(get_device_mode)" = "normal" ]; then
-    version=${version:-$(_info normal ProductVersion)}
-    arch=$(_info normal CPUArchitecture)
-    if [ "$arch" = "arm64e" ]; then
+    if [ "$(get_device_mode)" != "normal" ] && [ -z "$version" ] && [ "$dfuhelper" != "1" ]; then
+        echo "[-] You must pass the version your device is on when not starting from normal mode"
+        exit
+    fi
+
+    if [ "$(get_device_mode)" = "ramdisk" ]; then
+        # If a device is in ramdisk mode, perhaps iproxy is still running?
+        _kill_if_running iproxy
+        echo "[*] Rebooting device in SSH Ramdisk"
+        if [ "$os" = 'Linux' ]; then
+            sudo "$dir"/iproxy 6413 22 &
+        else
+            "$dir"/iproxy 6413 22 &
+        fi
+        sleep 2
+        remote_cmd "/usr/sbin/nvram auto-boot=false"
+        remote_cmd "/sbin/reboot"
+        _kill_if_running iproxy
+        _wait recovery
+    fi
+
+    if [ "$(get_device_mode)" = "normal" ]; then
+        version=${version:-$(_info normal ProductVersion)}
+        arch=$(_info normal CPUArchitecture)
+        if [ "$arch" = "arm64e" ]; then
+            echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
+            exit
+        fi
+        echo "Hello, $(_info normal ProductType) on $version!"
+
+        echo "[*] Switching device into recovery mode..."
+        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+        _wait recovery
+    fi
+
+    # Grab more info
+    echo "[*] Getting device info..."
+    cpid=$(_info recovery CPID)
+    model=$(_info recovery MODEL)
+    deviceid=$(_info recovery PRODUCT)
+
+    if (( 0x8020 <= cpid )) && (( cpid < 0x8720 )); then
         echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
         exit
     fi
-    echo "Hello, $(_info normal ProductType) on $version!"
 
-    echo "[*] Switching device into recovery mode..."
-    "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
-    _wait recovery
-fi
+    if [ "$dfuhelper" = "1" ]; then
+        echo "[*] Running DFU helper"
+        _dfuhelper "$cpid" || {
+            echo "[-] Failed to enter DFU mode, trying again"
+            sleep 3
+            _wait_for_device
+        }
+        exit
+    fi
 
-# Grab more info
-echo "[*] Getting device info..."
-cpid=$(_info recovery CPID)
-model=$(_info recovery MODEL)
-deviceid=$(_info recovery PRODUCT)
-
-if (( 0x8020 <= cpid )) && (( cpid < 0x8720 )); then
-    echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
-    exit
-fi
-
-if [ "$dfuhelper" = "1" ]; then
-    echo "[*] Running DFU helper"
-    _dfuhelper "$cpid" || {
-        echo "[-] Failed to enter DFU mode, trying again"
-        sleep 3
-        _wait_for_device
-    }
-    exit
-fi
-
-if [ ! "$ipsw" = "" ]; then
-    ipswurl=$ipsw
-else
-    #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        device_os=iPadOS
-        device=iPad
-    elif [[ "$deviceid" == *"iPod"* ]]; then
-        device_os=iOS
-        device=iPod
+    if [ ! "$ipsw" = "" ]; then
+        ipswurl=$ipsw
     else
-        device_os=iOS
-        device=iPhone
+        #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
+        if [[ "$deviceid" == *"iPad"* ]]; then
+            device_os=iPadOS
+            device=iPad
+        elif [[ "$deviceid" == *"iPod"* ]]; then
+            device_os=iOS
+            device=iPod
+        else
+            device_os=iOS
+            device=iPhone
+        fi
+
+        _check_network_connection
+        buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
+        if [ "$buildid" == "19B75" ]; then
+            buildid=19B74
+        fi
+        _check_network_connection
+        ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
     fi
 
-    _check_network_connection
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
-    if [ "$buildid" == "19B75" ]; then
-        buildid=19B74
+    if [ "$restorerootfs" = "1" ]; then
+        rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
     fi
-    _check_network_connection
-    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
-fi
 
-if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
-fi
-
-# Have the user put the device into DFU
-if [ "$(get_device_mode)" != "dfu" ]; then
-    recovery_fix_auto_boot;
-    _dfuhelper "$cpid" || {
-        echo "[-] Failed to enter DFU mode, trying again"
-        sleep 3
-        _wait_for_device
-    }
-fi
-sleep 2
+    # Have the user put the device into DFU
+    if [ "$(get_device_mode)" != "dfu" ]; then
+        recovery_fix_auto_boot;
+        _dfuhelper "$cpid" || {
+            echo "[-] Failed to enter DFU mode, trying again"
+            sleep 3
+            _wait_for_device
+        }
+    fi
+    sleep 2
 }
 _wait_for_device
 
