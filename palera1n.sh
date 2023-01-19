@@ -18,6 +18,7 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
+network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
@@ -282,6 +283,32 @@ _dfuhelper() {
     fi
 }
 
+function _wait_for() {
+    timeout=$1
+    shift 1
+    until [ $timeout -eq 0 ] || ("$@" &> /dev/null); do
+        sleep 1
+        timeout=$(( timeout - 1 ))
+    done
+    if [ $timeout -eq 0 ]; then
+        return -1
+    fi
+}
+
+function _network() {
+    ping -q -c 1 -W 1 1.1.1.1 &>/dev/null
+}
+
+function _check_network_connection() {
+    if ! _network; then
+        echo "[*] Waiting for network"
+        if ! _wait_for $network_timeout _network; then
+            echo "[-] Network is unreachable. Check your connection and try again"
+            exit 1
+        fi
+    fi
+}
+
 _kill_if_running() {
     if (pgrep -u root -x "$1" &> /dev/null > /dev/null); then
         # yes, it's running as root. kill it
@@ -353,6 +380,7 @@ fi
 if [ ! -e "$dir"/gaster ]; then
     echo '[-] gaster not installed. Press any key to install it, or press ctrl + c to cancel'
     read -n 1 -s
+    _check_network_connection
     curl -sLO https://static.palera.in/deps/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
@@ -363,6 +391,7 @@ fi
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
     read -n 1 -s
+    _check_network_connection
     python3 -m pip install pyimg4
 fi
 
@@ -504,10 +533,12 @@ else
         device=iPhone
     fi
 
+    _check_network_connection
     buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
     if [ "$buildid" == "19B75" ]; then
         buildid=19B74
     fi
+    _check_network_connection
     ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
 fi
 
@@ -681,9 +712,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     # download the kernel
     echo "[*] Downloading BuildManifest"
+    _check_network_connection
     "$dir"/pzb -g BuildManifest.plist "$ipswurl"
 
     echo "[*] Downloading kernelcache"
+    _check_network_connection
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
     
     echo "[*] Patching kernelcache"
@@ -778,6 +811,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
+        echo "[*] Downloading loader"
+        _check_network_connection
         curl -LO https://static.palera.in/deps/loader.zip
         unzip loader.zip -d .
         unzip palera1n.ipa -d .
@@ -786,6 +821,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
+        echo "[*] Downloading jbinit files"
+    	_check_network_connection
         curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
@@ -794,6 +831,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
         # download binpack
         mkdir -p other/rootfs/jbin/binpack
+        echo "[*] Downloading binpack"
+        _check_network_connection
         curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
 
         sleep 1
@@ -886,14 +925,18 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
             newipswurl="$ipswurl"
         else
+            _check_network_connection
             buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("'iPhone'")) | .buildid][0]' --raw-output)
+            _check_network_connection
             newipswurl=$(curl -sL https://api.appledb.dev/ios/iOS\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
         fi
 
         echo "[*] Downloading BuildManifest"
+        _check_network_connection
         "$dir"/pzb -g BuildManifest.plist "$newipswurl"
 
         echo "[*] Downloading and decrypting iBoot"
+        _check_network_connection
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$newipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
@@ -919,13 +962,16 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         touch boot-"$deviceid"/.payload
     else
         echo "[*] Downloading BuildManifest"
+        _check_network_connection
         "$dir"/pzb -g BuildManifest.plist "$ipswurl"
 
         echo "[*] Downloading and decrypting iBSS"
+        _check_network_connection
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
         
         echo "[*] Downloading and decrypting iBoot"
+        _check_network_connection
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
