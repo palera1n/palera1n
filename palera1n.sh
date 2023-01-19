@@ -312,6 +312,21 @@ trap _exit_handler EXIT
 # ===========
 
 # ============
+# Start
+# ============
+
+echo "palera1n | Version $version-$branch-$commit"
+echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
+echo ""
+
+version=""
+parse_cmdline "$@"
+
+if [ "$debug" = "1" ]; then
+    set -o xtrace
+fi
+
+# ============
 # Dependencies
 # ============
 
@@ -336,6 +351,8 @@ if [ -e "$dir"/gaster ]; then
 fi
 
 if [ ! -e "$dir"/gaster ]; then
+    echo '[-] gaster not installed. Press any key to install it, or press ctrl + c to cancel'
+    read -n 1 -s
     curl -sLO https://static.palera.in/deps/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
@@ -368,21 +385,6 @@ chmod +x "$dir"/*
 #if [ "$os" = 'Darwin' ]; then
 #    xattr -d com.apple.quarantine "$dir"/*
 #fi
-
-# ============
-# Start
-# ============
-
-echo "palera1n | Version $version-$branch-$commit"
-echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
-echo ""
-
-version=""
-parse_cmdline "$@"
-
-if [ "$debug" = "1" ]; then
-    set -o xtrace
-fi
 
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
