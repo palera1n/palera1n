@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pushd $(dirname "$0")
+pushd $(dirname "$0") &> /dev/null
 
 mkdir -p logs
 set -e 
@@ -285,10 +285,10 @@ _dfuhelper() {
 _kill_if_running() {
     if (pgrep -u root -x "$1" &> /dev/null > /dev/null); then
         # yes, it's running as root. kill it
-        sudo killall $1
+        sudo killall $1 &> /dev/null
     else
         if (pgrep -x "$1" &> /dev/null > /dev/null); then
-            killall $1
+            killall $1 &> /dev/null
         fi
     fi
 }
@@ -1019,4 +1019,4 @@ echo "Enjoy!"
 
 } 2>&1 | tee logs/${log}
 
-popd
+popd &> /dev/null
