@@ -12,7 +12,7 @@ cd ..
 
 {
 
-COMMAND=$(echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./main.sh $@")
+COMMAND=$(echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palea1n.sh $@")
 gum style \
         --foreground 212 --border-foreground 212 --border double \
         --align center --margin "1 1" --padding "1 2" \
