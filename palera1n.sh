@@ -294,7 +294,7 @@ _dfuhelper() {
 }
 
 _kill_if_running() {
-    if (pgrep -u root -xf "$1" &> /dev/null > /dev/null); then
+    if (pgrep -u root -x "$1" &> /dev/null > /dev/null); then
         # yes, it's running as root. kill it
         sudo killall $1
     else
