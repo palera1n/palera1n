@@ -301,7 +301,7 @@ function _wait_for() {
 }
 
 function _network() {
-    ping -q -c 1 -W 1 1.1.1.1 &>/dev/null
+    ping -q -c 1 -W 1 connectivity-check.ubuntu.com &>/dev/null
 }
 
 function _check_network_connection() {
@@ -548,7 +548,6 @@ function _wait_for_device() {
         if [ "$buildid" == "19B75" ]; then
             buildid=19B74
         fi
-        _check_network_connection
         ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
     fi
 
@@ -723,13 +722,14 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     fi
     sleep 1
 
+    # Checking network connection before downloads
+    _check_network_connection
+
     # download the kernel
     echo "[*] Downloading BuildManifest"
-    _check_network_connection
     "$dir"/pzb -g BuildManifest.plist "$ipswurl"
 
     echo "[*] Downloading kernelcache"
-    _check_network_connection
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
     
     echo "[*] Patching kernelcache"
@@ -821,11 +821,13 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         remote_cmd "mkdir -p /mnt$di/jbin/binpack /mnt$di/jbin/loader.app"
         sleep 1
 
+        # Checking network connection before downloads
+        _check_network_connection
+
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
         echo "[*] Downloading loader"
-        _check_network_connection
         curl -LO https://static.palera.in/deps/loader.zip
         unzip loader.zip -d .
         unzip palera1n.ipa -d .
@@ -835,7 +837,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
         echo "[*] Downloading jbinit files"
-    	_check_network_connection
         curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
@@ -845,7 +846,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download binpack
         mkdir -p other/rootfs/jbin/binpack
         echo "[*] Downloading binpack"
-        _check_network_connection
         curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
 
         sleep 1
@@ -937,23 +937,22 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
+    # Checking network connection before downloads
+    _check_network_connection
+
     # Do payload if on iPhone 7-X
     if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
         if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
             newipswurl="$ipswurl"
         else
-            _check_network_connection
             buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("'iPhone'")) | .buildid][0]' --raw-output)
-            _check_network_connection
             newipswurl=$(curl -sL https://api.appledb.dev/ios/iOS\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
         fi
 
         echo "[*] Downloading BuildManifest"
-        _check_network_connection
         "$dir"/pzb -g BuildManifest.plist "$newipswurl"
 
         echo "[*] Downloading and decrypting iBoot"
-        _check_network_connection
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$newipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
@@ -979,16 +978,13 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         touch boot-"$deviceid"/.payload
     else
         echo "[*] Downloading BuildManifest"
-        _check_network_connection
         "$dir"/pzb -g BuildManifest.plist "$ipswurl"
 
         echo "[*] Downloading and decrypting iBSS"
-        _check_network_connection
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
         
         echo "[*] Downloading and decrypting iBoot"
-        _check_network_connection
         "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
         "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
 
