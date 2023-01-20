@@ -301,7 +301,7 @@ function _wait_for() {
 }
 
 function _network() {
-    ping -q -c 1 -W 1 connectivity-check.ubuntu.com &>/dev/null
+    ping -q -c 1 -W 1 ifconfig.co &>/dev/null
 }
 
 function _check_network_connection() {
