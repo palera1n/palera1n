@@ -13,7 +13,7 @@ LIBS += $(DEP)/lib/libcrypto.35.tbd $(DEP)/lib/libssl.35.tbd $(DEP)/lib/libusb-1
 LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKit -framework Security
 else
 LDFLAGS += -static -no-pie
-LIBS += $(DEP)/lib/libssl.a $(DEP)/lib/libcrypto.a $(DEP)/lib/libreadline.a
+LIBS += $(DEP)/lib/libssl.a $(DEP)/lib/libcrypto.a $(DEP)/lib/libreadline.a -latomic
 endif
 LIBS += $(DEP)/lib/libusb-1.0.a
 LDFLAGS += -flto
