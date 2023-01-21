@@ -3,6 +3,10 @@ all: palera1n
 OBJECTS = main.o dfuhelper.o lockdown_helper.o devhelper.o exec_checkra1n.o pongo_usb.o checkra1n.o
 LIPO = lipo
 
+checkra1n-%:
+	curl -LO https://assets.checkra.in/downloads/preview/0.1337.1/$@
+	chmod 755 $@
+
 checkra1n: checkra1n-macos
 ifneq (,$(findstring arm64, $(CFLAGS)))
 	$(LIPO) -thin arm64 -output checkra1n checkra1n-macos

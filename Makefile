@@ -23,7 +23,7 @@ export SRC DEP CC CFLAGS LDFLAGS LIBS
 
 all: palera1n
 
-palera1n:
+palera1n: download-checkra1n
 	$(MAKE) -C src
 
 clean:
@@ -48,7 +48,10 @@ macos-dist:
 	$(STRIP) palera1n-macos
 	codesign -s - --force palera1n-macos
 
+download-checkra1n:
+	$(MAKE) -C src checkra1n-macos checkra1n-linux-arm64 checkra1n-linux-armel checkra1n-linux-x86 checkra1n-linux-x86_64
+
 distclean: clean
-	rm -rf palera1n-* palera1n*.dSYM
+	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-*
 
 .PHONY: all palera1n clean
