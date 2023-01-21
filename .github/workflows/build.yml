@@ -20,6 +20,7 @@ jobs:
           cd ..
           curl -LO https://cdn.discordapp.com/attachments/672628720497852459/1064948547268661248/dep_root.tgz
           tar xf dep_root.tgz
+          make -j5 download-checkra1n
 
       - name: Build
         run: |
