@@ -1,10 +1,11 @@
 all: palera1n
 
 OBJECTS = main.o dfuhelper.o lockdown_helper.o devhelper.o exec_checkra1n.o pongo_usb.o checkra1n.o
+CHECKRA1N_VERSION ?= 0.1337.1
 LIPO = lipo
 
 checkra1n-%:
-	curl -LO https://assets.checkra.in/downloads/preview/0.1337.1/$@
+	curl -LO https://assets.checkra.in/downloads/preview/$(CHECKRA1N_VERSION)/$@
 	chmod 755 $@
 
 checkra1n: checkra1n-macos
