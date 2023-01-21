@@ -1,17 +1,22 @@
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
 STRIP = strip
-CC = cc
-CFLAGS += -mmacosx-version-min=10.8 -I$(DEP)/include -I/opt/procursus/include -I$(SRC)/include -I$(SRC) -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\"
+CC ?= cc
+CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC) -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\"
 LIBS = $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a $(DEP)/lib/libplist-2.0.a $(DEP)/lib/libimobiledevice-glue-1.0.a -pthread
-LIBS += $(DEP)/lib/libcrypto.35.tbd $(DEP)/lib/libssl.35.tbd $(DEP)/lib/libusb-1.0.a
 ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)
 endif
 ifeq ($(TARGET_OS),Darwin)
+CFLAGS += -mmacosx-version-min=10.8
+LIBS += $(DEP)/lib/libcrypto.35.tbd $(DEP)/lib/libssl.35.tbd $(DEP)/lib/libusb-1.0.a
 LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKit -framework Security
+else
+LDFLAGS += -static -fuse-ld=lld
+LIBS += $(DEP)/lib/libcrypto.a $(DEP)/lib/libssl.a
 endif
-LDFLAGS = $(LIBS)
+LIBS += $(DEP)/lib/libusb-1.0.a
+LDFLAGS += $(LIBS)
 
 ifeq ($(DEV_BUILD),1)
 CFLAGS += -O0 -g

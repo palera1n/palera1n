@@ -26,8 +26,8 @@
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
 #else
-#define MH_MAGIC 0xfeedface
-#define MH_CIGAM 0xcefaedfe
+#define MH_MAGIC_64 0xfeedfacf
+#define MH_CIGAM_64 0xcffaedfe
 #define MH_KEXT_BUNDLE 0xb
 
 typedef int cpu_type_t;
@@ -48,6 +48,7 @@ struct mach_header_64
 	uint32_t flags;			  /* flags */
 	uint32_t reserved;		  /* reserved */
 };
+
 #endif
 
 #include "ANSI-color-codes.h"
@@ -162,7 +163,7 @@ static struct option longopts[] = {
 	{"override-kpf", required_argument, NULL, 'K'},
 	{NULL, 0, NULL, 0}};
 
-int usage(int e)
+int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 			"Usage: %s [-DhpPvlds] [-e boot arguments] [-f root device] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
@@ -184,7 +185,7 @@ int usage(int e)
 			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n",
-			getprogname());
+			prog_name);
 	exit(e);
 }
 
@@ -270,7 +271,7 @@ int main(int argc, char *argv[])
 			dfuhelper_only = true;
 			break;
 		case 'h':
-			usage(0);
+			usage(0, argv[0]);
 			assert(0);
 		case 'v':
 			verbose++;
@@ -321,7 +322,7 @@ int main(int argc, char *argv[])
 			palerain_version = true;
 			break;
 		default:
-			usage(1);
+			usage(1, argv[0]);
 			break;
 		}
 	}
@@ -347,8 +348,8 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			fprintf(stderr, "%s: unknown argument: %s\n", getprogname(), argv[index]);
-			usage(1);
+			fprintf(stderr, "%s: unknown argument: %s\n", argv[0], argv[index]);
+			usage(1, argv[0]);
 		}
 	}
 	if (verbose >= 3)

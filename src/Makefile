@@ -9,12 +9,16 @@ checkra1n-%:
 	chmod 755 $@
 
 checkra1n: checkra1n-macos
+ifeq ($(TARGET_OS),Darwin)
 ifneq (,$(findstring arm64, $(CFLAGS)))
 	$(LIPO) -thin arm64 -output checkra1n checkra1n-macos
 else ifneq (,$(findstring x86_64, $(CFLAGS)))
 	$(LIPO) -thin x86_64 -output checkra1n checkra1n-macos
 else
 	$(LIPO) -thin $(shell arch) -output checkra1n checkra1n-macos
+endif
+else
+	cp checkra1n-$(CHECKRA1N_NAME) checkra1n
 endif
 
 checkra1n.c: checkra1n checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
