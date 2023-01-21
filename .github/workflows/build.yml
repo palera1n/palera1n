@@ -16,7 +16,7 @@ jobs:
       - name: Download dependencies
         run: |
           cd src
-          curl -LOOOO https://cdn.discordapp.com/attachments/672628720497852459/1064954768021274694/checkra1n-kpf-pongo https://assets.checkra.in/downloads/preview/0.1337.1/checkra1n-macos https://cdn.discordapp.com/attachments/672628720497852459/1065189871251111966/binpack.dmg https://cdn.discordapp.com/attachments/672628720497852459/1065189871636983848/ramdisk.dmg
+          curl -LOOO https://cdn.discordapp.com/attachments/672628720497852459/1064954768021274694/checkra1n-kpf-pongo https://cdn.discordapp.com/attachments/672628720497852459/1065189871251111966/binpack.dmg https://cdn.discordapp.com/attachments/672628720497852459/1065189871636983848/ramdisk.dmg
           cd ..
           curl -LO https://cdn.discordapp.com/attachments/672628720497852459/1064948547268661248/dep_root.tgz
           tar xf dep_root.tgz
