@@ -55,6 +55,7 @@ void exec_checkra1n() {
 		return;
 	}
 	LOG(LOG_VERBOSE2, "%s %s spawned successfully", checkra1n_path, args);
+	sleep(2);
 	unlink(checkra1n_path);
 	waitpid(pid, NULL, 0);
 	return;
