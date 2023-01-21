@@ -12,7 +12,7 @@ CFLAGS += -mmacosx-version-min=10.8
 LIBS += $(DEP)/lib/libcrypto.35.tbd $(DEP)/lib/libssl.35.tbd $(DEP)/lib/libusb-1.0.a
 LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKit -framework Security
 else
-LDFLAGS += -static -fuse-ld=lld
+LDFLAGS += -static -fuse-ld=lld -no-pie
 LIBS += $(DEP)/lib/libcrypto.a $(DEP)/lib/libssl.a
 endif
 LIBS += $(DEP)/lib/libusb-1.0.a
