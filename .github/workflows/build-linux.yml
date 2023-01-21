@@ -169,7 +169,9 @@ jobs:
       - name: Build palera1n
         run: |
           cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
-          make -j$(nproc) CC="${{ matrix.triple }}-gcc" LDFLAGS="${{ env.LDFLAGS }} -lssl -lcrypto" palera1n
+          find dep_root -name '*.so' -delete
+          find dep_root -name '*.la' -delete
+          make -j$(nproc) CC="${{ matrix.triple }}-gcc" palera1n
 
       - name: Seperate debug symbols
         run: |
