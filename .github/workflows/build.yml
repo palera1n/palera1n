@@ -1,4 +1,4 @@
-name: Build palera1n
+name: Build palera1n macOS
 
 on:
   push:

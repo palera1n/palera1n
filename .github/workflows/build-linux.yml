@@ -1,0 +1,188 @@
+name: Build palera1n Linux
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-Linux:
+    strategy:
+      matrix:
+        triple:
+        - i486-linux-musl
+        - x86_64-linux-musl
+        - armel-linux-musleabi
+        - aarch64-linux-musl
+    runs-on: ubuntu-latest
+    env:
+      OSSL_VERSION: 3.0.7
+      LIBUSB_VERSION: 1.0.26
+      READLINE_VERSION: 8.2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install build dependencies (packages)
+        run: |
+          sudo apt remove -y libssl-dev libreadline-dev
+          sudo apt install -y pkg-config autoconf automake
+
+      - name: Download toolchain
+        run: |
+          curl -LO https://musl.cc/${{ matrix.triple }}-cross.tgz
+          tar -xf ${{ matrix.triple }}-cross.tgz
+
+      - name: Setup Environment
+        run: |
+          mkdir sysroot
+          echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
+          case ${{ matrix.triple }} in
+            i486-linux-musl)
+              echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
+              echo "OSSL_ARCH=linux-x86" >> $GITHUB_ENV
+              ;;
+            x86_64-linux-musl)
+              echo "CHECKRA1N_NAME=linux-x86_64" >> $GITHUB_ENV
+              echo "OSSL_ARCH=linux-x86_64" >> $GITHUB_ENV
+              ;;
+            armel-linux-musleabi)
+              echo "CHECKRA1N_NAME=linux-armel" >> $GITHUB_ENV
+              echo "OSSL_ARCH=linux-armv4" >> $GITHUB_ENV
+              ;;
+            aarch64-linux-musl)
+              echo "CHECKRA1N_NAME=linux-arm64" >> $GITHUB_ENV
+              echo "OSSL_ARCH=linux-aarch64" >> $GITHUB_ENV
+              ;;
+          esac
+          echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
+          echo "CFLAGS=-I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CXXFLAGS=-I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "LDFLAGS=-I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
+          echo "PREFIX=/usr/local" >> $GITHUB_ENV
+          echo "CONFIGURE_ARGS=--build=x86_64-linux-gnu --host=${{ matrix.triple }} --prefix=/usr/local --disable-shared --enable-static" >> $GITHUB_ENV
+          echo "CROSS_COMPILE=${{ matrix.triple }}-" >> $GITHUB_ENV
+          mkdir -p $(pwd)/sysroot/usr/local/lib
+          ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+
+      - name: Download dependencies (Embedded Binaries)
+        run: |
+          cd src
+          curl -LOOO https://cdn.discordapp.com/attachments/672628720497852459/1064954768021274694/checkra1n-kpf-pongo https://cdn.discordapp.com/attachments/672628720497852459/1065189871251111966/binpack.dmg https://cdn.discordapp.com/attachments/672628720497852459/1065189871636983848/ramdisk.dmg
+          cd ..
+
+      - name: Download dependencies (source code)
+        run: |
+          curl -LOOO \
+            https://www.openssl.org/source/openssl-${{ env.OSSL_VERSION }}.tar.gz \
+            https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
+            https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz
+          tar -xf openssl-${{ env.OSSL_VERSION }}.tar.gz
+          tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
+          tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
+          git clone --depth=1 https://github.com/libimobiledevice/libplist
+          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
+          git clone --depth=1 https://github.com/libimobiledevice/libirecovery
+          git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
+          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
+
+      - name: Build OpenSSL
+        run: |
+          cd openssl-${{ env.OSSL_VERSION }}
+          LDFLAGS="${{ env.LDFLAGS }} -latomic" ./Configure ${{ env.OSSL_ARCH }}
+          sed -i 's/-m64//g' Makefile
+          make -j$(nproc) LDFLAGS="${{ env.LDFLAGS }} -latomic"
+          make install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libusb
+        run: |
+          cd libusb-${{ env.LIBUSB_VERSION }}
+          ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
+          make -j$(nproc)
+          make install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build readline
+        run: |
+          cd readline-${{ env.READLINE_VERSION }}
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          make -j$(nproc)
+          make install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libplist
+        run: |
+          cd libplist
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
+          make -j$(nproc)
+          make install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libimobiledevice-glue
+        run: |
+          cd libimobiledevice-glue
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          make -j$(nproc)
+          make install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libirecovery (sorta)
+        run: |
+          sudo mv /usr/local /usr/local.bak
+          sudo ln -s ${{ env.DESTDIR }}${{ env.PREFIX }} /usr/local
+          cd libirecovery
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          make -ij$(nproc)
+          make -i install DESTDIR=${{ env.DESTDIR }}
+          install -m644 src/.libs/libirecovery-1.0.a ${{ env.DESTDIR }}${{ env.PREFIX }}/lib
+          cd ..
+
+      - name: Build libusbmuxd
+        run: |
+          cd libusbmuxd
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          make -j$(nproc)
+          make install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+      
+      - name: Build libimobiledevice
+        run: |
+          cd libimobiledevice
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }} --with-openssl openssl_LIBS="-lssl -lcrypto" openssl_CFLAGS=" "
+          make -j$(nproc)
+          make install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+          sudo rm /usr/local
+          sudo mv /usr/local.bak /usr/local
+
+      - name: Build palera1n
+        run: |
+          cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
+          make -j$(nproc) CC="${{ matrix.triple }}-gcc" LDFLAGS="${{ env.LDFLAGS }} -lssl -lcrypto" palera1n
+
+      - name: Seperate debug symbols
+        run: |
+          ${{ matrix.triple }}-objcopy --only-keep-debug src/palera1n palera1n.debug
+          ${{ matrix.triple }}-strip --strip-debug --strip-unneeded src/palera1n
+          ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug src/palera1n
+          chmod -x palera1n.debug
+
+      - name: Upload palera1n
+        uses: actions/upload-artifact@v2
+        with:
+          name: palera1n-${{ matrix.triple }}
+          path: src/palera1n
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v2
+        with:
+          name: palera1n-${{ matrix.triple }}.debug
+          path: palera1n.debug
