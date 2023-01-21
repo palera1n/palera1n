@@ -3,7 +3,7 @@ DEP = $(SRC)/dep_root
 STRIP = strip
 CC ?= cc
 CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC) -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\"
-LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a $(DEP)/lib/libreadline.a -pthread
+LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread
 ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)
 endif
@@ -13,9 +13,10 @@ LIBS += $(DEP)/lib/libcrypto.35.tbd $(DEP)/lib/libssl.35.tbd $(DEP)/lib/libusb-1
 LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKit -framework Security
 else
 LDFLAGS += -static -no-pie
-LIBS += $(DEP)/lib/libssl.a $(DEP)/lib/libcrypto.a
+LIBS += $(DEP)/lib/libssl.a $(DEP)/lib/libcrypto.a $(DEP)/lib/libreadline.a
 endif
 LIBS += $(DEP)/lib/libusb-1.0.a
+LDFLAGS += -flto
 
 ifeq ($(DEV_BUILD),1)
 CFLAGS += -O0 -g
