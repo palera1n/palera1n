@@ -16,9 +16,9 @@ jobs:
       - name: Download dependencies
         run: |
           cd src
-          curl -LOOO https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/checkra1n-kpf-pongo \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/binpack.dmg \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/ramdisk.dmg
+          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/deps//binpack.dmg \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
 
           cd ..
           curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/dep_root_macos.tgz
@@ -113,9 +113,9 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           cd src
-          curl -LOOO https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/checkra1n-kpf-pongo \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/binpack.dmg \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/ramdisk.dmg
+          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/deps//binpack.dmg \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
           cd ..
           make -j5 download-checkra1n
 
