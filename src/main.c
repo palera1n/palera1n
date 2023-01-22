@@ -60,18 +60,21 @@ struct mach_header_64
 #define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
-int enable_fakefs = 0;
+int enable_rootful = 0;
 int do_pongo_sleep = 0;
 int demote = 0;
 char xargs_cmd[0x270] = "xargs serial=3 wdt=-1";
 char checkrain_flags_cmd[0x20] = "checkra1n_flags 0x0";
-char fakefs[512];
+char palerain_flags_cmd[0x20] = "checkra1n_flags 0x0";
+char dtpatch_cmd[0x20] = "dtpatch md0";
+char rootfs_cmd[512];
 
 override_file_t override_ramdisk;
 override_file_t override_kpf;
 override_file_t override_overlay;
 
 uint32_t checkrain_flags = 0;
+uint32_t palerain_flags = 0;
 
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char *__restrict format, ...)
 {
@@ -124,19 +127,17 @@ void *pongo_usb_callback(void *arg)
 	issue_pongo_command(handle, "modload");
 	issue_pongo_command(handle, "kpf_flags 0x00000000");
 	issue_pongo_command(handle, checkrain_flags_cmd);
-	if (enable_fakefs)
+	issue_pongo_command(handle, palerain_flags_cmd);
+	if (enable_rootful)
 	{
-		issue_pongo_command(handle, fakefs);
+		issue_pongo_command(handle, rootfs_cmd);
+		issue_pongo_command(handle, dtpatch_cmd);
 	}
-	else
-	{
-		strcat(xargs_cmd, " rootdev=md0");
-		upload_pongo_file(handle, ramdisk_dmg, ramdisk_dmg_len);
-		issue_pongo_command(handle, "ramdisk");
-		upload_pongo_file(handle, binpack_dmg, binpack_dmg_len);
-		issue_pongo_command(handle, "overlay");
-		issue_pongo_command(handle, "dtpatch md0");
-	}
+	strcat(xargs_cmd, " rootdev=md0");
+	upload_pongo_file(handle, ramdisk_dmg, ramdisk_dmg_len);
+	issue_pongo_command(handle, "ramdisk");
+	upload_pongo_file(handle, binpack_dmg, binpack_dmg_len);
+	issue_pongo_command(handle, "overlay");
 	issue_pongo_command(handle, xargs_cmd);
 	issue_pongo_command(handle, "kpf");
 	issue_pongo_command(handle, "bootux");
@@ -280,11 +281,12 @@ int main(int argc, char *argv[])
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
 			break;
 		case 'f':
-			snprintf(fakefs, sizeof(fakefs), "dtpatch %s", optarg);
-			enable_fakefs = 1;
+			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
+			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
+			enable_rootful = 1;
 			break;
 		case 'l':
-			enable_fakefs = 0;
+			enable_rootful = 0;
 			break;
 		case 'd':
 			demote = 1;
@@ -331,8 +333,15 @@ int main(int argc, char *argv[])
 		printf("palera1n %s\n", PALERAIN_VERSION);
 		return 0;
 	}
+
+	if (enable_rootful) {
+		palerain_flags |= palerain_option_rootful;
+	}
+
 	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);
+	snprintf(palerain_flags_cmd, 0x20, "palera1n_flags 0x%x", palerain_flags);
 	LOG(LOG_VERBOSE2, "checkrain_flags: %s\n", checkrain_flags_cmd);
+	LOG(LOG_VERBOSE2, "palerain_flags: %s\n", palerain_flags_cmd);
 	LOG(LOG_VERBOSE4, "binpack_dmg @ %p", binpack_dmg);
 	LOG(LOG_VERBOSE4, "ramdisk_dmg @ %p", ramdisk_dmg);
 	LOG(LOG_VERBOSE4, "checkra1n_kpf_pongo @ %p", checkra1n_kpf_pongo);

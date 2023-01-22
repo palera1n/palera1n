@@ -16,13 +16,13 @@ jobs:
       - name: Download dependencies
         run: |
           cd src
-          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
-            https://static.palera.in/deps/c-rewrite/binpack.dmg \
-            https://static.palera.in/deps/c-rewrite/ramdisk.dmg
+          curl -LOOO https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/checkra1n-kpf-pongo \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/binpack.dmg \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/ramdisk.dmg
 
           cd ..
-          curl -LO https://static.palera.in/deps/c-rewrite/dep_root-macos.tgz
-          tar xf dep_root-macos.tgz
+          curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/dep_root_macos.tgz
+          tar xf dep_root_macos.tgz
           make -j5 download-checkra1n
 
       - name: Build
@@ -40,14 +40,14 @@ jobs:
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
         with:
-          host: ${{ secrets.STATIC_FTP_HOST }}
-          port: 6061
-          username: nebula
-          password: ${{ secrets.STATIC_FTP_PASS }}
+          host: ${{ secrets.NICKCHAN_FTP_HOST }}
+          port: ${{ secrets.NICKCHAN_FTP_PORT }}
+          username: palera1n
+          privateKey: ${{ secrets.NICKCHAN_FTP_KEY }}
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/upload/artifacts/c-rewrite'
+          remoteDir: '/palera1n/artifacts/c-rewrite'
 
   build-Linux:
     strategy:
@@ -113,9 +113,9 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           cd src
-          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
-            https://static.palera.in/deps/c-rewrite/binpack.dmg \
-            https://static.palera.in/deps/c-rewrite/ramdisk.dmg
+          curl -LOOO https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/checkra1n-kpf-pongo \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/binpack.dmg \
+            https://cdn.nickchan.lol/palera1n/c-rewrite/experiments/rootful_rootless/ramdisk.dmg
           cd ..
           make -j5 download-checkra1n
 
@@ -232,11 +232,11 @@ jobs:
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
         with:
-          host: ${{ secrets.STATIC_FTP_HOST }}
-          port: 6061
-          username: nebula
-          password: ${{ secrets.STATIC_FTP_PASS }}
+          host: ${{ secrets.NICKCHAN_FTP_HOST }}
+          port: ${{ secrets.NICKCHAN_FTP_PORT }}
+          username: palera1n
+          privateKey: ${{ secrets.NICKCHAN_FTP_KEY }}
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/upload/artifacts/c-rewrite'
+          remoteDir: '/palera1n/artifacts/c-rewrite'
