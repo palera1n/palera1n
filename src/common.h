@@ -87,7 +87,7 @@ typedef libusb_device_handle *usb_device_handle_t;
 
 extern void* pongo_usb_callback(void* arg);
 usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint32_t wLength, void *data, uint32_t *wLenDone);
-usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len);
+usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, int len);
 const char *usb_strerror(usb_ret_t err);
 int wait_for_pongo();
 int issue_pongo_command();

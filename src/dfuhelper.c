@@ -143,7 +143,7 @@ void* connected_dfu_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
-void device_event_cb(const usbmuxd_event_t *event, void *userdata) {
+void device_event_cb(const usbmuxd_event_t *event, void* __unused userdata) {
 	if (event->device.conn_type != CONNECTION_TYPE_USB) return;
 	switch (event->event) {
 	case UE_DEVICE_ADD:
@@ -156,7 +156,7 @@ void device_event_cb(const usbmuxd_event_t *event, void *userdata) {
 	}
 }
 
-void irecv_device_event_cb(const irecv_device_event_t *event, void *userdata) {
+void irecv_device_event_cb(const irecv_device_event_t *event, void* __unused userdata) {
 	pthread_t recovery_thread, dfu_thread;
 	
 	switch(event->type) {
@@ -177,9 +177,7 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void *userdata) {
 	}
 }
 
-void *dfuhelper(void *ptr) {
-	// idevice_set_debug_level(1);
-	// irecv_set_debug_level(1);
+void *dfuhelper(void* __unused ptr) {
 	subscribe_cmd(device_event_cb, irecv_device_event_cb);
 	while (spin) {
 		sleep(1);

@@ -46,8 +46,6 @@
 #define CMD_LEN_MAX         512
 #define UPLOADSZ_MAX        (1024 * 1024 * 128)
 
-static uint8_t gBlockIO = 1;
-
 typedef struct stuff stuff_t;
 
 static void io_start(stuff_t *stuff);
@@ -67,7 +65,7 @@ usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, 
     return USB_RET_SUCCESS;
 }
 
-usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len)
+usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, int len)
 {
     static uint32_t maxLen = 0;
     int transferred = 0;
@@ -109,7 +107,7 @@ usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len)
         }
     }
     // If we get here, we have to chunk our data
-    for(uint32_t done = transferred; done < len; )
+    for(int done = transferred; done < len; )
     {
         uint32_t chunk = len - done;
         if(chunk > maxLen) chunk = maxLen;
@@ -130,7 +128,7 @@ struct stuff
     usb_device_handle_t handle;
 };
 
-static int FoundDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event, void *arg)
+static int FoundDevice(libusb_context __unused *ctx, libusb_device *dev, libusb_hotplug_event __unused event, void *arg)
 {
     LOG(LOG_VERBOSE, "PongoOS USB Device connected\n");
     stuff_t *stuff = arg;
@@ -178,7 +176,7 @@ static int FoundDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_e
     return LIBUSB_SUCCESS;
 }
 
-static int LostDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event, void *arg)
+static int LostDevice(libusb_context __unused *ctx, libusb_device *dev, libusb_hotplug_event __unused event, void *arg)
 {
     LOG(LOG_VERBOSE, "PongoOS USB Device disconnected");
     stuff_t *stuff = arg;
@@ -239,7 +237,7 @@ int wait_for_pongo(void)
         return -1;
     }
 
-    for(size_t i = 0; i < sz; ++i)
+    for(ssize_t i = 0; i < sz; ++i)
     {
         struct libusb_device_descriptor desc = {};
         r = libusb_get_device_descriptor(list[i], &desc);
@@ -254,7 +252,7 @@ int wait_for_pongo(void)
             continue;
         }
         r = FoundDevice(NULL, list[i], LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED, &stuff);
-        for(size_t j = i + 1; j < sz; ++j)
+        for(ssize_t j = i + 1; j < sz; ++j)
         {
             libusb_unref_device(list[j]);
         }
