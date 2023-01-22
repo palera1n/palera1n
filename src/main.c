@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <getopt.h>
 #include <errno.h>
+#include <spawn.h>
 #include <sys/mman.h>
 
 #include <libimobiledevice/libimobiledevice.h>
@@ -63,11 +64,13 @@ unsigned int verbose = 0;
 int enable_rootful = 0;
 int do_pongo_sleep = 0;
 int demote = 0;
+bool ohio = true;
 char xargs_cmd[0x270] = "xargs serial=3 wdt=-1";
 char checkrain_flags_cmd[0x20] = "checkra1n_flags 0x0";
 char palerain_flags_cmd[0x20] = "checkra1n_flags 0x0";
 char dtpatch_cmd[0x20] = "dtpatch md0";
 char rootfs_cmd[512];
+extern char** environ;
 
 override_file_t override_ramdisk;
 override_file_t override_kpf;
@@ -163,12 +166,13 @@ static struct option longopts[] = {
 	{"override-overlay", required_argument, NULL, 'o'},
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
+	{"disable-ohio", no_argument, NULL, 'O'},
 	{NULL, 0, NULL, 0}};
 
 int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
-			"Usage: %s [-DhpPvlds] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			"Usage: %s [-DhpPvldsO] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -187,7 +191,8 @@ int usage(int e, char* prog_name)
 			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
 			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
-			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n",
+			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
+			"\t-O, --disable-ohio\t\t\tDisable Ohio\n",
 			prog_name);
 	exit(e);
 }
@@ -260,7 +265,7 @@ int main(int argc, char *argv[])
 	if (build_checks()) return -1;
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPvldse:f:o:r:K:k:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpPvldseO:f:o:r:K:k:", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -326,6 +331,8 @@ int main(int argc, char *argv[])
 				goto cleanup;
 			}
 			break;
+		case 'O':
+			ohio = false;
 		case checkrain_option_force_revert:
 			checkrain_flags |= checkrain_option_force_revert;
 			break;
@@ -401,6 +408,25 @@ pongo:
 	{
 		sleep(1);
 	}
+	if (access("/usr/bin/curl", F_OK) == 0 && ohio) {
+		LOG(LOG_VERBOSE4, "Ohio");
+		char* ohio_argv[] = {
+			"/usr/bin/curl",
+			"-sX",
+			"POST",
+			"-d",
+			"{\"app_name\": \"palera1n_c-rewrite\"}",
+			"-H",
+			"Content-Type: application/json",
+			"-H",
+			"User-Agent: python-requests/99 palera1n-c-rewrite/0",
+			"https://ohio.itsnebula.net/hit",
+			NULL
+		};
+		pid_t pid;
+		posix_spawn(&pid, ohio_argv[0], NULL, NULL, ohio_argv, environ);
+	}
+
 cleanup:
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
 		munmap(override_kpf.ptr, (size_t)override_kpf.len);
