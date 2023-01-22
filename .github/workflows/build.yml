@@ -35,7 +35,7 @@ jobs:
           cp palera1n-macos ready/
           cp palera1n-x86_64 ready/
           cp palera1n-arm64 ready/
-          cp palera1n-macos.dSYM ready/
+          cp -R palera1n-macos.dSYM ready/
 
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
