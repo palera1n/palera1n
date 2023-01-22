@@ -9,10 +9,12 @@ TARGET_OS = $(shell uname -s)
 endif
 ifeq ($(TARGET_OS),Darwin)
 CFLAGS += -mmacosx-version-min=10.8
+LDFLAGS += -Wl,-dead_strip
 LIBS += $(DEP)/lib/libcrypto.35.tbd $(DEP)/lib/libssl.35.tbd $(DEP)/lib/libusb-1.0.a
 LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKit -framework Security
 else
-LDFLAGS += -static -no-pie
+CFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS += -static -no-pie -Wl,--gc-sections
 LIBS += $(DEP)/lib/libssl.a $(DEP)/lib/libcrypto.a $(DEP)/lib/libreadline.a -latomic
 endif
 LIBS += $(DEP)/lib/libusb-1.0.a
@@ -60,3 +62,4 @@ distclean: clean
 	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-*
 
 .PHONY: all palera1n clean
+
