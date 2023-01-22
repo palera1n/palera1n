@@ -374,7 +374,7 @@ chmod +x "$dir"/*
 # ============
 
 echo "palera1n | Version $version-$branch-$commit"
-echo "Written by Nebula, Mineek, Nathan, Plooshi, Nick Chan, and llsc12"
+echo "Written by Nebula, Mineek, Nathan, Plooshi, and Nick Chan"
 echo ""
 
 version=""
