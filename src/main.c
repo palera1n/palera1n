@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
 pongo:
 	spin = true;
 	if (do_pongo_sleep)
-		sleep(1);
+		sleep(2);
 	else
 		LOG(LOG_INFO, "Waiting for PongoOS devices...");
 	wait_for_pongo();
