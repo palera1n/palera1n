@@ -65,7 +65,7 @@ int enable_rootful = 0;
 int do_pongo_sleep = 0;
 int demote = 0;
 bool ohio = true;
-char xargs_cmd[0x270] = "xargs serial=3 wdt=-1";
+char xargs_cmd[0x270] = "xargs wdt=-1";
 char checkrain_flags_cmd[0x20] = "checkra1n_flags 0x0";
 char palerain_flags_cmd[0x20] = "palera1n_flags 0x0";
 char kpf_flags_cmd[0x20] = "kpf_flags 0x0";
