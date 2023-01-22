@@ -34,7 +34,7 @@ Loader app does appear on rootless but cannot bootstrap, you may use the SSH ser
 
 The override overlay option does not currently work and will upload a corrupted overlay.
 
-If the device is previously jailbroken, the jailbreak environment is automatically prepared and ends with a respiring. 
+If the device is previously jailbroken, the jailbreak environment is automatically prepared and ends with a respring. 
 You can use the `-s` option to skip this behaviour.
 
 Usbmuxd is only required for starting in normal mode, it is not required when started from recovery or DFU mode. (Usbmuxd is preinstalled with macOS)
