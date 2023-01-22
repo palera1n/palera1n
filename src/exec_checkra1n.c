@@ -9,6 +9,7 @@
 #include <spawn.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <sys/stat.h>
 
@@ -16,6 +17,7 @@ extern char **environ;
 
 #include "common.h"
 #include "checkra1n.h"
+char* pongo_path = NULL;
 
 void exec_checkra1n() {
 	LOG(LOG_INFO, "About to execute checkra1n");
@@ -42,19 +44,23 @@ void exec_checkra1n() {
 	char args[0x10] = "-pE";
 	if (demote) strcat(args, "d");
 	if (verbose >= 2) strcat(args, "v");
+	if (pongo_path != NULL) strcat(args, "k"); // keep this at last
 	pid_t pid;
 	char* checkra1n_argv[] = {
 		checkra1n_path,
 		args,
+		pongo_path,
 		NULL
 	};
 	ret = posix_spawn(&pid, checkra1n_path, NULL, NULL, checkra1n_argv, environ);
+	if (pongo_path != NULL) free(pongo_path);
+	pongo_path = NULL;
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		unlink(checkra1n_path);
 		return;
 	}
-	LOG(LOG_VERBOSE2, "%s %s spawned successfully", checkra1n_path, args);
+	LOG(LOG_VERBOSE2, "%s spawned successfully", checkra1n_path);
 	sleep(2);
 	unlink(checkra1n_path);
 	waitpid(pid, NULL, 0);

@@ -159,6 +159,7 @@ static struct option longopts[] = {
 	{"force-revert", no_argument, NULL, checkrain_option_force_revert},
 	{"safe-mode", no_argument, NULL, 's'},
 	{"version", no_argument, NULL, palerain_option_version},
+	{"override-pongo", required_argument, NULL, 'k'},
 	{"override-overlay", required_argument, NULL, 'o'},
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
@@ -167,7 +168,7 @@ static struct option longopts[] = {
 int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
-			"Usage: %s [-DhpPvlds] [-e boot arguments] [-f root device] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			"Usage: %s [-DhpPvlds] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -181,8 +182,9 @@ int usage(int e, char* prog_name)
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
 			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n"
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
-			"\t-s, --safe-mode\t\t\t\tEnter safe mode (on rootless)\n"
+			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
 			"\t-d, --demote\t\t\t\tDemote\n"
+			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
 			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n",
@@ -258,7 +260,7 @@ int main(int argc, char *argv[])
 	if (build_checks()) return -1;
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPvldse:f:o:r:K:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpPvldse:f:o:r:K:k:", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -294,6 +296,13 @@ int main(int argc, char *argv[])
 		case 's':
 			checkrain_flags |= checkrain_option_safemode;
 			break;
+		case 'k':
+			if (access(optarg, F_OK) != 0) {
+				LOG(LOG_FATAL, "Cannot access pongo file at %s: %d (%s)\n", optarg, errno, strerror(errno));
+				return -1;
+			}
+			pongo_path = malloc(strlen(optarg) + 1);
+			strcpy(pongo_path, optarg);
 		case 'o':
 			if (override_file(&override_overlay, binpack_dmg, &binpack_dmg_len, optarg))
 				return 1;
@@ -307,13 +316,13 @@ int main(int argc, char *argv[])
 				return 1;
 			struct mach_header_64* hdr = (struct mach_header_64*)override_kpf.ptr;
 			if (hdr->magic != MH_MAGIC_64 && hdr->magic != MH_CIGAM_64) {
-				LOG(LOG_ERROR, "Invalid kernel patchfinder: Not thin 64-bit Mach-O");
+				LOG(LOG_FATAL, "Invalid kernel patchfinder: Not thin 64-bit Mach-O");
 				goto cleanup;
 			} else if (hdr->filetype != MH_KEXT_BUNDLE) {
-				LOG(LOG_ERROR, "Invalid kernel patchfinder: Not a kext bundle");
+				LOG(LOG_FATAL, "Invalid kernel patchfinder: Not a kext bundle");
 				goto cleanup;
 			} else if (hdr->cputype != CPU_TYPE_ARM64) {
-				LOG(LOG_ERROR, "Invalid kernel patchfinder: CPU type is not arm64");
+				LOG(LOG_FATAL, "Invalid kernel patchfinder: CPU type is not arm64");
 				goto cleanup;
 			}
 			break;

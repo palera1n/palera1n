@@ -55,6 +55,7 @@ typedef struct {
 extern int spin;
 extern unsigned int verbose;
 extern int demote;
+extern char* pongo_path;
 
 extern bool dfuhelper_only;
 extern bool pongo_exit;
