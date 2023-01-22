@@ -226,7 +226,7 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir ready
-          mv palera1n.debug ready/palera1n-linux.debug
+          mv palera1n.debug ready/palera1n-${{ env.CHECKRA1N_NAME }}.debug
           mv src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
 
       - name: Upload artifact
