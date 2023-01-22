@@ -22,7 +22,7 @@ jobs:
 
           cd ..
           curl -LO https://static.palera.in/deps/c-rewrite/dep_root-macos.tgz
-          tar xf dep_root.tgz
+          tar xf dep_root-macos.tgz
           make -j5 download-checkra1n
 
       - name: Build
@@ -226,10 +226,8 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir ready
-          mv palera1n.debug palera1n-linux.debug
-          cp palera1n-linux.debug ready/
-          mv src/palera1n src/palera1n-${{ env.CHECKRA1N_NAME }}
-          cp src/palera1n-${{ env.CHECKRA1N_NAME }} ready/
+          mv palera1n.debug ready/palera1n-linux.debug
+          mv src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
 
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
