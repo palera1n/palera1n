@@ -32,9 +32,9 @@ jobs:
       - name: Prepare artifact
         run: |
           mkdir ready
-          cp palera1n-macos ready/
-          cp palera1n-x86_64 ready/
-          cp palera1n-arm64 ready/
+          cp palera1n-macos ready/palera1n-macos-universal
+          cp palera1n-x86_64 ready/palera1n-macos-x86_64
+          cp palera1n-arm64 ready/palera1n-macos-arm64
           cp -R palera1n-macos.dSYM ready/
 
       - name: Upload artifact
