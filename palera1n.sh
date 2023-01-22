@@ -348,7 +348,7 @@ trap _exit_handler EXIT
 # ============
 
 echo "palera1n | Version $version-$branch-$commit"
-echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
+echo "Made with ❤ by Nebula, Mineek, Nathan, llsc12, Ploosh, and Nick Chan"
 echo ""
 
 version=""
