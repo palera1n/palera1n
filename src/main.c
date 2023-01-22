@@ -73,6 +73,16 @@ char dtpatch_cmd[0x20] = "dtpatch md0";
 char rootfs_cmd[512];
 extern char** environ;
 
+typedef unsigned char niarelap_file_t[];
+
+niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;
+niarelap_file_t* ramdisk_to_upload_1 = &ramdisk_dmg;
+niarelap_file_t* overlay_to_upload_1 = &ramdisk_dmg;
+
+niarelap_file_t** kpf_to_upload = &kpf_to_upload_1;
+niarelap_file_t** ramdisk_to_upload = &ramdisk_to_upload_1;
+niarelap_file_t** overlay_to_upload = &overlay_to_upload_1;
+
 override_file_t override_ramdisk;
 override_file_t override_kpf;
 override_file_t override_overlay;
@@ -128,7 +138,7 @@ void *pongo_usb_callback(void *arg)
 	usb_device_handle_t handle = *(usb_device_handle_t *)arg;
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
-	upload_pongo_file(handle, checkra1n_kpf_pongo, checkra1n_kpf_pongo_len);
+	upload_pongo_file(handle, **kpf_to_upload, checkra1n_kpf_pongo_len);
 	issue_pongo_command(handle, "modload");
 	issue_pongo_command(handle, kpf_flags_cmd);
 	issue_pongo_command(handle, checkrain_flags_cmd);
@@ -139,9 +149,9 @@ void *pongo_usb_callback(void *arg)
 		issue_pongo_command(handle, dtpatch_cmd);
 	}
 	strcat(xargs_cmd, " rootdev=md0");
-	upload_pongo_file(handle, ramdisk_dmg, ramdisk_dmg_len);
+	upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
 	issue_pongo_command(handle, "ramdisk");
-	upload_pongo_file(handle, binpack_dmg, binpack_dmg_len);
+	upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
 	issue_pongo_command(handle, "overlay");
 	issue_pongo_command(handle, xargs_cmd);
 	issue_pongo_command(handle, "kpf");
@@ -201,7 +211,7 @@ int usage(int e, char* prog_name)
 	exit(e);
 }
 
-int override_file(override_file_t *finfo, unsigned char orig[], unsigned int *orig_len, char *filename)
+int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename)
 {
 	int ret = 0;
 	int fd = open(filename, O_RDONLY);
@@ -225,10 +235,10 @@ int override_file(override_file_t *finfo, unsigned char orig[], unsigned int *or
 	finfo->magic = OVERRIDE_MAGIC;
 	finfo->fd = fd;
 	finfo->len = (unsigned int)st.st_size;;
-	finfo->ptr = (unsigned char*)addr;
+	finfo->ptr = *(niarelap_file_t*)addr;
 	finfo->orig_len = *orig_len;
-	finfo->orig_ptr = orig;
-	orig = (unsigned char*)addr;
+	finfo->orig_ptr = **orig;
+	*orig = (niarelap_file_t*)addr;
 	*orig_len = (unsigned int)st.st_size;
 	return 0;
 }
@@ -316,15 +326,15 @@ int main(int argc, char *argv[])
 			pongo_path = malloc(strlen(optarg) + 1);
 			strcpy(pongo_path, optarg);
 		case 'o':
-			if (override_file(&override_overlay, binpack_dmg, &binpack_dmg_len, optarg))
+			if (override_file(&override_overlay, overlay_to_upload, &binpack_dmg_len, optarg))
 				return 1;
 			break;
 		case 'r':
-			if (override_file(&override_ramdisk, ramdisk_dmg, &ramdisk_dmg_len, optarg))
+			if (override_file(&override_ramdisk, ramdisk_to_upload, &ramdisk_dmg_len, optarg))
 				return 1;
 			break;
 		case 'K':
-			if (override_file(&override_kpf, checkra1n_kpf_pongo, &checkra1n_kpf_pongo_len, optarg))
+			if (override_file(&override_kpf, kpf_to_upload, &checkra1n_kpf_pongo_len, optarg))
 				return 1;
 			struct mach_header_64* hdr = (struct mach_header_64*)override_kpf.ptr;
 			if (hdr->magic != MH_MAGIC_64 && hdr->magic != MH_CIGAM_64) {
@@ -368,9 +378,18 @@ int main(int argc, char *argv[])
 	LOG(LOG_VERBOSE3, "checkrain_flags: %s\n", checkrain_flags_cmd);
 	LOG(LOG_VERBOSE3, "palerain_flags: %s\n", palerain_flags_cmd);
 	LOG(LOG_VERBOSE3, "kpf_flags: %s\n", kpf_flags_cmd);
-	LOG(LOG_VERBOSE4, "binpack_dmg @ %p", binpack_dmg);
-	LOG(LOG_VERBOSE4, "ramdisk_dmg @ %p", ramdisk_dmg);
-	LOG(LOG_VERBOSE4, "checkra1n_kpf_pongo @ %p", checkra1n_kpf_pongo);
+	if (override_kpf.magic == OVERRIDE_MAGIC) {
+		LOG(LOG_VERBOSE4, "kpf override length %u -> %u\n", override_kpf.orig_len, checkra1n_kpf_pongo_len);
+		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p\n", override_kpf.orig_ptr, **kpf_to_upload);
+	}
+	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
+		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u\n", override_ramdisk.orig_len, ramdisk_dmg_len);
+		LOG(LOG_VERBOSE4, "ramdisk override ptr %p -> %p\n", override_ramdisk.orig_ptr, **ramdisk_to_upload);
+	}
+	if (override_overlay.magic == OVERRIDE_MAGIC) {
+		LOG(LOG_VERBOSE4, "overlay override length %u -> %u\n", override_overlay.orig_len, binpack_dmg_len);
+		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p\n", override_overlay.orig_ptr, **overlay_to_upload);
+	}
 
 	for (index = optind; index < argc; index++)
 	{
@@ -434,6 +453,8 @@ pongo:
 			"Content-Type: application/json",
 			"-H",
 			"User-Agent: python-requests/99 palera1n-c-rewrite/0",
+			"-o",
+			"/dev/null",
 			"https://ohio.itsnebula.net/hit",
 			NULL
 		};

@@ -32,8 +32,6 @@ This version of palera1n supports booting rootful setups with the `-f <root devi
 
 Loader app does appear on rootless but cannot bootstrap, you may use the SSH server listening at 127.0.0.1:44 (IPv4) or ::1:44 (IPv6).
 
-The override overlay option does not currently work and will upload a corrupted overlay.
-
 If the device is previously jailbroken, the jailbreak environment is automatically prepared and ends with a respring. 
 You can use the `-s` option to skip this behaviour.
 
