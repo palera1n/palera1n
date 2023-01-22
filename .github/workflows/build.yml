@@ -16,12 +16,12 @@ jobs:
       - name: Download dependencies
         run: |
           cd src
-          curl -LOOO https://cdn.discordapp.com/attachments/672628720497852459/1064954768021274694/checkra1n-kpf-pongo \
-            https://cdn.discordapp.com/attachments/672628720497852459/1066435007754801242/binpack.dmg \
-            https://cdn.discordapp.com/attachments/672628720497852459/1066435008115527710/ramdisk.dmg
+          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
+            https://static.palera.in/deps/c-rewrite/binpack.dmg \
+            https://static.palera.in/deps/c-rewrite/ramdisk.dmg
 
           cd ..
-          curl -LO https://cdn.discordapp.com/attachments/672628720497852459/1064948547268661248/dep_root.tgz
+          curl -LO https://static.palera.in/deps/c-rewrite/dep_root.tgz
           tar xf dep_root.tgz
           make -j5 download-checkra1n
 
@@ -113,9 +113,9 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           cd src
-          curl -LOOO https://cdn.discordapp.com/attachments/672628720497852459/1064954768021274694/checkra1n-kpf-pongo \
-            https://cdn.discordapp.com/attachments/672628720497852459/1066435007754801242/binpack.dmg \
-            https://cdn.discordapp.com/attachments/672628720497852459/1066435008115527710/ramdisk.dmg
+          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
+            https://static.palera.in/deps/c-rewrite/binpack.dmg \
+            https://static.palera.in/deps/c-rewrite/ramdisk.dmg
           cd ..
           make -j5 download-checkra1n
 
