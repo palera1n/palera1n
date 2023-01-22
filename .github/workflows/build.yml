@@ -30,25 +30,25 @@ jobs:
           make -j$(sysctl -n hw.ncpu) macos-dist
 
       - name: Upload macOS universal build
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v3
         with:
           name: palera1n-macOS
           path: palera1n-macos
 
       - name: Upload macOS x86_64 build
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v3
         with:
           name: palera1n-macOS (x86_64)
           path: palera1n-x86_64
 
       - name: Upload macOS arm64 build
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v3
         with:
           name: palera1n-macOS (arm64)
           path: palera1n-arm64
 
       - name: Upload macOS universal debug symbols
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: palera1n-macos.dSYM
           path: palera1n-macos.dSYM

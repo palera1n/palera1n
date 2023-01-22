@@ -154,7 +154,7 @@ jobs:
           make -j$(nproc)
           make install DESTDIR=${{ env.DESTDIR }}
           cd ..
-      
+
       - name: Build libimobiledevice
         run: |
           cd libimobiledevice
@@ -181,13 +181,13 @@ jobs:
           chmod -x palera1n.debug
 
       - name: Upload palera1n
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: palera1n-${{ matrix.triple }}
           path: src/palera1n
 
       - name: Upload debug symbols
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: palera1n-${{ matrix.triple }}.debug
           path: palera1n.debug
