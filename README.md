@@ -35,7 +35,7 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 - A Linux or macOS computer
 	- Python 3 must be installed.
 	- This must be a **physical computer**. Virtual machines **do not work.**
-	- AMD CPUs have an issue that we currently cannot fix. It is unrecommended that you use them with palera1n.
+	- AMD CPUs have an issue [with (likely) their USB controllers] that causes them to have a very low success rate with checkm8. It is unrecommended that you use them with palera1n.
 		- If your device does not successfully jailbreak, try a computer with an Intel or other CPU
 
 # Warning
