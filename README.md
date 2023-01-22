@@ -30,7 +30,7 @@ This is mainly for ROOTLESS, and is NOT READY. It was made public so you can con
 
 This version of palera1n supports booting rootful setups with the `-f <root device>` option (like `-f disk0s1s8`), but not create them.
 
-Loader app does appear but cannot bootstrap, you may use the SSH server listening at 127.0.0.1:44 (IPv4) or ::1:44 (IPv6).
+Loader app does appear on rootless but cannot bootstrap, you may use the SSH server listening at 127.0.0.1:44 (IPv4) or ::1:44 (IPv6).
 
 The override overlay option does not currently work and will upload a corrupted overlay.
 
