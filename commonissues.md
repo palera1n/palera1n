@@ -7,28 +7,28 @@
 
 -  ## Table of Contents
 
-1. GLIBC not found
-2. "Booted device" but not booted
-3. NewTerm not launching
-4. palera1n/mineek repo not working
-5. Procursus "killed 9"
-6. App crashes on open
-7. "Killed" issue (not "Killed: 9")
-8. Error while loading shared libraries: libssl.so.1.1
-9. Please reinstall Sileo via SSH
-10. How to fix RocketBootstrap
-11. Loader app not appearing **(most common)**
-12. Your local changes would be overwritten by checkout
-13. Could not connect to lockdownd
-14. Package is in a very bad inconsistent state
-15. Error installing bootstrap. Status: -1
-16. jbinit DIED!
-17. Daemons crashing on iOS 16.2+
-18. Panics making loader not appear
-19. libhooker wants to install?
-20. Pressing “install” on each jb (don't do it)
-21. --restorerootfs still keeps app icons??
-22. Device boots out of DFU
+1. [GLIBC not found](#glibc-not-found)
+2. ["Booted device" but not booted](#booted-device-but-not-booted)
+3. [NewTerm not launching](#newterm-not-launching)
+4. [palera1n/mineek repo not working](#palera1n-mineek-repo-not-working)
+5. [Procursus "killed 9"](#procursus-killed-9)
+6. [App crashes on open](#app-crashes-on-open)
+7. ["Killed" issue (not "Killed: 9")](#killed-issue-not-killed-9)
+8. [Error while loading shared libraries: libssl.so.1.1](#error-while-loading-shared-libraries-libssl.so.1.1)
+9. [Please reinstall Sileo via SSH](#please-reinstall-sileo-via-ssh)
+10. [How to fix RocketBootstrap](#how-to-fix-rocketbootstrap)
+11. [Loader app not appearing **(most common)**](#loader-app-not-appearing)
+12. [Your local changes would be overwritten by checkout](#your-local-changes-would-be-overwritten-by-checkout)
+13. [Could not connect to lockdownd](#could-not-connect-to-lockdownd)
+14. [Package is in a very bad inconsistent state](#package-is-in-a-very-bad-inconsistent-state)
+15. [Error installing bootstrap. Status: -1](#error-installing-bootstrap.-status--1)
+16. [jbinit DIED!](#jbinit-died)
+17. [Daemons crashing on iOS 16.2+](#daemons-crashing-on-ios-16.2)
+18. [Panics making loader not appear](#panics-making-loader-not-appear)
+19. [libhooker wants to install?](#libhooker-wants-to-install)
+20. [Pressing “install” on each jb (don't do it)](#pressing-install-on-each-jb)
+21. [--restorerootfs still keeps app icons??](#restorerootfs-still-keeps-app-icons)
+22. [Device boots out of DFU](#device-boots-out-of-dfu)
 
   
 
@@ -39,24 +39,24 @@ Add the universe repo by using the command below:
 
 Then, try again, and it should be fixed.
 
-## "Booted device" but not booted
+## \"Booted device\" but not booted
 This may happen when the downloading and patching process is interrupted. Please run `./palera1n.sh clean` (use with `sudo` if on Linux), then try again.
 If that doesn't fix it, it may be caused by an update from the Procursus repo. The quickest way to fix it is `./palera1n.sh --restorerootfs`. Alternatively, you can manually restore `/usr/libexec/dirs_cleaner` from the rootfs snapshot using the SSHRD script.
 
 ## NewTerm not launching
 Install NewTerm 2 from [https://apt.itsnebula.net/](https://apt.itsnebula.net/ "https://apt.itsnebula.net/") or get NewTerm3 beta.
 
-## palera1n/mineek repo not working
+## palera1n\/mineek repo not working
 [https://repo.palera.in/](https://repo.palera.in/ "https://repo.palera.in/") and [https://mineek.github.io/repo](https://mineek.github.io/repo "https://mineek.github.io/repo") are supposed to be used on rootless jailbreaks, not with jailbreaks with fakefs or tethered that have root access.
 
-## Procursus "killed 9"
+## Procursus \"killed 9\"
 Binaries will need to be resigned by the Procursus Team to fix killed 9, in the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
 
 ## App crashes on open
 - `ldid -s /Applications/<appname>.app`
 	- Don't include the <>
 
-## "Killed" issue (*not* "Killed: 9")
+## \"Killed\" issue \(*not* \"Killed: 9\"\)
 You ran out of RAM on the Linux Live CD.
 
 Ways to fix the issue, ordered by which to try first: 
@@ -136,7 +136,7 @@ You can fix this by running this command in a terminal:
 - `sudo dpkg -r --force-remove-reinstreq <PACKAGE_NAME>`
 	-	Don't include the <>
 
-## Error installing bootstrap. Status: -1
+## Error installing bootstrap. Status: \-1
 You're not jailbroken. Sideloading the loader app on its own **will not work**.
 
 Please run the palera1n script on your computer to jailbreak your device.
@@ -160,7 +160,7 @@ You may be encountering some issue related to panics and the loader “not appea
 
 These repos are not meant to be used with palera1n and are able to break your jailbreak if you install anything from them.
 
-## Pressing “install” on each jb
+## Pressing \"install\" on each jb
 **DO NOT DO THIS.** It will likely break your jailbreak install. Instead, press the gear icon, and then press Do All.
 
 ## --restorerootfs still keeps app icons??
@@ -171,3 +171,7 @@ Example image:
 
 ## Device boots out of DFU
 Make sure to use a USB-A cable, and enter recovery mode first before entering DFU (you can use `./palera1n.sh dfuhelper` for this - use `sudo` if on Linux).
+
+<br>
+
+### If none of these solve your issue, please join the [Discord server](https://dsc.gg/palera1n).
