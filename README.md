@@ -93,7 +93,7 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
     - Work on jbinit, together with [Nick Chan](https://github.com/asdfugil)
 - [Amy](https://github.com/elihwyma) for the [Pogo](https://github.com/elihwyma/Pogo) app
 - [checkra1n](https://github.com/checkra1n) for the base of the kpf
-- [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
+- [nyuszika7h](https://github.com/nyuszika7h) and [Vadim Yegorov](https://github.com/vadim-a-yegorov) for the script to help get into DFU
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing [bootstrap](https://github.com/ProcursusTeam/Procursus)
 - [F121](https://github.com/F121Live) for helping test
 - [m1sta](https://github.com/m1stadev) for [pyimg4](https://github.com/m1stadev/PyIMG4)
