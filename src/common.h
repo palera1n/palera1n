@@ -23,6 +23,7 @@ typedef enum {
 	LOG_VERBOSE2 = 5,
 	LOG_VERBOSE3 = 6,
 	LOG_VERBOSE4 = 7,
+	LOG_VERBOSE5 = 8,
 } log_level_t;
 
 typedef struct {

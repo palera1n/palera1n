@@ -67,7 +67,8 @@ int demote = 0;
 bool ohio = true;
 char xargs_cmd[0x270] = "xargs serial=3 wdt=-1";
 char checkrain_flags_cmd[0x20] = "checkra1n_flags 0x0";
-char palerain_flags_cmd[0x20] = "checkra1n_flags 0x0";
+char palerain_flags_cmd[0x20] = "palera1n_flags 0x0";
+char kpf_flags_cmd[0x20] = "kpf_flags 0x0";
 char dtpatch_cmd[0x20] = "dtpatch md0";
 char rootfs_cmd[512];
 extern char** environ;
@@ -78,6 +79,7 @@ override_file_t override_overlay;
 
 uint32_t checkrain_flags = 0;
 uint32_t palerain_flags = 0;
+uint32_t kpf_flags = 0;
 
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char *__restrict format, ...)
 {
@@ -128,7 +130,7 @@ void *pongo_usb_callback(void *arg)
 	issue_pongo_command(handle, "sep auto");
 	upload_pongo_file(handle, checkra1n_kpf_pongo, checkra1n_kpf_pongo_len);
 	issue_pongo_command(handle, "modload");
-	issue_pongo_command(handle, "kpf_flags 0x00000000");
+	issue_pongo_command(handle, kpf_flags_cmd);
 	issue_pongo_command(handle, checkrain_flags_cmd);
 	issue_pongo_command(handle, palerain_flags_cmd);
 	if (enable_rootful)
@@ -154,7 +156,8 @@ static struct option longopts[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
 	{"start-from-pongo", no_argument, NULL, 'P'},
-	{"debug-logging", no_argument, NULL, 'V'},
+	{"debug-logging", no_argument, NULL, 'v'},
+	{"verbose-boot", no_argument, NULL, 'V'},
 	{"boot-args", required_argument, NULL, 'e'},
 	{"rootfs", required_argument, NULL, 'f'},
 	{"rootless", no_argument, NULL, 'l'},
@@ -172,7 +175,7 @@ static struct option longopts[] = {
 int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
-			"Usage: %s [-DhpPvldsO] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			"Usage: %s [-DhpPvVldsO] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -183,6 +186,7 @@ int usage(int e, char* prog_name)
 			"\t-P, --start-from-pongo\t\t\tStart with a PongoOS USB Device attached\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
+			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
 			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n"
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
@@ -265,7 +269,7 @@ int main(int argc, char *argv[])
 	if (build_checks()) return -1;
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPvldseO:f:o:r:K:k:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpPvVldsOe:f:o:r:K:k:", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -283,6 +287,9 @@ int main(int argc, char *argv[])
 			assert(0);
 		case 'v':
 			verbose++;
+			break;
+		case 'V':
+			kpf_flags |= checkrain_option_verbose_boot;
 			break;
 		case 'e':
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
@@ -333,6 +340,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'O':
 			ohio = false;
+			break;
 		case checkrain_option_force_revert:
 			checkrain_flags |= checkrain_option_force_revert;
 			break;
@@ -356,8 +364,10 @@ int main(int argc, char *argv[])
 
 	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);
 	snprintf(palerain_flags_cmd, 0x20, "palera1n_flags 0x%x", palerain_flags);
-	LOG(LOG_VERBOSE2, "checkrain_flags: %s\n", checkrain_flags_cmd);
-	LOG(LOG_VERBOSE2, "palerain_flags: %s\n", palerain_flags_cmd);
+	snprintf(kpf_flags_cmd, 0x20, "kpf_flags 0x%x", kpf_flags);
+	LOG(LOG_VERBOSE3, "checkrain_flags: %s\n", checkrain_flags_cmd);
+	LOG(LOG_VERBOSE3, "palerain_flags: %s\n", palerain_flags_cmd);
+	LOG(LOG_VERBOSE3, "kpf_flags: %s\n", kpf_flags_cmd);
 	LOG(LOG_VERBOSE4, "binpack_dmg @ %p", binpack_dmg);
 	LOG(LOG_VERBOSE4, "ramdisk_dmg @ %p", ramdisk_dmg);
 	LOG(LOG_VERBOSE4, "checkra1n_kpf_pongo @ %p", checkra1n_kpf_pongo);
@@ -377,13 +387,17 @@ int main(int argc, char *argv[])
 			usage(1, argv[0]);
 		}
 	}
+	if (verbose >= 2) putenv("LIBUSB_DEBUG=1");
 	if (verbose >= 3)
 	{
 		irecv_set_debug_level(1);
+		putenv("LIBUSB_DEBUG=2");
+	}
+	if (verbose >= 4) {
 		idevice_set_debug_level(1);
 		putenv("LIBUSB_DEBUG=3");
 	}
-	if (verbose >= 4)
+	if (verbose >= 5)
 		putenv("LIBUSB_DEBUG=4");
 	if (start_from_pongo == true)
 		goto pongo;
