@@ -128,7 +128,7 @@ struct stuff
     usb_device_handle_t handle;
 };
 
-static int FoundDevice(libusb_context __unused *ctx, libusb_device *dev, libusb_hotplug_event __unused event, void *arg)
+static int FoundDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event, void *arg)
 {
     LOG(LOG_VERBOSE, "PongoOS USB Device connected\n");
     stuff_t *stuff = arg;
@@ -176,7 +176,7 @@ static int FoundDevice(libusb_context __unused *ctx, libusb_device *dev, libusb_
     return LIBUSB_SUCCESS;
 }
 
-static int LostDevice(libusb_context __unused *ctx, libusb_device *dev, libusb_hotplug_event __unused event, void *arg)
+static int LostDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event, void *arg)
 {
     LOG(LOG_VERBOSE, "PongoOS USB Device disconnected");
     stuff_t *stuff = arg;

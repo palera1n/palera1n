@@ -230,7 +230,7 @@ int enter_recovery_cmd(const char* udid) {
 
 int reboot_cmd(const char* udid) {
 	idevice_t device = NULL;
-	lockdownd_client_t __unused lockdown = NULL;
+	lockdownd_client_t lockdown = NULL;
 	if (idevice_new(&device, udid) != IDEVICE_E_SUCCESS) {
 		LOG(LOG_ERROR, "Could not connect to device");
 		return -1;
