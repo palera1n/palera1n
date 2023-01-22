@@ -77,7 +77,7 @@ typedef unsigned char niarelap_file_t[];
 
 niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;
 niarelap_file_t* ramdisk_to_upload_1 = &ramdisk_dmg;
-niarelap_file_t* overlay_to_upload_1 = &ramdisk_dmg;
+niarelap_file_t* overlay_to_upload_1 = &binpack_dmg;
 
 niarelap_file_t** kpf_to_upload = &kpf_to_upload_1;
 niarelap_file_t** ramdisk_to_upload = &ramdisk_to_upload_1;
