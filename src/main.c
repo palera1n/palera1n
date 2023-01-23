@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <spawn.h>
 #include <sys/mman.h>
+#include <time.h>
 
 #include <libimobiledevice/libimobiledevice.h>
 
@@ -94,36 +95,61 @@ uint32_t kpf_flags = 0;
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char *__restrict format, ...)
 {
 	int ret = 0;
+	char type[0x10];
+	char colour[0x10];
+	char colour_bold[0x10];
 	va_list args;
 	va_start(args, format);
-	if (verbose >= 2 && verbose >= (loglevel - 3))
-		printf(BLU "%s:%d: " BMAG "%s(): \n--> " WHT, fname, lineno, fxname);
-	switch (loglevel)
-	{
+	if (verbose < (loglevel - 3)) return 0;
+	switch (loglevel) {
 	case LOG_FATAL:
-		printf(BRED "[!] " RED);
+		snprintf(type, 0x10, "%s", "!");
+		snprintf(colour, 0x10, "%s", RED);
+		snprintf(colour_bold, 0x10, "%s", BRED);
 		break;
 	case LOG_ERROR:
-		printf(BRED "[Error] " RED);
+		snprintf(type, 0x10, "%s", "Error");
+		snprintf(colour, 0x10, "%s", RED);
+		snprintf(colour_bold, 0x10, "%s", BRED);
 		break;
 	case LOG_WARNING:
-		printf(BYEL "[Warning] " YEL);
+		snprintf(type, 0x10, "%s", "Warning");
+		snprintf(colour, 0x10, "%s", YEL);
+		snprintf(colour_bold, 0x10, "%s", BYEL);
 		break;
 	case LOG_INFO:
-		printf(BCYN "[Info] " CYN);
+		snprintf(type, 0x10, "%s", "Info");
+		snprintf(colour, 0x10, "%s", CYN);
+		snprintf(colour_bold, 0x10, "%s", BCYN);
 		break;
 	default:
 		assert(loglevel >= 0);
-		if (verbose >= (loglevel - 3))
-			printf(BWHT "[Verbose] " WHT);
+		snprintf(type, 0x10, "%s", "Verbose");
+		snprintf(colour, 0x10, "%s", WHT);
+		snprintf(colour_bold, 0x10, "%s", BWHT);
 		break;
 	}
-	if (verbose >= (loglevel - 3) || loglevel < LOG_VERBOSE)
-	{
-		ret = vprintf(format, args);
-		va_end(args);
-		printf(CRESET "\n");
+	char timestring[0x80];
+	time_t curtime;
+	time(&curtime);
+	struct tm* timeinfo = localtime(&curtime);
+	snprintf(timestring, 0x80, "%s[%s%02d/%02d/%d %02d:%02d:%02d%s]", CRESET, HBLK, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_year - 100, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, CRESET);
+	if (verbose >= 2) {
+		printf("%s| - %s%s <%s> " CRESET "%s" HBLU "%s" CRESET ":" BLU "%d" CRESET ":" BMAG "%s()" CRESET ": \n%s| ----> ", colour_bold, timestring, colour_bold, type, WHT, fname, lineno, fxname, colour_bold);
+	} else {
+		printf(" - %s %s<%s>: %s", timestring, colour_bold, type, CRESET);
 	}
+	printf("%s", colour);
+	ret = vprintf(format, args);
+	va_end(args);
+	
+	if (verbose < 2)
+		printf(CRESET "\n");
+	else {
+		printf("\n%s-%s\n", colour, CRESET);
+	}
+
+	fflush(stdout);
 	return ret;
 }
 
@@ -220,14 +246,14 @@ int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *
 	int fd = open(filename, O_RDONLY);
 	if (fd == -1)
 	{
-		LOG(LOG_ERROR, "Cannot open file %s: %d (%s)\n", filename, errno, strerror(errno));
+		LOG(LOG_ERROR, "Cannot open file %s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
 	struct stat st;
 	ret = fstat(fd, &st);
 	if (ret)
 	{
-		LOG(LOG_ERROR, "Cannot fstat fd from file %s: %d (%s)\n", filename, errno, strerror(errno));
+		LOG(LOG_ERROR, "Cannot fstat fd from file %s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
 	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
@@ -330,7 +356,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'k':
 			if (access(optarg, F_OK) != 0) {
-				LOG(LOG_FATAL, "Cannot access pongo file at %s: %d (%s)\n", optarg, errno, strerror(errno));
+				LOG(LOG_FATAL, "Cannot access pongo file at %s: %d (%s)", optarg, errno, strerror(errno));
 				return -1;
 			}
 			pongo_path = malloc(strlen(optarg) + 1);
@@ -385,20 +411,20 @@ int main(int argc, char *argv[])
 	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);
 	snprintf(palerain_flags_cmd, 0x20, "palera1n_flags 0x%x", palerain_flags);
 	snprintf(kpf_flags_cmd, 0x20, "kpf_flags 0x%x", kpf_flags);
-	LOG(LOG_VERBOSE3, "checkrain_flags: %s\n", checkrain_flags_cmd);
-	LOG(LOG_VERBOSE3, "palerain_flags: %s\n", palerain_flags_cmd);
-	LOG(LOG_VERBOSE3, "kpf_flags: %s\n", kpf_flags_cmd);
+	LOG(LOG_VERBOSE3, "checkrain_flags: %s", checkrain_flags_cmd);
+	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);
+	LOG(LOG_VERBOSE3, "kpf_flags: %s", kpf_flags_cmd);
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "kpf override length %u -> %u\n", override_kpf.orig_len, checkra1n_kpf_pongo_len);
-		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p\n", override_kpf.orig_ptr, **kpf_to_upload);
+		LOG(LOG_VERBOSE4, "kpf override length %u -> %u", override_kpf.orig_len, checkra1n_kpf_pongo_len);
+		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p", override_kpf.orig_ptr, **kpf_to_upload);
 	}
 	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u\n", override_ramdisk.orig_len, ramdisk_dmg_len);
-		LOG(LOG_VERBOSE4, "ramdisk override ptr %p -> %p\n", override_ramdisk.orig_ptr, **ramdisk_to_upload);
+		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u", override_ramdisk.orig_len, ramdisk_dmg_len);
+		LOG(LOG_VERBOSE4, "ramdisk override ptr %p -> %p", override_ramdisk.orig_ptr, **ramdisk_to_upload);
 	}
 	if (override_overlay.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "overlay override length %u -> %u\n", override_overlay.orig_len, binpack_dmg_len);
-		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p\n", override_overlay.orig_ptr, **overlay_to_upload);
+		LOG(LOG_VERBOSE4, "overlay override length %u -> %u", override_overlay.orig_len, binpack_dmg_len);
+		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
 	}
 
 	for (index = optind; index < argc; index++)

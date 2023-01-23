@@ -102,7 +102,6 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		step(4, 2, "Hold Volume Down + Side button", NULL, 0);
 	else
 		step(4, 2, "Hold Home + Power Button", NULL, 0);
-	
 	ret = exitrecv_cmd(info->ecid);
 	if (ret) {
 		LOG(LOG_ERROR, "Cannot exit recovery mode");

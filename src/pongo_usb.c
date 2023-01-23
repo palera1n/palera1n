@@ -130,7 +130,7 @@ struct stuff
 
 static int FoundDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event, void *arg)
 {
-    LOG(LOG_VERBOSE, "PongoOS USB Device connected\n");
+    LOG(LOG_VERBOSE, "PongoOS USB Device connected");
     stuff_t *stuff = arg;
     if(stuff->handle)
     {

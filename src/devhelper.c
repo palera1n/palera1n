@@ -266,14 +266,14 @@ int passstat_cmd(char* status, const char* udid) {
 
 	if (idevice_new(&dev, udid) != IDEVICE_E_SUCCESS)
 	{
-		LOG(LOG_ERROR, "Error detecting device type\n");
+		LOG(LOG_ERROR, "Error detecting device type");
 		return -1;
 	}
 	lerr = lockdownd_client_new_with_handshake(dev, &lockdown, "idevicediagnostics");
 	if ((lerr != LOCKDOWN_E_SUCCESS) || !lockdown)
 	{
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error connecting to lockdownd (lockdownd error %d)\n", lerr);
+		LOG(LOG_ERROR, "Error connecting to lockdownd (lockdownd error %d)", lerr);
 		return -1;
 	}
 	lerr = lockdownd_start_service(lockdown, "com.apple.mobile.diagnostics_relay", &service);
@@ -284,7 +284,7 @@ int passstat_cmd(char* status, const char* udid) {
 	if ((lerr != LOCKDOWN_E_SUCCESS) || !service)
 	{
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error starting diagnostics service (lockdownd error %d)\nUnlock the device and try again.\n", lerr);
+		LOG(LOG_ERROR, "Error starting diagnostics service (lockdownd error %d)\nUnlock the device and try again.", lerr);
 		return -1;
 	}
 	derr = diagnostics_relay_client_new(dev, service, &diagnostics_client);
@@ -292,7 +292,7 @@ int passstat_cmd(char* status, const char* udid) {
 	{
 		lockdownd_service_descriptor_free(service);
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error starting diagnostics client (lockdownd error %d)\n", derr);
+		LOG(LOG_ERROR, "Error starting diagnostics client (lockdownd error %d)", derr);
 		return -1;
 	}
 	keys = plist_new_array();
@@ -313,7 +313,7 @@ int passstat_cmd(char* status, const char* udid) {
 	if (!status_node)
 	{
 		plist_free(node);
-		LOG(LOG_ERROR, "Error getting passcode state (invalid status node)\n");
+		LOG(LOG_ERROR, "Error getting passcode state (invalid status node)");
 		return -1;
 	}
 	plist_get_string_val(status_node, &status);
@@ -332,7 +332,7 @@ int passstat_cmd(char* status, const char* udid) {
 	if (!value_node)
 	{
 		plist_free(node);
-		LOG(LOG_ERROR, "Error getting passcode state (invalid value node)\n");
+		LOG(LOG_ERROR, "Error getting passcode state (invalid value node)");
 		return -1;
 	}
 	uint8_t passcode_state = 2;
