@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pushd $(dirname "$0")
+pushd $(dirname "$0") &> /dev/null
 
 mkdir -p logs
 set -e 
@@ -21,6 +21,7 @@ gum style \
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
+network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
@@ -263,6 +264,7 @@ _wait() {
     fi
 }
 
+dfuhelper_first_try=true
 _dfuhelper() {
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
@@ -271,8 +273,11 @@ _dfuhelper() {
     else
         step_one="Hold home + power button"
     fi
-    echo "[*] Press any key when ready for DFU mode"
-    read -n 1 -s
+    if $dfuhelper_first_try; then
+        echo "[*] Press any key when ready for DFU mode"
+        read -n 1 -s
+        dfuhelper_first_try=false
+    fi
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
@@ -287,20 +292,46 @@ _dfuhelper() {
     
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device entered DFU!"
+        dfuhelper_first_try=true
     else
-        echo "[-] Device did not enter DFU mode, rerun the script and try again"
+        echo "[-] Device did not enter DFU mode"
         return -1
+    fi
+}
+
+function _wait_for() {
+    timeout=$1
+    shift 1
+    until [ $timeout -eq 0 ] || ("$@" &> /dev/null); do
+        sleep 1
+        timeout=$(( timeout - 1 ))
+    done
+    if [ $timeout -eq 0 ]; then
+        return -1
+    fi
+}
+
+function _network() {
+    ping -q -c 1 -W 1 static.palera.in &>/dev/null
+}
+
+function _check_network_connection() {
+    if ! _network; then
+        echo "[*] Waiting for network"
+        if ! _wait_for $network_timeout _network; then
+            echo "[-] Network is unreachable. Check your connection and try again"
+            exit 1
+        fi
     fi
 }
 
 _kill_if_running() {
     if (pgrep -u root -x "$1" &> /dev/null > /dev/null); then
         # yes, it's running as root. kill it
-        sudo killall $1
+        sudo killall $1 &> /dev/null
     else
         if (pgrep -x "$1" &> /dev/null > /dev/null); then
-            killall -q $1
-            sudo killall -q $1
+            killall $1 &> /dev/null
         fi
     fi
 }
@@ -322,6 +353,21 @@ trap _exit_handler EXIT
 # ===========
 # Fixes
 # ===========
+
+# ============
+# Start
+# ============
+
+gum format -- "## palera1n | Version $version-$branch-$commit"
+gum format -- "## Made with $(gum format -t emoji ":heart: by")" "- Nebula" "- Mineek" "- Nathan" "- llsc12" "- Ploosh" "- Nick Chan" "- Oliver Tzeng" "- and charmbracelet"
+echo ""
+
+version=""
+parse_cmdline "$@"
+
+if [ "$debug" = "1" ]; then
+    set -o xtrace
+fi
 
 # ============
 # Dependencies
@@ -348,6 +394,9 @@ if [ -e "$dir"/gaster ]; then
 fi
 
 if [ ! -e "$dir"/gaster ]; then
+    echo '[-] gaster not installed. Press any key to install it, or press ctrl + c to cancel'
+    read -n 1 -s
+    _check_network_connection
     curl -sLO https://static.palera.in/deps/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
@@ -358,6 +407,7 @@ fi
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
     echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
     read -n 1 -s
+    _check_network_connection
     python3 -m pip install pyimg4
 fi
 
@@ -380,21 +430,6 @@ chmod +x "$dir"/*
 #if [ "$os" = 'Darwin' ]; then
 #    xattr -d com.apple.quarantine "$dir"/*
 #fi
-
-# ============
-# Start
-# ============
-
-echo "palera1n | Version $version-$branch-$commit"
-echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan"
-echo ""
-
-version=""
-parse_cmdline "$@"
-
-if [ "$debug" = "1" ]; then
-    set -o xtrace
-fi
 
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
@@ -435,97 +470,114 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
     fi
 fi
 
-# Get device's iOS version from ideviceinfo if in normal mode
-echo "[*] Waiting for devices"
-while [ "$(get_device_mode)" = "none" ]; do
-    sleep 1;
-done
-echo $(echo "[*] Detected $(get_device_mode) mode device" | sed 's/dfu/DFU/')
+function _wait_for_device() {
+    # Get device's iOS version from ideviceinfo if in normal mode
+    echo "[*] Waiting for devices"
+    while [ "$(get_device_mode)" = "none" ]; do
+        sleep 1;
+    done
+    echo $(echo "[*] Detected $(get_device_mode) mode device" | sed 's/dfu/DFU/')
 
-if grep -E 'pongo|checkra1n_stage2|diag' <<< "$(get_device_mode)"; then
-    echo "[-] Detected device in unsupported mode '$(get_device_mode)'"
-    exit 1;
-fi
+    if grep -E 'pongo|checkra1n_stage2|diag' <<< "$(get_device_mode)"; then
+        echo "[-] Detected device in unsupported mode '$(get_device_mode)'"
+        exit 1;
+    fi
 
-if [ "$(get_device_mode)" != "normal" ] && [ -z "$version" ] && [ "$dfuhelper" != "1" ]; then
-    echo "[-] You must pass the version your device is on when not starting from normal mode"
-    exit
-fi
+    if [ "$(get_device_mode)" != "normal" ] && [ -z "$version" ] && [ "$dfuhelper" != "1" ]; then
+        echo "[-] You must pass the version your device is on when not starting from normal mode"
+        exit
+    fi
 
-if [ "$(get_device_mode)" = "ramdisk" ]; then
-    echo "[*] Rebooting device in SSH Ramdisk"
-    sleep 2
-    remote_cmd "/usr/sbin/nvram auto-boot=false"
-    remote_cmd "/sbin/reboot"
-    _wait recovery
-fi
+    if [ "$(get_device_mode)" = "ramdisk" ]; then
+        # If a device is in ramdisk mode, perhaps iproxy is still running?
+        _kill_if_running iproxy
+        echo "[*] Rebooting device in SSH Ramdisk"
+        if [ "$os" = 'Linux' ]; then
+            sudo "$dir"/iproxy 6413 22 &
+        else
+            "$dir"/iproxy 6413 22 &
+        fi
+        sleep 2
+        remote_cmd "/usr/sbin/nvram auto-boot=false"
+        remote_cmd "/sbin/reboot"
+        _kill_if_running iproxy
+        _wait recovery
+    fi
 
-if [ "$(get_device_mode)" = "normal" ]; then
-    version=${version:-$(_info normal ProductVersion)}
-    arch=$(_info normal CPUArchitecture)
-    if [ "$arch" = "arm64e" ]; then
+    if [ "$(get_device_mode)" = "normal" ]; then
+        version=${version:-$(_info normal ProductVersion)}
+        arch=$(_info normal CPUArchitecture)
+        if [ "$arch" = "arm64e" ]; then
+            echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
+            exit
+        fi
+        echo "Hello, $(_info normal ProductType) on $version!"
+
+        echo "[*] Switching device into recovery mode..."
+        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+        _wait recovery
+    fi
+
+    # Grab more info
+    echo "[*] Getting device info..."
+    cpid=$(_info recovery CPID)
+    model=$(_info recovery MODEL)
+    deviceid=$(_info recovery PRODUCT)
+
+    if (( 0x8020 <= cpid )) && (( cpid < 0x8720 )); then
         echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
         exit
     fi
-    echo "Hello, $(_info normal ProductType) on $version!"
 
-    echo "[*] Switching device into recovery mode..."
-    "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
-    _wait recovery
-fi
+    if [ "$dfuhelper" = "1" ]; then
+        echo "[*] Running DFU helper"
+        _dfuhelper "$cpid" || {
+            echo "[-] Failed to enter DFU mode, trying again"
+            sleep 3
+            _wait_for_device
+        }
+        exit
+    fi
 
-# Grab more info
-echo "[*] Getting device info..."
-cpid=$(_info recovery CPID)
-model=$(_info recovery MODEL)
-deviceid=$(_info recovery PRODUCT)
-
-if (( 0x8020 <= cpid )) && (( cpid < 0x8720 )); then
-    echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
-    exit
-fi
-
-if [ "$dfuhelper" = "1" ]; then
-    echo "[*] Running DFU helper"
-    _dfuhelper "$cpid"
-    exit
-fi
-
-if [ ! "$ipsw" = "" ]; then
-    ipswurl=$ipsw
-else
-    #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        device_os=iPadOS
-        device=iPad
-    elif [[ "$deviceid" == *"iPod"* ]]; then
-        device_os=iOS
-        device=iPod
+    if [ ! "$ipsw" = "" ]; then
+        ipswurl=$ipsw
     else
-        device_os=iOS
-        device=iPhone
+        #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
+        if [[ "$deviceid" == *"iPad"* ]]; then
+            device_os=iPadOS
+            device=iPad
+        elif [[ "$deviceid" == *"iPod"* ]]; then
+            device_os=iOS
+            device=iPod
+        else
+            device_os=iOS
+            device=iPhone
+        fi
+
+        _check_network_connection
+        buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
+        if [ "$buildid" == "19B75" ]; then
+            buildid=19B74
+        fi
+        ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
     fi
 
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
-    if [ "$buildid" == "19B75" ]; then
-        buildid=19B74
+    if [ "$restorerootfs" = "1" ]; then
+        rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
     fi
-    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
-fi
 
-if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
-fi
-
-# Have the user put the device into DFU
-if [ "$(get_device_mode)" != "dfu" ]; then
-    recovery_fix_auto_boot;
-    _dfuhelper "$cpid" || {
-        echo "[-] failed to enter DFU mode, run palera1n.sh again"
-        exit -1
-    }
-fi
-sleep 2
+    # Have the user put the device into DFU
+    if [ "$(get_device_mode)" != "dfu" ]; then
+        recovery_fix_auto_boot;
+        _dfuhelper "$cpid" || {
+            echo "[-] Failed to enter DFU mode, trying again"
+            sleep 3
+            _wait_for_device
+        }
+    fi
+    sleep 2
+}
+_wait_for_device
 
 # ============
 # Ramdisk
@@ -673,6 +725,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     fi
     sleep 1
 
+    # Checking network connection before downloads
+    _check_network_connection
+
     # download the kernel
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$ipswurl"
@@ -769,9 +824,13 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         remote_cmd "mkdir -p /mnt$di/jbin/binpack /mnt$di/jbin/loader.app"
         sleep 1
 
+        # Checking network connection before downloads
+        _check_network_connection
+
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
+        echo "[*] Downloading loader"
         curl -LO https://static.palera.in/deps/loader.zip
         unzip loader.zip -d .
         unzip palera1n.ipa -d .
@@ -780,6 +839,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
+        echo "[*] Downloading jbinit files"
         curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
@@ -788,6 +848,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
         # download binpack
         mkdir -p other/rootfs/jbin/binpack
+        echo "[*] Downloading binpack"
         curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
 
         sleep 1
@@ -832,7 +893,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     fi
     _wait recovery
-    _dfuhelper "$cpid"
+    _dfuhelper "$cpid" || {
+        echo "[-] Failed to enter DFU mode, trying again"
+        sleep 3
+        _wait_for_device
+    }
     sleep 2
 fi
 
@@ -873,6 +938,9 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     #echo "[*] Converting blob"
     #"$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
+
+    # Checking network connection before downloads
+    _check_network_connection
 
     # Do payload if on iPhone 7-X
     if [[ "$deviceid" == iPhone9,[1-4] ]] || [[ "$deviceid" == "iPhone10,"* ]]; then
@@ -1017,4 +1085,4 @@ DISCORD_ENJOY=$(gum join "$DISCORD" "$ENJOY")
 gum join --align center --vertical "$DONE_UNLOCK" "$FIRST_ISSUE" "$DISCORD_ENJOY"
 } 2>&1 | tee logs/${log}
 
-popd
+popd &> /dev/null
