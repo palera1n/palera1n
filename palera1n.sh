@@ -446,17 +446,18 @@ if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
 fi
 
 if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ] && [ -z "$restorerootfs" ]; then
-    echo "!!! WARNING WARNING WARNING !!!"
-    echo "This flag will add tweak support BUT WILL BE TETHERED."
-    echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
-    echo "THIS WORKS ON 15.0-16.2"
-    echo "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
-    echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say' TO CONTINUE"
-    read -r answer
-    if [ "$answer" = 'Yes, do as I say' ]; then
-        echo "Are you REALLY sure? WE WARNED YOU!"
-        echo "Type 'Yes, I am sure' to continue"
-        read -r answer
+	# Displaying warnings with boxes is more noticed right?
+	gum style \
+        --foreground 178 --border-foreground 178 --border double \
+        --align center --width 50 --margin "1 2" --padding "2 4" \
+        '!!! WARNING WARNING WARNING !!!' "This flag will add tweak support BUT WILL BE TETHERED." "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT." "THIS WORKS ON 15.0-16.2" "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT" "AND WE WARNED YOU" "DO YOU UNDERSTAND?" "TYPE $(gum style --foreground 226 'Yes, do as I say')" "TO CONTINUE"
+	answer=$(gum input --placeholder 'Yes, do as I say')
+	if [ "$answer" = 'Yes, do as I say' ]; then
+        gum style \
+            --foreground 9 --border-foreground 9 --border double \
+            --align center --width 50 --margin "1 2" --padding "2 4" \
+            "Are you REALLY sure? WE WARNED YOU" "Type $(gum style --foreground 1 'Yes, I am sure')" "to continue"
+		answer=$(gum input --placeholder 'Yes, I am sure')
         if [ "$answer" = 'Yes, I am sure' ]; then
             echo "[*] Enabling tweaks"
             tweaks=1
@@ -827,7 +828,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
         # Checking network connection before downloads
         _check_network_connection
-
+		
+DownloadLoader () {
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
@@ -837,7 +839,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
-        
+}
+
+DownloadJbinit () {       
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
         echo "[*] Downloading jbinit files"
@@ -846,13 +850,19 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip
         cd ../../..
+}
 
+DownloadBinpack () {       
         # download binpack
         mkdir -p other/rootfs/jbin/binpack
         echo "[*] Downloading binpack"
         curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
-
-        sleep 1
+}
+        # Loading...
+        gum spin --spinner dot --title "Downloading Loader..." -- DownloadLoader
+        gum spin --spinner line --title "Downloading JBinit Files..." -- DownloadJbinit
+		gum spin --spinner pulse --title "Downloading Binpack..." -- DownloadBinpack
+		sleep 1
         remote_cp -r other/rootfs/* root@localhost:/mnt$di
         {
             echo "{"
@@ -876,7 +886,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     rm .rd_in_progress
 
     sleep 2
-    echo "[*] Phase 1 done! Rebooting your device (if it doesn't reboot, you may force reboot)"
+    clear
+    gum style \
+        --foreground 212 --border-foreground 212 --border double \
+        --align center --width 50 --margin "1 2" --padding "2 4" \
+        "Phase 1 done! Rebooting your device" "If it doesn't reboot, you may force reboot"
     remote_cmd "/sbin/reboot"
     sleep 1
 
@@ -1072,6 +1086,8 @@ if [ -d "logs" ]; then
 fi
 
 rm -rf work rdwork
+
+# Displaying gum with some blocks
 clear
 DONE=$(gum style --height 5 --width 25 --padding '1 3' --border double --border-foreground 57  "Done!" "The device should now boot to $(gum style --foreground 212 "iOS")")
 UNLOCK=$(gum style --width 25 --padding '1 3' --border double --border-foreground 212 "When you unlock the device, it will respring about $(gum style --foreground "#04B575" "30 seconds") later.")

@@ -1,6 +1,6 @@
-Flags,Jailbreak Modes,Description
---semi-tethered --tweaks,Normal Mode,Normal people will do this flag
---restorerootfs,Restore RootFS,Remove the jailbreak
---dfuhelper,DFU Helper,Helps devices to go into DFU mode (especially for A11)
-clean,Clean Boot Files,This mode doesn't require iOS version later on (it'll still ask you))
+Flags,Modes,Description
 --help,Help,Need help?
+--semi-tethered --tweaks,Jailbreak,JB your device
+--restorerootfs,Restore RootFS,Remove the JB
+dfuhelper,DFU Helper,Goto DFU (especially for A11)
+clean,Clean,Clean boot files
