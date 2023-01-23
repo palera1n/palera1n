@@ -108,4 +108,6 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 - [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute)
 - [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.
 - [Oliver Tzeng](https://github.com/olivertzeng) for helping with improving the script with gum
+
 - [charmbracelet](https://github.com/charmbracelet)for the gum library
+
