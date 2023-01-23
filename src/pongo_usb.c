@@ -338,7 +338,11 @@ int issue_pongo_command(usb_device_handle_t handle, char *command)
 		LOG(LOG_ERROR, "Pongo command %s too long (max %d)", command, CMD_LEN_MAX - 2);
 		return EINVAL;
 	}
-	LOG(LOG_VERBOSE, "Executing PongoOS command: '%s'", command);
+    if (verbose < 3 || verbose > 4) {
+	    LOG(LOG_VERBOSE, "Executing PongoOS command: '%s'", command);
+    } else {
+        printf("%s\n", command);
+    }
 	snprintf(command_buf, 512, "%s\n", command);
 	len = strlen(command_buf);
 	ret = USBControlTransfer(handle, 0x21, 4, 1, 0, 0, NULL, NULL);
