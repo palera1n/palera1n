@@ -55,8 +55,10 @@
 
 // palera1n option
 #define palerain_option_rootful             (1 << 0)
+#define palerain_option_jbinit_log_to_file  (1 << 1)
 
 #define PALEINFO_MAGIC 'PLSH'
+#define PALEINFO_CIGAM 'HSLP'
 
 typedef uint32_t checkrain_option_t, *checkrain_option_p;
 

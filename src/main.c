@@ -171,6 +171,7 @@ static struct option longopts[] = {
 	{"boot-args", required_argument, NULL, 'e'},
 	{"rootfs", required_argument, NULL, 'f'},
 	{"rootless", no_argument, NULL, 'l'},
+	{"jbinit-log-to-file", no_argument, NULL, 'L'},
 	{"demote", no_argument, NULL, 'd'},
 	{"force-revert", no_argument, NULL, checkrain_option_force_revert},
 	{"safe-mode", no_argument, NULL, 's'},
@@ -185,7 +186,7 @@ static struct option longopts[] = {
 int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
-			"Usage: %s [-DhpPvVldsO] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			"Usage: %s [-DhpPvVldsOL] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -197,6 +198,7 @@ int usage(int e, char* prog_name)
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
+			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
 			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n"
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
@@ -279,7 +281,7 @@ int main(int argc, char *argv[])
 	if (build_checks()) return -1;
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPvVldsOe:f:o:r:K:k:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpPvVldsOLe:f:o:r:K:k:", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -311,6 +313,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'l':
 			enable_rootful = 0;
+			break;
+		case 'L':
+			palerain_flags |= palerain_option_jbinit_log_to_file;
 			break;
 		case 'd':
 			demote = 1;
