@@ -325,6 +325,10 @@ static void write_stdout(char *buf, uint32_t len)
 
 int issue_pongo_command(usb_device_handle_t handle, char *command)
 {
+    uint32_t outpos = 0;
+    uint32_t outlen = 0;
+	uint8_t in_progress = 1;
+    if (command == NULL) goto fetch_output;
 	int ret;
 	size_t len = strlen(command);
 	char command_buf[512];
@@ -341,9 +345,7 @@ int issue_pongo_command(usb_device_handle_t handle, char *command)
 	if (ret)
 		goto bad;
 	ret = USBControlTransfer(handle, 0x21, 3, 0, 0, (uint32_t)len, command_buf, NULL);
-	uint32_t outpos = 0;
-    uint32_t outlen = 0;
-	uint8_t in_progress = 1;
+fetch_output:
 	while (in_progress) {
 		ret = USBControlTransfer(handle, 0xa1, 2, 0, 0, (uint32_t)sizeof(in_progress), &in_progress, NULL);
 		if (ret == USB_RET_SUCCESS)
@@ -370,7 +372,7 @@ bad:
 	{
 		if (ret == USB_RET_NOT_RESPONDING)
 			return 0;
-        if (!strncmp("boot", command, 4) && ret == USB_RET_IO)
+        if (command != NULL && (!strncmp("boot", command, 4) && ret == USB_RET_IO))
             return 0;
 		LOG(LOG_ERROR, "USB error: %s", usb_strerror(ret));
 		return ret;

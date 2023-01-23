@@ -4,19 +4,20 @@
 
 <p align="center">
   <a href="#">
-    <img src="https://img.shields.io/badge/made%20with-love-E760A4.svg" alt="Made with love">
+    <img src="https://img.shields.io/badge/made%20with-love-E760A4.svg" alt="Made with love"></img>
   </a>
   <a href="https://github.com/palera1n/palera1n-c/blob/main/LICENSE" target="_blank">
-    <img src="https://img.shields.io/github/license/palera1n/palera1n-c.svg" alt="License">
+    <img src="https://img.shields.io/github/license/palera1n/palera1n-c.svg" alt="License"></img>
   </a>
   <a href="https://github.com/palera1n/palera1n-c/graphs/contributors" target="_blank">
-    <img src="https://img.shields.io/github/contributors/palera1n/palera1n-c.svg" alt="Contributors">
+    <img src="https://img.shields.io/github/contributors/palera1n/palera1n-c.svg" alt="Contributors"></img>
   </a>
   <a href="https://github.com/palera1n/palera1n-c/commits/main" target="_blank">
-    <img src="https://img.shields.io/github/commit-activity/w/palera1n/palera1n-c.svg" alt="Commits">
+    <img src="https://img.shields.io/github/commit-activity/w/palera1n/palera1n-c.svg" alt="Commits"></img>
   </a>
+  <img src="https://img.shields.io/github/search/palera1n/palera1n-c/goto.svg" alt="goto counter"></img>
   <a href="https://dsc.gg/palera1n" target="_blank">
-    <img src="https://img.shields.io/discord/1028398973452570725?label=discord" alt="Discord">
+    <img src="https://img.shields.io/discord/1028398973452570725?label=discord" alt="Discord"></img>
   </a>
 </p>
 

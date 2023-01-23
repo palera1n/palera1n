@@ -136,6 +136,7 @@ void *pongo_usb_callback(void *arg)
 	found_pongo = 1;
 	LOG(LOG_INFO, "Found PongoOS USB Device");
 	usb_device_handle_t handle = *(usb_device_handle_t *)arg;
+	issue_pongo_command(handle, NULL);
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
 	upload_pongo_file(handle, **kpf_to_upload, checkra1n_kpf_pongo_len);
@@ -304,6 +305,10 @@ int main(int argc, char *argv[])
 			kpf_flags |= checkrain_option_verbose_boot;
 			break;
 		case 'e':
+			if (strstr(optarg, "rootdev=") != NULL) {
+				LOG(LOG_FATAL, "The boot arg rootdev= is already used by palera1n and cannot be overriden");
+				return -1;
+			}
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
 			break;
 		case 'f':
