@@ -100,9 +100,9 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "CXXFLAGS=-fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "LDFLAGS=-Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "CONFIGURE_ARGS=--build=x86_64-linux-gnu --host=${{ matrix.triple }} --prefix=/usr/local --disable-shared --enable-static" >> $GITHUB_ENV
