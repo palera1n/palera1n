@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export LC_CTYPE="en_US.UTF-8"
 
 pushd $(dirname "$0") &> /dev/null
 
