@@ -90,22 +90,22 @@ jobs:
           mkdir -p sysroot/{{,System}/Library/Frameworks,/usr/{local/include/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch},lib/pkgconfig,/local/lib}}
           MACOSX_SYSROOT=$(xcrun -sdk macosx --show-sdk-path)
           TARGET_SYSROOT=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)
-          cp -af ${MACOSX_SYSROOT}/usr/include/{arpa,bsm,hfs,net,xpc,netinet,servers,timeconv.h,launch.h} sysroot//usr/local/include
-          cp -af ${MACOSX_SYSROOT}/usr/include/objc/objc-runtime.h sysroot//usr/local/include/objc
-          cp -af ${MACOSX_SYSROOT}/usr/include/libkern/{OSDebug.h,OSKextLib.h,OSReturn.h,OSThermalNotification.h,OSTypes.h,machine} sysroot//usr/local/include/libkern
+          cp -af ${MACOSX_SYSROOT}/usr/include/{arpa,bsm,hfs,net,xpc,netinet,servers,timeconv.h,launch.h} sysroot/usr/local/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/objc/objc-runtime.h sysroot/usr/local/include/objc
+          cp -af ${MACOSX_SYSROOT}/usr/include/libkern/{OSDebug.h,OSKextLib.h,OSReturn.h,OSThermalNotification.h,OSTypes.h,machine} sysroot/usr/local/include/libkern
           cp -af ${MACOSX_SYSROOT}/usr/include/kern sysroot/usr/local/include
-          cp -af ${MACOSX_SYSROOT}/usr/include/sys/{tty*,ptrace,kern*,random,reboot,user,vnode,disk,vmmeter,conf}.h sysroot//usr/local/include/sys
-          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Kernel.framework/Versions/Current/Headers/sys/disklabel.h sysroot//usr/local/include/sys
-          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/{AppleConvergedIPCKeys.h,IOBSD.h,IOCFBundle.h,IOCFPlugIn.h,IOCFURLAccess.h,IOKitServer.h,IORPC.h,IOSharedLock.h,IOUserServer.h,audio,avc,firewire,graphics,hid,hidsystem,i2c,iokitmig.h,kext,ndrvsupport,network,ps,pwr_mgt,sbp2,scsi,serial,storage,stream,usb,video} sysroot//usr/local/include/IOKit
-          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Security.framework/Headers/{mds_schema,oidsalg,SecKeychainSearch,certextensions,Authorization,eisl,SecDigestTransform,SecKeychainItem,oidscrl,cssmcspi,CSCommon,cssmaci,SecCode,CMSDecoder,oidscert,SecRequirement,AuthSession,SecReadTransform,oids,cssmconfig,cssmkrapi,SecPolicySearch,SecAccess,cssmtpi,SecACL,SecEncryptTransform,cssmapi,cssmcli,mds,x509defs,oidsbase,SecSignVerifyTransform,cssmspi,cssmkrspi,SecTask,cssmdli,SecAsn1Coder,cssm,SecTrustedApplication,SecCodeHost,SecCustomTransform,oidsattr,SecIdentitySearch,cssmtype,SecAsn1Types,emmtype,SecTransform,SecTrustSettings,SecStaticCode,emmspi,SecTransformReadTransform,SecKeychain,SecDecodeTransform,CodeSigning,AuthorizationPlugin,cssmerr,AuthorizationTags,CMSEncoder,SecEncodeTransform,SecureDownload,SecAsn1Templates,AuthorizationDB,SecCertificateOIDs,cssmapple}.h sysroot//usr/local/include/Security
-          cp -af ${MACOSX_SYSROOT}/usr/include/{ar,bootstrap,launch,libc,libcharset,localcharset,nlist,NSSystemDirectories,tzfile,vproc}.h sysroot//usr/local/include
-          cp -af ${MACOSX_SYSROOT}/usr/include/mach/{*.defs,{mach_vm,shared_region}.h} sysroot//usr/local/include/mach
-          cp -af ${MACOSX_SYSROOT}/usr/include/mach/machine/*.defs sysroot//usr/local/include/mach/machine
-          cp -af ${MACOSX_SYSROOT}/usr/include/rpc/pmap_clnt.h sysroot//usr/local/include/rpc
-          cp -af ${MACOSX_SYSROOT}/usr/include/rpcsvc/yp{_prot,clnt}.h sysroot//usr/local/include/rpcsvc
-          cp -af ${TARGET_SYSROOT}/usr/include/mach/machine/thread_state.h sysroot//usr/local/include/mach/machine
-          cp -af ${TARGET_SYSROOT}/usr/include/mach/arm sysroot//usr/local/include/mach
-          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/* sysroot//usr/local/include/IOKit
+          cp -af ${MACOSX_SYSROOT}/usr/include/sys/{tty*,ptrace,kern*,random,reboot,user,vnode,disk,vmmeter,conf}.h sysroot/usr/local/include/sys
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Kernel.framework/Versions/Current/Headers/sys/disklabel.h sysroot/usr/local/include/sys
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/{AppleConvergedIPCKeys.h,IOBSD.h,IOCFBundle.h,IOCFPlugIn.h,IOCFURLAccess.h,IOKitServer.h,IORPC.h,IOSharedLock.h,IOUserServer.h,audio,avc,firewire,graphics,hid,hidsystem,i2c,iokitmig.h,kext,ndrvsupport,network,ps,pwr_mgt,sbp2,scsi,serial,storage,stream,usb,video} sysroot/usr/local/include/IOKit
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Security.framework/Headers/{mds_schema,oidsalg,SecKeychainSearch,certextensions,Authorization,eisl,SecDigestTransform,SecKeychainItem,oidscrl,cssmcspi,CSCommon,cssmaci,SecCode,CMSDecoder,oidscert,SecRequirement,AuthSession,SecReadTransform,oids,cssmconfig,cssmkrapi,SecPolicySearch,SecAccess,cssmtpi,SecACL,SecEncryptTransform,cssmapi,cssmcli,mds,x509defs,oidsbase,SecSignVerifyTransform,cssmspi,cssmkrspi,SecTask,cssmdli,SecAsn1Coder,cssm,SecTrustedApplication,SecCodeHost,SecCustomTransform,oidsattr,SecIdentitySearch,cssmtype,SecAsn1Types,emmtype,SecTransform,SecTrustSettings,SecStaticCode,emmspi,SecTransformReadTransform,SecKeychain,SecDecodeTransform,CodeSigning,AuthorizationPlugin,cssmerr,AuthorizationTags,CMSEncoder,SecEncodeTransform,SecureDownload,SecAsn1Templates,AuthorizationDB,SecCertificateOIDs,cssmapple}.h sysroot/usr/local/include/Security
+          cp -af ${MACOSX_SYSROOT}/usr/include/{ar,bootstrap,launch,libc,libcharset,localcharset,nlist,NSSystemDirectories,tzfile,vproc}.h sysroot/usr/local/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/mach/{*.defs,{mach_vm,shared_region}.h} sysroot/usr/local/include/mach
+          cp -af ${MACOSX_SYSROOT}/usr/include/mach/machine/*.defs sysroot/usr/local/include/mach/machine
+          cp -af ${MACOSX_SYSROOT}/usr/include/rpc/pmap_clnt.h sysroot/usr/local/include/rpc
+          cp -af ${MACOSX_SYSROOT}/usr/include/rpcsvc/yp{_prot,clnt}.h sysroot/usr/local/include/rpcsvc
+          cp -af ${TARGET_SYSROOT}/usr/include/mach/machine/thread_state.h sysroot/usr/local/include/mach/machine
+          cp -af ${TARGET_SYSROOT}/usr/include/mach/arm sysroot/usr/local/include/mach
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/* sysroot/usr/local/include/IOKit
           gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/stdlib.h > sysroot/usr/local/include/stdlib.h
           gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/time.h > sysroot/usr/local/include/time.h
           gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/unistd.h > sysroot/usr/local/include/unistd.h
@@ -126,12 +126,13 @@ jobs:
             -DCMAKE_CROSSCOMPILING=true \
             -DCMAKE_SYSTEM_NAME=Darwin \
             -DCMAKE_C_COMPILER="${{ env.CC }}" \
-            -DCMAKE_C_FLAGS='-w ${{ env.CFLAGS }}' \
+            -DCMAKE_C_FLAGS='${{ env.CFLAGS }}' \
             -DCMAKE_FIND_ROOT_PATH="${{ env.DESTDIR }}" \
             -DCMAKE_INSTALL_PREFIX="${{ env.PREFIX }}" \
             -DMBEDTLS_PYTHON_EXECUTABLE="/usr/local/bin/python3" \
             -DENABLE_TESTING=OFF \
             -DENABLE_PROGRAMS=OFF \
+            -DMBEDTLS_FATAL_WARNINGS=OFF \
             -DCMAKE_INSTALL_SYSCONFDIR="/etc"
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
@@ -143,10 +144,8 @@ jobs:
           if [ "${{ matrix.os }}" != "macosx" ]; then
             curl -Lo libusb.patch https://github.com/ProcursusTeam/Procursus/raw/5f4f302f6cb81ce10c7d92ffefd75c004b5da18f/build_patch/libusb/0001-Get-rid-of-some-macro-checks.patch
             git apply libusb.patch
-            CFLAGS="${{ env.CFLAGS }}" ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
-          else
-            ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
           fi
+          ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev --enable-log --enable-debug-log
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
