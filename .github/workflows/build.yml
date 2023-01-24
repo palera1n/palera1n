@@ -206,7 +206,7 @@ jobs:
         run: |
           cd libimobiledevice
           autoreconf -fiv
-          ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls
+          ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls --enable-debug
           echo -e 'all:\ninstall:' > tools/Makefile
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
@@ -464,7 +464,7 @@ jobs:
         run: |
           cd libimobiledevice
           autoreconf -fiv
-          ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls
+          ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls --enable-debug
           echo -e 'all:\ninstall:' > tools/Makefile
           make -j$(nproc)
           make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
