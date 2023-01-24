@@ -18,6 +18,10 @@ jobs:
             gnu_triple: aarch64-apple-darwin
             os: macosx
             minos: 11.0
+          - arch: arm64
+            gnu_triple: aarch64-apple-darwin
+            os: iphoneos
+            minos: 14.0
     runs-on: macos-latest
     env:
       MBEDTLS_VERSION: 3.3.0
@@ -68,44 +72,49 @@ jobs:
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
           echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-apple-darwin --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "CXX=clang++" >> $GITHUB_ENV
-          echo "CFLAGS=-isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -g -flto -Os -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "CXXFLAGS=-stdlib=libc++ -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -g -flto -Os -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "LDFLAGS=-isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -g -flto -Wl,-dead_strip -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CC=$(xcrun --find cc)" >> $GITHUB_ENV
+          echo "CXX=$(xcrun --find c++)" >> $GITHUB_ENV
+          echo "CFLAGS=-g -flto -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++ -g -flto -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
+          if [ "${{ matrix.os }}" != "macosx" ]; then
+            echo "LDFLAGS=-g -flto -Wl,-object_path_lto,/tmp/lto.o -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          else
+            echo "LDFLAGS=-g -flto -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          fi
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
       - name: Prepare headers
-        if: ${{ matrix.os }} != 'macosx'
+        if: matrix.os != 'macosx'
         run: |
-          mkdir -p sysroot/{{,System}/Library/Frameworks,/usr/{include/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch},lib/pkgconfig,/local/lib}}
+          mkdir -p sysroot/{{,System}/Library/Frameworks,/usr/{local/include/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch},lib/pkgconfig,/local/lib}}
           MACOSX_SYSROOT=$(xcrun -sdk macosx --show-sdk-path)
           TARGET_SYSROOT=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)
-          cp -af ${MACOSX_SYSROOT}/usr/include/{arpa,bsm,hfs,net,xpc,netinet,servers,timeconv.h,launch.h} sysroot//usr/include
-          cp -af ${MACOSX_SYSROOT}/usr/include/objc/objc-runtime.h sysroot//usr/include/objc
-          cp -af ${MACOSX_SYSROOT}/usr/include/libkern/{OSDebug.h,OSKextLib.h,OSReturn.h,OSThermalNotification.h,OSTypes.h,machine} sysroot//usr/include/libkern
-          cp -af ${MACOSX_SYSROOT}/usr/include/kern sysroot/usr/include
-          cp -af ${MACOSX_SYSROOT}/usr/include/sys/{tty*,ptrace,kern*,random,reboot,user,vnode,disk,vmmeter,conf}.h sysroot//usr/include/sys
-          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Kernel.framework/Versions/Current/Headers/sys/disklabel.h sysroot//usr/include/sys
-          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/* sysroot//usr/include/IOKit
-          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Security.framework/Headers/{mds_schema,oidsalg,SecKeychainSearch,certextensions,Authorization,eisl,SecDigestTransform,SecKeychainItem,oidscrl,cssmcspi,CSCommon,cssmaci,SecCode,CMSDecoder,oidscert,SecRequirement,AuthSession,SecReadTransform,oids,cssmconfig,cssmkrapi,SecPolicySearch,SecAccess,cssmtpi,SecACL,SecEncryptTransform,cssmapi,cssmcli,mds,x509defs,oidsbase,SecSignVerifyTransform,cssmspi,cssmkrspi,SecTask,cssmdli,SecAsn1Coder,cssm,SecTrustedApplication,SecCodeHost,SecCustomTransform,oidsattr,SecIdentitySearch,cssmtype,SecAsn1Types,emmtype,SecTransform,SecTrustSettings,SecStaticCode,emmspi,SecTransformReadTransform,SecKeychain,SecDecodeTransform,CodeSigning,AuthorizationPlugin,cssmerr,AuthorizationTags,CMSEncoder,SecEncodeTransform,SecureDownload,SecAsn1Templates,AuthorizationDB,SecCertificateOIDs,cssmapple}.h sysroot//usr/include/Security
-          cp -af ${MACOSX_SYSROOT}/usr/include/{ar,bootstrap,launch,libc,libcharset,localcharset,nlist,NSSystemDirectories,tzfile,vproc}.h sysroot//usr/include
-          cp -af ${MACOSX_SYSROOT}/usr/include/mach/{*.defs,{mach_vm,shared_region}.h} sysroot//usr/include/mach
-          cp -af ${MACOSX_SYSROOT}/usr/include/mach/machine/*.defs sysroot//usr/include/mach/machine
-          cp -af ${MACOSX_SYSROOT}/usr/include/rpc/pmap_clnt.h sysroot//usr/include/rpc
-          cp -af ${MACOSX_SYSROOT}/usr/include/rpcsvc/yp{_prot,clnt}.h sysroot//usr/include/rpcsvc
-          cp -af ${TARGET_SYSROOT}/usr/include/mach/machine/thread_state.h sysroot//usr/include/mach/machine
-          cp -af ${TARGET_SYSROOT}/usr/include/mach/arm sysroot//usr/include/mach
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/stdlib.h > sysroot/usr/include/stdlib.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/time.h > sysroot/usr/include/time.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/unistd.h > sysroot/usr/include/unistd.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/task.h > sysroot/usr/include/mach/task.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/mach_host.h > sysroot/usr/include/mach/mach_host.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/ucontext.h > sysroot/usr/include/ucontext.h
-          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/signal.h > sysroot/usr/include/signal.h
-          gsed -E /'__API_UNAVAILABLE'/d < ${TARGET_SYSROOT}/usr/include/pthread.h > sysroot/usr/include/pthread.h
-          gsed -i -E s/'__API_UNAVAILABLE\(.*\)'// sysroot/usr/include/IOKit/IOKitLib.h
+          cp -af ${MACOSX_SYSROOT}/usr/include/{arpa,bsm,hfs,net,xpc,netinet,servers,timeconv.h,launch.h} sysroot//usr/local/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/objc/objc-runtime.h sysroot//usr/local/include/objc
+          cp -af ${MACOSX_SYSROOT}/usr/include/libkern/{OSDebug.h,OSKextLib.h,OSReturn.h,OSThermalNotification.h,OSTypes.h,machine} sysroot//usr/local/include/libkern
+          cp -af ${MACOSX_SYSROOT}/usr/include/kern sysroot/usr/local/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/sys/{tty*,ptrace,kern*,random,reboot,user,vnode,disk,vmmeter,conf}.h sysroot//usr/local/include/sys
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Kernel.framework/Versions/Current/Headers/sys/disklabel.h sysroot//usr/local/include/sys
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/{AppleConvergedIPCKeys.h,IOBSD.h,IOCFBundle.h,IOCFPlugIn.h,IOCFURLAccess.h,IOKitServer.h,IORPC.h,IOSharedLock.h,IOUserServer.h,audio,avc,firewire,graphics,hid,hidsystem,i2c,iokitmig.h,kext,ndrvsupport,network,ps,pwr_mgt,sbp2,scsi,serial,storage,stream,usb,video} sysroot//usr/local/include/IOKit
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Security.framework/Headers/{mds_schema,oidsalg,SecKeychainSearch,certextensions,Authorization,eisl,SecDigestTransform,SecKeychainItem,oidscrl,cssmcspi,CSCommon,cssmaci,SecCode,CMSDecoder,oidscert,SecRequirement,AuthSession,SecReadTransform,oids,cssmconfig,cssmkrapi,SecPolicySearch,SecAccess,cssmtpi,SecACL,SecEncryptTransform,cssmapi,cssmcli,mds,x509defs,oidsbase,SecSignVerifyTransform,cssmspi,cssmkrspi,SecTask,cssmdli,SecAsn1Coder,cssm,SecTrustedApplication,SecCodeHost,SecCustomTransform,oidsattr,SecIdentitySearch,cssmtype,SecAsn1Types,emmtype,SecTransform,SecTrustSettings,SecStaticCode,emmspi,SecTransformReadTransform,SecKeychain,SecDecodeTransform,CodeSigning,AuthorizationPlugin,cssmerr,AuthorizationTags,CMSEncoder,SecEncodeTransform,SecureDownload,SecAsn1Templates,AuthorizationDB,SecCertificateOIDs,cssmapple}.h sysroot//usr/local/include/Security
+          cp -af ${MACOSX_SYSROOT}/usr/include/{ar,bootstrap,launch,libc,libcharset,localcharset,nlist,NSSystemDirectories,tzfile,vproc}.h sysroot//usr/local/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/mach/{*.defs,{mach_vm,shared_region}.h} sysroot//usr/local/include/mach
+          cp -af ${MACOSX_SYSROOT}/usr/include/mach/machine/*.defs sysroot//usr/local/include/mach/machine
+          cp -af ${MACOSX_SYSROOT}/usr/include/rpc/pmap_clnt.h sysroot//usr/local/include/rpc
+          cp -af ${MACOSX_SYSROOT}/usr/include/rpcsvc/yp{_prot,clnt}.h sysroot//usr/local/include/rpcsvc
+          cp -af ${TARGET_SYSROOT}/usr/include/mach/machine/thread_state.h sysroot//usr/local/include/mach/machine
+          cp -af ${TARGET_SYSROOT}/usr/include/mach/arm sysroot//usr/local/include/mach
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/* sysroot//usr/local/include/IOKit
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/stdlib.h > sysroot/usr/local/include/stdlib.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/time.h > sysroot/usr/local/include/time.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/unistd.h > sysroot/usr/local/include/unistd.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/task.h > sysroot/usr/local/include/mach/task.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/mach_host.h > sysroot/usr/local/include/mach/mach_host.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/ucontext.h > sysroot/usr/local/include/ucontext.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/signal.h > sysroot/usr/local/include/signal.h
+          gsed -E /'__API_UNAVAILABLE'/d < ${TARGET_SYSROOT}/usr/include/pthread.h > sysroot/usr/local/include/pthread.h
+          gsed -i -E s/'__API_UNAVAILABLE\(.*\)'// sysroot/usr/local/include/IOKit/IOKitLib.h
 
       - name: Build Mbed TLS
         run: |
@@ -131,7 +140,13 @@ jobs:
       - name: Build libusb
         run: |
           cd libusb-${{ env.LIBUSB_VERSION }}
-          ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
+          if [ "${{ matrix.os }}" != "macosx" ]; then
+            curl -Lo libusb.patch https://github.com/ProcursusTeam/Procursus/raw/5f4f302f6cb81ce10c7d92ffefd75c004b5da18f/build_patch/libusb/0001-Get-rid-of-some-macro-checks.patch
+            git apply libusb.patch
+            CFLAGS="${{ env.CFLAGS }}" ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
+          else
+            ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
+          fi
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
@@ -139,7 +154,7 @@ jobs:
       - name: Build readline
         run: |
           cd readline-${{ env.READLINE_VERSION }}
-          ./configure ${{ env.CONFIGURE_ARGS }}
+          CC=clang CXX=clang++ ./configure ${{ env.CONFIGURE_ARGS }} ac_cv_type_sig_atomic_t=no
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
@@ -167,7 +182,11 @@ jobs:
           sudo cp -a sysroot/usr/local/* /usr/local
           cd libirecovery
           autoreconf -fiv
-          ./configure ${{ env.CONFIGURE_ARGS }}
+          if [ "${{ matrix.os }}" != "macosx" ]; then
+            ./configure ${{ env.CONFIGURE_ARGS }} --with-iokit=no
+          else
+            ./configure ${{ env.CONFIGURE_ARGS }}
+          fi
           echo -e 'all:\ninstall:' > tools/Makefile
           make -j$(sysctl -n hw.ncpu) LIBS="-lncurses"
           make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
@@ -238,7 +257,7 @@ jobs:
     runs-on: macos-latest
     needs: build-darwin
     steps:
-      - name: Download all macOS artifacts
+      - name: Download all Darwin artifacts
         uses: actions/download-artifact@v3
 
       - name: Prepare artifact
@@ -252,7 +271,9 @@ jobs:
           cp palera1n-macos ready/palera1n-macos-universal
           cp ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 ready/palera1n-macos-x86_64
           cp ./palera1n-macosx-arm64/palera1n-macosx-arm64 ready/palera1n-macos-arm64
-          zip -r ready/palera1n-macos-dSYM.zip palera1n-macos.dSYM
+          cp ./palera1n-iphoneos-arm64/palera1n-iphoneos-arm64 ready/palera1n-ios
+          zip -r9 ready/palera1n-ios.dSYM.zip palera1n-iphoneos-arm64.dSYM
+          zip -r9 ready/palera1n-macos.dSYM.zip palera1n-macos.dSYM
 
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
