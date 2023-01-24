@@ -73,13 +73,26 @@ jobs:
           sudo apt install -y pkg-config autoconf automake
           sudo pip3 install jsonschema jinja2
 
+      - name: Download toolchain checksum
+        run: |
+          curl -LO https://musl.cc/SHA512SUMS
+          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}-cross.tgz SHA512SUMS | cut -d' ' -f1) >> $GITHUB_ENV
+
+      - name: Download toolchain (cached)
+        id: toolchain_cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ matrix.triple }}-cross.tgz
+          key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
+
       - name: Download toolchain
+        if: steps.toolchain_cache.outputs.cache-hit != 'true'
         run: |
           curl -LO https://musl.cc/${{ matrix.triple }}-cross.tgz
-          tar -xf ${{ matrix.triple }}-cross.tgz
 
       - name: Setup environment
         run: |
+          tar -xf ${{ matrix.triple }}-cross.tgz
           mkdir sysroot
           echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
           case ${{ matrix.triple }} in
