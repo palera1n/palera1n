@@ -32,28 +32,6 @@ fs=disk0s1s$disk
 # =========
 # Functions
 # =========
-
-check_wsl(){
-    check=`uname -r | grep "microsoft"`
-    if [[ $check != "" ]]; then
-        echo "This looks like a WSL Linux machine"
-        echo "Remember that NO support is given whatsover"
-        echo "with WSL/VM"
-        read -p "Continue? (y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 0
-    fi
-}
-
-check_vm(){
-    if [[ `hostnamectl | grep "Chassis: vm"` != "" ]]
-    then
-        echo "This looks like a VM Linux machine (or you don't have systemd)"
-        echo "We do not give support to users using VMs"
-        echo "If you simply don't have systemd, we do offer support."
-        echo "Otherwise, we do not give support in any shape or form"
-        read -p "Continue? (y/N): " confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || exit 1
-    fi
-}
-
 remote_cmd() {
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p6413 root@localhost "$@"
 }
@@ -383,8 +361,6 @@ fi
 # ============
 # Dependencies
 # ============
-check_wsl
-check_vm
 
 # Check for required commands
 if [ "$os" = 'Linux' ]; then
