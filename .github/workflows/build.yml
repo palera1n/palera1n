@@ -6,35 +6,252 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-macOS:
+  build-darwin:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            gnu_triple: x86_64-apple-darwin
+            os: macosx
+            minos: 10.8
+          - arch: arm64
+            gnu_triple: aarch64-apple-darwin
+            os: macosx
+            minos: 11.0
     runs-on: macos-latest
+    env:
+      MBEDTLS_VERSION: 3.3.0
+      LIBUSB_VERSION: 1.0.26
+      READLINE_VERSION: 8.2
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download dependencies
+      - name: Install dependencies (packages)
+        run: |
+          sudo /usr/local/bin/pip3 install jsonschema jinja2
+          brew install make autoconf automake pkg-config gnu-sed
+          sudo rm -rf /usr/local/Frameworks/Python*
+          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
+          sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
+
+      - name: Download dependencies (embedded binaries)
         run: |
           cd src
           curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
             https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.dmg \
             https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
-
           cd ..
-          curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/dep_root_macos.tgz
-          tar xf dep_root_macos.tgz
           make -j5 download-checkra1n
+          echo "SDK=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)" >> $GITHUB_ENV
 
-      - name: Build
+      - name: Download dependencies (source code)
         run: |
-          make -j$(sysctl -n hw.ncpu) macos-dist
-      
+          curl -LOOO \
+            https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
+            https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
+            https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz
+          tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
+          tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
+          tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
+          git clone --depth=1 https://github.com/libimobiledevice/libplist
+          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
+          git clone --depth=1 https://github.com/libimobiledevice/libirecovery
+          git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
+          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
+
+      - name: Setup environment
+        run: |
+          mkdir sysroot
+          echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
+          echo "PREFIX=/usr/local" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
+          echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-apple-darwin --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+          echo "CFLAGS=-isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -g -flto -Os -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++ -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -g -flto -Os -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "LDFLAGS=-isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -g -flto -Wl,-dead_strip -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          mkdir -p $(pwd)/sysroot/usr/local/lib
+          ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+
+      - name: Prepare headers
+        if: ${{ matrix.os }} != 'macosx'
+        run: |
+          mkdir -p sysroot/{{,System}/Library/Frameworks,/usr/{include/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch},lib/pkgconfig,/local/lib}}
+          MACOSX_SYSROOT=$(xcrun -sdk macosx --show-sdk-path)
+          TARGET_SYSROOT=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)
+          cp -af ${MACOSX_SYSROOT}/usr/include/{arpa,bsm,hfs,net,xpc,netinet,servers,timeconv.h,launch.h} sysroot//usr/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/objc/objc-runtime.h sysroot//usr/include/objc
+          cp -af ${MACOSX_SYSROOT}/usr/include/libkern/{OSDebug.h,OSKextLib.h,OSReturn.h,OSThermalNotification.h,OSTypes.h,machine} sysroot//usr/include/libkern
+          cp -af ${MACOSX_SYSROOT}/usr/include/kern sysroot/usr/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/sys/{tty*,ptrace,kern*,random,reboot,user,vnode,disk,vmmeter,conf}.h sysroot//usr/include/sys
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Kernel.framework/Versions/Current/Headers/sys/disklabel.h sysroot//usr/include/sys
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/IOKit.framework/Headers/* sysroot//usr/include/IOKit
+          cp -af ${MACOSX_SYSROOT}/System/Library/Frameworks/Security.framework/Headers/{mds_schema,oidsalg,SecKeychainSearch,certextensions,Authorization,eisl,SecDigestTransform,SecKeychainItem,oidscrl,cssmcspi,CSCommon,cssmaci,SecCode,CMSDecoder,oidscert,SecRequirement,AuthSession,SecReadTransform,oids,cssmconfig,cssmkrapi,SecPolicySearch,SecAccess,cssmtpi,SecACL,SecEncryptTransform,cssmapi,cssmcli,mds,x509defs,oidsbase,SecSignVerifyTransform,cssmspi,cssmkrspi,SecTask,cssmdli,SecAsn1Coder,cssm,SecTrustedApplication,SecCodeHost,SecCustomTransform,oidsattr,SecIdentitySearch,cssmtype,SecAsn1Types,emmtype,SecTransform,SecTrustSettings,SecStaticCode,emmspi,SecTransformReadTransform,SecKeychain,SecDecodeTransform,CodeSigning,AuthorizationPlugin,cssmerr,AuthorizationTags,CMSEncoder,SecEncodeTransform,SecureDownload,SecAsn1Templates,AuthorizationDB,SecCertificateOIDs,cssmapple}.h sysroot//usr/include/Security
+          cp -af ${MACOSX_SYSROOT}/usr/include/{ar,bootstrap,launch,libc,libcharset,localcharset,nlist,NSSystemDirectories,tzfile,vproc}.h sysroot//usr/include
+          cp -af ${MACOSX_SYSROOT}/usr/include/mach/{*.defs,{mach_vm,shared_region}.h} sysroot//usr/include/mach
+          cp -af ${MACOSX_SYSROOT}/usr/include/mach/machine/*.defs sysroot//usr/include/mach/machine
+          cp -af ${MACOSX_SYSROOT}/usr/include/rpc/pmap_clnt.h sysroot//usr/include/rpc
+          cp -af ${MACOSX_SYSROOT}/usr/include/rpcsvc/yp{_prot,clnt}.h sysroot//usr/include/rpcsvc
+          cp -af ${TARGET_SYSROOT}/usr/include/mach/machine/thread_state.h sysroot//usr/include/mach/machine
+          cp -af ${TARGET_SYSROOT}/usr/include/mach/arm sysroot//usr/include/mach
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/stdlib.h > sysroot/usr/include/stdlib.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/time.h > sysroot/usr/include/time.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/unistd.h > sysroot/usr/include/unistd.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/task.h > sysroot/usr/include/mach/task.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/mach/mach_host.h > sysroot/usr/include/mach/mach_host.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/ucontext.h > sysroot/usr/include/ucontext.h
+          gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/signal.h > sysroot/usr/include/signal.h
+          gsed -E /'__API_UNAVAILABLE'/d < ${TARGET_SYSROOT}/usr/include/pthread.h > sysroot/usr/include/pthread.h
+          gsed -i -E s/'__API_UNAVAILABLE\(.*\)'// sysroot/usr/include/IOKit/IOKitLib.h
+
+      - name: Build Mbed TLS
+        run: |
+          cd mbedtls-${{ env.MBEDTLS_VERSION }}
+          mkdir build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CROSSCOMPILING=true \
+            -DCMAKE_SYSTEM_NAME=Darwin \
+            -DCMAKE_C_COMPILER="${{ env.CC }}" \
+            -DCMAKE_C_FLAGS='-w ${{ env.CFLAGS }}' \
+            -DCMAKE_FIND_ROOT_PATH="${{ env.DESTDIR }}" \
+            -DCMAKE_INSTALL_PREFIX="${{ env.PREFIX }}" \
+            -DMBEDTLS_PYTHON_EXECUTABLE="/usr/local/bin/python3" \
+            -DENABLE_TESTING=OFF \
+            -DENABLE_PROGRAMS=OFF \
+            -DCMAKE_INSTALL_SYSCONFDIR="/etc"
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libusb
+        run: |
+          cd libusb-${{ env.LIBUSB_VERSION }}
+          ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build readline
+        run: |
+          cd readline-${{ env.READLINE_VERSION }}
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libplist
+        run: |
+          cd libplist
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libimobiledevice-glue
+        run: |
+          cd libimobiledevice-glue
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libirecovery
+        run: |
+          sudo cp -a sysroot/usr/local/* /usr/local
+          cd libirecovery
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          echo -e 'all:\ninstall:' > tools/Makefile
+          make -j$(sysctl -n hw.ncpu) LIBS="-lncurses"
+          make -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          install -m644 src/.libs/libirecovery-1.0.a ${{ env.DESTDIR }}${{ env.PREFIX }}/lib
+          cd ..
+
+      - name: Build libusbmuxd
+        run: |
+          cd libusbmuxd
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }}
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build libimobiledevice
+        run: |
+          cd libimobiledevice
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls
+          echo -e 'all:\ninstall:' > tools/Makefile
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build palera1n
+        run: |
+          cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
+          if [ "${{ matrix.os }}" = "macosx" ]; then
+            gmake -j$(sysctl -n hw.ncpu)
+          elif [ "${{ matrix.os }}" = "iphoneos" ]; then
+            gmake -j$(sysctl -n hw.ncpu) FAKE_PLATFORM=2 FAKE_SDK=14.0 FAKE_MINOS=14.0
+          fi
+          mv src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          dsymutil palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          strip palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          ldid -s palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          mkdir -p ready
+          tar -zcf ready/dep_root-${{ matrix.os }}-${{ matrix.arch }}.tgz dep_root
+
+      - name: Upload artifact
+        uses: wangyucode/sftp-upload-action@v1.4.8
+        with:
+          host: ${{ secrets.NICKCHAN_FTP_HOST }}
+          port: ${{ secrets.NICKCHAN_FTP_PORT }}
+          username: palera1n
+          privateKey: ${{ secrets.NICKCHAN_FTP_KEY }}
+          forceUpload: true
+          dryRun: false
+          localDir: 'ready/'
+          remoteDir: '/palera1n/artifacts/c-rewrite'
+
+      - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
+        uses: actions/upload-artifact@v3
+        with:
+          name: palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          path: palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          retention-days: 1
+
+      - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} debug symbols
+        uses: actions/upload-artifact@v3
+        with:
+          name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
+          path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
+          retention-days: 1
+
+  darwin-dist:
+    runs-on: macos-latest
+    needs: build-darwin
+    steps:
+      - name: Download all macOS artifacts
+        uses: actions/download-artifact@v3
+
       - name: Prepare artifact
         run: |
+          find .
+          lipo -create -arch arm64 ./palera1n-macosx-arm64/palera1n-macosx-arm64 -arch x86_64 ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 -output palera1n-macos
+          mkdir -p palera1n-macos.dSYM/Contents/Resources/DWARF
+          cp ./palera1n-macosx-x86_64.dSYM/Contents/Info.plist palera1n-macos.dSYM/Contents
+          lipo -create -arch arm64 palera1n-macosx-arm64.dSYM/Contents/Resources/DWARF/palera1n-macosx-arm64 -arch x86_64 palera1n-macosx-x86_64.dSYM/Contents/Resources/DWARF/palera1n-macosx-x86_64 -output palera1n-macos.dSYM/Contents/Resources/DWARF/palera1n-macos
           mkdir ready
           cp palera1n-macos ready/palera1n-macos-universal
-          cp palera1n-x86_64 ready/palera1n-macos-x86_64
-          cp palera1n-arm64 ready/palera1n-macos-arm64
+          cp ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 ready/palera1n-macos-x86_64
+          cp ./palera1n-macosx-arm64/palera1n-macosx-arm64 ready/palera1n-macos-arm64
           zip -r ready/palera1n-macos-dSYM.zip palera1n-macos.dSYM
 
       - name: Upload artifact
@@ -207,8 +424,9 @@ jobs:
           cd libirecovery
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }}
+          echo -e 'all:\ninstall:' > tools/Makefile
           make -ij$(nproc)
-          make -i -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
+          make -ij$(nproc) install DESTDIR=${{ env.DESTDIR }}
           install -m644 src/.libs/libirecovery-1.0.a ${{ env.DESTDIR }}${{ env.PREFIX }}/lib
           cd ..
 
@@ -226,6 +444,7 @@ jobs:
           cd libimobiledevice
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls
+          echo -e 'all:\ninstall:' > tools/Makefile
           make -j$(nproc)
           make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
@@ -251,6 +470,7 @@ jobs:
           mkdir ready
           mv palera1n.debug ready/palera1n-${{ env.CHECKRA1N_NAME }}.debug
           mv src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
+          tar -zcf ready/dep_root_${{ matrix.triple }}.tgz dep_root
 
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
