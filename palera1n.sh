@@ -496,7 +496,7 @@ function _wait_for_device() {
     if [ "$(get_device_mode)" = "normal" ]; then
         version=${version:-$(_info normal ProductVersion)}
         arch=$(_info normal CPUArchitecture)
-        if [ "$arch" = "arm64e" ]; then
+        if [ "$arch" != "arm64" ]; then
             echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
             exit
         fi
