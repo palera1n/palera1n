@@ -137,7 +137,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	if (verbose >= 2) {
 		printf("%s| - %s%s <%s> " CRESET "%s" HBLU "%s" CRESET ":" BLU "%d" CRESET ":" BMAG "%s()" CRESET ": \n%s| ----> ", colour_bold, timestring, colour_bold, type, WHT, fname, lineno, fxname, colour_bold);
 	} else {
-		printf(" - %s %s<%s>: %s", timestring, colour_bold, type, CRESET);
+		printf(" - %s %s<%s>%s: ", timestring, colour_bold, type, CRESET);
 	}
 	printf("%s", colour);
 	ret = vprintf(format, args);
