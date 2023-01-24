@@ -509,7 +509,7 @@ function _wait_for_device() {
     fi
     
 if [ "$(os)" = "linux" ]; then
-    if [ "$(Architecture)" = "arm64" ]; then
+    if [ "$(Architecture)" = "aarch64" ]; then
         echo "[-] palera1n does not work with Linux on Arm CPU yet"
     fi
 fi
