@@ -142,7 +142,7 @@ jobs:
             curl -Lo libusb.patch https://github.com/ProcursusTeam/Procursus/raw/5f4f302f6cb81ce10c7d92ffefd75c004b5da18f/build_patch/libusb/0001-Get-rid-of-some-macro-checks.patch
             git apply -v libusb.patch
           fi
-          ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev --enable-log --enable-debug-log
+          ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev --enable-log
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
