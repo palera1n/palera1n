@@ -21,6 +21,7 @@ ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND T
 network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
 os=$(uname)
+Architecture=$(uname -m)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
@@ -506,6 +507,12 @@ function _wait_for_device() {
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
         _wait recovery
     fi
+    
+if [ "$(os)" = "linux" ]; then
+    if [ "$(Architecture)" = "arm64" ]; then
+        echo "[-] palera1n does not work with Linux on Arm CPU yet"
+    fi
+fi
 
     # Grab more info
     echo "[*] Getting device info..."
