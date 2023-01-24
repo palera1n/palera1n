@@ -74,13 +74,9 @@ jobs:
           echo "CONFIGURE_ARGS=--prefix=/usr/local --disable-shared --enable-static --build=x86_64-apple-darwin --host=${{ matrix.gnu_triple }}" >> $GITHUB_ENV
           echo "CC=$(xcrun --find cc)" >> $GITHUB_ENV
           echo "CXX=$(xcrun --find c++)" >> $GITHUB_ENV
-          echo "CFLAGS=-g -flto -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
-          echo "CXXFLAGS=-stdlib=libc++ -g -flto -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
-          if [ "${{ matrix.os }}" != "macosx" ]; then
-            echo "LDFLAGS=-g -flto -Wl,-object_path_lto,/tmp/lto.o -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          else
-            echo "LDFLAGS=-g -flto -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          fi
+          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
+          echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
