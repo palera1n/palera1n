@@ -1,6 +1,6 @@
-Flags,Modes,Description
---help,Help,Need help?
---semi-tethered --tweaks,Jailbreak,JB your device
---restorerootfs,Restore RootFS,Remove the JB
-dfuhelper,DFU Helper,Goto DFU (especially for A11)
-clean,Clean,Clean boot files
+Flags,Modes
+--help,Help
+--semi-tethered --tweaks,Jailbreak
+--restorerootfs,Restore RootFS
+dfuhelper,DFU Helper
+clean,Clean
