@@ -59,7 +59,7 @@ jobs:
         - aarch64-linux-musl
     runs-on: ubuntu-latest
     env:
-      OSSL_VERSION: 3.0.7
+      MBEDTLS_VERSION: 3.3.0
       LIBUSB_VERSION: 1.0.26
       READLINE_VERSION: 8.2
 
@@ -71,6 +71,7 @@ jobs:
         run: |
           sudo apt remove -y libssl-dev libreadline-dev
           sudo apt install -y pkg-config autoconf automake
+          sudo pip3 install jsonschema jinja2
 
       - name: Download toolchain
         run: |
@@ -84,19 +85,15 @@ jobs:
           case ${{ matrix.triple }} in
             i486-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
-              echo "OSSL_ARCH=linux-x86" >> $GITHUB_ENV
               ;;
             x86_64-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86_64" >> $GITHUB_ENV
-              echo "OSSL_ARCH=linux-x86_64" >> $GITHUB_ENV
               ;;
             armel-linux-musleabi)
               echo "CHECKRA1N_NAME=linux-armel" >> $GITHUB_ENV
-              echo "OSSL_ARCH=linux-armv4" >> $GITHUB_ENV
               ;;
             aarch64-linux-musl)
               echo "CHECKRA1N_NAME=linux-arm64" >> $GITHUB_ENV
-              echo "OSSL_ARCH=linux-aarch64" >> $GITHUB_ENV
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
@@ -122,10 +119,10 @@ jobs:
       - name: Download dependencies (source code)
         run: |
           curl -LOOO \
-            https://www.openssl.org/source/openssl-${{ env.OSSL_VERSION }}.tar.gz \
+            https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz
-          tar -xf openssl-${{ env.OSSL_VERSION }}.tar.gz
+          tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
           git clone --depth=1 https://github.com/libimobiledevice/libplist
@@ -134,13 +131,26 @@ jobs:
           git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
 
-      - name: Build OpenSSL
+      - name: Build Mbed TLS
         run: |
-          cd openssl-${{ env.OSSL_VERSION }}
-          LDFLAGS="${{ env.LDFLAGS }} -latomic" ./Configure ${{ env.OSSL_ARCH }}
-          sed -i 's/-m64//g' Makefile
-          make -j$(nproc) LDFLAGS="${{ env.LDFLAGS }} -latomic"
-          make install DESTDIR=${{ env.DESTDIR }}
+          cd mbedtls-${{ env.MBEDTLS_VERSION }}
+          mkdir build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CROSSCOMPILING=true \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=$(echo ${{ matrix.triple }} | cut -d- -f1) \
+            -DCMAKE_C_COMPILER='${{ env.CROSS_COMPILE }}gcc' \
+            -DCMAKE_C_FLAGS='${{ env.CFLAGS }}'  \
+            -DCMAKE_CXX_FLAGS='${{ env.CXXFLAGS }}' \
+            -DCMAKE_FIND_ROOT_PATH="${{ env.DESTDIR }}" \
+            -DCMAKE_INSTALL_PREFIX="${{ env.PREFIX }}" \
+            -DENABLE_TESTING=OFF \
+            -DENABLE_PROGRAMS=OFF \
+            -DCMAKE_INSTALL_SYSCONFDIR="/etc"
+          make -j$(nproc)
+          make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libusb
@@ -148,7 +158,7 @@ jobs:
           cd libusb-${{ env.LIBUSB_VERSION }}
           ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
           make -j$(nproc)
-          make install DESTDIR=${{ env.DESTDIR }}
+          make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build readline
@@ -156,7 +166,7 @@ jobs:
           cd readline-${{ env.READLINE_VERSION }}
           ./configure ${{ env.CONFIGURE_ARGS }}
           make -j$(nproc)
-          make install DESTDIR=${{ env.DESTDIR }}
+          make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libplist
@@ -165,7 +175,7 @@ jobs:
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
           make -j$(nproc)
-          make install DESTDIR=${{ env.DESTDIR }}
+          make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libimobiledevice-glue
@@ -174,7 +184,7 @@ jobs:
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }}
           make -j$(nproc)
-          make install DESTDIR=${{ env.DESTDIR }}
+          make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libirecovery (sorta)
@@ -185,7 +195,7 @@ jobs:
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }}
           make -ij$(nproc)
-          make -i install DESTDIR=${{ env.DESTDIR }}
+          make -i -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           install -m644 src/.libs/libirecovery-1.0.a ${{ env.DESTDIR }}${{ env.PREFIX }}/lib
           cd ..
 
@@ -195,16 +205,16 @@ jobs:
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }}
           make -j$(nproc)
-          make install DESTDIR=${{ env.DESTDIR }}
+          make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libimobiledevice
         run: |
           cd libimobiledevice
           autoreconf -fiv
-          ./configure ${{ env.CONFIGURE_ARGS }} --with-openssl openssl_LIBS="-lssl -lcrypto" openssl_CFLAGS=" "
+          ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls
           make -j$(nproc)
-          make install DESTDIR=${{ env.DESTDIR }}
+          make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
           cd ..
           sudo rm /usr/local
           sudo mv /usr/local.bak /usr/local

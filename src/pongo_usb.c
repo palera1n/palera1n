@@ -329,7 +329,7 @@ int issue_pongo_command(usb_device_handle_t handle, char *command)
     uint32_t outlen = 0;
 	uint8_t in_progress = 1;
     if (command == NULL) goto fetch_output;
-	int ret;
+	int ret = USB_RET_SUCCESS;
 	size_t len = strlen(command);
 	char command_buf[512];
 	char stdout_buf[0x2000];

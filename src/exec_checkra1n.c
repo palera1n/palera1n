@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <limits.h>
 
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 
 extern char **environ;
@@ -29,7 +31,7 @@ void exec_checkra1n() {
 		return;
 	}
 	ssize_t didWrite = write(fd, checkra1n, checkra1n_len);
-	if (didWrite != checkra1n_len) {
+	if (didWrite != (ssize_t)checkra1n_len) {
 		LOG(LOG_FATAL, "Size written does not match expected: %lld != %d: %d (%s)", didWrite, checkra1n_len, errno, strerror(errno));
 		close(fd);
 		unlink(checkra1n_path);

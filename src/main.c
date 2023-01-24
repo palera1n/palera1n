@@ -361,6 +361,7 @@ int main(int argc, char *argv[])
 			}
 			pongo_path = malloc(strlen(optarg) + 1);
 			strcpy(pongo_path, optarg);
+			break;
 		case 'o':
 			if (override_file(&override_overlay, overlay_to_upload, &binpack_dmg_len, optarg))
 				return 1;

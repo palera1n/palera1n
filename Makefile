@@ -15,7 +15,7 @@ LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKi
 else
 CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -static -no-pie -Wl,--gc-sections
-LIBS += $(DEP)/lib/libssl.a $(DEP)/lib/libcrypto.a $(DEP)/lib/libreadline.a -latomic
+LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a -latomic
 endif
 LIBS += $(DEP)/lib/libusb-1.0.a
 LDFLAGS += -flto
