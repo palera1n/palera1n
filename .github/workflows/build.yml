@@ -115,7 +115,7 @@ jobs:
       - name: Build Mbed TLS
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
-          git apply ../patches/0001-Allow-empty-x509-cert-issuer.patch
+          git apply -v ../patches/0001-Allow-empty-x509-cert-issuer.patch
           mkdir build
           cd build
           cmake .. \
@@ -140,7 +140,7 @@ jobs:
           cd libusb-${{ env.LIBUSB_VERSION }}
           if [ "${{ matrix.os }}" != "macosx" ]; then
             curl -Lo libusb.patch https://github.com/ProcursusTeam/Procursus/raw/5f4f302f6cb81ce10c7d92ffefd75c004b5da18f/build_patch/libusb/0001-Get-rid-of-some-macro-checks.patch
-            git apply libusb.patch
+            git apply -v libusb.patch
           fi
           ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev --enable-log --enable-debug-log
           gmake -j$(sysctl -n hw.ncpu)
@@ -381,6 +381,7 @@ jobs:
       - name: Build Mbed TLS
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
+          git apply -v ../patches/0001-Allow-empty-x509-cert-issuer.patch
           mkdir build
           cd build
           cmake .. \
