@@ -119,6 +119,7 @@ jobs:
       - name: Build Mbed TLS
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
+          git apply ../patches/0001-Allow-empty-x509-cert-issuer.patch
           mkdir build
           cd build
           cmake .. \
