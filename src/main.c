@@ -61,10 +61,12 @@ struct mach_header_64
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
 
-unsigned int verbose = 0;
+unsigned int verbose = 0U;
 int enable_rootful = 0;
 int do_pongo_sleep = 0;
+int device_has_booted = 0;
 int demote = 0;
+int pongo_thr_running = 0, dfuhelper_thr_running = 0;
 bool ohio = true;
 char xargs_cmd[0x270] = "xargs wdt=-1";
 char checkrain_flags_cmd[0x20] = "checkra1n_flags 0x0";
@@ -73,6 +75,11 @@ char kpf_flags_cmd[0x20] = "kpf_flags 0x0";
 char dtpatch_cmd[0x20] = "dtpatch md0";
 char rootfs_cmd[512];
 extern char** environ;
+
+bool dfuhelper_only = false;
+bool pongo_exit = false;
+bool start_from_pongo = false;
+bool palerain_version = false;
 
 typedef unsigned char niarelap_file_t[];
 
@@ -92,71 +99,12 @@ uint32_t checkrain_flags = 0;
 uint32_t palerain_flags = 0;
 uint32_t kpf_flags = 0;
 
-int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char *__restrict format, ...)
-{
-	int ret = 0;
-	char type[0x10];
-	char colour[0x10];
-	char colour_bold[0x10];
-	va_list args;
-	va_start(args, format);
-	if (verbose < (loglevel - 3)) return 0;
-	switch (loglevel) {
-	case LOG_FATAL:
-		snprintf(type, 0x10, "%s", "!");
-		snprintf(colour, 0x10, "%s", RED);
-		snprintf(colour_bold, 0x10, "%s", BRED);
-		break;
-	case LOG_ERROR:
-		snprintf(type, 0x10, "%s", "Error");
-		snprintf(colour, 0x10, "%s", RED);
-		snprintf(colour_bold, 0x10, "%s", BRED);
-		break;
-	case LOG_WARNING:
-		snprintf(type, 0x10, "%s", "Warning");
-		snprintf(colour, 0x10, "%s", YEL);
-		snprintf(colour_bold, 0x10, "%s", BYEL);
-		break;
-	case LOG_INFO:
-		snprintf(type, 0x10, "%s", "Info");
-		snprintf(colour, 0x10, "%s", CYN);
-		snprintf(colour_bold, 0x10, "%s", BCYN);
-		break;
-	default:
-		assert(loglevel >= 0);
-		snprintf(type, 0x10, "%s", "Verbose");
-		snprintf(colour, 0x10, "%s", WHT);
-		snprintf(colour_bold, 0x10, "%s", BWHT);
-		break;
-	}
-	char timestring[0x80];
-	time_t curtime;
-	time(&curtime);
-	struct tm* timeinfo = localtime(&curtime);
-	snprintf(timestring, 0x80, "%s[%s%02d/%02d/%d %02d:%02d:%02d%s]", CRESET, HBLK, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_year - 100, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, CRESET);
-	if (verbose >= 2) {
-		printf("%s| - %s%s <%s> " CRESET "%s" HBLU "%s" CRESET ":" BLU "%d" CRESET ":" BMAG "%s()" CRESET ": \n%s| ----> ", colour_bold, timestring, colour_bold, type, WHT, fname, lineno, fxname, colour_bold);
-	} else {
-		printf(" - %s %s<%s>%s: ", timestring, colour_bold, type, CRESET);
-	}
-	printf("%s", colour);
-	ret = vprintf(format, args);
-	va_end(args);
-	
-	if (verbose < 2)
-		printf(CRESET "\n");
-	else {
-		printf("\n%s-%s\n", colour, CRESET);
-	}
-
-	fflush(stdout);
-	return ret;
-}
+pthread_t dfuhelper_thread, pongo_thread;
+pthread_mutex_t log_mutex;
 
 int found_pongo = 0;
 
-void *pongo_usb_callback(void *arg)
-{
+void *pongo_usb_callback(void *arg) {
 	if (found_pongo)
 		return NULL;
 	found_pongo = 1;
@@ -184,6 +132,10 @@ void *pongo_usb_callback(void *arg)
 	issue_pongo_command(handle, "kpf");
 	issue_pongo_command(handle, "bootux");
 	LOG(LOG_INFO, "Booting Kernel...");
+	device_has_booted = 1;
+	if (dfuhelper_thr_running) {
+		pthread_cancel(dfuhelper_thread);
+	}
 	spin = false;
 	return NULL;
 }
@@ -192,7 +144,6 @@ static struct option longopts[] = {
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
-	{"start-from-pongo", no_argument, NULL, 'P'},
 	{"debug-logging", no_argument, NULL, 'v'},
 	{"verbose-boot", no_argument, NULL, 'V'},
 	{"boot-args", required_argument, NULL, 'e'},
@@ -208,10 +159,10 @@ static struct option longopts[] = {
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
 	{"disable-ohio", no_argument, NULL, 'O'},
-	{NULL, 0, NULL, 0}};
+	{NULL, 0, NULL, 0}
+};
 
-int usage(int e, char* prog_name)
-{
+int usage(int e, char* prog_name) {
 	fprintf(stderr,
 			"Usage: %s [-DhpPvVldsOL] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
@@ -221,7 +172,6 @@ int usage(int e, char* prog_name)
 			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
 			"\t-h, --help\t\t\t\tShow this help\n"
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
-			"\t-P, --start-from-pongo\t\t\tStart with a PongoOS USB Device attached\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
@@ -238,29 +188,30 @@ int usage(int e, char* prog_name)
 			"\t-O, --disable-ohio\t\t\tDisable Ohio\n",
 			prog_name);
 	exit(e);
-}
+};
 
-int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename)
-{
+int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename) {
 	int ret = 0;
 	int fd = open(filename, O_RDONLY);
-	if (fd == -1)
-	{
+	LOG(LOG_VERBOSE5, "override_file() called!");
+	if (fd == -1) {
 		LOG(LOG_ERROR, "Cannot open file %s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
+	LOG(LOG_VERBOSE5, "override_file: opened %s!", filename);
 	struct stat st;
 	ret = fstat(fd, &st);
-	if (ret)
-	{
+	if (ret) {
 		LOG(LOG_ERROR, "Cannot fstat fd from file %s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
+	LOG(LOG_VERBOSE5, "override_file: fstat fd %d succeeded!", fd);	
 	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
 	if (addr == MAP_FAILED) {
 		LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
+	LOG(LOG_VERBOSE5, "override_file: Override file mapped successfully");
 	finfo->magic = OVERRIDE_MAGIC;
 	finfo->fd = fd;
 	finfo->len = (unsigned int)st.st_size;;
@@ -269,8 +220,9 @@ int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *
 	finfo->orig_ptr = **orig;
 	*orig = (niarelap_file_t*)addr;
 	*orig_len = (unsigned int)st.st_size;
+	LOG(LOG_VERBOSE5, "override_file() finished!");
 	return 0;
-}
+};
 
 int build_checks() {
 #if defined(__APPLE__)
@@ -298,17 +250,32 @@ int build_checks() {
 	return 0;
 }
 
-bool dfuhelper_only = false;
-bool pongo_exit = false;
-bool start_from_pongo = false;
-bool palerain_version = false;
+void thr_cleanup(void* ptr) {
+	*(int*)ptr = 0;
+	return;
+}
 
-int main(int argc, char *argv[])
-{
+void* pongo_helper(void* ptr) {
+	pongo_thr_running = 1;
+	pthread_cleanup_push(thr_cleanup, &pongo_thr_running);
+	wait_for_pongo();
+	while (spin) {
+		sleep(1);
+	}
+	pthread_cleanup_pop(1);
+	return NULL;
+}
+
+int palera1n(int argc, char *argv[]) {
+	int mutex_err = pthread_mutex_init(&log_mutex, NULL);
+	if (mutex_err) {
+		fprintf(stderr, "palera1n_init: cannot create mutex: %d (%s)\n", errno, strerror(errno));
+		return -1;
+	}
 	if (build_checks()) return -1;
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpPvVldsOLe:f:o:r:K:k:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "DhpvVldsOLe:f:o:r:K:k:", longopts, NULL)) != -1)
 	{
 		switch (opt)
 		{
@@ -399,8 +366,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	if (palerain_version)
-	{
+	if (palerain_version) {
 		printf("palera1n %s\n", PALERAIN_VERSION);
 		return 0;
 	}
@@ -455,29 +421,32 @@ int main(int argc, char *argv[])
 	}
 	if (verbose >= 5)
 		putenv("LIBUSB_DEBUG=4");
-	if (start_from_pongo == true)
-		goto pongo;
 	LOG(LOG_INFO, "Waiting for devices");
+
 	do_pongo_sleep = 1;
-	pthread_t dfuhelper_thread;
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
+	pthread_create(&pongo_thread, NULL, pongo_helper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
+	if (device_has_booted) goto done;
 	if (dfuhelper_only)
 		return 0;
+	if (pongo_thr_running) {
+		pthread_cancel(pongo_thread);
+	}
 	exec_checkra1n();
 	if (pongo_exit)
 		return 0;
-pongo:
-	spin = true;
-	if (do_pongo_sleep)
-		sleep(2);
 	else
 		LOG(LOG_INFO, "Waiting for PongoOS devices...");
-	wait_for_pongo();
+	spin = true;
+	sleep(2);
+	pthread_create(&pongo_thread, NULL, pongo_helper, NULL);
+	pthread_join(pongo_thread, NULL);
 	while (spin)
 	{
 		sleep(1);
 	}
+done:
 	if (access("/usr/bin/curl", F_OK) == 0 && ohio) {
 		LOG(LOG_VERBOSE4, "Ohio");
 		char* ohio_argv[] = {
@@ -512,5 +481,10 @@ cleanup:
 		munmap(override_overlay.ptr, (size_t)override_overlay.len);
 		close(override_overlay.fd);
 	}
+	pthread_mutex_destroy(&log_mutex);
 	return 0;
+}
+
+int main (int argc, char* argv[]) {
+	return palera1n(argc, argv);
 }

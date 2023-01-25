@@ -61,6 +61,12 @@ extern char* pongo_path;
 extern bool dfuhelper_only;
 extern bool pongo_exit;
 
+extern pthread_t dfuhelper_thread, pongo_thread;
+extern int pongo_thr_running, dfuhelper_thr_running;
+
+extern pthread_mutex_t log_mutex;
+void thr_cleanup(void* ptr);
+
 void* dfuhelper(void* ptr);
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char* __restrict format, ...);
 /* devhelper helpers */

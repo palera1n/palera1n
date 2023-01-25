@@ -2,7 +2,7 @@ SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
 STRIP = strip
 CC ?= cc
-CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC) -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\" -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable
+CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC) -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\" -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wformat
 LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread
 ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)

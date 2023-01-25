@@ -177,9 +177,12 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 }
 
 void *dfuhelper(void* ptr) {
+	dfuhelper_thr_running = 1;
+	pthread_cleanup_push(thr_cleanup, &dfuhelper_thr_running);
 	subscribe_cmd(device_event_cb, irecv_device_event_cb);
 	while (spin) {
 		sleep(1);
 	};
+	pthread_cleanup_pop(1);
 	return 0;
 }
