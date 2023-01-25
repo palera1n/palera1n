@@ -133,7 +133,7 @@ int unsubscribe_cmd();
 int devinfo_cmd(devinfo_t *dev, const char *udid);
 int enter_recovery_cmd(const char* udid);
 int reboot_cmd(const char* udid);
-int passstat_cmd(char* status, const char* udid);
+int passstat_cmd(unsigned char* status, const char* udid);
 int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid);
 int autoboot_cmd(const uint64_t ecid);
 int exitrecv_cmd(const uint64_t ecid);

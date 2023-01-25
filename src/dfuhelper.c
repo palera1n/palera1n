@@ -59,16 +59,18 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		return -1;
 	}
-	if (strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
-		char passcode_state = 0;
+	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
+		unsigned char passcode_state = 0;
 		ret = passstat_cmd(&passcode_state, usbmuxd_device->udid);
 		if (ret != 0) {
 			LOG(LOG_ERROR, "Failed to get passcode state");
 			devinfo_free(&dev);
 			return -1;
 		}
+		LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled\n", dev.productType);
 		if (passcode_state) {
 			LOG(LOG_ERROR, "Passcode must be disabled on this device");
+			LOG(LOG_ERROR, "Additionally, passcode must never be set since restore on iOS 16+");
 			devinfo_free(&dev);
 			return -1;
 		}

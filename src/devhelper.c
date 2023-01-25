@@ -251,7 +251,7 @@ int reboot_cmd(const char* udid) {
 	return 0;
 }
 
-int passstat_cmd(char* status, const char* udid) {
+int passstat_cmd(unsigned char* status, const char* udid) {
 	lockdownd_error_t lerr = LOCKDOWN_E_SUCCESS;
 	diagnostics_relay_error_t derr = DIAGNOSTICS_RELAY_E_SUCCESS;
 
@@ -273,7 +273,7 @@ int passstat_cmd(char* status, const char* udid) {
 	if ((lerr != LOCKDOWN_E_SUCCESS) || !lockdown)
 	{
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error connecting to lockdownd (lockdownd error %d)", lerr);
+		LOG(LOG_ERROR, "Error connecting to lockdownd (lockdownd error %d: (%s))", lerr, lockdownd_strerror(lerr));
 		return -1;
 	}
 	lerr = lockdownd_start_service(lockdown, "com.apple.mobile.diagnostics_relay", &service);
@@ -284,7 +284,7 @@ int passstat_cmd(char* status, const char* udid) {
 	if ((lerr != LOCKDOWN_E_SUCCESS) || !service)
 	{
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error starting diagnostics service (lockdownd error %d)\nUnlock the device and try again.", lerr);
+		LOG(LOG_ERROR, "Error starting diagnostics service (lockdownd error %d: (%s))\nUnlock the device and try again.", lerr, lockdownd_strerror(lerr));
 		return -1;
 	}
 	derr = diagnostics_relay_client_new(dev, service, &diagnostics_client);
@@ -292,7 +292,7 @@ int passstat_cmd(char* status, const char* udid) {
 	{
 		lockdownd_service_descriptor_free(service);
 		idevice_free(dev);
-		LOG(LOG_ERROR, "Error starting diagnostics client (lockdownd error %d)", derr);
+		LOG(LOG_ERROR, "Error starting diagnostics client (diagnostics error %d)", derr);
 		return -1;
 	}
 	keys = plist_new_array();
@@ -306,7 +306,7 @@ int passstat_cmd(char* status, const char* udid) {
 
 	if (derr != DIAGNOSTICS_RELAY_E_SUCCESS || !node)
 	{
-		LOG(LOG_ERROR, "Error getting passcode state (lockdownd error %d)", lerr);
+		LOG(LOG_ERROR, "Error getting passcode state (lockdownd error %d: (%s))", lerr, lockdownd_strerror(lerr));
 		return -1;
 	}
 	status_node = plist_access_path(node, 2, "MobileGestalt", "Status");
@@ -316,18 +316,19 @@ int passstat_cmd(char* status, const char* udid) {
 		LOG(LOG_ERROR, "Error getting passcode state (invalid status node)");
 		return -1;
 	}
-	plist_get_string_val(status_node, &status);
-	if (!status || strncmp(status, "Succ", 4))
+	char* passstat_status;
+	plist_get_string_val(status_node, &passstat_status);
+	if (!status || strncmp(passstat_status, "Succ", 4))
 	{
-		if (status)
-			free(status);
+		if (passstat_status)
+			free(passstat_status);
 
 		plist_free(node);
 		LOG(LOG_ERROR, "Error getting passcode state (invalid status)");
 		return -1;
 	}
 
-	free(status);
+	free(passstat_status);
 	value_node = plist_access_path(node, 2, "MobileGestalt", "xsaMbRQ5rQ+eyKMKG+ZSSg");
 	if (!value_node)
 	{
@@ -339,6 +340,7 @@ int passstat_cmd(char* status, const char* udid) {
 	plist_get_bool_val(value_node, &passcode_state);
 	plist_free(node);
 	*status = passcode_state;
+	LOG(LOG_VERBOSE4, "Passcode state: %hhu", *status);
 	return 0;
 }
 
