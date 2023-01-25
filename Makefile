@@ -21,7 +21,7 @@ LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx50
 LIBS += $(DEP)/lib/libusb-1.0.a
 
 ifeq ($(DEV_BUILD),1)
-CFLAGS += -O0 -g
+CFLAGS += -O0 -g -DDEV_BUILD
 else
 CFLAGS += -Os -g
 endif
