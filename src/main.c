@@ -95,10 +95,10 @@ int main(int argc, char *argv[]) {
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
 	if (dfuhelper_only)
-		return 0;
+		goto normal_exit;
 	exec_checkra1n();
-	if (pongo_exit)
-		return 0;
+	if (pongo_exit || demote)
+		goto normal_exit;
 pongo:
 	spin = true;
 	if (do_pongo_sleep)
@@ -110,6 +110,7 @@ pongo:
 	{
 		sleep(1);
 	}
+normal_exit:
 	if (access("/usr/bin/curl", F_OK) == 0 && ohio) {
 		LOG(LOG_VERBOSE4, "Ohio");
 		char* ohio_argv[] = {
