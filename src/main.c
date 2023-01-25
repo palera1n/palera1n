@@ -22,44 +22,13 @@
 #include <sys/mman.h>
 #include <time.h>
 
+#include <libusb-1.0/libusb.h>
 #include <libimobiledevice/libimobiledevice.h>
-
-#if defined(__APPLE__)
-#include <mach-o/loader.h>
-#include <mach-o/ldsyms.h>
-#else
-#define MH_MAGIC_64 0xfeedfacf
-#define MH_CIGAM_64 0xcffaedfe
-#define MH_KEXT_BUNDLE 0xb
-
-typedef int cpu_type_t;
-typedef int cpu_subtype_t;
-
-#define CPU_ARCH_ABI64          0x01000000
-#define CPU_TYPE_ARM            ((cpu_type_t) 12)
-#define CPU_TYPE_ARM64          (CPU_TYPE_ARM | CPU_ARCH_ABI64)
-
-struct mach_header_64
-{
-	uint32_t magic;			  /* mach magic number identifier */
-	cpu_type_t cputype;		  /* cpu specifier */
-	cpu_subtype_t cpusubtype; /* machine specifier */
-	uint32_t filetype;		  /* type of file */
-	uint32_t ncmds;			  /* number of load commands */
-	uint32_t sizeofcmds;	  /* the size of all the load commands */
-	uint32_t flags;			  /* flags */
-	uint32_t reserved;		  /* reserved */
-};
-
-#endif
 
 #include "ANSI-color-codes.h"
 #include "common.h"
 #include "checkra1n.h"
 #include "kerninfo.h"
-
-#define CMD_LEN_MAX 512
-#define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0U;
 int enable_rootful = 0;
@@ -78,10 +47,8 @@ extern char** environ;
 
 bool dfuhelper_only = false;
 bool pongo_exit = false;
-bool start_from_pongo = false;
 bool palerain_version = false;
 
-typedef unsigned char niarelap_file_t[];
 
 niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;
 niarelap_file_t* ramdisk_to_upload_1 = &ramdisk_dmg;
@@ -101,128 +68,6 @@ uint32_t kpf_flags = 0;
 
 pthread_t dfuhelper_thread, pongo_thread;
 pthread_mutex_t log_mutex;
-
-int found_pongo = 0;
-
-void *pongo_usb_callback(void *arg) {
-	if (found_pongo)
-		return NULL;
-	found_pongo = 1;
-	LOG(LOG_INFO, "Found PongoOS USB Device");
-	usb_device_handle_t handle = *(usb_device_handle_t *)arg;
-	issue_pongo_command(handle, NULL);
-	issue_pongo_command(handle, "fuse lock");
-	issue_pongo_command(handle, "sep auto");
-	upload_pongo_file(handle, **kpf_to_upload, checkra1n_kpf_pongo_len);
-	issue_pongo_command(handle, "modload");
-	issue_pongo_command(handle, kpf_flags_cmd);
-	issue_pongo_command(handle, checkrain_flags_cmd);
-	issue_pongo_command(handle, palerain_flags_cmd);
-	if (enable_rootful)
-	{
-		issue_pongo_command(handle, rootfs_cmd);
-		issue_pongo_command(handle, dtpatch_cmd);
-	}
-	strcat(xargs_cmd, " rootdev=md0");
-	upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
-	issue_pongo_command(handle, "ramdisk");
-	upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
-	issue_pongo_command(handle, "overlay");
-	issue_pongo_command(handle, xargs_cmd);
-	issue_pongo_command(handle, "kpf");
-	issue_pongo_command(handle, "bootux");
-	LOG(LOG_INFO, "Booting Kernel...");
-	device_has_booted = 1;
-	if (dfuhelper_thr_running) {
-		pthread_cancel(dfuhelper_thread);
-	}
-	spin = false;
-	return NULL;
-}
-
-static struct option longopts[] = {
-	{"dfuhelper", no_argument, NULL, 'D'},
-	{"help", no_argument, NULL, 'h'},
-	{"pongo-shell", no_argument, NULL, 'p'},
-	{"debug-logging", no_argument, NULL, 'v'},
-	{"verbose-boot", no_argument, NULL, 'V'},
-	{"boot-args", required_argument, NULL, 'e'},
-	{"rootfs", required_argument, NULL, 'f'},
-	{"rootless", no_argument, NULL, 'l'},
-	{"jbinit-log-to-file", no_argument, NULL, 'L'},
-	{"demote", no_argument, NULL, 'd'},
-	{"force-revert", no_argument, NULL, checkrain_option_force_revert},
-	{"safe-mode", no_argument, NULL, 's'},
-	{"version", no_argument, NULL, palerain_option_version},
-	{"override-pongo", required_argument, NULL, 'k'},
-	{"override-overlay", required_argument, NULL, 'o'},
-	{"override-ramdisk", required_argument, NULL, 'r'},
-	{"override-kpf", required_argument, NULL, 'K'},
-	{"disable-ohio", no_argument, NULL, 'O'},
-	{NULL, 0, NULL, 0}
-};
-
-int usage(int e, char* prog_name) {
-	fprintf(stderr,
-			"Usage: %s [-DhpPvVldsOL] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
-			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
-			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
-			"\t--version\t\t\t\tPrint version\n"
-			"\t--force-revert\t\t\t\tRemove jailbreak (on rootless)\n"
-			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
-			"\t-h, --help\t\t\t\tShow this help\n"
-			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
-			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
-			"\t\tThis option can be repeated for extra verbosity.\n"
-			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
-			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
-			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
-			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n"
-			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
-			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
-			"\t-d, --demote\t\t\t\tDemote\n"
-			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
-			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
-			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
-			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
-			"\t-O, --disable-ohio\t\t\tDisable Ohio\n",
-			prog_name);
-	exit(e);
-};
-
-int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename) {
-	int ret = 0;
-	int fd = open(filename, O_RDONLY);
-	LOG(LOG_VERBOSE5, "override_file() called!");
-	if (fd == -1) {
-		LOG(LOG_ERROR, "Cannot open file %s: %d (%s)", filename, errno, strerror(errno));
-		return errno;
-	}
-	LOG(LOG_VERBOSE5, "override_file: opened %s!", filename);
-	struct stat st;
-	ret = fstat(fd, &st);
-	if (ret) {
-		LOG(LOG_ERROR, "Cannot fstat fd from file %s: %d (%s)", filename, errno, strerror(errno));
-		return errno;
-	}
-	LOG(LOG_VERBOSE5, "override_file: fstat fd %d succeeded!", fd);	
-	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
-	if (addr == MAP_FAILED) {
-		LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", filename, errno, strerror(errno));
-		return errno;
-	}
-	LOG(LOG_VERBOSE5, "override_file: Override file mapped successfully");
-	finfo->magic = OVERRIDE_MAGIC;
-	finfo->fd = fd;
-	finfo->len = (unsigned int)st.st_size;;
-	finfo->ptr = *(niarelap_file_t*)addr;
-	finfo->orig_len = *orig_len;
-	finfo->orig_ptr = **orig;
-	*orig = (niarelap_file_t*)addr;
-	*orig_len = (unsigned int)st.st_size;
-	LOG(LOG_VERBOSE5, "override_file() finished!");
-	return 0;
-};
 
 int build_checks() {
 #if defined(__APPLE__)
@@ -255,172 +100,15 @@ void thr_cleanup(void* ptr) {
 	return;
 }
 
-void* pongo_helper(void* ptr) {
-	pongo_thr_running = 1;
-	pthread_cleanup_push(thr_cleanup, &pongo_thr_running);
-	wait_for_pongo();
-	while (spin) {
-		sleep(1);
-	}
-	pthread_cleanup_pop(1);
-	return NULL;
-}
-
 int palera1n(int argc, char *argv[]) {
+	int ret = 0;
 	int mutex_err = pthread_mutex_init(&log_mutex, NULL);
 	if (mutex_err) {
 		fprintf(stderr, "palera1n_init: cannot create mutex: %d (%s)\n", errno, strerror(errno));
 		return -1;
 	}
 	if (build_checks()) return -1;
-	int opt;
-	int index;
-	while ((opt = getopt_long(argc, argv, "DhpvVldsOLe:f:o:r:K:k:", longopts, NULL)) != -1)
-	{
-		switch (opt)
-		{
-		case 'P':
-			start_from_pongo = true;
-			break;
-		case 'p':
-			pongo_exit = true;
-			break;
-		case 'D':
-			dfuhelper_only = true;
-			break;
-		case 'h':
-			usage(0, argv[0]);
-			assert(0);
-		case 'v':
-			verbose++;
-			break;
-		case 'V':
-			kpf_flags |= checkrain_option_verbose_boot;
-			break;
-		case 'e':
-			if (strstr(optarg, "rootdev=") != NULL) {
-				LOG(LOG_FATAL, "The boot arg rootdev= is already used by palera1n and cannot be overriden");
-				return -1;
-			}
-			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
-			break;
-		case 'f':
-			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
-			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
-			enable_rootful = 1;
-			break;
-		case 'l':
-			enable_rootful = 0;
-			break;
-		case 'L':
-			palerain_flags |= palerain_option_jbinit_log_to_file;
-			break;
-		case 'd':
-			demote = 1;
-			break;
-		case 's':
-			checkrain_flags |= checkrain_option_safemode;
-			break;
-		case 'k':
-			if (access(optarg, F_OK) != 0) {
-				LOG(LOG_FATAL, "Cannot access pongo file at %s: %d (%s)", optarg, errno, strerror(errno));
-				return -1;
-			}
-			pongo_path = malloc(strlen(optarg) + 1);
-			strcpy(pongo_path, optarg);
-			break;
-		case 'o':
-			if (override_file(&override_overlay, overlay_to_upload, &binpack_dmg_len, optarg))
-				return 1;
-			break;
-		case 'r':
-			if (override_file(&override_ramdisk, ramdisk_to_upload, &ramdisk_dmg_len, optarg))
-				return 1;
-			break;
-		case 'K':
-			if (override_file(&override_kpf, kpf_to_upload, &checkra1n_kpf_pongo_len, optarg))
-				return 1;
-			struct mach_header_64* hdr = (struct mach_header_64*)override_kpf.ptr;
-			if (hdr->magic != MH_MAGIC_64 && hdr->magic != MH_CIGAM_64) {
-				LOG(LOG_FATAL, "Invalid kernel patchfinder: Not thin 64-bit Mach-O");
-				goto cleanup;
-			} else if (hdr->filetype != MH_KEXT_BUNDLE) {
-				LOG(LOG_FATAL, "Invalid kernel patchfinder: Not a kext bundle");
-				goto cleanup;
-			} else if (hdr->cputype != CPU_TYPE_ARM64) {
-				LOG(LOG_FATAL, "Invalid kernel patchfinder: CPU type is not arm64");
-				goto cleanup;
-			}
-			break;
-		case 'O':
-			ohio = false;
-			break;
-		case checkrain_option_force_revert:
-			checkrain_flags |= checkrain_option_force_revert;
-			break;
-		case palerain_option_version:
-			palerain_version = true;
-			break;
-		default:
-			usage(1, argv[0]);
-			break;
-		}
-	}
-	if (palerain_version) {
-		printf("palera1n %s\n", PALERAIN_VERSION);
-		return 0;
-	}
-
-	if (enable_rootful) {
-		palerain_flags |= palerain_option_rootful;
-	}
-
-	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);
-	snprintf(palerain_flags_cmd, 0x20, "palera1n_flags 0x%x", palerain_flags);
-	snprintf(kpf_flags_cmd, 0x20, "kpf_flags 0x%x", kpf_flags);
-	LOG(LOG_VERBOSE3, "checkrain_flags: %s", checkrain_flags_cmd);
-	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);
-	LOG(LOG_VERBOSE3, "kpf_flags: %s", kpf_flags_cmd);
-	if (override_kpf.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "kpf override length %u -> %u", override_kpf.orig_len, checkra1n_kpf_pongo_len);
-		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p", override_kpf.orig_ptr, **kpf_to_upload);
-	}
-	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u", override_ramdisk.orig_len, ramdisk_dmg_len);
-		LOG(LOG_VERBOSE4, "ramdisk override ptr %p -> %p", override_ramdisk.orig_ptr, **ramdisk_to_upload);
-	}
-	if (override_overlay.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "overlay override length %u -> %u", override_overlay.orig_len, binpack_dmg_len);
-		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
-	}
-
-	for (index = optind; index < argc; index++)
-	{
-		if (!strcmp("windows", argv[index]))
-		{
-			fprintf(stderr,
-					"Windows not really using for manipulating OSX images,\n"
-					"compiled in mingw tool for this working unstable and incorrectly\n");
-			return -2;
-		}
-		else
-		{
-			fprintf(stderr, "%s: unknown argument: %s\n", argv[0], argv[index]);
-			usage(1, argv[0]);
-		}
-	}
-	if (verbose >= 2) putenv("LIBUSB_DEBUG=1");
-	if (verbose >= 3)
-	{
-		irecv_set_debug_level(1);
-		putenv("LIBUSB_DEBUG=2");
-	}
-	if (verbose >= 4) {
-		idevice_set_debug_level(1);
-		putenv("LIBUSB_DEBUG=3");
-	}
-	if (verbose >= 5)
-		putenv("LIBUSB_DEBUG=4");
+	if ((ret = optparse(argc, argv))) goto cleanup;
 	LOG(LOG_INFO, "Waiting for devices");
 
 	do_pongo_sleep = 1;
@@ -482,7 +170,7 @@ cleanup:
 		close(override_overlay.fd);
 	}
 	pthread_mutex_destroy(&log_mutex);
-	return 0;
+	return ret;
 }
 
 int main (int argc, char* argv[]) {
