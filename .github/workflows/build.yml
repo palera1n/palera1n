@@ -245,7 +245,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/palera1n-c'
+          remoteDir: '/uploads/palera1n/artifacts/palera1n-c'
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
         uses: actions/upload-artifact@v3
@@ -305,7 +305,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/palera1n-c'
+          remoteDir: '/uploads/palera1n/artifacts/palera1n-c'
 
   build-Linux:
     strategy:
@@ -536,4 +536,4 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/palera1n-c'
+          remoteDir: '/uploads/palera1n/artifacts/palera1n-c'
