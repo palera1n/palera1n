@@ -71,19 +71,12 @@ You may join [here](https://dsc.gg/palera1n).
 Thank you so much to our Patrons that make the future development possible! You may sub [here](https://patreon.com/palera1n), if you'd like to.
 
 <a href="https://github.com/samh06"><img width=64 src="https://user-images.githubusercontent.com/18669106/206333607-881d7ca1-f3bf-4e18-b620-25de0c527315.png"></img></a>
-
 <a href="https://havoc.app"><img width=64 src="https://docs.havoc.app/img/standard_icon.png"></img></a>
-
 <a href="https://twitter.com/yyyyyy_public"><img width=64  src="https://pbs.twimg.com/profile_images/1429332550112079876/dQQgsURc_400x400.jpg"></img></a>
-
 <a href="https://twitter.com/0xSp00kyb0t"><img width=64  src="https://pbs.twimg.com/profile_images/1603601553226620935/1t4yD1bD_400x400.jpg"></img></a>
-
 <a href="https://chariz.com"><img width=64 src="https://chariz.com/img/favicon.png"></img></a>
-
 <a href="https://twitter.com/stars6220"><img width=64  src="https://pbs.twimg.com/profile_images/1611846176260689923/_n_js7gq_400x400.jpg"></img></a>
-
 <a href="https://github.com/beast9265"><img width=64 src="https://avatars.githubusercontent.com/u/79794946?v=4"></img></a>
-
 <a href="https://blog.stevesec.com/"><img width=64 src="https://blog.stevesec.com/img/avatar.jpg"></img></a>
 
 # Repos
