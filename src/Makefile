@@ -1,7 +1,6 @@
 all: palera1n
 
-OBJECTS = main.o dfuhelper.o devhelper.o lockdown_helper.o exec_checkra1n.o
-OBJECTS += pongo_usb.o checkra1n.o log.o optparse.o override_file.o pongo_helper.o
+OBJECTS = main.o dfuhelper.o devhelper.o lockdown_helper.o exec_checkra1n.o pongo_usb.o checkra1n.o log.o
 CHECKRA1N_VERSION ?= 0.1337.1
 LIPO = lipo
 LDID = ldid
