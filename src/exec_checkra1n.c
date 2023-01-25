@@ -44,9 +44,9 @@ void exec_checkra1n() {
 		unlink(checkra1n_path);
 	}
 	char args[0x10] = "-pE";
-	if (demote) strcat(args, "d");
-	if (verbose >= 2) strcat(args, "v");
-	if (pongo_path != NULL) strcat(args, "k"); // keep this at last
+	if (demote) strncat(args, "d", 0x10);
+	if (verbose >= 2) strncat(args, "v", 0x10);
+	if (pongo_path != NULL) strncat(args, "k", 0x10); // keep this at last
 	pid_t pid;
 	char* checkra1n_argv[] = {
 		checkra1n_path,

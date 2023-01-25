@@ -44,7 +44,7 @@ void *pongo_usb_callback(void *arg) {
 		issue_pongo_command(handle, rootfs_cmd);
 		issue_pongo_command(handle, dtpatch_cmd);
 	}
-	strcat(xargs_cmd, " rootdev=md0");
+	strncat(xargs_cmd, " rootdev=md0", 0x270);
 	upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
 	issue_pongo_command(handle, "ramdisk");
 	upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);

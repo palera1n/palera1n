@@ -103,7 +103,7 @@ static char* _send_request_and_get_reply(int fd, const char* request, uint32_t l
 int lockdown_check_type(int fd, const char* type_match)
 {
 	unsigned char tmp[512];
-	uint32_t len = (uint32_t)sprintf((char*)tmp, QUERY_TYPE_REQUEST);
+	uint32_t len = (uint32_t)snprintf((char*)tmp, 512, QUERY_TYPE_REQUEST);
 	uint32_t belen = htonl(len-4);
 	*(uint32_t*)tmp = belen;
 	uint32_t resp_size = 0;
@@ -124,9 +124,9 @@ int lockdown_get_uint_value(int fd, const char* domain, const char* key, uint64_
 	char tmp[1024];
 	uint32_t len;
 	if (domain) {
-		len = sprintf(tmp, GET_VALUE_DOMAIN_REQUEST_FMT, domain, key);
+		len = snprintf(tmp, 1024, GET_VALUE_DOMAIN_REQUEST_FMT, domain, key);
 	} else {
-		len = sprintf(tmp, GET_VALUE_REQUEST_FMT, key);
+		len = snprintf(tmp, 1024, GET_VALUE_REQUEST_FMT, key);
 	}
 	*(uint32_t*)&tmp = htonl(len-4);
 
@@ -164,9 +164,9 @@ int lockdown_get_string_value(int fd, const char* domain, const char* key, char*
 	char tmp[1024];
 	uint32_t len;
 	if (domain) {
-		len = sprintf(tmp, GET_VALUE_DOMAIN_REQUEST_FMT, domain, key);
+		len = snprintf(tmp, 1024, GET_VALUE_DOMAIN_REQUEST_FMT, domain, key);
 	} else {
-		len = sprintf(tmp, GET_VALUE_REQUEST_FMT, key);
+		len = snprintf(tmp, 1024, GET_VALUE_REQUEST_FMT, key);
 	}
 	*(uint32_t*)&tmp = htonl(len-4);
 
@@ -215,7 +215,7 @@ int lockdown_get_string_value(int fd, const char* domain, const char* key, char*
 int lockdown_enter_recovery(int fd)
 {
 	char tmp[512];
-	uint32_t len = (uint32_t)sprintf(tmp, ENTER_RECOVERY_REQUEST);
+	uint32_t len = (uint32_t)snprintf(tmp, 512, ENTER_RECOVERY_REQUEST);
 	*(uint32_t*)&tmp = htonl(len-4);
 	uint32_t resp_size = 0;
 	char* resp = _send_request_and_get_reply(fd, tmp, len, &resp_size);

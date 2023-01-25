@@ -82,7 +82,7 @@ int build_checks() {
 
 bool dfuhelper_only = false, pongo_exit = false, start_from_pongo = false, palerain_version = false;
 
-int main(int argc, char *argv[]) {
+int palera1n(int argc, char *argv[]) {
 	int ret = 0;
 	pthread_mutex_init(&log_mutex, NULL);
 	if ((ret = build_checks())) return ret;
@@ -146,4 +146,8 @@ cleanup:
 		close(override_overlay.fd);
 	}
 	return ret;
+}
+
+int main (int argc, char* argv[]) {
+	return palera1n(argc, argv);
 }
