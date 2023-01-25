@@ -77,6 +77,7 @@ Thank you so much to our Patrons that make the future development possible! You 
 <a href="https://chariz.com"><img width=64 src="https://chariz.com/img/favicon.png"></img></a>
 <a href="https://twitter.com/stars6220"><img width=64  src="https://pbs.twimg.com/profile_images/1611846176260689923/_n_js7gq_400x400.jpg"></img></a>
 <a href="https://github.com/beast9265"><img width=64 src="https://avatars.githubusercontent.com/u/79794946?v=4"></img></a>
+<a href="https://twitter.com/0x7FF7"><img width=64 src="https://pbs.twimg.com/profile_images/1616888462665306113/AsjJvtyt_400x400.jpg"></img></a>
 <a href="https://sideloadly.io/"><img width=64 src="https://sideloadly.io/icon.png"></img></a>
 <a href="https://blog.stevesec.com/"><img width=64 src="https://blog.stevesec.com/img/avatar.jpg"></img></a>
 
