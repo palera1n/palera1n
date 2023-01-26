@@ -131,5 +131,5 @@ If you want to make a rootless repo, use the official [palera1n repo](https://gi
 
 - [Oliver Tzeng](https://github.com/olivertzeng) for helping with improving the script with gum
 
-- [charmbracelet](https://github.com/charmbracelet)for the gum library
+- [charmbracelet](https://github.com/charmbracelet) for the gum library
 
