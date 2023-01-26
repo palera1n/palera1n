@@ -66,7 +66,7 @@ step() {
 print_help() {
     cat << EOF
 Usage: $0 [Options] [ subcommand | iOS version ]
-iOS 15.0-16.2 jailbreak tool for checkm8 devices
+iOS 15.0-16.3 jailbreak tool for checkm8 devices
 
 Options:
     --help              Print this help
@@ -450,7 +450,7 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
 	gum style \
         --foreground 178 --border-foreground 178 --border double \
         --align center --width 50 --margin "1 2" --padding "2 4" \
-		'$(gum format "**!!! WARNING WARNING WARNING !!!**")' "This flag will add tweak support BUT WILL BE TETHERED." "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT." "THIS WORKS ON 15.0-16.2" "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT" "AND WE WARNED YOU" "DO YOU UNDERSTAND?" "TYPE $(gum style --foreground 226 'Yes, do as I say')" "TO CONTINUE"
+		'$(gum format "**!!! WARNING WARNING WARNING !!!**")' "This flag will add tweak support BUT WILL BE TETHERED." "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT." "THIS WORKS ON 15.0-16.3" "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT" "AND WE WARNED YOU" "DO YOU UNDERSTAND?" "TYPE $(gum style --foreground 226 'Yes, do as I say')" "TO CONTINUE"
 	answer=$(gum input --placeholder 'Yes, do as I say')
 	if [ "$answer" = 'Yes, do as I say' ]; then
         gum style \
