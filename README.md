@@ -85,7 +85,7 @@ See the [wiki](https://github.com/palera1n/palera1n-c/wiki).-->
 - [Nebula](https://github.com/itsnebulalol), palera1n owner and Python rewrite lead developer
 - [Nathan](https://github.com/verygenericname)
 - [Mineek](https://github.com/mineek)
-    - Work on jbinit, together with [Nick Chan](https://github.com/asdfugil)
+- [Nick Chan](https://github.com/asdfugil)
 - [Amy](https://github.com/elihwyma) for the [Pogo](https://github.com/elihwyma/Pogo) app
 - [checkra1n](https://github.com/checkra1n) for the base of the kpf
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing [bootstrap](https://github.com/ProcursusTeam/Procursus)
