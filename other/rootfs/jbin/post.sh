@@ -7,5 +7,5 @@ $binpack/usr/bin/uicache -p /jbin/loader.app
 # respring
 $binpack/usr/bin/killall -9 SpringBoard
 
-echo "[post.sh] done"
+gum format "## [post.sh] done"
 exit

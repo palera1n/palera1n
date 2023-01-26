@@ -513,7 +513,7 @@ function _wait_for_device() {
             echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
             exit
         fi
-        echo "Hello, $(_info normal ProductType) on $version!"
+		gum format "### Hello, $(_info normal ProductType) on $version!"
 
         echo "[*] Switching device into recovery mode..."
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
@@ -829,7 +829,6 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # Checking network connection before downloads
         _check_network_connection
 		
-DownloadLoader () {
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
@@ -839,9 +838,7 @@ DownloadLoader () {
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
-}
 
-DownloadJbinit () {       
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
         echo "[*] Downloading jbinit files"
@@ -850,20 +847,15 @@ DownloadJbinit () {
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip
         cd ../../..
-}
 
-DownloadBinpack () {       
         # download binpack
         mkdir -p other/rootfs/jbin/binpack
         echo "[*] Downloading binpack"
         curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
-}
         # Loading...
-        gum spin --spinner dot --title "Downloading Loader..." -- DownloadLoader
-        gum spin --spinner line --title "Downloading JBinit Files..." -- DownloadJbinit
-		gum spin --spinner pulse --title "Downloading Binpack..." -- DownloadBinpack
 		sleep 1
         remote_cp -r other/rootfs/* root@localhost:/mnt$di
+
         {
             echo "{"
             echo "    \"version\": \"${version} (${commit}_${branch})\","
