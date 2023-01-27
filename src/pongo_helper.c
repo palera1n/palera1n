@@ -29,6 +29,10 @@ void *pongo_usb_callback(void *arg) {
 	if (found_pongo)
 		return NULL;
 	found_pongo = 1;
+	strncat(xargs_cmd, " rootdev=md0", 0x270);
+	if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
+		strncat(xargs_cmd, " wdt=-1", 0x270);	
+	}
 	LOG(LOG_INFO, "Found PongoOS USB Device");
 	usb_device_handle_t handle = *(usb_device_handle_t *)arg;
 	issue_pongo_command(handle, NULL);	
@@ -44,7 +48,6 @@ void *pongo_usb_callback(void *arg) {
 		issue_pongo_command(handle, rootfs_cmd);
 		issue_pongo_command(handle, dtpatch_cmd);
 	}
-	strncat(xargs_cmd, " rootdev=md0", 0x270);
 	upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
 	issue_pongo_command(handle, "ramdisk");
 	upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);

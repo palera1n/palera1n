@@ -13,6 +13,8 @@
 #include "common.h"
 
 static struct option longopts[] = {
+	{"setup-fakefs", no_argument, NULL, 'c'},
+	{"setup-fakefs-forced", no_argument, NULL, 'C'},
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
@@ -32,16 +34,19 @@ static struct option longopts[] = {
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
 	{"disable-ohio", no_argument, NULL, 'O'},
-	{NULL, 0, NULL, 0}};
+	{NULL, 0, NULL, 0}
+};
 
 static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
-			"Usage: %s [-DhpPvVldsOL] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			"Usage: %s [-cCDhpPvVldsOL] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
-			"\t--force-revert\t\t\t\tRemove jailbreak (on rootless)\n"
+			"\t--force-revert\t\t\t\tRemove jailbreak\n"
+			"\t-c, --setup-fakefs\t\t\tSetup fakefs\n"
+			"\t-C, --setup-fakefs-forced\t\tSetup fakefs and overwrite any existing ones\n"
 			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
 			"\t-h, --help\t\t\t\tShow this help\n"
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
@@ -67,9 +72,18 @@ static int usage(int e, char* prog_name)
 int optparse(int argc, char* argv[]) {
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "DhpvVldsOLe:f:o:r:K:k:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "cCDhpvVldsOLe:f:o:r:K:k:", longopts, NULL)) != -1)
 	{
 		switch (opt) {
+		case 'c':
+			palerain_flags |= palerain_option_setup_rootful;
+			kpf_flags |= checkrain_option_verbose_boot;
+			break;
+		case 'C':
+			palerain_flags |= palerain_option_setup_rootful;	
+			palerain_flags |= palerain_option_setup_rootful_forced;
+			kpf_flags |= checkrain_option_verbose_boot;
+			break;
 		case 'p':
 			pongo_exit = true;
 			break;

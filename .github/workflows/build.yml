@@ -43,7 +43,7 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           cd src
-          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
+          curl -LOOO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/checkra1n-kpf-pongo \
             https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.dmg \
             https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
           cd ..
@@ -381,7 +381,7 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           cd src
-          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
+          curl -LOOO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/checkra1n-kpf-pongo \
             https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.dmg \
             https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
           cd ..

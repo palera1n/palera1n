@@ -54,8 +54,10 @@
 #define checkrain_option_force_revert       (1 << 7) /* keep this at 7 */
 
 // palera1n option
-#define palerain_option_rootful             (1 << 0)
-#define palerain_option_jbinit_log_to_file  (1 << 1)
+#define palerain_option_rootful              (1 << 0) /* rootful jailbreak */
+#define palerain_option_jbinit_log_to_file   (1 << 1) /* log to /cores/jbinit.log */
+#define palerain_option_setup_rootful        (1 << 2) /* create fakefs */
+#define palerain_option_setup_rootful_forced (1 << 3) /* create fakefs over an existing one */
 
 #define PALEINFO_MAGIC 'PLSH'
 #define PALEINFO_CIGAM 'HSLP'
