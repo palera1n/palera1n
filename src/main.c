@@ -87,6 +87,7 @@ int palera1n(int argc, char *argv[]) {
 	pthread_mutex_init(&log_mutex, NULL);
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
+	if (palerain_version) goto normal_exit;
 	if (start_from_pongo == true)
 		goto pongo;
 	LOG(LOG_INFO, "Waiting for devices");
