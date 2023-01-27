@@ -29,16 +29,17 @@ iOS 15.0-16.3 work in progress, semi-tethered checkm8 jailbreak
 
 This is mainly for ROOTLESS, and is NOT READY. It was made public so you can contribute and explore the code. This is not the final product.
 
-This version of palera1n supports booting rootful setups with the `-f <root device>` option (like `-f disk0s1s8`), but not create them.
+This version of palera1n supports booting fakefs setups with the `-f <root device>` option (like `-f disk0s1s8`).
 
-Loader app does appear on rootless but cannot bootstrap, you may use the SSH server listening at 127.0.0.1:44 (IPv4) or ::1:44 (IPv6).
+This version of palera1n is able to create fakefs with the `-c` option, however as of right now if the `/jbin/loader.app`
+doesn't exist (which is true for any fakefs created with this version of palera1n), the loader that appears would be rootless.
 
-If the device is previously jailbroken, the jailbreak environment is automatically prepared and ends with a respring. 
+Loader app does appear on rootless, and you can use the SSH server listening at 127.0.0.1:44 (IPv4) or ::1:44 (IPv6).
+
+If the device is previously jailbroken, the jailbreak environment is automatically prepared. 
 You can use the `-s` option to skip this behaviour.
 
 Usbmuxd is only required for starting in normal mode, it is not required when started from recovery or DFU mode. (Usbmuxd is preinstalled with macOS)
-
-The `--force-revert` option only works on rootless.
 
 You can obtain the latest build of palera1n-c [here](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/).
 
