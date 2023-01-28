@@ -9,7 +9,8 @@ checkra1n*
 payload.c
 src/palera1n
 palera1n*
-!checkra1n.h
+!xxd-embedded.h
 src/binpack.dmg
 src/ramdisk.dmg
+src/xxd-*.c
 .DS_Store

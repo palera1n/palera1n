@@ -2,7 +2,7 @@
 #define COMMON_H
 
 #include "lockdown_helper.h"
-#include "checkra1n.h"
+#include "xxd-embedded.h"
 #include "kerninfo.h"
 #include <stdbool.h>
 #include <stdint.h>

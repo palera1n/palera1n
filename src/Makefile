@@ -1,7 +1,10 @@
 all: palera1n
 
 OBJECTS  = main.o dfuhelper.o devhelper.o lockdown_helper.o exec_checkra1n.o
-OBJECTS += pongo_usb.o checkra1n.o optparse.o override_file.o pongo_helper.o log.o
+OBJECTS += pongo_usb.o optparse.o override_file.o pongo_helper.o log.o
+OBJECTS += xxd-checkra1n.o xxd-checkra1n-kpf-pongo.o xxd-ramdisk.dmg.o
+OBJECTS += xxd-binpack.dmg.o
+
 CHECKRA1N_VERSION ?= 0.1337.1
 LIPO = lipo
 LDID = ldid
@@ -32,11 +35,8 @@ else
 	cp checkra1n-$(CHECKRA1N_NAME) checkra1n
 endif
 
-checkra1n.c: checkra1n checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
-	xxd -iC checkra1n > checkra1n.c
-	xxd -iC checkra1n-kpf-pongo >> checkra1n.c
-	xxd -iC ramdisk.dmg >> checkra1n.c
-	xxd -iC binpack.dmg >> checkra1n.c
+xxd-%.c: %
+	xxd -iC $< > $@
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $<

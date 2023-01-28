@@ -26,7 +26,7 @@
 
 #include "ANSI-color-codes.h"
 #include "common.h"
-#include "checkra1n.h"
+#include "xxd-embedded.h"
 #include "kerninfo.h"
 
 #define CMD_LEN_MAX 512
