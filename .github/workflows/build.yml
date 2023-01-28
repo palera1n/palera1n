@@ -86,6 +86,7 @@ jobs:
           echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path)" >> $GITHUB_ENV
           echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Wno-error-implicit-function-declaration" >> $GITHUB_ENV
           echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
+          echo $(echo $(brew --cellar)/ncurses/*/bin/tic | sed 's|/tic||') >> $GITHUB_PATH
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
