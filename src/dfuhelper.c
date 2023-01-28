@@ -24,8 +24,8 @@
 #include <libirecovery.h>
 #include <usbmuxd.h>
 
-#include "ANSI-color-codes.h"
-#include "common.h"
+#include <ANSI-color-codes.h>
+#include <common.h>
 
 #define FORMAT_KEY_VALUE 1
 #define FORMAT_XML 2

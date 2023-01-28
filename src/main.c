@@ -24,10 +24,10 @@
 
 #include <libimobiledevice/libimobiledevice.h>
 
-#include "ANSI-color-codes.h"
-#include "common.h"
-#include "xxd-embedded.h"
-#include "kerninfo.h"
+#include <ANSI-color-codes.h>
+#include <common.h>
+#include <xxd-embedded.h>
+#include <kerninfo.h>
 
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376

@@ -17,8 +17,8 @@
 
 extern char **environ;
 
-#include "common.h"
-#include "xxd-embedded.h"
+#include <common.h>
+#include <xxd-embedded.h>
 char* pongo_path = NULL;
 
 void exec_checkra1n() {

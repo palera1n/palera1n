@@ -1,7 +1,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "lockdown_helper.h"
 #include "xxd-embedded.h"
 #include "kerninfo.h"
 #include <stdbool.h>

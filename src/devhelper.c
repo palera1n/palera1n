@@ -34,7 +34,7 @@
 #include <libtvcontrol.h>
 #endif
 
-#include "common.h"
+#include <common.h>
 
 irecv_device_event_context_t irecvctx = NULL;
 

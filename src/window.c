@@ -11,8 +11,8 @@
 #include <locale.h>
 #include <unistd.h>
 
-#include "common.h"
-#include "tui.h"
+#include <common.h>
+#include <tui.h>
 
 #define MSG_COLOR 1
 #define ICON_COLOR 2

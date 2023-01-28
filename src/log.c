@@ -5,8 +5,8 @@
 #include <pthread.h>
 #include <assert.h>
 
-#include "ANSI-color-codes.h"
-#include "common.h"
+#include <ANSI-color-codes.h>
+#include <common.h>
 
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char *__restrict format, ...)
 {

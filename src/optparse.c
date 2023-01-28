@@ -10,7 +10,7 @@
 #include <assert.h>
 #include <getopt.h>
 #include <errno.h>
-#include "common.h"
+#include <common.h>
 
 
 static struct option longopts[] = {

@@ -10,7 +10,7 @@
 #include <sys/mman.h>           // mmap, munmap
 #include <sys/stat.h>           // fstst
 
-#include "common.h"
+#include <common.h>
 
 int found_pongo = 0; 
 
