@@ -141,7 +141,7 @@ jobs:
             --enable-termcap \
             --enable-pc-files \
             --without-x11-rgb \
-            --with-tic-path=$(echo $(brew --cellar)/ncurses/*/bin/tic)
+            --with-tic-path=$(echo $(brew --cellar)/ncurses/*/bin/tic) \
             --includedir="${{ env.PREFIX }}/include" \
             --with-pkg-config-libdir="${{ env.PREFIX }}/lib/pkgconfig" \
             --enable-widec \
