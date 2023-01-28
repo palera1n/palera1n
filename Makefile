@@ -21,7 +21,7 @@ CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -static -no-pie -Wl,--gc-sections
 endif
 LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
-LIBS += $(DEP)/lib/libusb-1.0.a $(DEP)/lib/libncursestw.a $(DEP)/lib/libmenutw.a
+LIBS += $(DEP)/lib/libusb-1.0.a $(DEP)/lib/libmenutw.a $(DEP)/lib/libncursestw.a
 
 ifeq ($(DEV_BUILD),1)
 CFLAGS += -O0 -g -DDEV_BUILD -fsanitize=address -fno-omit-frame-pointer -fsanitize-address-use-after-return=runtime

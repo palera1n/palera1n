@@ -19,11 +19,14 @@
 
 #define MSG_COLOR 1
 #define ICON_COLOR 2
-#define BUTTON_COLOR_ON 3
-#define COLOR_GREY init_color(30, 300, 300, 300)
 
-ITEM* main_buttons[4];
-MENU* main_menu;
+int redraw_screen() {
+    erase();
+    resizeterm(24, 80);
+    box(stdscr, 0, 0);
+    mvaddstr(0, 80 - strlen("[palera1n version " PALERAIN_VERSION "]") - 2 , "[palera1n version " PALERAIN_VERSION "]");
+    return 0;
+}
 
 int display_main_menu() {
     int ret = -1;
@@ -72,6 +75,9 @@ int display_main_menu() {
     whline(stdscr, ACS_HLINE, 80 - 2);
     move(22, 40);
 
+    ITEM* main_buttons[4];
+    MENU* main_menu;
+
     main_buttons[0] = new_item(MAIN_OPTIONS, "");
     main_buttons[1] = new_item(MAIN_START, "");
     main_buttons[2] = new_item(MAIN_EXIT, "");
@@ -105,6 +111,10 @@ int display_main_menu() {
     }
 end:
     noraw();
+    free_menu(main_menu);
+    free_item(main_buttons[0]);
+    free_item(main_buttons[1]);
+    free_item(main_buttons[2]);
     refresh();
     return ret;
 }
@@ -121,7 +131,6 @@ int init_window() {
         start_color();
         init_pair(MSG_COLOR, COLOR_YELLOW, COLOR_BLACK);
         init_pair(ICON_COLOR, COLOR_WHITE, COLOR_BLACK);
-        init_pair(BUTTON_COLOR_ON, COLOR_BLACK, COLOR_WHITE);
     }
     int height, width;
     getmaxyx(stdscr, height, width);
@@ -132,12 +141,9 @@ int init_window() {
     if (has_colors() == FALSE) {
         LOG(LOG_VERBOSE2, "Terminal without color support detected");
     }
-    resizeterm(24, 80);
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
-    box(stdscr, 0, 0);
-    mvaddstr(0, 80 - strlen("[palera1n version " PALERAIN_VERSION "]") - 2 , "[palera1n version " PALERAIN_VERSION "]");
     return 0;
 }
 
@@ -150,6 +156,7 @@ int tui() {
     int ret = MAIN_SCREEN;
     init_window();
     while (1) {
+        redraw_screen();
         switch (ret) {
             case ERROR_SCREEN:
                 goto out;
