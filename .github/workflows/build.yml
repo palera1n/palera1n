@@ -127,9 +127,9 @@ jobs:
           ./configure \
             ${{ env.CONFIGURE_ARGS }} \
             --with-build-cc="${{ env.CC }}" \
-            --with-build-cflags="${{ env.CC_FOR_NUILD }}" \
+            --with-build-cflags="${{ env.CFLAGS_FOR_NUILD }}" \
             --with-build-cpp="${{ env.CC }} -E" \
-            --with-build-cppflags="${{ env.CPP_FOR_BUILD }}" \
+            --with-build-cppflags="${{ env.CPPFLAGS_FOR_BUILD }}" \
             --with-build-ldflags="${{ env.LDFLAGS_FOR_BUILD }}" \
             --with-pthread \
             --disable-overwrite \
