@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies (packages)
         run: |
           sudo /usr/local/bin/pip3 install jsonschema jinja2
-          brew install make autoconf automake pkg-config gnu-sed
+          brew install make autoconf automake pkg-config gnu-sed ncurses
           sudo rm -rf /usr/local/Frameworks/Python*
           curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
           sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
@@ -141,6 +141,7 @@ jobs:
             --enable-termcap \
             --enable-pc-files \
             --without-x11-rgb \
+            --with-tic-path=$(echo $(brew --cellar)/ncurses/*/bin/tic)
             --includedir="${{ env.PREFIX }}/include" \
             --with-pkg-config-libdir="${{ env.PREFIX }}/lib/pkgconfig" \
             --enable-widec \
