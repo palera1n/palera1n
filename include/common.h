@@ -21,6 +21,11 @@
 #define USB_RET_SUCCESS         LIBUSB_SUCCESS
 #define USB_RET_NOT_RESPONDING  LIBUSB_ERROR_OTHER
 #define USB_RET_IO              LIBUSB_ERROR_IO
+
+#ifndef PALERAIN_VERSION
+#define PALERAIN_VERSION "2.0.0"
+#endif
+
 #if defined(__APPLE__)
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
@@ -97,7 +102,7 @@ extern int spin, demote;
 extern char* pongo_path;
 
 extern bool dfuhelper_only;
-extern bool pongo_exit;
+extern bool pongo_exit, use_tui;
 
 extern pthread_t dfuhelper_thread, pongo_thread;
 extern int pongo_thr_running, dfuhelper_thr_running;
@@ -150,5 +155,6 @@ const char *usb_strerror(usb_ret_t err);
 int wait_for_pongo();
 int issue_pongo_command();
 int upload_pongo_file();
+int tui();
 int optparse(int argc, char* argv[]);
 #endif

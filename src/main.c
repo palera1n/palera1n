@@ -81,6 +81,7 @@ int build_checks() {
 }
 
 bool dfuhelper_only = false, pongo_exit = false, start_from_pongo = false, palerain_version = false;
+bool use_tui = false;
 
 int palera1n(int argc, char *argv[]) {
 	int ret = 0;
@@ -90,6 +91,11 @@ int palera1n(int argc, char *argv[]) {
 	if (palerain_version) goto normal_exit;
 	if (start_from_pongo == true)
 		goto pongo;
+	if (use_tui) {
+		ret = tui();
+		if (ret) goto cleanup;
+		else goto normal_exit;
+	}
 	LOG(LOG_INFO, "Waiting for devices");
 	do_pongo_sleep = 1;
 	pthread_t dfuhelper_thread;

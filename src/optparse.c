@@ -12,6 +12,7 @@
 #include <errno.h>
 #include "common.h"
 
+
 static struct option longopts[] = {
 	{"setup-fakefs", no_argument, NULL, 'c'},
 	{"setup-fakefs-forced", no_argument, NULL, 'C'},
@@ -34,13 +35,14 @@ static struct option longopts[] = {
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
 	{"disable-ohio", no_argument, NULL, 'O'},
+	{"tui", no_argument, NULL, 't'},
 	{NULL, 0, NULL, 0}
 };
 
 static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
-			"Usage: %s [-cCDhpPvVldsOL] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			"Usage: %s [-cCDhpPvVldsOLt] [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -64,7 +66,8 @@ static int usage(int e, char* prog_name)
 			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
-			"\t-O, --disable-ohio\t\t\tDisable Ohio\n",
+			"\t-O, --disable-ohio\t\t\tDisable Ohio\n"
+			"\t-t, --tui\t\t\t\tTerminal user interface\n",
 			prog_name);
 	exit(e);
 }
@@ -72,7 +75,7 @@ static int usage(int e, char* prog_name)
 int optparse(int argc, char* argv[]) {
 	int opt;
 	int index;
-	while ((opt = getopt_long(argc, argv, "cCDhpvVldsOLe:f:o:r:K:k:", longopts, NULL)) != -1)
+	while ((opt = getopt_long(argc, argv, "cCDhpvVldsOLte:f:o:r:K:k:", longopts, NULL)) != -1)
 	{
 		switch (opt) {
 		case 'c':
@@ -162,6 +165,9 @@ int optparse(int argc, char* argv[]) {
 			break;
 		case 'O':
 			ohio = false;
+			break;
+		case 't':
+			use_tui = true;
 			break;
 		case checkrain_option_force_revert:
 			checkrain_flags |= checkrain_option_force_revert;

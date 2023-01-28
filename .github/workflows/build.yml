@@ -133,6 +133,11 @@ jobs:
             --with-build-cppflags="${{ env.CPPFLAGS_FOR_BUILD }}" \
             --with-build-ldflags="${{ env.LDFLAGS_FOR_BUILD }}" \
             --with-pthread \
+            --enable-const \
+            --enable-ext-colors \
+            --enable-ext-mouse \
+            --enable-ext-putwin \
+            --enable-wattr-macros \
             --disable-overwrite \
             --without-debug \
             --without-tests \
@@ -458,6 +463,11 @@ jobs:
             --with-build-cpp="cc -E" \
             --with-build-cppflags=" " \
             --with-build-ldflags=" " \
+            --enable-const \
+            --enable-ext-colors \
+            --enable-ext-mouse \
+            --enable-ext-putwin \
+            --enable-wattr-macros \
             --with-pthread \
             --disable-overwrite \
             --without-debug \

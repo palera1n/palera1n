@@ -1,7 +1,7 @@
 all: palera1n
 
 OBJECTS  = main.o dfuhelper.o devhelper.o lockdown_helper.o exec_checkra1n.o
-OBJECTS += pongo_usb.o optparse.o override_file.o pongo_helper.o log.o
+OBJECTS += pongo_usb.o optparse.o override_file.o pongo_helper.o log.o window.o
 OBJECTS += xxd-checkra1n.o xxd-checkra1n-kpf-pongo.o xxd-ramdisk.dmg.o
 OBJECTS += xxd-binpack.dmg.o
 
