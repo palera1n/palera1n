@@ -152,7 +152,7 @@ jobs:
             --with-pkg-config-libdir="${{ env.PREFIX }}/lib/pkgconfig" \
             --enable-widec \
             --with-default-terminfo-dir="/opt/procursus/share/terminfo" \
-            --with-terminfo-dirs="/opt/procursus/share/terminfo:/opt/local/share/terminfo:/opt/homebrew/share/terminfo:/usr/local/share/terminfo:/opt/sw/share/terminfo:/sw/share/terminfo:/usr/share/terminfo" \
+            --with-terminfo-dirs="/var/jb/usr/share/terminfo:/opt/procursus/share/terminfo:/opt/local/share/terminfo:/opt/homebrew/share/terminfo:/usr/local/share/terminfo:/opt/sw/share/terminfo:/sw/share/terminfo:/usr/share/terminfo" \
             LDFLAGS="${{ env.LDFLAGS }}" \
             PKG_CONFIG_LIBDIR="${{ env.PREFIX }}/lib/pkgconfig" || (cat config.log && exit 1)
             gmake -j$(sysctl -n hw.ncpu)
