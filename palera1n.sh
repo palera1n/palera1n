@@ -42,7 +42,7 @@ remote_cp() {
 
 step() {
     for i in $(seq "$1" -1 0); do
-        if [ "$(get_device_mode)" = "dfu" ]; then
+        if [[ $(get_device_mode) == "dfu" || ($1 == "10" && $(get_device_mode) != "none") ]]; then
             break
         fi
         printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
