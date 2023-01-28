@@ -143,7 +143,7 @@ jobs:
             --with-default-terminfo-dir="/usr/share/terminfo" \
             --with-terminfo-dirs="/opt/homebrew/share/terminfo:/usr/local/share/terminfo:/usr/share/terminfo" \
             LDFLAGS="${{ env.LDFLAGS }}" \
-            PKG_CONFIG_LIBDIR="${{ env.PREFIX }}/lib/pkgconfig"
+            PKG_CONFIG_LIBDIR="${{ env.PREFIX }}/lib/pkgconfig" || (cat config.log && exit 1)
             gmake -j$(sysctl -n hw.ncpu)
             gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
             cd ..
@@ -408,6 +408,7 @@ jobs:
           echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "INSTALL=install --strip-program=${{ matrix.triple }}-strip"
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "CONFIGURE_ARGS=--build=x86_64-linux-gnu --host=${{ matrix.triple }} --prefix=/usr/local --disable-shared --enable-static" >> $GITHUB_ENV
@@ -467,8 +468,7 @@ jobs:
             --with-default-terminfo-dir="/usr/share/terminfo" \
             --with-terminfo-dirs="/usr/share/terminfo:/lib/terminfo:/usr/lib/terminfo:/usr/local/share/terminfo:/usr/local/lib/terminfo:/data/data/com.termux/files/usr/share/terminfo" \
             LDFLAGS="${{ env.LDFLAGS }}" \
-            PKG_CONFIG_LIBDIR="${{ env.PREFIX }}/lib/pkgconfig" \
-            STRIP=${{ env.CROSS_COMPILE }}strip
+            PKG_CONFIG_LIBDIR="${{ env.PREFIX }}/lib/pkgconfig"
             gmake -j$(sysctl -n hw.ncpu)
             gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
             cd ..
