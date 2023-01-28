@@ -405,7 +405,7 @@ fi
 # ============
 
 # Update submodules
-git submodule update --init --recursive
+git submodule update --init --recursive --depth=1
 
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
