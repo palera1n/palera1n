@@ -119,6 +119,7 @@ jobs:
         run: |
           cd ncurses-${{ env.NCURSES_VERSION }}
           ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
             --with-build-cc="${{ env.CC }}" \
             --with-build-cflags="-Os" \
             --with-build-cpp="${{ env.CC }} -E" \
@@ -441,6 +442,7 @@ jobs:
         run: |
           cd ncurses-${{ env.NCURSES_VERSION }}
           ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
             --with-build-cc="cc" \
             --with-build-cflags=" " \
             --with-build-cpp="cc -E" \
