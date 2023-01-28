@@ -5,7 +5,8 @@ CC ?= cc
 CFLAGS += -I$(DEP)/include -I$(DEP)/include/ncursestw -I$(SRC)/include -I$(SRC)
 CFLAGS += -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\" -Wall -Wextra -Wno-unused-parameter
 CFLAGS += -Wno-unused-variable -I$(SRC)/src
-LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread
+LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a
+LIBS += $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread
 ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)
 endif
@@ -20,7 +21,7 @@ CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -static -no-pie -Wl,--gc-sections
 endif
 LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
-LIBS += $(DEP)/lib/libusb-1.0.a $(DEP)/lib/libncursestw.a
+LIBS += $(DEP)/lib/libusb-1.0.a $(DEP)/lib/libncursestw.a $(DEP)/lib/libmenutw.a
 
 ifeq ($(DEV_BUILD),1)
 CFLAGS += -O0 -g -DDEV_BUILD -fsanitize=address -fno-omit-frame-pointer -fsanitize-address-use-after-return=runtime
