@@ -47,10 +47,10 @@ If that doesn't fix it, it may be caused by an update from the Procursus repo. T
 Install NewTerm 2 from [https://apt.itsnebula.net/](https://apt.itsnebula.net/ "https://apt.itsnebula.net/") or get NewTerm3 beta.
 
 ## palera1n\/mineek repo not working
-[https://repo.palera.in/](https://repo.palera.in/ "https://repo.palera.in/") and [https://mineek.github.io/repo](https://mineek.github.io/repo "https://mineek.github.io/repo") are supposed to be used on rootless jailbreaks, not with jailbreaks with fakefs or tethered that have root access.
+[https://repo.palera.in/](https://repo.palera.in/ "https://repo.palera.in/") and [https://mineek.github.io/repo](https://mineek.github.io/repo "https://mineek.github.io/repo") are supposed to be used on rootless jailbreaks, not with any rootful jailbreaks with fakefs or tethered that have root access.
 
 ## Procursus \"killed 9\"
-Binaries will need to be resigned by the Procursus Team to fix killed 9, in the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
+Binaries will need to be resigned by the Procursus Team to fix Kiled: 9. In the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
 
 ## App crashes on open
 - `ldid -s /Applications/<appname>.app`
@@ -161,7 +161,7 @@ You may be encountering some issue related to panics and the loader “not appea
 These repos are not meant to be used with palera1n and are able to break your jailbreak if you install anything from them.
 
 ## Pressing \"install\" on each jb
-**DO NOT DO THIS.** It will likely break your jailbreak install. Instead, press the gear icon, and then press Do All.
+**DO NOT DO THIS.** It resets your package lists and will likely break your jailbreak install eventually. Instead, press the gear icon, and then press Do All.
 
 ## --restorerootfs still keeps app icons??
 There's an issue with restoring rootfs where it doesn’t uicache. **There is no need to worry**; this happens on a couple of other jailbreaks and serves no harm to the user or device.
