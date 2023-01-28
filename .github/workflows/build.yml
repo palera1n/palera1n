@@ -79,9 +79,13 @@ jobs:
           echo "CXX=$(xcrun --find c++)" >> $GITHUB_ENV
           echo "CPP=$(xcrun --find cc) -E" >> $GITHUB_ENV
           echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
-          echo "CPPFLAGS=${{ env.CFLAGS }} -Wno-error-implicit-function-declaration"
+          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration"
           echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path)" >> $GITHUB_ENV
+          echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path)" >> $GITHUB_ENV
+          echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Wno-error-implicit-function-declaration" >> $GITHUB_ENV
+          echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
@@ -123,10 +127,10 @@ jobs:
           ./configure \
             ${{ env.CONFIGURE_ARGS }} \
             --with-build-cc="${{ env.CC }}" \
-            --with-build-cflags="-Os" \
+            --with-build-cflags="${{ env.CC_FOR_NUILD }}" \
             --with-build-cpp="${{ env.CC }} -E" \
-            --with-build-cppflags=" " \
-            --with-build-ldflags=" " \
+            --with-build-cppflags="${{ env.CPP_FOR_BUILD }}" \
+            --with-build-ldflags="${{ env.LDFLAGS_FOR_BUILD }}" \
             --with-pthread \
             --disable-overwrite \
             --without-debug \
