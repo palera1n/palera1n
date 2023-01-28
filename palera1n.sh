@@ -398,10 +398,12 @@ if [ ! -e "$dir"/gaster ]; then
     echo '[-] gaster not installed. Press any key to install it, or press ctrl + c to cancel'
     read -n 1 -s
     _check_network_connection
-    curl -sLO https://static.palera.in/deps/gaster-"$os".zip
-    unzip gaster-"$os".zip
-    mv gaster "$dir"/
-    rm -rf gaster gaster-"$os".zip
+    echo 'curl -sLO https://static.palera.in/deps/gaster-"$os".zip' > buffer.sh
+    echo 'unzip gaster-"$os".zip' >> buffer.sh
+    echo 'mv gaster "$dir"/' >> buffer.sh
+    echo 'rm -rf gaster gaster-"$os".zip' >> buffer.sh
+    chmod +x buffer.sh
+	gum spin --spinner line --title 'Installing Gaster...' -- sh buffer.sh
 fi
 
 # Check for pyimg4
@@ -731,11 +733,8 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     _check_network_connection
 
     # download the kernel
-    echo "[*] Downloading BuildManifest"
-    "$dir"/pzb -g BuildManifest.plist "$ipswurl"
-
-    echo "[*] Downloading kernelcache"
-    "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+	gum spin --spinner points --title 'Downloading BuildManifest...' -- "$dir"/pzb -g BuildManifest.plist "$ipswurl"
+	gum spin --spinner meter --title 'Downloading kernelcache...' -- "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl" 
     
     echo "[*] Patching kernelcache"
     mv kernelcache.release.* work/kernelcache
@@ -830,28 +829,28 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         _check_network_connection
 		
         # download loader
-        cd other/rootfs/jbin
-        rm -rf loader.app
-        echo "[*] Downloading loader"
-        curl -LO https://static.palera.in/deps/loader.zip
-        unzip loader.zip -d .
-        unzip palera1n.ipa -d .
-        mv Payload/palera1nLoader.app loader.app
-        rm -rf palera1n.zip loader.zip palera1n.ipa Payload
-
+        echo 'cd other/rootfs/jbin' > buffer.sh 
+        echo 'rm -rf loader.app' >> buffer.sh
+        echo 'curl -LO https://static.palera.in/deps/loader.zip' >> buffer.sh
+        echo 'unzip loader.zip -d .' >> buffer.sh
+        echo 'unzip palera1n.ipa -d .' >> buffer.sh
+        echo 'mv Payload/palera1nLoader.app loader.app' >> buffer.sh
+        echo 'rm -rf palera1n.zip loader.zip palera1n.ipa Payload' >> buffer.sh
+		gum spin --spinner dot --title 'Downloading loader...' -- sh buffer.sh
+        
         # download jbinit files
-        rm -f jb.dylib jbinit jbloader launchd
-        echo "[*] Downloading jbinit files"
-        curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
-        unzip rfs.zip -d .
-        unzip rootfs.zip -d .
-        rm rfs.zip rootfs.zip
-        cd ../../..
+        echo 'rm -f jb.dylib jbinit jbloader launchd' > buffer.sh
+        echo 'curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip' >> buffer.sh
+        echo 'unzip rfs.zip -d .' >> buffer.sh
+        echo 'unzip rootfs.zip -d .' >> buffer.sh
+        echo 'rm rfs.zip rootfs.zip' >> buffer.sh
+        echo 'cd ../../..' >> buffer.sh
+		gum spin --spinner minidot --title 'Downloading jbinit files...' -- sh buffer.sh
 
         # download binpack
-        mkdir -p other/rootfs/jbin/binpack
-        echo "[*] Downloading binpack"
-        curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
+        echo 'mkdir -p other/rootfs/jbin/binpack' > buffer.sh
+        echo 'curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar' >> buffer.sh
+		gum spin --spinner minidot --title '[*] Downloading binpack...' -- sh buffer.sh
         # Loading...
 		sleep 1
         remote_cp -r other/rootfs/* root@localhost:/mnt$di
@@ -895,9 +894,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     elif [ -z "$tweaks" ]; then
         _wait normal
         sleep 5
-
-        echo "[*] Switching device into recovery mode..."
-        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+		gum spin --spinner minidot --title '[*] Switching device into recovery mode...' -- "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID) 
     fi
     _wait recovery
     _dfuhelper "$cpid" || {
@@ -957,16 +954,11 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
             buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("'iPhone'")) | .buildid][0]' --raw-output)
             newipswurl=$(curl -sL https://api.appledb.dev/ios/iOS\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
         fi
-
-        echo "[*] Downloading BuildManifest"
-        "$dir"/pzb -g BuildManifest.plist "$newipswurl"
-
-        echo "[*] Downloading and decrypting iBoot"
-        "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$newipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
-
-        echo "[*] Patching and signing iBoot"
-        "$dir"/iBoot64Patcher ibot.dec ibot.patched
+		gum spin --spinner jump --title '[*] Downloading BuildManifest...' -- "$dir"/pzb -g BuildManifest.plist "$newipswurl" 
+        echo '"$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$newipswurl"' > buffer.sh
+        echo '"$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec' >> buffer.sh
+		gum spin --spinner pulse --title '[*] Downloading and decrypting iBoot...' -- sh buffer.sh 
+		gum spin --spinner points --title '[*] Patching and signing iBoot...' -- "$dir"/iBoot64Patcher ibot.dec ibot.patched
 
         if [[ "$deviceid" == iPhone9,[1-4] ]]; then
             "$dir"/iBootpatch2 --t8010 ibot.patched ibot.patched2
@@ -986,17 +978,15 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
 
         touch boot-"$deviceid"/.payload
     else
-        echo "[*] Downloading BuildManifest"
-        "$dir"/pzb -g BuildManifest.plist "$ipswurl"
-
-        echo "[*] Downloading and decrypting iBSS"
-        "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec
-        
-        echo "[*] Downloading and decrypting iBoot"
-        "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
-        "$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec
-
+		gum spin --spinner jump --title '[*] Downloading BuildManifest...' -- "$dir"/pzb -g BuildManifest.plist "$ipswurl" 
+        echo '"$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"' > buffer.sh
+        echo '"$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBSS[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]dfu[/]//')" iBSS.dec' >> buffer.sh
+		gum spin --spinner pulse --title '[*] Downloading and decrypting iBSS...' -- sh buffer.sh 
+        echo '"$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"' > buffer.sh
+        echo '"$dir"/gaster decrypt "$(awk "/""$model""/{x=1}x&&/iBoot[.]/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1 | sed 's/Firmware[/]all_flash[/]//')" ibot.dec' >> buffer.sh
+		gum spin --spinner points --title '[*] Downloading and decrypting iBoot...' -- sh buffer.sh
+	    rm buffer.sh	
+		gum spin --spinner hamburger --title '[*] Patching and signing iBoot...' -- "$dir"/iBoot64Patcher ibot.dec ibot.patched
         echo "[*] Patching and signing iBSS/iBoot"
         "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
         if [ "$semi_tethered" = "1" ]; then
