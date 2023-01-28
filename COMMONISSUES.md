@@ -50,7 +50,7 @@ Install NewTerm 2 from [https://apt.itsnebula.net/](https://apt.itsnebula.net/ "
 [https://repo.palera.in/](https://repo.palera.in/ "https://repo.palera.in/") and [https://mineek.github.io/repo](https://mineek.github.io/repo "https://mineek.github.io/repo") are supposed to be used on rootless jailbreaks, not with any rootful jailbreaks with fakefs or tethered that have root access.
 
 ## Procursus \"killed 9\"
-Binaries will need to be resigned by the Procursus Team to fix Kiled: 9. In the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
+Binaries will need to be resigned by the Procursus Team to fix Killed: 9. In the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
 
 ## App crashes on open
 - `ldid -s /Applications/<appname>.app`
