@@ -77,8 +77,8 @@ tui_screen_t tui_screen_main() {
     set_menu_sub(main_menu, derwin(stdscr, 0, 0, 22, 50));
     post_menu(main_menu);
     raw();
+    refresh();
     while (1) {
-        uint8_t target = 0;
         int ch = getch();
         if (ch == KEY_LEFT) {
             menu_driver(main_menu, REQ_LEFT_ITEM);

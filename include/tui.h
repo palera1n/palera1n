@@ -17,6 +17,7 @@
 #define MAIN_OPTIONS "Options"
 #define MAIN_START "Start"
 #define MAIN_EXIT "Exit"
+#define BACK_BUTTON "Back"
 
 #define MSG_COLOR 1
 #define ICON_COLOR 2
