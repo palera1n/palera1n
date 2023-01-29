@@ -15,6 +15,11 @@
 
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi-tethered), installs the loader app, and patches your kernel.
 
+# What not to do
+- Mess with any files you don't know what they do, this could lead to a bootloop
+- Install *way* too many tweaks which you don't need, this can lead to potential battery drain
+- Jailbreak without making a backup first, so if the worst happens, you can just restore.
+
 # Requirements
 
 - A checkm8 vulnerable iOS device on iOS 15 or 16 (A8-A11)
