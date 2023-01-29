@@ -496,20 +496,8 @@ function _wait_for_device() {
     if [ "$(get_device_mode)" = "normal" ]; then
         version=${version:-$(_info normal ProductVersion)}
         arch=$(_info normal CPUArchitecture)
-        if [ "$arch" = "armv7" ]; then
-            echo "[-] palera1n is supported on 64-bit devices only"
-            exit
-        fi
-        if [ "$arch" = "armv7s" ]; then
-            echo "[-] palera1n is supported on 64-bit devices only"
-            exit
-        fi
-        if [ "$arch" != "arm64" ]; then
+        if [ "$arch" = "arm64e" ]; then
             echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
-            exit
-        fi
-        if [ "${version%%.*}" -lt "15" ]; then
-            echo "[-] palera1n requires an iOS 15 or newer device"
             exit
         fi
         echo "Hello, $(_info normal ProductType) on $version!"
