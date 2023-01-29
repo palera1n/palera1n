@@ -17,18 +17,7 @@
 #include <common.h>
 #include <tui.h>
 
-#define MSG_COLOR 1
-#define ICON_COLOR 2
-
-int redraw_screen() {
-    erase();
-    resizeterm(24, 80);
-    box(stdscr, 0, 0);
-    mvaddstr(0, 80 - strlen("[palera1n version " PALERAIN_VERSION "]") - 2 , "[palera1n version " PALERAIN_VERSION "]");
-    return 0;
-}
-
-int display_main_menu() {
+tui_screen_t tui_screen_main() {
     int ret = -1;
     mvaddstr(1, 2, "Welcome to palera1n!");
     move(2,1);
@@ -116,75 +105,5 @@ end:
     free_item(main_buttons[1]);
     free_item(main_buttons[2]);
     refresh();
-    return ret;
-}
-
-int display_enter_dfu_screen() { return JAILBREAKING_SCREEN; }
-int display_enter_recovery_screen() { return ENTER_DFU_SCREEN; }
-int display_options_screen() { return MAIN_SCREEN; }
-int display_jailbreaking_screen() { return EXIT_SCREEN; }
-
-int init_window() {
-    setlocale(LC_ALL, NULL);
-    initscr();
-    if (has_colors() == TRUE) {
-        start_color();
-        init_pair(MSG_COLOR, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(ICON_COLOR, COLOR_WHITE, COLOR_BLACK);
-    }
-    int height, width;
-    getmaxyx(stdscr, height, width);
-    if (width < 80 || height < 24) {
-        LOG(LOG_ERROR, "Terminal size must be at least 80x24");
-        return -1;
-    }
-    if (has_colors() == FALSE) {
-        LOG(LOG_VERBOSE2, "Terminal without color support detected");
-    }
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-    return 0;
-}
-
-int destroy_window() {
-    endwin();
-    return 0;
-}
-
-int tui() {
-    int ret = MAIN_SCREEN;
-    init_window();
-    while (1) {
-        redraw_screen();
-        switch (ret) {
-            case ERROR_SCREEN:
-                goto out;
-                break;
-            case EXIT_SCREEN:
-                goto out;
-                break;
-            case MAIN_SCREEN:
-                ret = display_main_menu();
-                break;
-            case OPTIONS_SCREEN:
-                ret = display_options_screen();
-                break;
-            case ENTER_RECOVERY_SCREEN:
-                ret = display_enter_recovery_screen();
-                break;
-            case ENTER_DFU_SCREEN:
-                ret = display_enter_dfu_screen();
-                break;
-            case JAILBREAKING_SCREEN:
-                ret = display_jailbreaking_screen();
-                break;
-            default:
-                assert(0);
-                goto out;
-        }
-    }
-out:
-    destroy_window();
     return ret;
 }

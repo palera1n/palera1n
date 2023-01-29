@@ -18,7 +18,10 @@
 #define MAIN_START "Start"
 #define MAIN_EXIT "Exit"
 
-enum tui_screens {
+#define MSG_COLOR 1
+#define ICON_COLOR 2
+
+typedef enum tui_screens {
     ERROR_SCREEN = -1,
     EXIT_SCREEN = 0,
     MAIN_SCREEN = 1,
@@ -26,6 +29,15 @@ enum tui_screens {
     ENTER_DFU_SCREEN = 3,
     JAILBREAKING_SCREEN = 4,
     ENTER_RECOVERY_SCREEN = 5
-};
+} tui_screen_t;
+
+tui_screen_t tui_screen_main();
+tui_screen_t tui_screen_options();
+tui_screen_t tui_screen_enter_recovery();
+tui_screen_t tui_screen_enter_dfu();
+tui_screen_t tui_screen_jailbreak();
+
+int redraw_screen();
+
 
 #endif

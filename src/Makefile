@@ -1,9 +1,11 @@
 all: palera1n
 
 OBJECTS  = main.o dfuhelper.o devhelper.o lockdown_helper.o exec_checkra1n.o
-OBJECTS += pongo_usb.o optparse.o override_file.o pongo_helper.o log.o window.o
+OBJECTS += pongo_usb.o optparse.o override_file.o pongo_helper.o log.o
 OBJECTS += xxd-checkra1n.o xxd-checkra1n-kpf-pongo.o xxd-ramdisk.dmg.o
-OBJECTS += xxd-binpack.dmg.o
+OBJECTS += xxd-binpack.dmg.o tui_main.o tui_screen_options.o
+OBJECTS += tui_screen_enter_recovery.o tui_screen_enter_dfu.o
+OBJECTS += tui_screen_jailbreak.o tui_screen_main.o
 
 CHECKRA1N_VERSION ?= 0.1337.1
 LIPO = lipo
