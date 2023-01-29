@@ -100,8 +100,10 @@ extern int spin, demote;
 
 extern char* pongo_path;
 
-extern bool dfuhelper_only;
-extern bool pongo_exit, use_tui;
+extern bool dfuhelper_only, pongo_exit;
+#ifdef DEV_BUILD
+extern bool use_tui;
+#endif
 
 extern pthread_t dfuhelper_thread, pongo_thread;
 extern int pongo_thr_running, dfuhelper_thr_running;
