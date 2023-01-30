@@ -115,7 +115,7 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 		LOG(LOG_ERROR, "Error connecting to device.");
 		return -1;
 	}
-	if (lockdownd_client_new(device, &lockdown, "devhelper") != LOCKDOWN_E_SUCCESS)
+	if (lockdownd_client_new(device, &lockdown, "palera1n") != LOCKDOWN_E_SUCCESS)
 	{
 		idevice_free(device);
 		LOG(LOG_ERROR, "Device is not in normal mode.");
@@ -202,7 +202,7 @@ int enter_recovery_cmd(const char* udid) {
 		LOG(LOG_ERROR, "Could not connect to device");
 		return -1;
 	}
-	lockdownd_error_t ldret = lockdownd_client_new(device, &lockdown, "devhelper");
+	lockdownd_error_t ldret = lockdownd_client_new(device, &lockdown, "palera1n");
 	if (ldret != LOCKDOWN_E_SUCCESS) {
 		LOG(LOG_ERROR, "Could not connect to lockdownd: %s", lockdownd_strerror(ldret));
 		return -1;
@@ -212,7 +212,7 @@ int enter_recovery_cmd(const char* udid) {
 		if (ldret == LOCKDOWN_E_SESSION_INACTIVE) {
 			lockdownd_client_free(lockdown);
 			lockdown = NULL;
-			if (LOCKDOWN_E_SUCCESS != (ldret = lockdownd_client_new_with_handshake(device, &lockdown, "devhelper"))) {
+			if (LOCKDOWN_E_SUCCESS != (ldret = lockdownd_client_new_with_handshake(device, &lockdown, "palera1n"))) {
 				LOG(LOG_ERROR, "Could not connect to lockdownd: %s", lockdownd_strerror(ldret));
 				return -1;
 			}
@@ -236,7 +236,7 @@ int reboot_cmd(const char* udid) {
 		return -1;
 	} else {
 		diagnostics_relay_client_t diag = NULL;
-		if (diagnostics_relay_client_start_service(device, &diag, "devhelper") == DIAGNOSTICS_RELAY_E_SUCCESS) {
+		if (diagnostics_relay_client_start_service(device, &diag, "palera1n") == DIAGNOSTICS_RELAY_E_SUCCESS) {
 			if (diagnostics_relay_restart(diag, DIAGNOSTICS_RELAY_ACTION_FLAG_WAIT_FOR_DISCONNECT) != DIAGNOSTICS_RELAY_E_SUCCESS) {
 				LOG(LOG_ERROR, "Could not reboot device.");
 			}
