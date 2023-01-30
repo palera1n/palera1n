@@ -30,7 +30,7 @@
 #define FORMAT_KEY_VALUE 1
 #define FORMAT_XML 2
 
-#define NOHOME (info->cpid == 0x8015 || (info->cpid == 0x8010 && (info->bdid == 0x08 || info->bdid == 0x0a || info->bdid == 0x0c || info->bdid == 0x0e)))
+#define NOHOME (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e)))
 
 int spin = 1;
 uint64_t ecid_wait_for_dfu = 0;
@@ -88,6 +88,10 @@ static bool conditional(uint64_t ecid) {
 void* connected_recovery_mode(struct irecv_device_info* info) {
 	int ret;
 	uint64_t ecid;
+	uint32_t cpid, bdid;
+	cpid = info->cpid;
+	ecid = info->ecid;
+	bdid = info->bdid;
 	if (!cpid_is_arm64(info->cpid)) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		return NULL;
@@ -105,7 +109,6 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	else
 		step(4, 2, "Hold Home + Power Button", NULL, 0);
 	ecid_wait_for_dfu = info->ecid;
-	ecid = info->ecid;
 	ret = exitrecv_cmd(info->ecid);
 	info = NULL;
 	if (ret) {
