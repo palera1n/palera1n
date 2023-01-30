@@ -104,14 +104,16 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		step(4, 2, "Hold Volume Down + Side button", NULL, 0);
 	else
 		step(4, 2, "Hold Home + Power Button", NULL, 0);
+	ecid_wait_for_dfu = info->ecid;
+	ecid = info->ecid;
 	ret = exitrecv_cmd(info->ecid);
+	info = NULL;
 	if (ret) {
 		LOG(LOG_ERROR, "Cannot exit recovery mode");
+		ecid_wait_for_dfu = 0;
 		return NULL;
 	}
 	printf("\r\e[K");
-	ecid_wait_for_dfu = info->ecid;
-	ecid = info->ecid;
 	bool nohome = NOHOME;
 	if (nohome) 
 		step(2, 0, "Hold Volume Down + Side button", NULL, 0);
@@ -122,7 +124,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	else
 		step(10, 0, "Hold Home button", conditional, ecid);
 	ecid_wait_for_dfu = 0;
-	if (ecid_wait_for_dfu != info->ecid) {
+	if (ecid_wait_for_dfu != ecid) {
 	} else {
 		LOG(LOG_WARNING, "Whoops, device did not enter DFU mode");
 		LOG(LOG_INFO, "Waiting for device to reconnect...");
