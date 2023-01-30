@@ -73,6 +73,7 @@ tui_screen_t tui_screen_main() {
     main_buttons[3] = NULL;
     main_menu = new_menu(main_buttons);
     item_opts_off(main_buttons[1], O_SELECTABLE);
+    
     set_menu_format(main_menu, 1, 40);
     set_menu_sub(main_menu, derwin(stdscr, 0, 0, 22, 50));
     post_menu(main_menu);
@@ -100,10 +101,10 @@ tui_screen_t tui_screen_main() {
     }
 end:
     noraw();
+    unpost_menu(main_menu);
     free_menu(main_menu);
     free_item(main_buttons[0]);
     free_item(main_buttons[1]);
     free_item(main_buttons[2]);
-    refresh();
     return ret;
 }

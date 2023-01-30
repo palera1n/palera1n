@@ -25,7 +25,7 @@ LIBS += $(DEP)/lib/libusb-1.0.a
 
 ifeq ($(DEV_BUILD),1)
 LIBS += $(DEP)/lib/libmenutw.a $(DEP)/lib/libncursestw.a
-CFLAGS += -O0 -g -DDEV_BUILD -fsanitize=address -fno-omit-frame-pointer -fsanitize-address-use-after-return=runtime
+CFLAGS += -O0 -g -DDEV_BUILD -fsanitize=address,undefined -fno-omit-frame-pointer -fsanitize-address-use-after-return=runtime
 else
 CFLAGS += -Os -g
 endif

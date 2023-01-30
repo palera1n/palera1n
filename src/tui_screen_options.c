@@ -32,6 +32,9 @@ tui_screen_t tui_screen_options() {
     set_menu_sub(back_menu, derwin(stdscr, 0, 0, 22, 68));
     post_menu(back_menu);
 
+    FORM* options_form;
+    FIELD* options[3];
+    
 
     refresh();
 
@@ -47,5 +50,8 @@ tui_screen_t tui_screen_options() {
         refresh();
     }
 end:
+    unpost_menu(back_menu);
+    free_item(back_button[0]);
+    free_menu(back_menu);
     return ret;
 }
