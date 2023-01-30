@@ -96,7 +96,7 @@ typedef int usb_ret_t;
 typedef libusb_device_handle *usb_device_handle_t;
 
 extern unsigned int verbose;
-extern int spin, demote;
+extern int demote;
 
 extern char* pongo_path;
 
@@ -115,7 +115,9 @@ extern override_file_t override_ramdisk, override_kpf, override_overlay;
 extern uint32_t checkrain_flags, palerain_flags, kpf_flags;
 extern pthread_mutex_t log_mutex;
 
-extern int enable_rootful, do_pongo_sleep, demote, found_pongo;
+extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
+
+extern int enable_rootful, do_pongo_sleep, demote;
 extern int pongo_thr_running, dfuhelper_thr_running;
 extern bool ohio, start_from_pongo;
 extern char xargs_cmd[0x270];
@@ -158,4 +160,11 @@ int issue_pongo_command();
 int upload_pongo_file();
 int tui();
 int optparse(int argc, char* argv[]);
+
+bool get_spin();
+bool set_spin(bool val);
+bool get_found_pongo();
+bool set_found_pongo(bool val);
+uint64_t get_ecid_wait_for_dfu();
+uint64_t set_ecid_wait_for_dfu(uint64_t ecid);
 #endif

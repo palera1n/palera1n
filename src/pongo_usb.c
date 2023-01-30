@@ -267,7 +267,7 @@ int wait_for_pongo(void)
     }
     libusb_free_device_list(list, 0);
 
-    while(spin)
+    while(get_spin())
     {
         r = libusb_handle_events(NULL);
         if(r != LIBUSB_SUCCESS)
@@ -290,7 +290,7 @@ static void io_start(stuff_t *stuff)
         ERR("pthread_create: %s", strerror(r));
         exit(-1); // TODO: ok with libusb?
     }
-	pongo_usb_callback(&stuff->handle);
+    pthread_join(stuff->th, NULL);
 }
 
 static void io_stop(stuff_t *stuff)

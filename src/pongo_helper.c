@@ -12,13 +12,12 @@
 
 #include <common.h>
 
-int found_pongo = 0; 
 
 void* pongo_helper(void* ptr) {
 	pongo_thr_running = 1;
 	pthread_cleanup_push(thr_cleanup, &pongo_thr_running);
 	wait_for_pongo();
-	while (spin) {
+	while (get_spin()) {
 		sleep(1);
 	}
 	pthread_cleanup_pop(1);
@@ -26,9 +25,9 @@ void* pongo_helper(void* ptr) {
 }
 
 void *pongo_usb_callback(void *arg) {
-	if (found_pongo)
+	if (get_found_pongo())
 		return NULL;
-	found_pongo = 1;
+	set_found_pongo(1);
 	strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
 	if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
 		strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);	
@@ -55,6 +54,6 @@ void *pongo_usb_callback(void *arg) {
 	issue_pongo_command(handle, "kpf");
 	issue_pongo_command(handle, "bootux");
 	LOG(LOG_INFO, "Booting Kernel...");
-	spin = false;
+	set_spin(0);
 	return NULL;
 }

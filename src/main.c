@@ -88,6 +88,9 @@ bool use_tui = false;
 int palera1n(int argc, char *argv[]) {
 	int ret = 0;
 	pthread_mutex_init(&log_mutex, NULL);
+	pthread_mutex_init(&spin_mutex, NULL);
+	pthread_mutex_init(&found_pongo_mutex, NULL);
+	pthread_mutex_init(&ecid_dfu_wait_mutex, NULL);
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
 	if (palerain_version) goto normal_exit;
@@ -111,13 +114,13 @@ int palera1n(int argc, char *argv[]) {
 	if (pongo_exit || demote)
 		goto normal_exit;
 pongo:
-	spin = true;
+	set_spin(1);
 	if (do_pongo_sleep)
 		sleep(2);
 	else
 		LOG(LOG_INFO, "Waiting for PongoOS devices...");
 	wait_for_pongo();
-	while (spin)
+	while (get_spin())
 	{
 		sleep(1);
 	}
@@ -156,8 +159,13 @@ cleanup:
 		munmap(override_overlay.ptr, (size_t)override_overlay.len);
 		close(override_overlay.fd);
 	}
+	pthread_mutex_destroy(&log_mutex);
+	pthread_mutex_destroy(&spin_mutex);
+	pthread_mutex_destroy(&found_pongo_mutex);
+	pthread_mutex_destroy(&ecid_dfu_wait_mutex);
 	return ret;
 }
+
 
 int main (int argc, char* argv[]) {
 	return palera1n(argc, argv);
