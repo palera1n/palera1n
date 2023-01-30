@@ -46,7 +46,6 @@ void *pongo_usb_callback(void *arg) {
 	if (enable_rootful)
 	{
 		issue_pongo_command(handle, "rootfs");
-		// issue_pongo_command(handle, dtpatch_cmd);
 	}
 	upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
 	issue_pongo_command(handle, "ramdisk");

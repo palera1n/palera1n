@@ -23,7 +23,7 @@ static struct option longopts[] = {
 	{"debug-logging", no_argument, NULL, 'v'},
 	{"verbose-boot", no_argument, NULL, 'V'},
 	{"boot-args", required_argument, NULL, 'e'},
-	{"rootfs", required_argument, NULL, 'f'},
+	{"fakefs", no_argument, NULL, 'f'},
 	{"rootless", no_argument, NULL, 'l'},
 	{"jbinit-log-to-file", no_argument, NULL, 'L'},
 	{"demote", no_argument, NULL, 'd'},
@@ -47,9 +47,9 @@ static int usage(int e, char* prog_name)
 #ifdef DEV_BUILD
 			"Usage: %s [-cCDhpPvVldsOLt]"
 #else
-			"Usage: %s [-cCDhpPvVldsOL]"
+			"Usage: %s [-cCDhpPvVldsOLf]"
 #endif
-			" [-e boot arguments] [-f root device] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -65,7 +65,7 @@ static int usage(int e, char* prog_name)
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
 			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
-			"\t-f, --rootfs <root device>\t\tBoots rootful setup on <root device>\n"
+			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
 			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
 			"\t-d, --demote\t\t\t\tDemote\n"
@@ -87,9 +87,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"cCDhpvVldsOLte:f:o:r:K:k:", 
+	"cCDhpvVldsOLtfe:o:r:K:k:", 
 #else
-	"cCDhpvVldsOLe:f:o:r:K:k:", 
+	"cCDhpvVldsOLfe:o:r:K:k:", 
 #endif
 	longopts, NULL)) != -1)
 	{
