@@ -19,9 +19,7 @@ jobs:
 
     - name: Update submodules
       run: |
-        cd ramdisk
-        git pull origin main
-        cd ..
+        git submodule update --remote
 
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
