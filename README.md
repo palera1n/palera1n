@@ -29,7 +29,7 @@ iOS 15.0-16.3 work in progress, semi-tethered checkm8 jailbreak
 
 This is mainly for ROOTLESS, and is NOT READY. It was made public so you can contribute and explore the code. This is not the final product.
 
-This version of palera1n supports booting fakefs setups with the `-f <root device>` option (like `-f disk0s1s8`).
+This version of palera1n supports booting fakefs setups with the `-f` option. No arguments required.
 
 This version of palera1n is able to create fakefs with the `-c` option, however as of right now if the `/jbin/loader.app`
 doesn't exist (which is true for any fakefs created with this version of palera1n), the loader that appears would be rootless.
