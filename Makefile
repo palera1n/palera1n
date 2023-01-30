@@ -11,7 +11,7 @@ ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)
 endif
 ifeq ($(TARGET_OS),Darwin)
-ifeq (,$(findstring version-min=, $(CFLAGS))) 
+ifeq (,$(findstring version-min=, $(CFLAGS)))
 CFLAGS += -mmacosx-version-min=10.8
 endif
 LDFLAGS += -Wl,-dead_strip
@@ -34,17 +34,17 @@ export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD
 
 all: palera1n
 
-palera1n: download-checkra1n
+palera1n: download-deps
 	$(MAKE) -C src
 
 clean:
 	$(MAKE) -C src clean
 
-download-checkra1n:
-	$(MAKE) -C src checkra1n-macos checkra1n-linux-arm64 checkra1n-linux-armel checkra1n-linux-x86 checkra1n-linux-x86_64
+download-deps:
+	$(MAKE) -C src checkra1n-macos checkra1n-linux-arm64 checkra1n-linux-armel checkra1n-linux-x86 checkra1n-linux-x86_64 checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
 
 distclean: clean
-	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-*
+	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg
 
 .PHONY: all palera1n clean
 

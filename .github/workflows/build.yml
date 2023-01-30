@@ -43,12 +43,7 @@ jobs:
 
       - name: Download dependencies (embedded binaries)
         run: |
-          cd src
-          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.dmg \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
-          cd ..
-          make -j5 download-checkra1n
+          make -j5 download-deps
           echo "SDK=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)" >> $GITHUB_ENV
 
       - name: Download dependencies (source code)
@@ -429,12 +424,7 @@ jobs:
 
       - name: Download dependencies (embedded binaries)
         run: |
-          cd src
-          curl -LOOO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.dmg \
-            https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
-          cd ..
-          make -j5 download-checkra1n
+          make -j5 download-deps
 
       - name: Download dependencies (source code)
         run: |
