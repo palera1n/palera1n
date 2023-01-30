@@ -326,11 +326,11 @@ static void write_stdout(char *buf, uint32_t len)
 
 int issue_pongo_command(usb_device_handle_t handle, char *command)
 {
-    uint32_t outpos = 0;
-    uint32_t outlen = 0;
-	uint8_t in_progress = 1;
-    if (command == NULL) goto fetch_output;
+	uint32_t outpos = 0;
+	uint32_t outlen = 0;
 	int ret = USB_RET_SUCCESS;
+	uint8_t in_progress = 1;
+	if (command == NULL) goto fetch_output;
 	size_t len = strlen(command);
 	char command_buf[512];
 	char stdout_buf[0x2000];
