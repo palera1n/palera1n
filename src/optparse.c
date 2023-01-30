@@ -19,6 +19,7 @@ static struct option longopts[] = {
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
+	{"pongo-full", no_argument, NULL, 'F'},
 	{"start-from-pongo", no_argument, NULL, 'P'},
 	{"debug-logging", no_argument, NULL, 'v'},
 	{"verbose-boot", no_argument, NULL, 'V'},
@@ -60,6 +61,7 @@ static int usage(int e, char* prog_name)
 			"\t-h, --help\t\t\t\tShow this help\n"
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
 			"\t-P, --start-from-pongo\t\t\tStart with a PongoOS USB Device attached\n"
+			"\t-F, --pongo-full\t\t\tBoots to a PongoOS shell with default images already uploaded\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
@@ -87,9 +89,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"cCDhpvVldsOLtfe:o:r:K:k:", 
+	"cCDhpvVldsOLtfFe:o:r:K:k:", 
 #else
-	"cCDhpvVldsOLfe:o:r:K:k:", 
+	"cCDhpvVldsOLfFe:o:r:K:k:", 
 #endif
 	longopts, NULL)) != -1)
 	{
@@ -135,6 +137,9 @@ int optparse(int argc, char* argv[]) {
 			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
 			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
 			enable_rootful = 1;
+			break;
+		case 'F':
+			pongo_full = 1;
 			break;
 		case 'l':
 			enable_rootful = 0;

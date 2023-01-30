@@ -12,6 +12,7 @@
 
 #include <common.h>
 
+bool pongo_full = 0;
 
 void* pongo_helper(void* ptr) {
 	pongo_thr_running = 1;
@@ -51,9 +52,10 @@ void *pongo_usb_callback(void *arg) {
 	upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
 	issue_pongo_command(handle, "overlay");
 	issue_pongo_command(handle, xargs_cmd);
-	issue_pongo_command(handle, "kpf");
-	issue_pongo_command(handle, "bootux");
+	if (pongo_full) goto done;
+	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
+done:
 	set_spin(0);
 	return NULL;
 }
