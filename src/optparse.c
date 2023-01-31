@@ -231,6 +231,18 @@ int optparse(int argc, char* argv[]) {
 		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
 	}
 
+	if (!checkrain_option_enabled(palerain_flags, palerain_option_rootful)) {
+		if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful) || checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful_forced)) {
+			LOG(LOG_FATAL, "Cannot setup rootful when rootless is requested. Use -f to enable rootful mode.");
+			return -1;
+		}
+	}
+
+	if (dfuhelper_only && start_from_pongo) {
+		LOG(LOG_FATAL, "cannot start from pongo while being dfuhelper only");
+		return -1;
+	}
+
 	for (index = optind; index < argc; index++)
 	{
 		if (!strcmp("windows", argv[index]))
