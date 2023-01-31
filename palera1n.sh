@@ -65,6 +65,7 @@ Options:
     --no-baseband       Indicate that the device does not have a baseband
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
+    --china             Enable Mainland China specific workarounds (启用对中国大陆网络环境的替代办法)
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
 
 Subcommands:
@@ -104,6 +105,9 @@ parse_opt() {
             ;;
         --restorerootfs)
             restorerootfs=1
+            ;;
+        --china)
+            china=1
             ;;
         --debug)
             debug=1
@@ -405,7 +409,12 @@ fi
 # ============
 
 # Update submodules
-git submodule update --init --recursive
+if [ "$china" != "1" ]; then
+    git submodule update --init --recursive
+elif ! [ -f ramdisk/sshrd.sh ]; then
+    curl -LO https://static.palera.in/deps/ramdisk.tgz
+    tar xf ramdisk.tgz
+fi
 
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
@@ -1076,7 +1085,9 @@ echo "When you unlock the device, it will respring about 30 seconds after"
 echo "If this is your first time jailbreaking, open the new palera1n app, then press Install"
 echo "Otherwise, press Do All in the settings section of the app"
 echo "If you have any issues, please first check the common-issues.md document for common issues"
-echo "If that list doesn't solve your issue, join the Discord server and ask for help: https://dsc.gg/palera1n"
+if [ "$china" != "1" ]; then
+	echo "If that list doesn't solve your issue, join the Discord server and ask for help: https://dsc.gg/palera1n"
+fi
 echo "Enjoy!"
 
 } 2>&1 | tee logs/${log}
