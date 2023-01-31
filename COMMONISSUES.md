@@ -197,6 +197,8 @@ Install Choicy from [this repo](https://opa334.github.io) and disable tweak inje
 
 ## Snowboard theming incorrectly
 You may be encountering an issue with Snowboard not theming correctly or not theming at all, make sure you have Snowboard from [Sparkdev's repo](https://sparkdev.me) to solve these issues.
+
+Example image:
 ![image depicting sb issue](https://media.discordapp.net/attachments/1028693596469207191/1070014279639650345/image.png?width=318&height=171)
 
 <br>
