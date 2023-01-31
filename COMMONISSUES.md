@@ -31,6 +31,7 @@
 22. [How to fix RocketBootstrap](#how-to-fix-rocketbootstrap)
 23. [SEP Panic: :skg /skgs](#sep-panic-skg-skgs)
 24. [Cannot download apps from the App Store](#cannot-download-apps-from-the-app-store)
+25. [Snowboard theming incorrectly](#snowboard-theming-incorrectly)
 
 
 ## GLIBC not found
@@ -193,6 +194,10 @@ If you don't want to use checkp4le and just want to have a passcode, or if you'r
 
 ## Cannot download apps from the App Store
 Install Choicy from [this repo](https://opa334.github.io) and disable tweak injection into the App Store.
+
+## Snowboard theming incorrectly
+You may be encountering an issue with Snowboard not theming correctly or not theming at all, make sure you have Snowboard from [Sparkdev's repo](https://sparkdev.me) to solve these issues.
+![image depicting sb issue](https://media.discordapp.net/attachments/1028693596469207191/1070014279639650345/image.png?width=318&height=171)
 
 <br>
 
