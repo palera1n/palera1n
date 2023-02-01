@@ -27,7 +27,7 @@ ifeq ($(DEV_BUILD),1)
 LIBS += $(DEP)/lib/libmenutw.a $(DEP)/lib/libncursestw.a
 CFLAGS += -O0 -g -DDEV_BUILD -fno-omit-frame-pointer
 ifeq ($(ASAN),1)
-CFLAGS += -DBUILD_STYLE="ASAN" -fsanitize=address,undefined -fsanitize-address-use-after-return=runtime
+CFLAGS += -DBUILD_STYLE=\"ASAN\" -fsanitize=address,undefined -fsanitize-address-use-after-return=runtime
 else
 CFLAGS += -DBUILD_STYLE=\"DEVELOPMENT\"
 endif
