@@ -27,16 +27,22 @@ ifeq ($(DEV_BUILD),1)
 LIBS += $(DEP)/lib/libmenutw.a $(DEP)/lib/libncursestw.a
 CFLAGS += -O0 -g -DDEV_BUILD -fno-omit-frame-pointer
 ifeq ($(ASAN),1)
-CFLAGS += -DBUILD_STYLE=\"ASAN\" -fsanitize=address,undefined -fsanitize-address-use-after-return=runtime
+BUILD_STYLE=ASAN
+CFLAGS += -fsanitize=address,undefined -fsanitize-address-use-after-return=runtime
 else
-CFLAGS += -DBUILD_STYLE=\"DEVELOPMENT\"
+BUILD_STYLE = DEVELOPMENT
 endif
 else
-CFLAGS += -Os -g -DBUILD_STYLE=\"RELEASE\"
+CFLAGS += -Os -g
+BUILD_STYLE = RELEASE
 endif
-CFLAGS += -DBUILD_DATE="\"$(shell LANG=C date)\"" -DBUILD_WHOAMI=\"$(shell whoami)\" -DBUILD_TAG=\"$(shell git describe --dirty --tags --abbrev=7)\"
+BUILD_DATE := $(shell LANG=C date)
+BUILD_TAG := $(shell git describe --dirty --tags --abbrev=7)
+BUILD_WHOAMI := $(shell whoami)
 
-export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD
+CFLAGS += -DBUILD_STYLE=\"$(BUILD_STYLE)\" -DBUILD_DATE="\"$(BUILD_DATE)\"" -DBUILD_WHOAMI=\"$(BUILD_WHOAMI)\" -DBUILD_TAG=\"$(BUILD_TAG)\"
+
+export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG BUILD_WHOAMI BUILD_STYLE
 
 all: palera1n
 
