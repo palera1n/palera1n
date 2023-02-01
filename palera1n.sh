@@ -26,8 +26,8 @@ network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
-commit=$(git rev-parse --short HEAD)
-branch=$(git rev-parse --abbrev-ref HEAD)
+commit=$(git rev-parse --short HEAD || true)
+branch=$(git rev-parse --abbrev-ref HEAD || true)
 max_args=1
 arg_count=0
 disk=8
@@ -77,6 +77,7 @@ Options:
     --no-baseband       Indicate that the device does not have a baseband
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
+    --china             Enable Mainland China specific workarounds (启用对中国大陆网络环境的替代办法)
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
 
 Subcommands:
@@ -116,6 +117,9 @@ parse_opt() {
             ;;
         --restorerootfs)
             restorerootfs=1
+            ;;
+        --china)
+            china=1
             ;;
         --debug)
             debug=1
@@ -419,7 +423,12 @@ fi
 # ============
 
 # Update submodules
-git submodule update --init --recursive
+if [ "$china" != "1" ]; then
+    git submodule update --init --recursive
+elif ! [ -f ramdisk/sshrd.sh ]; then
+    curl -LO https://static.palera.in/deps/ramdisk.tgz
+    tar xf ramdisk.tgz
+fi
 
 # Re-create work dir if it exists, else, make it
 if [ -e work ]; then
@@ -1068,6 +1077,17 @@ if [ -d "logs" ]; then
 fi
 
 rm -rf work rdwork
+echo ""
+echo "Done!"
+echo "The device should now boot to iOS"
+echo "When you unlock the device, it will respring about 30 seconds after"
+echo "If this is your first time jailbreaking, open the new palera1n app, then press Install"
+echo "Otherwise, press Do All in the settings section of the app"
+echo "If you have any issues, please first check the common-issues.md document for common issues"
+if [ "$china" != "1" ]; then
+	echo "If that list doesn't solve your issue, join the Discord server and ask for help: https://dsc.gg/palera1n"
+fi
+echo "Enjoy!"
 
 # Displaying gum with some blocks
 clear
@@ -1075,7 +1095,11 @@ DONE=$(gum style --height 5 --width 25 --padding '1 3' --border rounded --border
 UNLOCK=$(gum style --width 25 --padding '1 3' --border rounded --border-foreground 212 "When you unlock the device, it will respring about $(gum style --foreground "#04B575" "30 seconds") later.")
 FIRST=$(gum style --height 5 --width 35 --padding '1 8' --border normal --border-foreground 255 "If this is your first time jailbreaking," "open the new palera1n app, then press $(gum style --foreground 57 "Install").")
 ISSUE=$(gum style --height 7 --width 35 --padding '1 5' --border normal --border-foreground 120  "If you have any issues, please first check the $(gum style --foreground 212 "common-issues.md") document for common issues")
-DISCORD=$(gum style --height 7 --width 35 --padding '1 5' --border double --border-foreground 120  "If that list doesn't solve your issue," "join the $(gum style --foreground 212 "Discord") server" "and ask for help:" "$(gum format "https://dsc.gg/palera1n")")
+if [ "$china" != "1" ]; then
+  DISCORD=$(gum style --height 7 --width 35 --padding '1 5' --border double --border-foreground 120  "If that list doesn't solve your issue," "join the $(gum style --foreground 212 "Discord") server" "and ask for help:" "$(gum format "https://dsc.gg/palera1n")")
+else
+  DISCORD=$(echo '')
+fi
 ENJOY=$(gum style --width 15 --padding "1 1" --border thick --border-foreground 57 $(gum style --foreground 212 "Enjoy!"))
 
 DONE_UNLOCK=$(gum join "$DONE" "$UNLOCK")

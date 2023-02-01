@@ -5,32 +5,33 @@
 
   
 
--  ## Table of Contents
-
+## Table of Contents
+  
 1. [GLIBC not found](#glibc-not-found)
 2. ["Booted device" but not booted](#booted-device-but-not-booted)
 3. [NewTerm not launching](#newterm-not-launching)
-4. [palera1n/mineek repo not working](#palera1n-mineek-repo-not-working)
+4. [palera1n/mineek repo not working](#palera1nmineek-repo-not-working)
 5. [Procursus "killed 9"](#procursus-killed-9)
 6. [App crashes on open](#app-crashes-on-open)
-7. ["Killed" issue (not "Killed: 9")](#killed-issue-not-killed-9)
-8. [Error while loading shared libraries: libssl.so.1.1](#error-while-loading-shared-libraries-libssl.so.1.1)
+7. ["Killed" issue (*not* "Killed: 9")](#killed-issue-not-killed-9)
+8. [Error while loading shared libraries: libssl.so.1.1](#error-while-loading-shared-libraries-libsslso11)
 9. [Please reinstall Sileo via SSH](#please-reinstall-sileo-via-ssh)
-10. [How to fix RocketBootstrap](#how-to-fix-rocketbootstrap)
-11. [Loader app not appearing **(most common)**](#loader-app-not-appearing)
-12. [Your local changes would be overwritten by checkout](#your-local-changes-would-be-overwritten-by-checkout)
-13. [Could not connect to lockdownd](#could-not-connect-to-lockdownd)
-14. [Package is in a very bad inconsistent state](#package-is-in-a-very-bad-inconsistent-state)
-15. [Error installing bootstrap. Status: -1](#error-installing-bootstrap.-status--1)
-16. [jbinit DIED!](#jbinit-died)
-17. [Daemons crashing on iOS 16.2+](#daemons-crashing-on-ios-16.2)
-18. [Panics making loader not appear](#panics-making-loader-not-appear)
-19. [libhooker wants to install?](#libhooker-wants-to-install)
-20. [Pressing “install” on each jb (don't do it)](#pressing-install-on-each-jb)
-21. [--restorerootfs still keeps app icons??](#restorerootfs-still-keeps-app-icons)
-22. [Device boots out of DFU](#device-boots-out-of-dfu)
+10. [Loader app not appearing](#loader-app-not-appearing)
+11. [Your local changes would be overwritten by checkout](#your-local-changes-would-be-overwritten-by-checkout)
+12. [Could not connect to lockdownd](#could-not-connect-to-lockdownd)
+13. [Package is in a very bad inconsistent state](#package-is-in-a-very-bad-inconsistent-state)
+14. [Error installing bootstrap. Status: -1](#error-installing-bootstrap-status--1)
+15. [jbinit DIED!](#jbinit-died)
+16. [Daemons crashing on iOS 16.2+](#daemons-crashing-on-ios-162)
+17. [Panics making loader not appear](#panics-making-loader-not-appear)
+18. [libhooker wants to install?](#libhooker-wants-to-install)
+19. [Pressing "install" on each jb](#pressing-install-on-each-jb)
+20. [--restorerootfs still keeps app icons??](#--restorerootfs-still-keeps-app-icons)
+21. [Device boots out of DFU](#device-boots-out-of-dfu)
+22. [How to fix RocketBootstrap](#how-to-fix-rocketbootstrap)
+23. [SEP Panic: :skg /skgs](#sep-panic-skg-skgs)
+24. [Cannot download apps from the App Store](#cannot-download-apps-from-the-app-store)
 
-  
 
 ## GLIBC not found
 
@@ -47,10 +48,10 @@ If that doesn't fix it, it may be caused by an update from the Procursus repo. T
 Install NewTerm 2 from [https://apt.itsnebula.net/](https://apt.itsnebula.net/ "https://apt.itsnebula.net/") or get NewTerm3 beta.
 
 ## palera1n\/mineek repo not working
-[https://repo.palera.in/](https://repo.palera.in/ "https://repo.palera.in/") and [https://mineek.github.io/repo](https://mineek.github.io/repo "https://mineek.github.io/repo") are supposed to be used on rootless jailbreaks, not with jailbreaks with fakefs or tethered that have root access.
+[https://repo.palera.in/](https://repo.palera.in/ "https://repo.palera.in/") and [https://mineek.github.io/repo](https://mineek.github.io/repo "https://mineek.github.io/repo") are supposed to be used on rootless jailbreaks, not with any rootful jailbreaks with fakefs or tethered that have root access.
 
 ## Procursus \"killed 9\"
-Binaries will need to be resigned by the Procursus Team to fix killed 9, in the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
+Binaries will need to be resigned by the Procursus Team to fix Killed: 9. In the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
 
 ## App crashes on open
 - `ldid -s /Applications/<appname>.app`
@@ -101,13 +102,6 @@ It should be fixed after these steps.
 Example image: 
 ![image with an error onscreen stating: "Sileo was unable to acquire root permissions. Please reinstall Sileo using SSH."](https://media.discordapp.net/attachments/1028693596469207191/1051879461093650442/1F92489D-5CA5-4E0C-A1FE-CED814FB0089.png?width=244&height=434)
 
-## How to fix RocketBootstrap
-1. Remove the Odyssey repo if you have it (to make sure you don't mistakenly install full libhooker, which *does not work* with palera1n)
-2. Add the [Havoc repo](https://havoc.app/)
-3. Install `libhooker-shim` (if it wants to remove Substitute, you've done something wrong)
-4. Get this deb: [https://repo.theodyssey.dev/debs/rocketbootstrap_1.1.0~libhooker2-iphoneos-arm.deb](https://repo.theodyssey.dev/debs/rocketbootstrap_1.1.0~libhooker2-iphoneos-arm.deb "https://repo.theodyssey.dev/debs/rocketbootstrap_1.1.0~libhooker2-iphoneos-arm.deb")
-5. Open it in Sileo or Filza, and install it.
-6. Reboot userspace (`launchctl reboot userspace`)
 
 **Note**: Some tweaks (e.g. Watusi) are known to not work with this method.
 
@@ -161,7 +155,7 @@ You may be encountering some issue related to panics and the loader “not appea
 These repos are not meant to be used with palera1n and are able to break your jailbreak if you install anything from them.
 
 ## Pressing \"install\" on each jb
-**DO NOT DO THIS.** It will likely break your jailbreak install. Instead, press the gear icon, and then press Do All.
+**DO NOT DO THIS.** It resets your package lists and will likely break your jailbreak install eventually. Instead, press the gear icon, and then press Do All.
 
 ## --restorerootfs still keeps app icons??
 There's an issue with restoring rootfs where it doesn’t uicache. **There is no need to worry**; this happens on a couple of other jailbreaks and serves no harm to the user or device.
@@ -171,6 +165,34 @@ Example image:
 
 ## Device boots out of DFU
 Make sure to use a USB-A cable, and enter recovery mode first before entering DFU (you can use `./palera1n.sh dfuhelper` for this - use `sudo` if on Linux).
+
+## How to fix RocketBootstrap
+1. Uninstall any existing version of RocketBootstrap you have installed
+2. Remove the Odyssey repo if you have it
+3. Install RocketBootstrap from [this repo](https://rpetri.ch/repo).
+4. Install RocketBootstrapFix from [this repo](https://repo.alexia.lol/).
+
+This is an updated fix that should work with more tweaks than the Odyssey version.
+
+## SEP Panic: :skg /skgs
+This happens due to having a passcode set on A10-A11 devices when jailbreaking (or having previously set a passcode on iOS 16, even if it's currently turned off).
+
+If you are on A10, use https://github.com/guacaplushy/checkp4le.
+<details>
+<summary>Why?</summary>
+checkp4le boots with checkra1n using a custom kernel patchfinder, which allows SEP to be re-enabled on A10
+</details>
+
+If you are on A11
+- iOS 15
+  - Turn off your passcode and try jailbreaking again.
+- iOS 16
+  - Turn off your passcode, backup your device, erase from settings or restore from iTunes/Finder, and then restore the backup. Then try jailbreaking again.
+
+If you don't want to use checkp4le and just want to have a passcode, or if you're on A11, you can use FakePass from [this repo](https://repo.alexia.lol/) to have a passcode. However, this will only work in a jailbroken state (it can be bypassed by simply rebooting the device).
+
+## Cannot download apps from the App Store
+Install Choicy from [this repo](https://opa334.github.io) and disable tweak injection into the App Store.
 
 <br>
 

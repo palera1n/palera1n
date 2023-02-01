@@ -48,7 +48,7 @@ A tutorial can be found [here](https://ios.cfw.guide/installing-palera1n).
 
 # Issues
 
-**Please first check the [common issues](https://github.com/palera1n/palera1n/blob/main/common-issues.md) document.**
+**Please first check the [common issues](https://github.com/palera1n/palera1n/blob/main/COMMONISSUES.md) document.**
 
 ## Still need help?
 
