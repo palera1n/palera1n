@@ -25,10 +25,16 @@ LIBS += $(DEP)/lib/libusb-1.0.a
 
 ifeq ($(DEV_BUILD),1)
 LIBS += $(DEP)/lib/libmenutw.a $(DEP)/lib/libncursestw.a
-CFLAGS += -O0 -g -DDEV_BUILD -fsanitize=address,undefined -fno-omit-frame-pointer -fsanitize-address-use-after-return=runtime
+CFLAGS += -O0 -g -DDEV_BUILD -fno-omit-frame-pointer
+ifeq ($(ASAN),1)
+CFLAGS += -DBUILD_STYLE="ASAN" -fsanitize=address,undefined -fsanitize-address-use-after-return=runtime
 else
-CFLAGS += -Os -g
+CFLAGS += -DBUILD_STYLE=\"DEVELOPMENT\"
 endif
+else
+CFLAGS += -Os -g -DBUILD_STYLE=\"RELEASE\"
+endif
+CFLAGS += -DBUILD_DATE="\"$(shell LANG=C date)\"" -DBUILD_WHOAMI=\"$(shell whoami)\" -DBUILD_TAG=\"$(shell git describe --dirty --tags --abbrev=7)\"
 
 export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD
 

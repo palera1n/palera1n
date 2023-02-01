@@ -199,7 +199,7 @@ int optparse(int argc, char* argv[]) {
 		}
 	}
 	if (palerain_version) {
-		printf("palera1n %s\n", PALERAIN_VERSION);
+		printf("palera1n version " PALERAIN_VERSION ": " BUILD_DATE "; " BUILD_WHOAMI ":" BUILD_TAG "/" BUILD_STYLE "\n");
 		return 0;
 	}
 
