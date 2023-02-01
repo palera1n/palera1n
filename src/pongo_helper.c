@@ -12,11 +12,15 @@
 
 #include <common.h>
 
-bool pongo_full = 0;
+bool pongo_full, device_has_booted = 0;
+int pongo_thr_running = 0;
 
 void* pongo_helper(void* ptr) {
 	pongo_thr_running = 1;
 	pthread_cleanup_push(thr_cleanup, &pongo_thr_running);
+#if defined(__APPLE__) || defined(__linux__)
+	pthread_setname_np("in.palera.pongo-helper");
+#endif
 	wait_for_pongo();
 	while (get_spin()) {
 		sleep(1);
@@ -29,6 +33,9 @@ void *pongo_usb_callback(void *arg) {
 	if (get_found_pongo())
 		return NULL;
 	set_found_pongo(1);
+#if defined(__APPLE__) || defined(__linux__)
+	pthread_setname_np("in.palera.pongo-handler");
+#endif
 	strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
 	if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
 		strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);	
@@ -55,7 +62,12 @@ void *pongo_usb_callback(void *arg) {
 	if (pongo_full) goto done;
 	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
+	if (dfuhelper_thr_running) {
+		pthread_cancel(dfuhelper_thread);
+		dfuhelper_thr_running = false;
+	}
 done:
+	device_has_booted = true;
 	set_spin(0);
 	return NULL;
 }

@@ -19,8 +19,7 @@ static struct option longopts[] = {
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
-	{"pongo-full", no_argument, NULL, 'F'},
-	{"start-from-pongo", no_argument, NULL, 'P'},
+	{"pongo-full", no_argument, NULL, 'P'},
 	{"debug-logging", no_argument, NULL, 'v'},
 	{"verbose-boot", no_argument, NULL, 'V'},
 	{"boot-args", required_argument, NULL, 'e'},
@@ -46,9 +45,9 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 #ifdef DEV_BUILD
-			"Usage: %s [-cCDhpvVldsOLtfF]"
+			"Usage: %s [-cCDhpvVldsOLtf]"
 #else
-			"Usage: %s [-cCDhpvVldsOLfF]"
+			"Usage: %s [-cCDhpvVldsOLf]"
 #endif
 			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
@@ -60,8 +59,7 @@ static int usage(int e, char* prog_name)
 			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
 			"\t-h, --help\t\t\t\tShow this help\n"
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
-			"\t-P, --start-from-pongo\t\t\tStart with a PongoOS USB Device attached\n"
-			"\t-F, --pongo-full\t\t\tBoots to a PongoOS shell with default images already uploaded\n"
+			"\t-P, --pongo-full\t\t\tBoots to a PongoOS shell with default images already uploaded\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
@@ -89,9 +87,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"cCDhpvVldsOLtfFe:o:r:K:k:", 
+	"cCDhpvVldsOLtfPe:o:r:K:k:", 
 #else
-	"cCDhpvVldsOLfFe:o:r:K:k:", 
+	"cCDhpvVldsOLfPe:o:r:K:k:", 
 #endif
 	longopts, NULL)) != -1)
 	{
@@ -109,7 +107,7 @@ int optparse(int argc, char* argv[]) {
 			pongo_exit = true;
 			break;
 		case 'P':
-			start_from_pongo = true;
+			pongo_full = 1;
 			break;
 		case 'D':
 			dfuhelper_only = true;
@@ -137,9 +135,6 @@ int optparse(int argc, char* argv[]) {
 			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
 			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
 			enable_rootful = 1;
-			break;
-		case 'F':
-			pongo_full = 1;
 			break;
 		case 'l':
 			enable_rootful = 0;
@@ -212,6 +207,10 @@ int optparse(int argc, char* argv[]) {
 		palerain_flags |= palerain_option_rootful;
 	}
 
+	if (checkrain_option_enabled(checkrain_flags, checkrain_option_force_revert) && checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
+		LOG(LOG_WARNING, "force revert and setup rootful requested at the same time, behaviour here is undefined");
+	}
+
 	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);
 	snprintf(palerain_flags_cmd, 0x20, "palera1n_flags 0x%x", palerain_flags);
 	snprintf(kpf_flags_cmd, 0x20, "kpf_flags 0x%x", kpf_flags);
@@ -236,11 +235,6 @@ int optparse(int argc, char* argv[]) {
 			LOG(LOG_FATAL, "Cannot setup rootful when rootless is requested. Use -f to enable rootful mode.");
 			return -1;
 		}
-	}
-
-	if (dfuhelper_only && start_from_pongo) {
-		LOG(LOG_FATAL, "cannot start from pongo while being dfuhelper only");
-		return -1;
 	}
 
 	for (index = optind; index < argc; index++)

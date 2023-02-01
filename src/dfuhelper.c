@@ -32,6 +32,8 @@
 
 #define NOHOME (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e)))
 
+int dfuhelper_thr_running = false;
+
 void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
     for (int i = time2; i < time; i++) {
         printf(CYN "\r\e[K%s (%d)" CRESET, text, time - i + time2);
@@ -89,6 +91,9 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	cpid = info->cpid;
 	ecid = info->ecid;
 	bdid = info->bdid;
+#if defined(__APPLE__) || defined(__linux__)
+	pthread_setname_np("in.palera.recovery-mode-handler");
+#endif
 	if (!cpid_is_arm64(info->cpid)) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		return NULL;
@@ -136,6 +141,9 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 }
 
 void* connected_dfu_mode(struct irecv_device_info* info) {
+#if defined(__APPLE__) || defined(__linux__)
+	pthread_setname_np("in.palera.dfu-mode-handler");
+#endif
 	if (get_ecid_wait_for_dfu() == info->ecid) {
 		set_ecid_wait_for_dfu(0);
 		puts("");
@@ -180,10 +188,15 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 }
 
 void *dfuhelper(void* ptr) {
+	dfuhelper_thr_running = true;
+#if defined(__APPLE__) || defined(__linux__)
+	pthread_setname_np("in.palera.dfu-helper");
+#endif
 	subscribe_cmd(device_event_cb, irecv_device_event_cb);
 	set_spin(1);
 	while (get_spin()) {
 		sleep(1);
 	};
+	dfuhelper_thr_running = false;
 	return 0;
 }

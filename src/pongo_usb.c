@@ -278,7 +278,7 @@ int wait_for_pongo(void)
     }
 
     libusb_exit(NULL);
-    return -1;
+    return 0;
 }
 
 
@@ -400,3 +400,4 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 	}
 	return ret;
 }
+

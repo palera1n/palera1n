@@ -117,9 +117,9 @@ extern pthread_mutex_t log_mutex;
 
 extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
 
-extern int enable_rootful, do_pongo_sleep, demote;
+extern int enable_rootful, demote;
 extern int pongo_thr_running, dfuhelper_thr_running;
-extern bool ohio, start_from_pongo, pongo_full;
+extern bool ohio, pongo_full, device_has_booted;
 extern char xargs_cmd[0x270];
 extern char checkrain_flags_cmd[0x20];
 extern char palerain_flags_cmd[0x20];
@@ -164,6 +164,7 @@ int optparse(int argc, char* argv[]);
 bool get_spin();
 bool set_spin(bool val);
 bool get_found_pongo();
+void* pongo_helper(void* _);
 bool set_found_pongo(bool val);
 uint64_t get_ecid_wait_for_dfu();
 uint64_t set_ecid_wait_for_dfu(uint64_t ecid);

@@ -33,7 +33,7 @@
 #define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
-int enable_rootful = 0, do_pongo_sleep = 0, demote = 0;
+int enable_rootful = 0, demote = 0;
 bool ohio = true;
 char xargs_cmd[0x270] = "xargs", checkrain_flags_cmd[0x20] = "deadbeef", palerain_flags_cmd[0x20] = "deadbeef";
 char kpf_flags_cmd[0x20] = "deadbeef", dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
@@ -53,6 +53,11 @@ override_file_t override_ramdisk, override_kpf, override_overlay;
 uint32_t checkrain_flags = 0, palerain_flags = 0, kpf_flags = 0;
 
 pthread_mutex_t log_mutex;
+pthread_t dfuhelper_thread, pongo_thread;
+
+void thr_cleanup(void* ptr) {
+	*(int*)ptr = 0;
+}
 
 int build_checks() {
 #if defined(__APPLE__)
@@ -80,13 +85,16 @@ int build_checks() {
 	return 0;
 }
 
-bool dfuhelper_only = false, pongo_exit = false, start_from_pongo = false, palerain_version = false;
+bool dfuhelper_only = false, pongo_exit = false, palerain_version = false;
 #ifdef DEV_BUILD
 bool use_tui = false;
 #endif
 
 int palera1n(int argc, char *argv[]) {
 	int ret = 0;
+#if defined(__APPLE__) || defined(__linux__)
+	pthread_setname_np("in.palera.main-thread");
+#endif
 	pthread_mutex_init(&log_mutex, NULL);
 	pthread_mutex_init(&spin_mutex, NULL);
 	pthread_mutex_init(&found_pongo_mutex, NULL);
@@ -94,8 +102,6 @@ int palera1n(int argc, char *argv[]) {
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
 	if (palerain_version) goto normal_exit;
-	if (start_from_pongo == true)
-		goto pongo;
 #ifdef DEV_BUILD
 	if (use_tui) {
 		ret = tui();
@@ -104,22 +110,19 @@ int palera1n(int argc, char *argv[]) {
 	}
 #endif
 	LOG(LOG_INFO, "Waiting for devices");
-	do_pongo_sleep = 1;
-	pthread_t dfuhelper_thread;
+	pthread_create(&pongo_thread, NULL, pongo_helper, NULL);
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
-	if (dfuhelper_only)
+	set_spin(0);
+	if (dfuhelper_only || device_has_booted)
 		goto normal_exit;
 	exec_checkra1n();
 	if (pongo_exit || demote)
 		goto normal_exit;
-pongo:
 	set_spin(1);
-	if (do_pongo_sleep)
-		sleep(2);
-	else
-		LOG(LOG_INFO, "Waiting for PongoOS devices...");
-	wait_for_pongo();
+	sleep(2);
+	pthread_create(&pongo_thread, NULL, pongo_helper, NULL);
+	pthread_join(pongo_thread, NULL);
 	while (get_spin())
 	{
 		sleep(1);
