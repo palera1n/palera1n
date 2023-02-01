@@ -1,6 +1,6 @@
-Flags,Modes
---help,Help
---semi-tethered --tweaks,Jailbreak
---restorerootfs,Restore RootFS
-dfuhelper,DFU Helper
-clean,Clean
+Flags,Modes,Description
+--help,Help,Print commands & flags
+--semi-tethered --tweaks,Semi-Tethered Jailbreak,Make the jailbreak semi-tethered instead of tethered
+--restorerootfs,Restore RootFS,Remove the jailbreak
+dfuhelper,DFU Helper,A helper to help get A11 devices into DFU mode from recovery mode
+clean,Clean,Deletes the created boot files
