@@ -364,7 +364,15 @@ fi
 
 # ============
 # Dependencies
-# ============
+#============
+
+
+#check root on linux
+if [ "$os" = 'Linux' ]; then
+    if [ "$(id -u)" -ne 0 ]; then
+       echo "palera1n needs to run as root on Linux.
+       echo "Please enter your sudo password if prompted."
+       exec caffeinate -dis sudo -E ./palera1n.sh "$@"
 
 # Check for required commands
 if [ "$os" = 'Linux' ]; then
