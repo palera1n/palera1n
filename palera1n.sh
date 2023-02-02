@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 export LC_CTYPE="en_US.UTF-8"
+export GUM_SPIN_SHOW_OUTPUT='true'
 
 pushd $(dirname "$0") &> /dev/null
 
