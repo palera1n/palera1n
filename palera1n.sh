@@ -372,7 +372,7 @@ if [ "$os" = 'Linux' ]; then
     if [ "$(id -u)" -ne 0 ]; then
        echo "palera1n needs to run as root on Linux."
        echo "Please enter your sudo password if prompted."
-       exec -dis sudo ./palera1n.sh "$@"
+       exec sudo ./palera1n.sh "$@"
        
     fi
 fi   
