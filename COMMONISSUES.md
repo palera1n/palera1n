@@ -32,7 +32,7 @@
 23. [SEP Panic: :skg /skgs](#sep-panic-skg-skgs)
 24. [Cannot download apps from the App Store](#cannot-download-apps-from-the-app-store)
 25. [Snowboard theming incorrectly](#snowboard-theming-incorrectly)
-26. [End of central-directory not found](#end-of-central-directory-not-found)
+26. [End-of-central-directory signature not found](#end-of-central-directory-signature-not-found)
 
 ## GLIBC not found
 
