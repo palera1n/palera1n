@@ -322,7 +322,7 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 	{
 		if (passstat_status)
 			free(passstat_status);
-
+		passstat_status = NULL;
 		plist_free(node);
 		LOG(LOG_ERROR, "Error getting passcode state (invalid status)");
 		return -1;
