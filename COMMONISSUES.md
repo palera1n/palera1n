@@ -32,7 +32,7 @@
 23. [SEP Panic: :skg /skgs](#sep-panic-skg-skgs)
 24. [Cannot download apps from the App Store](#cannot-download-apps-from-the-app-store)
 25. [Snowboard theming incorrectly](#snowboard-theming-incorrectly)
-
+26. [End of central-directory not found](#end-of-central-directory-not-found)
 
 ## GLIBC not found
 
@@ -201,6 +201,8 @@ You may be encountering an issue with Snowboard not theming correctly or not the
 Example image:
 ![image depicting sb issue](https://media.discordapp.net/attachments/1028693596469207191/1070014279639650345/image.png?width=318&height=171)
 
+## End of central-directory not found
+If the error message says palera1n.zip, you are running an outdated version of palera1n and need to update using "git pull". If this doesn't work, reclone the palera1n repository with "cd && sudo rm -rf palera1n && sudo git clone https://github.com/palera1n/palera1n.git". Otherwise, this error most likely indicates a problem with your internet connection, and you simply need to retry running palera1n again.
 <br>
 
 ### If none of these solve your issue, please join the [Discord server](https://dsc.gg/palera1n).
