@@ -35,6 +35,7 @@ static struct option longopts[] = {
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
 	{"disable-ohio", no_argument, NULL, 'O'},
+	{"override-checkra1n", required_argument, NULL, '1'},
 #ifdef DEV_BUILD
 	{"tui", no_argument, NULL, 't'},
 #endif
@@ -49,7 +50,7 @@ static int usage(int e, char* prog_name)
 #else
 			"Usage: %s [-cCDhpvVldsOLf]"
 #endif
-			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
+			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-1 checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -73,10 +74,14 @@ static int usage(int e, char* prog_name)
 			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
+			"\t-1, --override-checkra1n <file>\t\tOverride checkra1n\n"
 			"\t-O, --disable-ohio\t\t\tDisable Ohio\n"
+	
 #ifdef DEV_BUILD
 			"\t-t, --tui\t\t\t\tTerminal user interface\n"
 #endif
+		"\nEnvironmental variables:\n"
+		"\tTMPDIR\t\ttemporary diretory (path the built-in checkra1n will be extracted to)\n"
 			,
 			prog_name);
 	exit(e);
@@ -87,9 +92,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"cCDhpvVldsOLtfPe:o:r:K:k:", 
+	"cCDhpvVldsOLtfPe:o:r:K:k:1:", 
 #else
-	"cCDhpvVldsOLfPe:o:r:K:k:", 
+	"cCDhpvVldsOLfPe:o:r:K:k:1:", 
 #endif
 	longopts, NULL)) != -1)
 	{
@@ -178,6 +183,18 @@ int optparse(int argc, char* argv[]) {
 				LOG(LOG_FATAL, "Invalid kernel patchfinder: CPU type is not arm64");
 				return -1;
 			}
+			break;
+		case '1': {};
+			struct stat st;
+			if (stat(optarg, &st) != 0) {
+				LOG(LOG_FATAL, "cannot stat external checkra1n file: %d (%s)", errno, strerror(errno));
+				return -1;
+			} else if (!(st.st_mode & S_IXUSR) && !(st.st_mode & S_IXGRP) && !(st.st_mode & S_IXOTH)) {
+				LOG(LOG_FATAL, "%s is not executable", optarg);
+				return -1;
+			};
+			ext_checkra1n = calloc(1, strlen(optarg) + 1);
+			snprintf(ext_checkra1n, strlen(optarg) + 1, "%s", optarg);
 			break;
 		case 'O':
 			ohio = false;

@@ -20,29 +20,40 @@ extern char **environ;
 #include <common.h>
 #include <xxd-embedded.h>
 char* pongo_path = NULL;
+char* ext_checkra1n = NULL;
 
-void exec_checkra1n() {
+int exec_checkra1n() {
 	LOG(LOG_INFO, "About to execute checkra1n");
 	int fd, ret;
-	char checkra1n_path[] = "/tmp/checkra1n.XXXXXX";
+	char* checkra1n_path = NULL;
+	if (ext_checkra1n != NULL) {
+		checkra1n_path = ext_checkra1n;
+		goto checkra1n_exec;
+	}
+	if (getenv("TMPDIR") != NULL) {
+		checkra1n_path = malloc(strlen(getenv("TMPDIR")) + 20);
+		snprintf(checkra1n_path, strlen(getenv("TMPDIR")) + 20, "%s/checkra1n.XXXXXX", getenv("TMPDIR"));
+	} else checkra1n_path = "/tmp/checkra1n.XXXXXX";
 	fd = mkstemp(checkra1n_path);
 	if (fd == -1) {
 		LOG(LOG_FATAL, "Cannot open temporary file: %d (%s)", errno, strerror(errno));
-		return;
+		return -1;
 	}
 	ssize_t didWrite = write(fd, checkra1n, checkra1n_len);
 	if (didWrite != (ssize_t)checkra1n_len) {
 		LOG(LOG_FATAL, "Size written does not match expected: %lld != %d: %d (%s)", didWrite, checkra1n_len, errno, strerror(errno));
 		close(fd);
 		unlink(checkra1n_path);
-		return;
+		return -1;
 	}
 	close(fd);
 	ret = chmod(checkra1n_path, 0700);
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		unlink(checkra1n_path);
+		return -1;
 	}
+checkra1n_exec: {};
 	char args[0x10] = "-pE";
 	if (demote) strncat(args, "d", 0xf);
 	if (verbose >= 2) strncat(args, "v", 0xf);
@@ -59,12 +70,13 @@ void exec_checkra1n() {
 	pongo_path = NULL;
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
-		unlink(checkra1n_path);
-		return;
+		if (ext_checkra1n != NULL) unlink(checkra1n_path);
+		return -1;
 	}
 	LOG(LOG_VERBOSE2, "%s spawned successfully", checkra1n_path);
 	sleep(2);
-	unlink(checkra1n_path);
+	if (ext_checkra1n != NULL) unlink(checkra1n_path);
+	if (getenv("TMPDIR") && ext_checkra1n == NULL) free(checkra1n_path);
 	waitpid(pid, NULL, 0);
-	return;
+	return 0;
 }

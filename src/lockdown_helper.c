@@ -205,7 +205,7 @@ int lockdown_get_string_value(int fd, const char* domain, const char* key, char*
 	}
 	size_t str_len = p - str_start;
 	*value = (char*)malloc(str_len + 1);
-	strncpy(*value, str_start, str_len);
+	snprintf(*value, str_len, "%s", str_start);
 	(*value)[str_len] = '\0';
 	free(resp);
 

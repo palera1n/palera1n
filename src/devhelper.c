@@ -363,9 +363,9 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid) {
 	}
 	info->mode = mode;
 	info->cpid = device->chip_id;
-	strncpy(info->product_type, device->product_type, 0x20);
-	strncpy(info->display_name, device->display_name, 0x20);
-	strncpy(info->iboot_ver, (ibootver) ? ibootver : "", 0x20);
+	snprintf(info->product_type, 0x20, "%s", device->product_type);
+	snprintf(info->display_name, 0x20, "%s", device->display_name);
+	snprintf(info->iboot_ver, 0x20, "%s", (ibootver) ? ibootver : "");
 	free(ibootver);
 	irecv_close(client);
 	return 0;

@@ -116,7 +116,7 @@ int palera1n(int argc, char *argv[]) {
 	set_spin(0);
 	if (dfuhelper_only || device_has_booted)
 		goto normal_exit;
-	exec_checkra1n();
+	if (exec_checkra1n()) goto cleanup;
 	if (pongo_exit || demote)
 		goto normal_exit;
 	set_spin(1);
@@ -162,6 +162,7 @@ cleanup:
 		munmap(override_overlay.ptr, (size_t)override_overlay.len);
 		close(override_overlay.fd);
 	}
+	if (ext_checkra1n != NULL) free(ext_checkra1n);
 	pthread_mutex_destroy(&log_mutex);
 	pthread_mutex_destroy(&spin_mutex);
 	pthread_mutex_destroy(&found_pongo_mutex);

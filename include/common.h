@@ -126,6 +126,7 @@ extern char palerain_flags_cmd[0x20];
 extern char kpf_flags_cmd[0x20];
 extern char dtpatch_cmd[0x20];
 extern char rootfs_cmd[512];
+extern char* ext_checkra1n;
 
 extern bool palerain_version;
 
@@ -146,7 +147,7 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid);
 int autoboot_cmd(const uint64_t ecid);
 int exitrecv_cmd(const uint64_t ecid);
 
-void exec_checkra1n();
+int exec_checkra1n();
 int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename);
 void* pongo_helper(void* ptr);
 
