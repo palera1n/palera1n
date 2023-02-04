@@ -15,7 +15,7 @@
 tui_screen_t tui_screen_main() {
     int ret = MAIN_SCREEN;
     bool can_start = false;
-    newtCenteredWindow(WIDTH, HEIGHT, "palera1n version 2.0.0");
+    newtCenteredWindow(WIDTH, HEIGHT, NULL);
     newtComponent optionsButton = newtCompactButton(46, 17, "Options");
     newtComponent startButton = newtCompactButton(57, 17, "Start");
     newtComponent exitButton = newtCompactButton(66, 17, "Exit");

@@ -40,7 +40,7 @@ int init_window() {
 
     newtInit();
     newtCls();
-    newtDrawRootText(0, 0, "Package Configuration");
+    newtDrawRootText(0, 0, "palera1n version 2.0.0");
     newtPushHelpLine(NULL);
     return 0;
 }
