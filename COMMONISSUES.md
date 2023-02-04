@@ -202,7 +202,7 @@ Example image:
 ![image depicting sb issue](https://media.discordapp.net/attachments/1028693596469207191/1070014279639650345/image.png)
 
 ## End-of-central-directory signature not found
-If the unzip error message it cannot find "`palera1n.zip(.ZIP, period.)`", you are running an outdated version of palera1n and need to update using `git pull`. If this doesn't work, reclone the palera1n repository by running `cd .. && sudo rm -rf palera1n && sudo git clone --recursive https://github.com/palera1n/palera1n`. 
+If the unzip error message it cannot find "`palera1n.zip(.ZIP, period.)`", you are running an outdated version of palera1n and need to update using `git pull`. If this doesn't work, reclone the palera1n repository by running `cd .. && sudo rm -rf palera1n && sudo git clone --recursive --depth=1 --shallow-submodules https://github.com/palera1n/palera1n && cd palera1n`. 
 
 Otherwise, this error most likely indicates a problem with your internet connection, and you simply need to try running palera1n again.
 
