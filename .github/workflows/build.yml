@@ -28,6 +28,8 @@ jobs:
       LIBUSB_VERSION: 1.0.26
       READLINE_VERSION: 8.2
       NCURSES_VERSION: 6.4
+      SLANG_VERSION: 2.3.3
+      NEWT_VERSION: 0.52.23
 
     steps:
       - name: Checkout
@@ -54,11 +56,16 @@ jobs:
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
-            https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz
+            https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz \
+            https://www.jedsoft.org/releases/slang/slang-${{ env.SLANG_VERSION }}.tar.bz2 \
+            https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz
+
           tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
           tar -xf ncurses-${{ env.NCURSES_VERSION }}.tar.gz
+          tar -xjf slang-${{ env.SLANG_VERSION }}.tar.bz2
+          tar -xf newt-${{ env.NEWT_VERSION }}.tar.gz
           git clone --depth=1 https://github.com/libimobiledevice/libplist
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
           git clone --depth=1 https://github.com/libimobiledevice/libirecovery
@@ -195,6 +202,34 @@ jobs:
         run: |
           cd readline-${{ env.READLINE_VERSION }}
           CC=clang CXX=clang++ ./configure ${{ env.CONFIGURE_ARGS }} ac_cv_type_sig_atomic_t=no
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build S-Lang
+        run: |
+          cd slang-${{ env.SLANG_VERSION }}
+          ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
+            --without-x \
+            --without-pcre \
+            --without-onig \
+            --without-z \
+            --without-png \
+            --without-iconv
+          gmake -j$(sysctl -n hw.ncpu) static
+          gmake -j$(sysctl -n hw.ncpu) install-static DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build newt
+        run: |
+          cd newt-${{ env.NEWT_VERSION }}
+          ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
+            --with-gpm-support \
+            --with-readline=gnu \
+            --without-python \
+            --without-tcl
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
@@ -365,6 +400,9 @@ jobs:
       LIBUSB_VERSION: 1.0.26
       READLINE_VERSION: 8.2
       NCURSES_VERSION: 6.4
+      SLANG_VERSION: 2.3.3
+      NEWT_VERSION: 0.52.23
+      GPM_VERSION: 1.20.7
 
     steps:
       - name: Checkout
@@ -436,11 +474,18 @@ jobs:
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
-            https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz
+            https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz \
+            https://www.jedsoft.org/releases/slang/slang-${{ env.SLANG_VERSION }}.tar.bz2 \
+            https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz \
+            http://www.nico.schottelius.org/software/gpm/archives/gpm-${{ env.GPM_VERSION }}.tar.gz
+
           tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
           tar -xf ncurses-${{ env.NCURSES_VERSION }}.tar.gz
+          tar -xjf slang-${{ env.SLANG_VERSION }}.tar.bz2
+          tar -xf newt-${{ env.NEWT_VERSION }}.tar.gz
+          tar -xf gpm-${{ env.GPM_VERSION }}.tar.gz
           git clone --depth=1 https://github.com/libimobiledevice/libplist
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
           git clone --depth=1 https://github.com/libimobiledevice/libirecovery
@@ -520,6 +565,43 @@ jobs:
           ./configure ${{ env.CONFIGURE_ARGS }}
           make -j$(nproc)
           make -j$(nproc) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build S-Lang
+        run: |
+          cd slang-${{ env.SLANG_VERSION }}
+          ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
+            --without-x \
+            --without-pcre \
+            --without-onig \
+            --without-z \
+            --without-png \
+            --without-iconv
+          gmake -j$(sysctl -n hw.ncpu) static
+          gmake -j$(sysctl -n hw.ncpu) install-static DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build GPM
+        run: |
+          cd gpm-${{ env.GPM_VERSION }}
+          ./configure \
+            ${{ env.CONFIGURE_ARGS }}
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build newt
+        run: |
+          cd newt-${{ env.NEWT_VERSION }}
+          ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
+            --with-gpm-support \
+            --with-readline=gnu \
+            --without-python \
+            --without-tcl
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build libplist

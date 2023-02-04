@@ -35,6 +35,9 @@ tui_screen_t tui_screen_options() {
     FORM* options_form;
     FIELD* options[3];
     
+    options[0] = new_field(2, 2, 2, 2);
+    options[1] = new_field();
+    options[2] = NULL;
 
     refresh();
 
