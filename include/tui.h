@@ -1,8 +1,5 @@
 #ifndef TUI_H
 #define TUI_H
-#define NCURSES_WIDECHAR 1
-
-#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,6 +10,7 @@
 #include <string.h>
 #include <locale.h>
 #include <unistd.h>
+#include <newt.h>
 
 #define MAIN_OPTIONS "Options"
 #define MAIN_START "Start"
@@ -21,6 +19,8 @@
 
 #define MSG_COLOR 1
 #define ICON_COLOR 2
+
+#define CHECKBOX_STATE(flags, opt) checkrain_option_enabled(flags, opt) ? '*' : ' '
 
 typedef enum tui_screens {
     ERROR_SCREEN = -1,
@@ -31,6 +31,11 @@ typedef enum tui_screens {
     JAILBREAKING_SCREEN = 4,
     ENTER_RECOVERY_SCREEN = 5
 } tui_screen_t;
+
+typedef struct bitfield_checkbox_info {
+    checkrain_option_p flags_p;
+    checkrain_option_t opt;
+} tui_bit_info_t;
 
 tui_screen_t tui_screen_main();
 tui_screen_t tui_screen_options();

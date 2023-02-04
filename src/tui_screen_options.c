@@ -1,8 +1,3 @@
-#define NCURSES_WIDECHAR 1
-
-#include <ncurses.h>
-#include <form.h>
-#include <menu.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -17,44 +12,46 @@
 #include <common.h>
 #include <tui.h>
 
+void bitfield_check_cb(newtComponent box, void* data) {
+    if (newtCheckboxGetValue(box) == ' ') {
+        *((tui_bit_info_t*)data)->flags_p = *((tui_bit_info_t*)data)->flags_p &~ ((tui_bit_info_t*)data)->opt;
+    } else if (newtCheckboxGetValue(box) == '*') {
+        *((tui_bit_info_t*)data)->flags_p |= ((tui_bit_info_t*)data)->opt;
+    } else assert(0);
+}
+
 tui_screen_t tui_screen_options() {
-    tui_screen_t ret = EXIT_SCREEN;
-    ITEM* back_button[2];
-    MENU* back_menu;
-    back_button[0] = new_item("Back", "");
-    back_button[1] = NULL;
-    back_menu = new_menu(back_button);
+    tui_bit_info_t verbose_info = { &kpf_flags, checkrain_option_verbose_boot };
+    tui_bit_info_t rootful_info = { &palerain_flags, palerain_option_rootful };
+    tui_bit_info_t setup_rootful_info = { &palerain_flags, palerain_option_setup_rootful };
+    tui_bit_info_t force_revert_info = { &checkrain_flags, checkrain_option_force_revert };
+    tui_bit_info_t safemode_info = { &checkrain_flags, checkrain_option_safemode };
 
-    move(21, 1);
-    hline(ACS_HLINE, 80 - 2);
+    int ret = MAIN_SCREEN;
 
-    set_menu_format(back_menu, 1, 10);
-    set_menu_sub(back_menu, derwin(stdscr, 0, 0, 22, 68));
-    post_menu(back_menu);
+    newtCenteredWindow(60, 16, "palera1n version 2.0.0");
+    newtComponent backButton = newtCompactButton(50, 14, "Back");
 
-    FORM* options_form;
-    FIELD* options[3];
-    
-    options[0] = new_field(2, 2, 2, 2);
-    options[1] = new_field();
-    options[2] = NULL;
+    newtComponent verboseBootBox = newtCheckbox(1, 1, "Verbose boot", CHECKBOX_STATE(kpf_flags, checkrain_option_verbose_boot), NULL, NULL);
+    newtComponent rootfulBox = newtCheckbox(1, 2, "Rootful", CHECKBOX_STATE(palerain_flags, palerain_option_rootful), NULL, NULL);
+    newtComponent rootfulSetupBox = newtCheckbox(1, 3, "Setup fakefs", CHECKBOX_STATE(palerain_flags, palerain_option_setup_rootful), NULL, NULL);
+    newtComponent forceRevertBox = newtCheckbox(1, 4, "Restore system", CHECKBOX_STATE(checkrain_flags, checkrain_option_force_revert), NULL, NULL);
+    newtComponent safeModeBox = newtCheckbox(1, 5, "Safe mode", CHECKBOX_STATE(checkrain_flags, checkrain_option_safemode), NULL, NULL);
 
-    refresh();
+    newtComponentAddCallback(verboseBootBox, bitfield_check_cb, &verbose_info);
+    newtComponentAddCallback(rootfulBox, bitfield_check_cb, &rootful_info);
+    newtComponentAddCallback(rootfulSetupBox, bitfield_check_cb, &setup_rootful_info);
+    newtComponentAddCallback(forceRevertBox, bitfield_check_cb, &force_revert_info);
+    newtComponentAddCallback(safeModeBox, bitfield_check_cb, &safemode_info);
 
-    while(1) {
-        int ch = getch();
-        if (ch == 10) {
-            if (!(item_opts(current_item(back_menu)) & O_SELECTABLE)) continue;
-            if (!strcmp(current_item(back_menu)->name.str, BACK_BUTTON)) {
-                ret = MAIN_SCREEN;
-            }
-            goto end;
-        }
-        refresh();
-    }
-end:
-    unpost_menu(back_menu);
-    free_item(back_button[0]);
-    free_menu(back_menu);
+    newtComponent form = newtForm(NULL, NULL, 0);
+    newtFormAddComponents(form, backButton, verboseBootBox, rootfulBox,
+     rootfulSetupBox, forceRevertBox, safeModeBox, NULL);
+    newtRunForm(form);
+    newtRefresh();
+    newtComponent buttonPressed = newtFormGetCurrent(form);
+    if (buttonPressed == backButton) {
+        ret = MAIN_SCREEN;
+    } else assert(0);
     return ret;
 }

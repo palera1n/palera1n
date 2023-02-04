@@ -1,8 +1,3 @@
-#define NCURSES_WIDECHAR 1
-
-#include <ncurses.h>
-#include <form.h>
-#include <menu.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

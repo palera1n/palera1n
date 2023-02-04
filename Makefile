@@ -2,7 +2,7 @@ SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
 STRIP = strip
 CC ?= cc
-CFLAGS += -I$(DEP)/include -I$(DEP)/include/ncursestw -I$(SRC)/include -I$(SRC)
+CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC)
 CFLAGS += -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\" -Wall -Wextra -Wno-unused-parameter
 CFLAGS += -Wno-unused-variable -I$(SRC)/src
 LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a
@@ -24,7 +24,7 @@ LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx50
 LIBS += $(DEP)/lib/libusb-1.0.a
 
 ifeq ($(DEV_BUILD),1)
-LIBS += $(DEP)/lib/libmenutw.a $(DEP)/lib/libncursestw.a
+LIBS += $(DEP)/lib/libnewt.a $(DEP)/lib/libpopt.a $(DEP)/lib/libslang.a
 CFLAGS += -O0 -g -DDEV_BUILD -fno-omit-frame-pointer
 ifeq ($(ASAN),1)
 BUILD_STYLE=ASAN

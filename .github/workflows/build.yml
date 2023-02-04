@@ -27,7 +27,6 @@ jobs:
       MBEDTLS_VERSION: 3.3.0
       LIBUSB_VERSION: 1.0.26
       READLINE_VERSION: 8.2
-      NCURSES_VERSION: 6.4
       SLANG_VERSION: 2.3.3
       NEWT_VERSION: 0.52.23
       POPT_VERSION: 1.19
@@ -41,7 +40,7 @@ jobs:
       - name: Install dependencies (packages)
         run: |
           sudo /usr/local/bin/pip3 install jsonschema jinja2
-          brew install make autoconf automake pkg-config gnu-sed ncurses gettext
+          brew install make autoconf automake pkg-config gnu-sed gettext
           sudo rm -rf /usr/local/Frameworks/Python*
           curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
           sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
@@ -57,7 +56,6 @@ jobs:
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
-            https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz \
             https://www.jedsoft.org/releases/slang/slang-${{ env.SLANG_VERSION }}.tar.bz2 \
             https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz \
             https://github.com/rpm-software-management/popt/archive/refs/tags/popt-${{ env.POPT_VERSION }}-release.tar.gz
@@ -65,7 +63,6 @@ jobs:
           tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
-          tar -xf ncurses-${{ env.NCURSES_VERSION }}.tar.gz
           tar -xjf slang-${{ env.SLANG_VERSION }}.tar.bz2
           tar -xf newt-${{ env.NEWT_VERSION }}.tar.gz
           tar -xf popt-${{ env.POPT_VERSION }}-release.tar.gz
@@ -93,7 +90,6 @@ jobs:
           echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path)" >> $GITHUB_ENV
           echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Wno-error-implicit-function-declaration" >> $GITHUB_ENV
           echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
-          echo $(echo $(brew --cellar)/ncurses/*/bin/tic | sed 's|/tic||') >> $GITHUB_PATH
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
@@ -128,43 +124,6 @@ jobs:
           gsed -E s/'__IOS_PROHIBITED|__TVOS_PROHIBITED|__WATCHOS_PROHIBITED'//g < ${TARGET_SYSROOT}/usr/include/signal.h > sysroot/usr/local/include/signal.h
           gsed -E /'__API_UNAVAILABLE'/d < ${TARGET_SYSROOT}/usr/include/pthread.h > sysroot/usr/local/include/pthread.h
           gsed -i -E s/'__API_UNAVAILABLE\(.*\)'// sysroot/usr/local/include/IOKit/IOKitLib.h
-
-      - name: Build ncurses
-        run: |
-          cd ncurses-${{ env.NCURSES_VERSION }}
-          ./configure \
-            ${{ env.CONFIGURE_ARGS }} \
-            --with-build-cc="${{ env.CC }}" \
-            --with-build-cflags="${{ env.CFLAGS_FOR_NUILD }}" \
-            --with-build-cpp="${{ env.CC }} -E" \
-            --with-build-cppflags="${{ env.CPPFLAGS_FOR_BUILD }}" \
-            --with-build-ldflags="${{ env.LDFLAGS_FOR_BUILD }}" \
-            --with-pthread \
-            --enable-const \
-            --enable-ext-colors \
-            --enable-ext-mouse \
-            --enable-ext-putwin \
-            --enable-wattr-macros \
-            --disable-overwrite \
-            --without-debug \
-            --without-tests \
-            --enable-sigwinch \
-            --enable-const \
-            --enable-symlinks \
-            --enable-termcap \
-            --enable-pc-files \
-            --without-x11-rgb \
-            --with-tic-path=$(echo $(brew --cellar)/ncurses/*/bin/tic) \
-            --includedir="${{ env.PREFIX }}/include" \
-            --with-pkg-config-libdir="${{ env.PREFIX }}/lib/pkgconfig" \
-            --enable-widec \
-            --with-default-terminfo-dir="/opt/procursus/share/terminfo" \
-            --with-terminfo-dirs="/var/jb/usr/share/terminfo:/opt/procursus/share/terminfo:/opt/local/share/terminfo:/opt/homebrew/share/terminfo:/usr/local/share/terminfo:/opt/sw/share/terminfo:/sw/share/terminfo:/usr/share/terminfo" \
-            LDFLAGS="${{ env.LDFLAGS }}" \
-            PKG_CONFIG_LIBDIR="${{ env.PREFIX }}/lib/pkgconfig" || (cat config.log && exit 1)
-            gmake -j$(sysctl -n hw.ncpu)
-            gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
-            cd ..
 
       - name: Build Mbed TLS
         run: |
@@ -310,6 +269,8 @@ jobs:
       - name: Build palera1n
         run: |
           cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
+          find dep_root -name '*.dylib' -delete
+          find dep_root -name '*.la' -delete
           if [ "${{ matrix.os }}" = "macosx" ]; then
             gmake -j$(sysctl -n hw.ncpu)
           elif [ "${{ matrix.os }}" = "iphoneos" ]; then
@@ -419,7 +380,6 @@ jobs:
       MBEDTLS_VERSION: 3.3.0
       LIBUSB_VERSION: 1.0.26
       READLINE_VERSION: 8.2
-      NCURSES_VERSION: 6.4
       SLANG_VERSION: 2.3.3
       NEWT_VERSION: 0.52.23
       GPM_VERSION: 1.20.7
@@ -495,7 +455,6 @@ jobs:
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
-            https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz \
             https://www.jedsoft.org/releases/slang/slang-${{ env.SLANG_VERSION }}.tar.bz2 \
             https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz \
             http://www.nico.schottelius.org/software/gpm/archives/gpm-${{ env.GPM_VERSION }}.tar.gz \
@@ -504,7 +463,6 @@ jobs:
           tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
-          tar -xf ncurses-${{ env.NCURSES_VERSION }}.tar.gz
           tar -xjf slang-${{ env.SLANG_VERSION }}.tar.bz2
           tar -xf newt-${{ env.NEWT_VERSION }}.tar.gz
           tar -xf gpm-${{ env.GPM_VERSION }}.tar.gz
@@ -514,42 +472,6 @@ jobs:
           git clone --depth=1 https://github.com/libimobiledevice/libirecovery
           git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
-
-      - name: Build ncurses
-        run: |
-          cd ncurses-${{ env.NCURSES_VERSION }}
-          ./configure \
-            ${{ env.CONFIGURE_ARGS }} \
-            --with-build-cc="cc" \
-            --with-build-cflags=" " \
-            --with-build-cpp="cc -E" \
-            --with-build-cppflags=" " \
-            --with-build-ldflags=" " \
-            --enable-const \
-            --enable-ext-colors \
-            --enable-ext-mouse \
-            --enable-ext-putwin \
-            --enable-wattr-macros \
-            --with-pthread \
-            --disable-overwrite \
-            --without-debug \
-            --without-tests \
-            --enable-sigwinch \
-            --enable-const \
-            --enable-symlinks \
-            --enable-termcap \
-            --enable-pc-files \
-            --without-x11-rgb \
-            --with-pkg-config-libdir="${{ env.PREFIX }}/lib/pkgconfig" \
-            --includedir="${{ env.PREFIX }}/include" \
-            --enable-widec \
-            --with-default-terminfo-dir="/usr/share/terminfo" \
-            --with-terminfo-dirs="/usr/share/terminfo:/lib/terminfo:/usr/lib/terminfo:/usr/local/share/terminfo:/usr/local/lib/terminfo:/data/data/com.termux/files/usr/share/terminfo" \
-            LDFLAGS="${{ env.LDFLAGS }}" \
-            PKG_CONFIG_LIBDIR="${{ env.PREFIX }}/lib/pkgconfig"
-            gmake -j$(sysctl -n hw.ncpu)
-            gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
-            cd ..
 
       - name: Build Mbed TLS
         run: |
