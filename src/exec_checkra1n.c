@@ -30,10 +30,8 @@ int exec_checkra1n() {
 		checkra1n_path = ext_checkra1n;
 		goto checkra1n_exec;
 	}
-	if (getenv("TMPDIR") != NULL) {
-		checkra1n_path = malloc(strlen(getenv("TMPDIR")) + 20);
-		snprintf(checkra1n_path, strlen(getenv("TMPDIR")) + 20, "%s/checkra1n.XXXXXX", getenv("TMPDIR"));
-	} else checkra1n_path = "/tmp/checkra1n.XXXXXX";
+	checkra1n_path = malloc(strlen(getenv("TMPDIR")) + 20);
+	snprintf(checkra1n_path, strlen(getenv("TMPDIR")) + 20, "%s/checkra1n.XXXXXX", getenv("TMPDIR") != NULL ? getenv("TMPDIR") : "/tmp");
 	fd = mkstemp(checkra1n_path);
 	if (fd == -1) {
 		LOG(LOG_FATAL, "Cannot open temporary file: %d (%s)", errno, strerror(errno));
