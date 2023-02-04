@@ -228,7 +228,8 @@ jobs:
             ${{ env.CONFIGURE_ARGS }} \
             --with-readline=gnu \
             --without-python \
-            --without-tcl
+            --without-tcl \
+            --disable-nls
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
@@ -600,7 +601,8 @@ jobs:
             --with-gpm-support \
             --with-readline=gnu \
             --without-python \
-            --without-tcl
+            --without-tcl \
+            --disable-nls
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
