@@ -247,8 +247,11 @@ jobs:
             --without-python \
             --without-tcl \
             --disable-nls
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          gmake -j$(sysctl -n hw.ncpu) libnewt.a
+          mkdir -p ${{ env.DESTDIR }}/usr/local/{lib/pkgconfig,include}
+          install -m644 libnewt.pc ${{ env.DESTDIR }}/usr/local/lib/pkgconfig
+          install -m644 libnewt.a ${{ env.DESTDIR }}/usr/local/lib
+          install -m644 newt.h ${{ env.DESTDIR }}/usr/local/include
           cd ..
 
       - name: Build libplist
@@ -632,13 +635,15 @@ jobs:
           cd newt-${{ env.NEWT_VERSION }}
           ./configure \
             ${{ env.CONFIGURE_ARGS }} \
-            --with-gpm-support \
             --with-readline=gnu \
             --without-python \
             --without-tcl \
             --disable-nls
-          gmake -j$(sysctl -n hw.ncpu)
-          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          gmake -j$(sysctl -n hw.ncpu) libnewt.a
+          mkdir -p ${{ env.DESTDIR }}/usr/local/{lib/pkgconfig,include}
+          install -m644 libnewt.pc ${{ env.DESTDIR }}/usr/local/lib/pkgconfig
+          install -m644 libnewt.a ${{ env.DESTDIR }}/usr/local/lib
+          install -m644 newt.h ${{ env.DESTDIR }}/usr/local/include
           cd ..
 
       - name: Build libplist
