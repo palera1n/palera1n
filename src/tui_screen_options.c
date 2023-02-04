@@ -37,14 +37,14 @@ tui_screen_t tui_screen_options() {
     newtCenteredWindow(WIDTH, HEIGHT, NULL);
     newtComponent backButton = newtCompactButton(66, 17, "Back");
 
-    newtComponent optionsNotice = newtTextbox(1, 1, WIDTH - 2, 3, NEWT_FLAG_WRAP);
-    newtTextboxSetText(optionsNotice, "You may set the following options. If you don't know what they meant you'll probably have no reason to set them.");
+    newtComponent optionsNotice = newtTextbox(1, 0, WIDTH - 2, 3, NEWT_FLAG_WRAP);
+    newtTextboxSetText(optionsNotice, "You may set the following options. If you don't know what they mean you'll probably have no reason to set them.");
 
-    newtComponent verboseBootBox = newtCheckbox(1, 4, "Verbose boot", CHECKBOX_STATE(kpf_flags, checkrain_option_verbose_boot), NULL, NULL);
-    newtComponent rootfulBox = newtCheckbox(1, 5, "Rootful", CHECKBOX_STATE(palerain_flags, palerain_option_rootful), NULL, NULL);
-    newtComponent rootfulSetupBox = newtCheckbox(1, 6, "Setup fakefs", CHECKBOX_STATE(palerain_flags, palerain_option_setup_rootful), NULL, NULL);
-    newtComponent forceRevertBox = newtCheckbox(1, 7, "Restore system", CHECKBOX_STATE(checkrain_flags, checkrain_option_force_revert), NULL, NULL);
-    newtComponent safeModeBox = newtCheckbox(1, 8, "Safe mode", CHECKBOX_STATE(checkrain_flags, checkrain_option_safemode), NULL, NULL);
+    newtComponent verboseBootBox = newtCheckbox(1, 3, "Verbose boot", CHECKBOX_STATE(kpf_flags, checkrain_option_verbose_boot), NULL, NULL);
+    newtComponent rootfulBox = newtCheckbox(1, 4, "Rootful", CHECKBOX_STATE(palerain_flags, palerain_option_rootful), NULL, NULL);
+    newtComponent rootfulSetupBox = newtCheckbox(1, 5, "Setup fakefs", CHECKBOX_STATE(palerain_flags, palerain_option_setup_rootful), NULL, NULL);
+    newtComponent forceRevertBox = newtCheckbox(1, 6, "Restore system", CHECKBOX_STATE(checkrain_flags, checkrain_option_force_revert), NULL, NULL);
+    newtComponent safeModeBox = newtCheckbox(1, 7, "Safe mode", CHECKBOX_STATE(checkrain_flags, checkrain_option_safemode), NULL, NULL);
 
     newtComponentAddCallback(verboseBootBox, bitfield_check_cb, &verbose_info);
     newtComponentAddCallback(rootfulBox, bitfield_check_cb, &rootful_info);
@@ -52,10 +52,10 @@ tui_screen_t tui_screen_options() {
     newtComponentAddCallback(forceRevertBox, bitfield_check_cb, &force_revert_info);
     newtComponentAddCallback(safeModeBox, bitfield_check_cb, &safemode_info);
 
-    newtComponent bootCmdlineLabel = newtLabel(1, 9, "Kernel command line:");
-    newtComponent bootCmdlineEntry = newtEntry(1, 10, NULL, WIDTH - 2, &bootargs_entered, NEWT_ENTRY_SCROLL);
+    newtComponent bootCmdlineLabel = newtLabel(1, 8, "Kernel command line:");
+    newtComponent bootCmdlineEntry = newtEntry(1, 9, NULL, WIDTH - 2, &bootargs_entered, NEWT_ENTRY_SCROLL);
 
-    newtComponent flowerChainBox = newtCheckbox(1, 11, "Flower chain", CHECKBOX_STATE(flower_flags, flower_option_flower_chain), NULL, NULL);
+    newtComponent flowerChainBox = newtCheckbox(1, 10, "Flower chain", CHECKBOX_STATE(flower_flags, flower_option_flower_chain), NULL, NULL);
     newtComponentAddCallback(flowerChainBox, bitfield_check_cb, &flower_chain_info);
 
 

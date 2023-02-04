@@ -25,18 +25,19 @@ int init_window() {
     if (getenv("NEWT_COLORS") == NULL)
         putenv(
             "NEWT_COLORS=root=,black\n"
-            "border=white,black\n"
-            "title=white,black\n"
+            "border=lightgray,black\n"
+            "title=lightgray,black\n"
             "roottext=red,black\n"
+            "label=lightgray,black\n"
             "window=red,black\n"
-            "textbox=white,black\n"
-            "button=black,green\n"
-            "compactbutton=white,black\n"
-            "listbox=white,black\n"
-            "actlistbox=black,white\n"
-            "actsellistbox=black,green\n"
-            "checkbox=green,black\n"
-            "actcheckbox=black,green\n");
+            "textbox=lightgray,black\n"
+            "button=black,lightgray\n"
+            "compactbutton=lightgray,black\n"
+            "listbox=lightgray,black\n"
+            "actlistbox=black,lightgray\n"
+            "actsellistbox=black,lightgray\n"
+            "checkbox=lightgray,black\n"
+            "actcheckbox=black,lightgray\n");
 
     newtInit();
     newtCls();
