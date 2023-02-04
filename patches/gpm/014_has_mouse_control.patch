@@ -1,0 +1,39 @@
+Description: source code of gpm_has_mouse_control helper
+
+Index: b/contrib/control/gpm_has_mouse_control.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ b/contrib/control/gpm_has_mouse_control.c	2007-12-10 08:25:45.000000000 +0200
+@@ -0,0 +1,20 @@
++#include <sys/fcntl.h>
++#include <sys/kd.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <sys/ioctl.h>
++
++int main (int argc, char **argv)
++{
++    int  fd;
++    int  mode;
++    fd = open ("/dev/tty0", O_RDONLY);
++    if (fd == -1)
++	fd = open ("/dev/vc/0", O_RDONLY);
++    if (fd == -1)
++	perror ("open");
++    if (ioctl (fd, KDGETMODE, &mode) != 0)
++	perror ("ioctl");
++    exit(mode);
++}
++
+Index: b/contrib/control/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ b/contrib/control/Makefile	2007-12-10 08:25:45.000000000 +0200
+@@ -0,0 +1,7 @@
++CC := gcc
++
++all: gpm_has_mouse_control.c
++	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o gpm_has_mouse_control -Wall gpm_has_mouse_control.c
++
++clean:
++	-rm -f gpm_has_mouse_control

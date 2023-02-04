@@ -1,0 +1,69 @@
+Description: Add musl support
+ * Use SA_NODEFER instead of its non-standard alias SA_NOMASK.
+ * Add missing sys/select.h and fcntl.h includes.
+ * Use standard sigemptyset unconditionally.
+ * Define SA_INTERRUPT if it's not defined (historical no-op).
+ * With these changes gpm builds against musl libc.
+Author: Szabolcs Nagy <nsz@port70.net>
+Bug-Debian: https://bugs.debian.org/813751
+
+--- a/src/lib/liblow.c
++++ b/src/lib/liblow.c
+@@ -179,7 +179,7 @@
+   /* Reincarnation. Prepare for another death early. */
+   sigemptyset(&sa.sa_mask);
+   sa.sa_handler = gpm_suspend_hook;
+-  sa.sa_flags = SA_NOMASK;
++  sa.sa_flags = SA_NODEFER;
+   sigaction (SIGTSTP, &sa, 0);
+ 
+   /* Pop the gpm stack by closing the useless connection */
+@@ -386,7 +386,7 @@
+ 
+          /* if signal was originally ignored, job control is not supported */
+          if (gpm_saved_suspend_hook.sa_handler != SIG_IGN) {
+-            sa.sa_flags = SA_NOMASK;
++            sa.sa_flags = SA_NODEFER;
+             sa.sa_handler = gpm_suspend_hook;
+             sigaction(SIGTSTP, &sa, 0);
+          }
+--- a/src/prog/display-buttons.c
++++ b/src/prog/display-buttons.c
+@@ -36,6 +36,7 @@
+ #include <stdio.h>            /* printf()             */
+ #include <time.h>             /* time()               */
+ #include <errno.h>            /* errno                */
++#include <sys/select.h>       /* fd_set, FD_ZERO      */
+ #include <gpm.h>              /* gpm information      */
+ 
+ /* display resulting data */
+--- a/src/prog/display-coords.c
++++ b/src/prog/display-coords.c
+@@ -37,6 +37,7 @@
+ #include <stdio.h>            /* printf()             */
+ #include <time.h>             /* time()               */
+ #include <errno.h>            /* errno                */
++#include <sys/select.h>       /* fd_set, FD_ZERO      */
+ #include <gpm.h>              /* gpm information      */
+ 
+ /* display resulting data */
+--- a/src/prog/gpm-root.y
++++ b/src/prog/gpm-root.y
+@@ -1197,6 +1197,9 @@
+    /* reap your zombies */
+    childaction.sa_handler=reap_children;
+    sigemptyset(&childaction.sa_mask);
++#ifndef SA_INTERRUPT
++#define SA_INTERRUPT 0
++#endif
+    childaction.sa_flags=SA_INTERRUPT; /* need to break the select() call */
+    sigaction(SIGCHLD,&childaction,NULL);
+ 
+--- a/contrib/control/gpm_has_mouse_control.c
++++ b/contrib/control/gpm_has_mouse_control.c
+@@ -1,4 +1,4 @@
+-#include <sys/fcntl.h>
++#include <fcntl.h>
+ #include <sys/kd.h>
+ #include <stdio.h>
+ #include <stdlib.h>

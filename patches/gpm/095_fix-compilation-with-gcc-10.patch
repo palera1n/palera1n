@@ -1,0 +1,20 @@
+Description: FTBFS with gcc-10 due to -fno-commons
+Author: Sergei Trofimovich <slyfox@gentoo.org>
+Reviewed-By: Helmut Grohne <helmut@subdivi.de>
+Origin: https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=8f7e2ac82fc5a1847c132057fb7de1a996d66c76
+Forwarded: https://github.com/telmich/gpm/pull/37
+Bug: https://github.com/telmich/gpm/pull/37
+Bug-Gentoo: https://bugs.gentoo.org/705878
+Bug-Debian: https://bugs.debian.org/953266
+
+--- a/src/headers/daemon.h
++++ b/src/headers/daemon.h
+@@ -176,7 +176,7 @@
+ extern Gpm_Type         mice[];
+ extern Gpm_Type         *repeated_type;
+ 
+-time_t                  last_selection_time;
++extern time_t           last_selection_time;
+ 
+ 
+ 

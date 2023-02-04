@@ -1,0 +1,133 @@
+Description: Fix spelling errors found by lintian
+Author: Axel Beckert <abe@debian.org>
+
+--- a/doc/FAQ
++++ b/doc/FAQ
+@@ -132,7 +132,7 @@
+            to keep hold of processor time for at least 1 second).
+      - no pnp vendor will be able to support three buttons any more (no
+            more mouse protocols, all mice must behave the same).
+-     - similary, only 1200 baud devices (any serial device) are supported,
++     - similarly, only 1200 baud devices (any serial device) are supported,
+            because the initialization string of pnp devices only tells
+            the vendor and release, with no information about required
+            port configuration.
+--- a/doc/doc.gpm.in
++++ b/doc/doc.gpm.in
+@@ -394,7 +394,7 @@
+         automatically forces the @emph{repeater} (@samp{\-R}) option on.
+ 
+ @item \-o @var{list-of-extra-options}
+-	The option works similary to the ``\-o'' option of mount; it is
++	The option works similarly to the ``\-o'' option of mount; it is
+ 	used to specify a list of ``extra options'' that are specific
+ 	to each mouse type. The list is comma-separated. The options
+ 	@samp{dtr}, @samp{rts} or @samp{both} are used by the serial
+--- a/src/daemon/old_main.c
++++ b/src/daemon/old_main.c
+@@ -190,7 +190,7 @@
+ /*....................................... got mouse, process event */
+ /*
+  * Well, actually, run a loop to maintain inlining of functions without
+- * lenghtening the file. This is not too clean a code, but it works....
++ * lengthening the file. This is not too clean a code, but it works....
+  */
+ 
+       for (i=1; i <= 1+opt_double; i++) {
+--- a/src/mice.c
++++ b/src/mice.c
+@@ -122,7 +122,7 @@
+          break;
+       }
+       if (p->type == ARGV_END) { /* not found */
+-         fprintf(stderr, "%s: Uknown option \"%s\" for pointer \"%s\"\n",
++         fprintf(stderr, "%s: Unknown option \"%s\" for pointer \"%s\"\n",
+                   option.progname, argv[i], argv[0]);
+          errors++;
+          continue;
+--- a/src/prog/mouse-test.c
++++ b/src/prog/mouse-test.c
+@@ -524,7 +524,7 @@
+       Gpm_Event event;
+ 
+       if (packetsize!=cur->this->packetlen) {
+-         REMOVETYPE(cur,"different packet lenght");
++         REMOVETYPE(cur,"different packet length");
+          continue;
+       }
+ 
+--- a/src/synaptics.c
++++ b/src/synaptics.c
+@@ -2471,7 +2471,7 @@
+ #define PS2_SCALE_11      0xE6      /* Set scale to 1:1 */
+ 
+ 
+-/* Normal ps2 responce */
++/* Normal ps2 response */
+ #define PS2_ERROR         0xFC      /* Error, after a reset,resend or disconnect*/
+ #define PS2_ACK           0xFA      /* Command acknowledge */
+ #define PS2_READY         0xAA      /* Send after a calibration or ERROR */
+@@ -2538,7 +2538,7 @@
+   }
+ 
+ # ifdef DEBUG_PUTBYTE_ACK
+-  gpm_report(GPM_PR_DEBUG,"Responce %X to byte %X",ack,b);
++  gpm_report(GPM_PR_DEBUG,"Response %X to byte %X",ack,b);
+ # endif
+ 
+   return ack;
+@@ -2565,11 +2565,11 @@
+     
+     /* Do some sanity checking */
+     if((response[0] & 0xFC) != 0x84) {
+-      gpm_report (GPM_PR_ERR,"Byte 0 of stick device responce is not valid");
++      gpm_report (GPM_PR_ERR,"Byte 0 of stick device response is not valid");
+       return -1;
+     }
+     if((response[3] & 0xCC) != 0xC4) {
+-      gpm_report (GPM_PR_ERR,"Byte 3 of stick device responce is not valid");
++      gpm_report (GPM_PR_ERR,"Byte 3 of stick device response is not valid");
+       return -1;
+     }
+   }
+@@ -2844,7 +2844,7 @@
+   byte status,id_code = PS2_MOUSE_IDCODE;
+   byte reset_cmd = PS2_RESET;
+ 
+-  gpm_report(GPM_PR_DEBUG,"Reseting Synaptic PS/2 %s\n",(stick?"Stick":"Touchpad"));
++  gpm_report(GPM_PR_DEBUG,"Resetting Synaptic PS/2 %s\n",(stick?"Stick":"Touchpad"));
+ 
+   /* Send reset command without eating the ack. */
+   if(!stick) {
+@@ -2871,11 +2871,11 @@
+   usleep(750000);
+ 
+   if ( (status  = syn_ps2_getbyte(fd,stick)) != PS2_READY ){
+-    gpm_report(GPM_PR_ERR,"Reseting PS/2 Device failed: No READY, got %02X.\n"
++    gpm_report(GPM_PR_ERR,"Resetting PS/2 Device failed: No READY, got %02X.\n"
+ 	                  "Check pc_keyb.c for reconnect smartness.\n",status);
+   }
+   if ( (id_code = syn_ps2_getbyte(fd,stick)) != PS2_MOUSE_IDCODE){
+-    gpm_report(GPM_PR_ERR,"Reseting PS/2 Device failed: Wrong ID, got %02X.\n",id_code);
++    gpm_report(GPM_PR_ERR,"Resetting PS/2 Device failed: Wrong ID, got %02X.\n",id_code);
+   }
+ 
+ }
+@@ -3155,7 +3155,7 @@
+ 
+ void syn_serial_reset(int fd)
+ {
+-  gpm_report (GPM_PR_INFO,"Reseting Synaptic Serial Touchpad.");
++  gpm_report (GPM_PR_INFO,"Resetting Synaptic Serial Touchpad.");
+ 
+   syn_serial_set_mode (fd, (RELATIVE_MODE    |
+ 			    HIGH_REPORT_RATE |
+@@ -3247,7 +3247,7 @@
+ 
+ void syn_ps2_reset (int fd)
+ {
+-  gpm_report (GPM_PR_INFO,"Reseting Synaptic PS/2 Touchpad.");
++  gpm_report (GPM_PR_INFO,"Resetting Synaptic PS/2 Touchpad.");
+ 
+   /* Stop incoming motion data (of whatever kind absolute/relative). */
+   tp_ps2_disable_data(fd);

@@ -1,0 +1,63 @@
+Origin: http://download.nutyx.org/x86_64/rolling/cli/gpm/gpm-1.20.7-consolidated-1.patch
+Bug: https://github.com/telmich/gpm/issues/21
+Bug-Debian: https://bugs.debian.org/886903
+Bug-LFS: https://wiki.linuxfromscratch.org/blfs/ticket/9616#ticket
+Author: tnut from nutyx.org, https://github.com/tnut
+Description: Fix FTBFS with glibc 2.26
+
+--- a/src/daemon/open_console.c
++++ b/src/daemon/open_console.c
+@@ -24,6 +24,10 @@
+ #include <sys/ioctl.h>              /* ioctl             */
+ #include <sys/types.h>              /* major()           */
+ 
++#ifdef HAVE_SYS_SYSMACROS_H
++#include <sys/sysmacros.h>          /* major() w/newer glibc */
++#endif
++
+ /* Linux specific (to be outsourced in gpm2 */
+ #include <linux/serial.h>           /* for serial console check */
+ #include <asm/ioctls.h>            /* for serial console check */
+--- a/src/prog/gpm-root.y
++++ b/src/prog/gpm-root.y
+@@ -443,6 +443,7 @@
+ }
+ 
+ /*---------------------------------------------------------------------*/
++#if 0
+ static int f_debug_one(FILE *f, Draw *draw)
+ {
+    DrawItem *ip;
+@@ -465,6 +466,7 @@
+ #undef LINE
+    return 0;
+ }
++#endif
+ 
+ int f_debug(int mode, DrawItem *self, int uid)
+ {
+@@ -960,10 +962,8 @@
+ /*------------*/
+ static inline void scr_restore(int fd, FILE *f, unsigned char *buffer, int vc)
+ {
+-   int x,y, dumpfd;
++   int dumpfd;
+    char dumpname[20];
+-
+-   x=buffer[2]; y=buffer[3];
+    
+    /* WILL NOT WORK WITH DEVFS! FIXME! */
+    sprintf(dumpname,"/dev/vcsa%i",vc);
+@@ -1196,11 +1196,7 @@
+                                                         LOG_DAEMON : LOG_USER);
+    /* reap your zombies */
+    childaction.sa_handler=reap_children;
+-#if defined(__GLIBC__)
+-   __sigemptyset(&childaction.sa_mask);
+-#else /* __GLIBC__ */
+-   childaction.sa_mask=0;
+-#endif /* __GLIBC__ */
++   sigemptyset(&childaction.sa_mask);
+    childaction.sa_flags=SA_INTERRUPT; /* need to break the select() call */
+    sigaction(SIGCHLD,&childaction,NULL);
+ 

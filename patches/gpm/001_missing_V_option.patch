@@ -1,0 +1,23 @@
+Description: Add no-op option -V for compatibility
+
+Index: b/src/daemon/cmdline.c
+===================================================================
+--- a/src/daemon/cmdline.c	2008-05-29 02:26:08.000000000 +0300
++++ b/src/daemon/cmdline.c	2008-06-11 05:46:23.000000000 +0300
+@@ -32,7 +32,7 @@
+ void cmdline(int argc, char **argv)
+ {
+    extern struct options option;
+-   char options[]="a:A::b:B:d:Dg:hi:kl:m:Mo:pr:R::s:S:t:Tuv23";
++   char options[]="a:A::b:B:d:Dg:hi:kl:m:Mo:pr:R::s:S:t:TuvV23";
+    int  opt;
+ 
+    /* initialize for the dual mouse */ 
+@@ -81,6 +81,7 @@ void cmdline(int argc, char **argv)
+          case 'u': option.autodetect = 1;                break;
+          case 'T': opt_test++;                           break;
+          case 'v': printf(GPM_MESS_VERSION "\n");        exit(0);
++         case 'V': /* Compat code */                     break;
+          case '2': (which_mouse->opt_three) = -1;                       break;
+          case '3': (which_mouse->opt_three) =  1;                       break;
+          default: exit(usage("commandline"));

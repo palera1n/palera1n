@@ -166,7 +166,7 @@ jobs:
       - name: Build Mbed TLS
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
-          cat ../patches/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
+          cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
           mkdir build
           cd build
           cmake .. \
@@ -530,7 +530,7 @@ jobs:
       - name: Build Mbed TLS
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
-          cat ../patches/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
+          cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
           mkdir build
           cd build
           cmake .. \
@@ -584,6 +584,7 @@ jobs:
       - name: Build GPM
         run: |
           cd gpm-${{ env.GPM_VERSION }}
+          cat ../patches/gpm/*.patch | patch -sN -d . -p1
           ./autogen.sh
           ./configure \
             ${{ env.CONFIGURE_ARGS }}

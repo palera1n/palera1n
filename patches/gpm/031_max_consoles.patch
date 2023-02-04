@@ -1,0 +1,107 @@
+Description: Use MAX_NR_CONSOLES instead of MAX_VC
+
+--- a/src/daemon/gpm.c
++++ b/src/daemon/gpm.c
+@@ -93,7 +93,7 @@
+ int fifofd=-1;
+ 
+ int eventFlag=0;
+-Gpm_Cinfo *cinfo[MAX_VC+1];
++Gpm_Cinfo *cinfo[MAX_NR_CONSOLES+1];
+ 
+ time_t last_selection_time;
+ time_t opt_age_limit = 0;
+--- a/src/daemon/old_main.c
++++ b/src/daemon/old_main.c
+@@ -141,7 +141,7 @@
+          signal(SIGWINCH,gpm_killed); /* reinstall handler */
+ 
+          /* and notify clients */
+-         for(i=0; i<MAX_VC+1; i++) {
++         for(i=0; i<=MAX_NR_CONSOLES; i++) {
+             Gpm_Cinfo *ci;
+             for (ci = cinfo[i]; ci; ci = ci->next) kill(ci->data.pid,SIGWINCH);
+          }
+@@ -214,7 +214,7 @@
+       /*........................ got request */
+ 
+      /* itz 10-22-96 check _all_ clients, not just those on top! */
+-      for (i=0; pending && (i<=MAX_VC); i++) {
++      for (i=0; pending && (i<=MAX_NR_CONSOLES); i++) {
+          Gpm_Cinfo* ci;
+          for (ci = cinfo[i]; pending && ci; ci = ci->next) {
+             if (FD_ISSET(ci->fd,&selSet)) {
+--- a/src/daemon/processconn.c
++++ b/src/daemon/processconn.c
+@@ -67,8 +67,8 @@
+       return -1;
+    }
+ 
+-   if((vc = request->vc) > MAX_VC) {
+-      gpm_report(GPM_PR_DEBUG, GPM_MESS_REQUEST_ON, vc, MAX_VC);
++   if((vc = request->vc) > MAX_NR_CONSOLES) {
++      gpm_report(GPM_PR_DEBUG, GPM_MESS_REQUEST_ON, vc, MAX_NR_CONSOLES);
+       free(info);
+       close(newfd);
+       return -1;
+--- a/src/daemon/processrequest.c
++++ b/src/daemon/processrequest.c
+@@ -41,7 +41,7 @@
+ 
+    gpm_report(GPM_PR_INFO, GPM_MESS_CON_REQUEST, ci->fd, vc);
+ 
+-   if (vc>MAX_VC) return -1;
++   if (vc>MAX_NR_CONSOLES) return -1;
+ 
+    /* itz 10-22-96 this shouldn't happen now */
+    if (vc==-1) gpm_report(GPM_PR_OOPS, GPM_MESS_UNKNOWN_FD);
+--- a/src/headers/daemon.h
++++ b/src/headers/daemon.h
+@@ -26,6 +26,7 @@
+  */
+ #include "gpm.h"           /* Gpm_Event         */
+ #include <sys/select.h>    /* fd_set            */
++#include <linux/vt.h>      /* for cinfo -- to be moved to os/linux in 2.x! */
+ 
+ /*************************************************************************
+  * Types / structures
+@@ -104,13 +105,6 @@
+  * Macros
+  */
+ 
+-/* How many virtual consoles are managed? */
+-#ifndef MAX_NR_CONSOLES
+-#  define MAX_NR_CONSOLES 64 /* this is always sure */
+-#endif
+-
+-#define MAX_VC    MAX_NR_CONSOLES  /* doesn't work before 1.3.77 */
+-
+ /* for adding a mouse; add_mouse */
+ #define GPM_ADD_DEVICE        0
+ #define GPM_ADD_TYPE          1
+@@ -174,7 +168,7 @@
+ extern int              eventFlag;
+ extern struct winsize   win;
+ 
+-extern Gpm_Cinfo       *cinfo[MAX_VC+1];
++extern Gpm_Cinfo       *cinfo[MAX_NR_CONSOLES+1];
+ 
+ extern struct mouse_features  mouse_table[3],
+                              *which_mouse;      /*the current one*/
+--- a/src/headers/gpmCfg.h
++++ b/src/headers/gpmCfg.h
+@@ -32,14 +32,6 @@
+ #include <linux/tty.h>
+ #endif
+ 
+-/* FIXME: still needed ?? */
+-/* How many virtual consoles are managed? */
+-#ifndef MAX_NR_CONSOLES
+-#  define MAX_NR_CONSOLES 64 /* this is always sure */
+-#endif
+-
+-#define MAX_VC    MAX_NR_CONSOLES  /* doesn't work before 1.3.77 */
+-
+ /* How many buttons may the mouse have? */
+ /* #define MAX_BUTTONS 3  ===> not used, it is hardwired :-( */
+ 

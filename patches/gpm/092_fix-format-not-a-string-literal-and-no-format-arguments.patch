@@ -1,0 +1,16 @@
+Description: Fix FTBFS with -Wformat-security
+Author: Axel Beckert <abe@debian.org>
+Bug-Debian: https://bugs.debian.org/888792
+Bug-Debian: https://bugs.debian.org/888797
+
+--- a/src/lib/report-lib.c
++++ b/src/lib/report-lib.c
+@@ -47,7 +47,7 @@
+                            log_level = LOG_CRIT; break;
+    }
+ #ifdef HAVE_VSYSLOG
+-   syslog(log_level, string);
++   syslog(log_level, "%s", string);
+    vsyslog(log_level, text, ap);
+ #else
+    fprintf(stderr,"%s[%s(%d)]:\n",string,file,line);

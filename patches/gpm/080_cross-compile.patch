@@ -1,0 +1,13 @@
+Description: Add AC_CANONICAL_HOST
+
+--- a/configure.ac.footer
++++ b/configure.ac.footer
+@@ -35,6 +35,8 @@
+ # Find programs
+ #
+ 
++AC_CANONICAL_HOST
++
+ AC_PROG_CC
+ AC_PROG_LIBTOOL
+ AC_PROG_INSTALL
