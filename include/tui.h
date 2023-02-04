@@ -12,10 +12,8 @@
 #include <unistd.h>
 #include <newt.h>
 
-#define MAIN_OPTIONS "Options"
-#define MAIN_START "Start"
-#define MAIN_EXIT "Exit"
-#define BACK_BUTTON "Back"
+#define WIDTH 76
+#define HEIGHT 19
 
 #define MSG_COLOR 1
 #define ICON_COLOR 2

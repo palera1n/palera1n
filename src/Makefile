@@ -42,7 +42,7 @@ endif
 xxd-%.c: %
 	xxd -iC $< > $@
 
-%.o: %.c
+%.o: %.c $(wildcard ../include/*.h)
 	$(CC) -c $(CFLAGS) $<
 
 palera1n: $(OBJECTS)

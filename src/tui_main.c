@@ -22,6 +22,22 @@ int destroy_window() {
 
 int init_window() {
     setlocale(LC_ALL, NULL);
+    if (getenv("NEWT_COLORS") == NULL)
+        putenv(
+            "NEWT_COLORS=root=,black\n"
+            "border=white,black\n"
+            "title=white,black\n"
+            "roottext=red,black\n"
+            "window=red,black\n"
+            "textbox=white,black\n"
+            "button=black,green\n"
+            "compactbutton=white,black\n"
+            "listbox=white,black\n"
+            "actlistbox=black,white\n"
+            "actsellistbox=black,green\n"
+            "checkbox=green,black\n"
+            "actcheckbox=black,green\n");
+
     newtInit();
     newtCls();
     newtDrawRootText(0, 0, "Package Configuration");
