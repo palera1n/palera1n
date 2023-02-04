@@ -29,6 +29,7 @@ int init_window() {
             "title=lightgray,black\n"
             "roottext=red,black\n"
             "label=lightgray,black\n"
+            "entry=lightgray,black\n"
             "window=red,black\n"
             "textbox=lightgray,black\n"
             "button=black,lightgray\n"

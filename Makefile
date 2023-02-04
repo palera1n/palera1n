@@ -25,6 +25,9 @@ LIBS += $(DEP)/lib/libusb-1.0.a
 
 ifeq ($(DEV_BUILD),1)
 LIBS += $(DEP)/lib/libnewt.a $(DEP)/lib/libpopt.a $(DEP)/lib/libslang.a
+ifeq ($(TARGET_OS),Linux)
+LIBS += $(DEP)/lib/libgpm.a
+endif
 CFLAGS += -O0 -g -DDEV_BUILD -fno-omit-frame-pointer
 ifeq ($(ASAN),1)
 BUILD_STYLE=ASAN

@@ -295,18 +295,6 @@ jobs:
           localDir: 'ready/'
           remoteDir: '/palera1n/artifacts/c-rewrite'
 
-      - name: Upload artifact
-        uses: wangyucode/sftp-upload-action@v1.4.8
-        with:
-          host: ${{ secrets.MINEEK_FTP_HOST }}
-          port: 22
-          username: mineekfiles
-          password: ${{ secrets.MINEEK_FTP_PASS }}
-          forceUpload: true
-          dryRun: false
-          localDir: 'ready/'
-          remoteDir: '/uploads/palera1n/artifacts/palera1n-c'
-
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
         uses: actions/upload-artifact@v3
         with:
@@ -354,18 +342,6 @@ jobs:
           dryRun: false
           localDir: 'ready/'
           remoteDir: '/palera1n/artifacts/c-rewrite'
-
-      - name: Upload artifact
-        uses: wangyucode/sftp-upload-action@v1.4.8
-        with:
-          host: ${{ secrets.MINEEK_FTP_HOST }}
-          port: 22
-          username: mineekfiles
-          password: ${{ secrets.MINEEK_FTP_PASS }}
-          forceUpload: true
-          dryRun: false
-          localDir: 'ready/'
-          remoteDir: '/uploads/palera1n/artifacts/palera1n-c'
 
   build-Linux:
     strategy:
@@ -560,7 +536,8 @@ jobs:
             --with-readline=gnu \
             --without-python \
             --without-tcl \
-            --disable-nls
+            --disable-nls \
+            --with-gpm-support
           gmake -j$(sysctl -n hw.ncpu) libnewt.a
           mkdir -p ${{ env.DESTDIR }}/usr/local/{lib/pkgconfig,include}
           install -m644 libnewt.pc ${{ env.DESTDIR }}/usr/local/lib/pkgconfig
@@ -653,14 +630,3 @@ jobs:
           localDir: 'ready/'
           remoteDir: '/palera1n/artifacts/c-rewrite'
 
-      - name: Upload artifact
-        uses: wangyucode/sftp-upload-action@v1.4.8
-        with:
-          host: ${{ secrets.MINEEK_FTP_HOST }}
-          port: 22
-          username: mineekfiles
-          password: ${{ secrets.MINEEK_FTP_PASS }}
-          forceUpload: true
-          dryRun: false
-          localDir: 'ready/'
-          remoteDir: '/uploads/palera1n/artifacts/palera1n-c'
