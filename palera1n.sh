@@ -837,8 +837,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         cd other/rootfs/jbin
         rm -rf loader.app
         echo "[*] Downloading loader"
-        curl -LO https://static.palera.in/deps/loader.zip
-        unzip loader.zip -d .
+        curl -LO https://static.palera.in/artifacts/loader/rootful/palera1n.ipa
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
