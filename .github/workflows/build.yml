@@ -585,7 +585,7 @@ jobs:
       - name: Build GPM
         run: |
           cd gpm-${{ env.GPM_VERSION }}
-          autoreconf -fiv
+          ./autogen.sh
           ./configure \
             ${{ env.CONFIGURE_ARGS }}
           gmake -j$(sysctl -n hw.ncpu)
