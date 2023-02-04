@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies (packages)
         run: |
           sudo /usr/local/bin/pip3 install jsonschema jinja2
-          brew install make autoconf automake pkg-config gnu-sed ncurses
+          brew install make autoconf automake pkg-config gnu-sed ncurses gettext
           sudo rm -rf /usr/local/Frameworks/Python*
           curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
           sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
@@ -431,7 +431,7 @@ jobs:
       - name: Install build dependencies (packages)
         run: |
           sudo apt remove -y libssl-dev libreadline-dev
-          sudo apt install -y pkg-config autoconf automake
+          sudo apt install -y pkg-config autoconf automake autopoint
           sudo pip3 install jsonschema jinja2
 
       - name: Download toolchain checksum
