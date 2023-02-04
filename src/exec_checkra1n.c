@@ -22,6 +22,8 @@ extern char **environ;
 char* pongo_path = NULL;
 char* ext_checkra1n = NULL;
 
+#define tmpdir getenv("TMPDIR") == NULL ? "/tmp" : getenv("TMPDIR")
+
 int exec_checkra1n() {
 	LOG(LOG_INFO, "About to execute checkra1n");
 	int fd, ret;
@@ -30,8 +32,8 @@ int exec_checkra1n() {
 		checkra1n_path = ext_checkra1n;
 		goto checkra1n_exec;
 	}
-	checkra1n_path = malloc(strlen(getenv("TMPDIR")) + 20);
-	snprintf(checkra1n_path, strlen(getenv("TMPDIR")) + 20, "%s/checkra1n.XXXXXX", getenv("TMPDIR") != NULL ? getenv("TMPDIR") : "/tmp");
+	checkra1n_path = malloc(strlen(tmpdir) + 20);
+	snprintf(checkra1n_path, strlen(tmpdir) + 20, "%s/checkra1n.XXXXXX", tmpdir);
 	fd = mkstemp(checkra1n_path);
 	if (fd == -1) {
 		LOG(LOG_FATAL, "Cannot open temporary file: %d (%s)", errno, strerror(errno));
@@ -74,7 +76,7 @@ checkra1n_exec: {};
 	LOG(LOG_VERBOSE2, "%s spawned successfully", checkra1n_path);
 	sleep(2);
 	if (ext_checkra1n != NULL) unlink(checkra1n_path);
-	if (getenv("TMPDIR") && ext_checkra1n == NULL) {
+	if (ext_checkra1n == NULL) {
 		free(checkra1n_path);
 		checkra1n_path = NULL;
 	}
