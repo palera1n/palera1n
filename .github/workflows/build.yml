@@ -30,6 +30,7 @@ jobs:
       NCURSES_VERSION: 6.4
       SLANG_VERSION: 2.3.3
       NEWT_VERSION: 0.52.23
+      POPT_VERSION: 1.19
 
     steps:
       - name: Checkout
@@ -52,13 +53,14 @@ jobs:
 
       - name: Download dependencies (source code)
         run: |
-          curl -LOOOOOO \
+          curl -LOOOOOOO \
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
             https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz \
             https://www.jedsoft.org/releases/slang/slang-${{ env.SLANG_VERSION }}.tar.bz2 \
-            https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz
+            https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz \
+            https://github.com/rpm-software-management/popt/archive/refs/tags/popt-${{ env.POPT_VERSION }}-release.tar.gz
 
           tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
@@ -66,6 +68,7 @@ jobs:
           tar -xf ncurses-${{ env.NCURSES_VERSION }}.tar.gz
           tar -xjf slang-${{ env.SLANG_VERSION }}.tar.bz2
           tar -xf newt-${{ env.NEWT_VERSION }}.tar.gz
+          tar -xf popt-${{ env.POPT_VERSION }}-release.tar.gz
           git clone --depth=1 https://github.com/libimobiledevice/libplist
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
           git clone --depth=1 https://github.com/libimobiledevice/libirecovery
@@ -219,6 +222,20 @@ jobs:
             --without-iconv
           gmake -j$(sysctl -n hw.ncpu) static
           gmake -j$(sysctl -n hw.ncpu) install-static DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build popt
+        run: |
+          cd popt-popt-${{ env.POPT_VERSION }}-release
+          autoreconf -fiv
+          ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
+            --without-libiconv-prefix \
+            --without-libintl-prefix \
+            --disable-nls \
+            --disable-werror
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
       - name: Build newt
@@ -403,6 +420,7 @@ jobs:
       SLANG_VERSION: 2.3.3
       NEWT_VERSION: 0.52.23
       GPM_VERSION: 1.20.7
+      POPT_VERSION: 1.19
 
     steps:
       - name: Checkout
@@ -470,14 +488,15 @@ jobs:
 
       - name: Download dependencies (source code)
         run: |
-          curl -LOOOOOOO \
+          curl -LOOOOOOOO \
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
             https://mirror-hk.koddos.net/gnu/ncurses/ncurses-${{ env.NCURSES_VERSION }}.tar.gz \
             https://www.jedsoft.org/releases/slang/slang-${{ env.SLANG_VERSION }}.tar.bz2 \
             https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz \
-            http://www.nico.schottelius.org/software/gpm/archives/gpm-${{ env.GPM_VERSION }}.tar.gz
+            http://www.nico.schottelius.org/software/gpm/archives/gpm-${{ env.GPM_VERSION }}.tar.gz \
+            https://github.com/rpm-software-management/popt/archive/refs/tags/popt-${{ env.POPT_VERSION }}-release.tar.gz
 
           tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
@@ -486,6 +505,7 @@ jobs:
           tar -xjf slang-${{ env.SLANG_VERSION }}.tar.bz2
           tar -xf newt-${{ env.NEWT_VERSION }}.tar.gz
           tar -xf gpm-${{ env.GPM_VERSION }}.tar.gz
+          tar -xf popt-${{ env.POPT_VERSION }}-release.tar.gz
           git clone --depth=1 https://github.com/libimobiledevice/libplist
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
           git clone --depth=1 https://github.com/libimobiledevice/libirecovery
@@ -589,6 +609,20 @@ jobs:
           ./autogen.sh
           ./configure \
             ${{ env.CONFIGURE_ARGS }}
+          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
+          cd ..
+
+      - name: Build popt
+        run: |
+          cd popt-popt-${{ env.POPT_VERSION }}-release
+          autoreconf -fiv
+          ./configure \
+            ${{ env.CONFIGURE_ARGS }} \
+            --without-libiconv-prefix \
+            --without-libintl-prefix \
+            --disable-nls \
+            --disable-werror
           gmake -j$(sysctl -n hw.ncpu)
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
