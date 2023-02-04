@@ -226,7 +226,6 @@ jobs:
           cd newt-${{ env.NEWT_VERSION }}
           ./configure \
             ${{ env.CONFIGURE_ARGS }} \
-            --with-gpm-support \
             --with-readline=gnu \
             --without-python \
             --without-tcl
