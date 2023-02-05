@@ -87,7 +87,7 @@ int build_checks() {
 
 bool dfuhelper_only = false, pongo_exit = false, palerain_version = false;
 #ifdef DEV_BUILD
-bool use_tui = false;
+bool use_tui = false, tui_started = false;
 #endif
 
 int palera1n(int argc, char *argv[]) {

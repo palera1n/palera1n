@@ -102,7 +102,7 @@ extern char* pongo_path;
 
 extern bool dfuhelper_only, pongo_exit;
 #ifdef DEV_BUILD
-extern bool use_tui;
+extern bool use_tui, tui_started;
 #endif
 
 extern pthread_t dfuhelper_thread, pongo_thread;

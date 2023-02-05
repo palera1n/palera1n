@@ -21,12 +21,12 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	char colour_bold[0x10];
 	va_list args;
 	va_start(args, format);
-	if (verbose < (loglevel - 3) && loglevel > LOG_INFO
+	if (verbose < (loglevel - 3) && loglevel > LOG_INFO) {
+        if (verbose >= 5
 #ifdef DEV_BUILD
-	&& !use_tui
+		&& !tui_started
 #endif
-	) {
-        if (verbose >= 5) fprintf(stderr, "p1_log: hid log with high log level (%d < %d)\n", verbose, loglevel - 3);
+) fprintf(stderr, "p1_log: hid log with high log level (%d < %d)\n", verbose, loglevel - 3);
         return 0;
     }
 	switch (loglevel) {
@@ -58,7 +58,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		break;
 	}
 #ifdef DEV_BUILD
-	if (use_tui) {
+	if (use_tui && tui_started) {
 		newtComponent co = get_tui_log();
 		if (co == NULL) {
 			return 0; /* 0 bytes printed */

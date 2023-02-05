@@ -40,6 +40,7 @@ int init_window() {
             "checkbox=lightgray,black\n"
             "actcheckbox=black,lightgray\n");
 
+    tui_started = true;
     newtInit();
     newtCls();
     newtSetColor(PI_LOG_COLOR, "yellow", "black");
