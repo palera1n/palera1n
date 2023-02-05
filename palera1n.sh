@@ -268,6 +268,11 @@ _wait() {
 
 dfuhelper_first_try=true
 _dfuhelper() {
+    if [ "$(get_device_mode)" = "dfu" ]; then
+        echo "[*] Device is already in DFU"
+        return
+    fi
+
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
