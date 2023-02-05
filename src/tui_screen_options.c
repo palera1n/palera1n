@@ -71,7 +71,7 @@ tui_screen_t tui_screen_options() {
     newtComponent buttonPressed = newtFormGetCurrent(form);
     if (buttonPressed == backButton) {
         ret = MAIN_SCREEN;
-    } else assert(0);
+    } else ret = MAIN_SCREEN;
     newtFormDestroy(form);
     return ret;
 }
