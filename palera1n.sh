@@ -17,7 +17,7 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # =========
 # Variables
 # =========
-ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
+ipsw=""
 network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
 os=$(uname)
@@ -66,6 +66,7 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --china             Enable Mainland China specific workarounds (启用对中国大陆网络环境的替代办法)
+    --ipsw              Specify a custom IPSW to use
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
 
 Subcommands:
@@ -109,6 +110,12 @@ parse_opt() {
         --china)
             china=1
             ;;
+        --ipsw)
+            ipsw=$2
+            ;;
+        --ipsw=*)
+            ipsw=${1#*=}
+            ;;
         --debug)
             debug=1
             ;;
@@ -143,6 +150,8 @@ parse_cmdline() {
             parse_opt "$arg";
         elif [ "$arg_count" -lt "$max_args" ]; then
             parse_arg "$arg";
+        elif [[ $arg == http* ]]; then
+            continue
         else
             echo "[-] Too many arguments. Use $0 --help for help.";
             exit 1;
