@@ -169,4 +169,10 @@ void* pongo_helper(void* _);
 bool set_found_pongo(bool val);
 uint64_t get_ecid_wait_for_dfu();
 uint64_t set_ecid_wait_for_dfu(uint64_t ecid);
+
+#ifdef DEV_BUILD
+#include <newt.h>
+newtComponent get_tui_log();
+newtComponent set_tui_log(newtComponent co);
+#endif
 #endif

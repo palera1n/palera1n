@@ -10,14 +10,22 @@
 
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char *__restrict format, ...)
 {
-    if (verbose >= 5) fprintf(stderr, "p1_log: loglevel %d from %s:%d:%s()\n", loglevel, fname, lineno, fxname);
+    if (verbose >= 5 
+#ifdef DEV_BUILD
+	&& !use_tui
+#endif
+	) fprintf(stderr, "p1_log: loglevel %d from %s:%d:%s()\n", loglevel, fname, lineno, fxname);
 	int ret = 0;
 	char type[0x10];
 	char colour[0x10];
 	char colour_bold[0x10];
 	va_list args;
 	va_start(args, format);
-	if (verbose < (loglevel - 3) && loglevel > LOG_INFO) {
+	if (verbose < (loglevel - 3) && loglevel > LOG_INFO
+#ifdef DEV_BUILD
+	&& !use_tui
+#endif
+	) {
         if (verbose >= 5) fprintf(stderr, "p1_log: hid log with high log level (%d < %d)\n", verbose, loglevel - 3);
         return 0;
     }
@@ -49,28 +57,40 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		snprintf(colour_bold, 0x10, "%s", BWHT);
 		break;
 	}
-    pthread_mutex_lock(&log_mutex);
-	char timestring[0x80];
-	time_t curtime;
-	time(&curtime);
-	struct tm* timeinfo = localtime(&curtime);
-	snprintf(timestring, 0x80, "%s[%s%02d/%02d/%d %02d:%02d:%02d%s]", CRESET, HBLK, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_year - 100, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, CRESET);
-	if (verbose >= 2) {
-		printf("%s| - %s%s <%s> " CRESET "%s" HBLU "%s" CRESET ":" BLU "%d" CRESET ":" BMAG "%s()" CRESET ": \n%s| ----> ", colour_bold, timestring, colour_bold, type, WHT, fname, lineno, fxname, colour_bold);
-	} else {
-		printf(" - %s %s<%s>%s: ", timestring, colour_bold, type, CRESET);
-	}
-	printf("%s", colour);
-	ret = vprintf(format, args);
-	va_end(args);
+#ifdef DEV_BUILD
+	if (use_tui) {
+		newtComponent co = get_tui_log();
+		if (co == NULL) {
+			return 0; /* 0 bytes printed */
+		}
+		char printbuf[0x200];
+		ret = vsnprintf(printbuf, 0x200, format, args);
+	    pthread_mutex_lock(&log_mutex);
+		newtTextboxSetText(co, printbuf);
+	} else
+#endif
+	{
+		pthread_mutex_lock(&log_mutex);
+		char timestring[0x80];
+		time_t curtime;
+		time(&curtime);
+		struct tm* timeinfo = localtime(&curtime);
+		snprintf(timestring, 0x80, "%s[%s%02d/%02d/%d %02d:%02d:%02d%s]", CRESET, HBLK, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_year - 100, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, CRESET);
+		if (verbose >= 2) {
+			printf("%s| - %s%s <%s> " CRESET "%s" HBLU "%s" CRESET ":" BLU "%d" CRESET ":" BMAG "%s()" CRESET ": \n%s| ----> ", colour_bold, timestring, colour_bold, type, WHT, fname, lineno, fxname, colour_bold);
+		} else {
+			printf(" - %s %s<%s>%s: ", timestring, colour_bold, type, CRESET);
+		}
+		printf("%s", colour);
+		ret = vprintf(format, args);
+		va_end(args);
 	
-	if (verbose < 2)
-		printf(CRESET "\n");
-	else {
-		printf("\n%s-%s\n", colour, CRESET);
+		if (verbose < 2)
+			printf(CRESET "\n");
+		else
+			printf("\n%s-%s\n", colour, CRESET);
+		fflush(stdout);
 	}
-
-	fflush(stdout);
-    pthread_mutex_unlock(&log_mutex);
+	pthread_mutex_unlock(&log_mutex);
 	return ret;
 }

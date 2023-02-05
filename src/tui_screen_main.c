@@ -21,8 +21,10 @@ tui_screen_t tui_screen_main() {
     newtComponent exitButton = newtCompactButton(66, 18, "Exit");
     newtComponent welcome = newtLabel(1, 0, "Welcome to palera1n!");
     newtComponent deviceMsg = newtTextbox(1, 2, 40, 3, NEWT_FLAG_WRAP);
-    newtTextboxSetText(deviceMsg, "Connect your iPhone, iPad or iPod Touch to begin.");
+    set_tui_log(deviceMsg);
+    LOG(LOG_INFO, "Connect your iPhone, iPad or iPod Touch to begin.");
     newtTextboxSetColors(deviceMsg, PI_LOG_COLOR, PI_LOG_COLOR);
+    set_tui_log(deviceMsg);
     newtComponent form = newtForm(NULL, NULL, 0);
     newtFormAddComponents(form, optionsButton, startButton, exitButton, welcome,
     deviceMsg, NULL);
@@ -39,6 +41,7 @@ tui_screen_t tui_screen_main() {
     } else if (buttonPressed == exitButton) {
         ret = EXIT_SCREEN;
     }
+    set_tui_log(NULL);
     newtFormDestroy(form);
     return ret;
 }

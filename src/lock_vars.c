@@ -30,6 +30,11 @@
 #include <kerninfo.h>
 
 pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
+#ifdef DEV_BUILD
+#include <newt.h>
+pthread_mutex_t tui_log_mutex;
+newtComponent tui_log_output = NULL;
+#endif
 
 bool spin, found_pongo = 0;
 uint64_t ecid_wait_for_dfu = 0;
@@ -80,10 +85,26 @@ uint64_t get_ecid_wait_for_dfu() {
 }
 
 uint64_t set_ecid_wait_for_dfu(uint64_t ecid) {
-    LOG(LOG_VERBOSE5, "locking ecid wait for dfu value for set ecid_wait_for_dfu = %llu", ecid);
+    LOG(LOG_VERBOSE5, "locking ecid wait for dfu mutex for set ecid_wait_for_dfu = %llu", ecid);
     pthread_mutex_lock(&ecid_dfu_wait_mutex);
     ecid_wait_for_dfu = ecid;
     LOG(LOG_VERBOSE5, "UN-locking ecid wait for dfu mutex afrer setting ecid_wait_for_dfu");
     pthread_mutex_unlock(&ecid_dfu_wait_mutex);
     return ecid;
 }
+
+#ifdef DEV_BUILD
+newtComponent get_tui_log() {
+    pthread_mutex_lock(&tui_log_mutex);
+    newtComponent ret = tui_log_output;
+    pthread_mutex_unlock(&tui_log_mutex);
+    return ret;
+}
+
+newtComponent set_tui_log(newtComponent co) {
+    pthread_mutex_lock(&tui_log_mutex);
+    tui_log_output = co;
+    pthread_mutex_unlock(&tui_log_mutex);
+    return co;
+}
+#endif
