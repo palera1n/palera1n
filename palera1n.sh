@@ -66,6 +66,7 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --china             Enable Mainland China specific workarounds (启用对中国大陆网络环境的替代办法)
+    --ipsw              Specify a custom IPSW to use
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
 
 Subcommands:
