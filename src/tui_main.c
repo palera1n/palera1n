@@ -42,6 +42,15 @@ int init_window() {
 
     tui_started = true;
     newtInit();
+    int cols, rows;
+    newtGetScreenSize(&cols, &rows);
+    if (cols < 80 || rows < 24) {
+        newtFinished();
+        tui_started = false;
+        LOG(LOG_FATAL, "Terminal size must be at least 80x24");
+        return -1;
+    }
+    LOG(LOG_VERBOSE3, "cols: %d, rows: %d\n", cols, rows);
     newtCls();
     newtSetColor(PI_LOG_COLOR, "yellow", "black");
     newtSetColor(PI_STEP_CURRENT, "lightgray", "black");
@@ -52,8 +61,9 @@ int init_window() {
 }
 
 int tui() {
-    init_window();
-    int ret = MAIN_SCREEN;
+    int ret = 0;
+    if ((ret = init_window())) return ret;
+    ret = MAIN_SCREEN;
     while (1) {
         switch (ret) {
         case ERROR_SCREEN:
@@ -87,5 +97,4 @@ out:
     newtFinished();
     tui_started = false;
     return 0;
-
 }
