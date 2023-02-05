@@ -15,8 +15,9 @@
 #define WIDTH 76
 #define HEIGHT 19
 
-#define MSG_COLOR 1
-#define ICON_COLOR 2
+#define PI_LOG_COLOR NEWT_COLORSET_CUSTOM(0)
+#define PI_STEP_CURRENT NEWT_COLORSET_CUSTOM(1)
+#define PI_STEP_OTHER NEWT_COLORSET_CUSTOM(2)
 
 #define CHECKBOX_STATE(flags, opt) checkrain_option_enabled(flags, opt) ? '*' : ' '
 

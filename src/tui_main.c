@@ -42,6 +42,9 @@ int init_window() {
 
     newtInit();
     newtCls();
+    newtSetColor(PI_LOG_COLOR, "yellow", "black");
+    newtSetColor(PI_STEP_CURRENT, "lightgray", "black");
+    newtSetColor(PI_STEP_OTHER, "gray", "black");
     newtDrawRootText(0, 0, "palera1n version 2.0.0");
     newtPushHelpLine(NULL);
     return 0;

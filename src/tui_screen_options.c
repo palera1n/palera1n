@@ -35,10 +35,11 @@ tui_screen_t tui_screen_options() {
     int ret = MAIN_SCREEN;
 
     newtCenteredWindow(WIDTH, HEIGHT, NULL);
-    newtComponent backButton = newtCompactButton(66, 17, "Back");
+    newtComponent backButton = newtCompactButton(66, 18, "Back");
 
     newtComponent optionsNotice = newtTextbox(1, 0, WIDTH - 2, 3, NEWT_FLAG_WRAP);
     newtTextboxSetText(optionsNotice, "You may set the following options. If you don't know what they mean you'll probably have no reason to set them.");
+    // newtTextboxSetColors(optionsNotice, NEWT_COLORSET_LABEL, NEWT_COLORSET_LABEL);
 
     newtComponent verboseBootBox = newtCheckbox(1, 3, "Verbose boot", CHECKBOX_STATE(kpf_flags, checkrain_option_verbose_boot), NULL, NULL);
     newtComponent rootfulBox = newtCheckbox(1, 4, "Rootful", CHECKBOX_STATE(palerain_flags, palerain_option_rootful), NULL, NULL);
@@ -62,7 +63,8 @@ tui_screen_t tui_screen_options() {
     newtComponent form = newtForm(NULL, NULL, 0);
     newtFormAddComponents(form, backButton, verboseBootBox, rootfulBox,
      rootfulSetupBox, forceRevertBox, safeModeBox, bootCmdlineLabel, 
-     bootCmdlineEntry, flowerChainBox, optionsNotice, NULL);
+     bootCmdlineEntry, flowerChainBox, optionsNotice,
+     NULL);
     newtRunForm(form);
     newtRefresh();
     snprintf(xargs_cmd, 0x270, "xargs %s", bootargs_entered);
