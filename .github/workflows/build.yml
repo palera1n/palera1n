@@ -131,7 +131,7 @@ jobs:
           cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
           mkdir build
           cd build
-          cmake .. \
+          SDKROOT="${{ env.SDK }}" cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CROSSCOMPILING=true \
             -DCMAKE_SYSTEM_NAME=Darwin \
@@ -144,7 +144,8 @@ jobs:
             -DENABLE_PROGRAMS=OFF \
             -DMBEDTLS_FATAL_WARNINGS=OFF \
             -DCMAKE_INSTALL_SYSCONFDIR="/etc"
-          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) \
+             SDKROOT="${{ env.SDK }}"
           gmake -j$(sysctl -n hw.ncpu) install DESTDIR=${{ env.DESTDIR }}
           cd ..
 
