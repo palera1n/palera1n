@@ -85,6 +85,7 @@ int tui() {
     }
 out:
     newtFinished();
+    tui_started = false;
     return 0;
 
 }
