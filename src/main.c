@@ -25,7 +25,7 @@
 #include <libimobiledevice/libimobiledevice.h>
 
 #include <ANSI-color-codes.h>
-#include <common.h>
+#include <palerain.h>
 #include <xxd-embedded.h>
 #include <kerninfo.h>
 

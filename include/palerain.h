@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef PALERAIN_H
+#define PALERAIN_H
 
 #include "xxd-embedded.h"
 #include "kerninfo.h"

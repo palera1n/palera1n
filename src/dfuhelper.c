@@ -25,7 +25,7 @@
 #include <usbmuxd.h>
 
 #include <ANSI-color-codes.h>
-#include <common.h>
+#include <palerain.h>
 
 #define FORMAT_KEY_VALUE 1
 #define FORMAT_XML 2

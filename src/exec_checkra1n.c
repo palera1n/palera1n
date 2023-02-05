@@ -17,7 +17,7 @@
 
 extern char **environ;
 
-#include <common.h>
+#include <palerain.h>
 #include <xxd-embedded.h>
 char* pongo_path = NULL;
 char* ext_checkra1n = NULL;

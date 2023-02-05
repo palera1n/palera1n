@@ -10,7 +10,7 @@
 #include <sys/mman.h>           // mmap, munmap
 #include <sys/stat.h>           // fstst
 
-#include <common.h>
+#include <palerain.h>
 
 bool pongo_full, device_has_booted = 0;
 int pongo_thr_running = 0;

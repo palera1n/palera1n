@@ -38,7 +38,7 @@
 #include <sys/mman.h>           // mmap, munmap
 #include <sys/stat.h>           // fstst
 
-#include <common.h>
+#include <palerain.h>
 #define ERR(...) LOG(LOG_VERBOSE, __VA_ARGS__)
 
 // Keep in sync with Pongo

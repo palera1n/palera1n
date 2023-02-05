@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include <common.h>
+#include <palerain.h>
 #include <tui.h>
 
 void bitfield_check_cb(newtComponent box, void* data) {

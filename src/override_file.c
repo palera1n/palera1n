@@ -12,7 +12,7 @@
 #include <sys/mman.h>
 #include <errno.h>
 
-#include <common.h>
+#include <palerain.h>
 
 int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename) {
 	int ret = 0;

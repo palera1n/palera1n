@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include <common.h>
+#include <palerain.h>
 #include <tui.h>
 
 tui_screen_t tui_screen_enter_recovery() { return ENTER_DFU_SCREEN; }
