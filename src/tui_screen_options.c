@@ -54,7 +54,7 @@ tui_screen_t tui_screen_options() {
     newtComponentAddCallback(safeModeBox, bitfield_check_cb, &safemode_info);
 
     newtComponent bootCmdlineLabel = newtLabel(1, 8, "Kernel command line:");
-    newtComponent bootCmdlineEntry = newtEntry(1, 9, NULL, WIDTH - 2, &bootargs_entered, NEWT_ENTRY_SCROLL);
+    newtComponent bootCmdlineEntry = newtEntry(1, 9, &xargs_cmd[6], WIDTH - 2, &bootargs_entered, NEWT_ENTRY_SCROLL);
 
     newtComponent flowerChainBox = newtCheckbox(1, 10, "Flower chain", CHECKBOX_STATE(flower_flags, flower_option_flower_chain), NULL, NULL);
     newtComponentAddCallback(flowerChainBox, bitfield_check_cb, &flower_chain_info);

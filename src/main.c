@@ -35,7 +35,7 @@
 unsigned int verbose = 0;
 int enable_rootful = 0, demote = 0;
 bool ohio = true;
-char xargs_cmd[0x270] = "xargs", checkrain_flags_cmd[0x20] = "deadbeef", palerain_flags_cmd[0x20] = "deadbeef";
+char xargs_cmd[0x270] = "xargs ", checkrain_flags_cmd[0x20] = "deadbeef", palerain_flags_cmd[0x20] = "deadbeef";
 char kpf_flags_cmd[0x20] = "deadbeef", dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
 extern char** environ;
 typedef unsigned char niarelap_file_t[];
