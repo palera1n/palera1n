@@ -491,9 +491,9 @@ function _wait_for_device() {
         _kill_if_running iproxy
         echo "[*] Rebooting device in SSH Ramdisk"
         if [ "$os" = 'Linux' ]; then
-            sudo "$dir"/iproxy 6413 22 &
+            sudo "$dir"/iproxy 6413 22 >/dev/null &
         else
-            "$dir"/iproxy 6413 22 &
+            "$dir"/iproxy 6413 22 >/dev/null &
         fi
         sleep 2
         remote_cmd "/usr/sbin/nvram auto-boot=false"
@@ -613,9 +613,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     # Execute the commands once the rd is booted
     if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
+        sudo "$dir"/iproxy 6413 22 >/dev/null &
     else
-        "$dir"/iproxy 6413 22 &
+        "$dir"/iproxy 6413 22 >/dev/null &
     fi
 
     while ! (remote_cmd "echo connected" &> /dev/null); do
