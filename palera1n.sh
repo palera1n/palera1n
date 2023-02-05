@@ -727,11 +727,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
     remote_cmd "rm -f /mnt6/$active/kpf"
-    if [[ "$version" == *"16"* ]]; then
-        remote_cp binaries/Kernel16Patcher.ios root@localhost:/mnt6/$active/kpf
-    else
-        remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt6/$active/kpf
-    fi
+    remote_cp binaries/kpf.ios root@localhost:/mnt6/$active/kpf
     remote_cmd "/usr/sbin/chown 0 /mnt6/$active/kpf"
     remote_cmd "/bin/chmod 755 /mnt6/$active/kpf"
 
@@ -768,7 +764,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -l -t -h -d
+            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -l -h -d
         else
             "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -l
         fi
