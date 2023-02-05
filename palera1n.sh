@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-export LC_CTYPE="en_US.UTF-8"
-export GUM_SPIN_SHOW_OUTPUT='true'
 
 pushd $(dirname "$0") &> /dev/null
 
@@ -15,13 +13,21 @@ cd ..
 {
 
 COMMAND=$(echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palea1n.sh $@")
-gum style \
-        --foreground 112 --border-foreground 49 --border thick\
-        --align center --margin "1 1" --padding "1 2" \
-        "$COMMAND"
+gum style --foreground 112 --border-foreground 49 --border thick --margin "1 1" --padding "1 2" "$COMMAND"
+
 # =========
 # Variables
 # =========
+export LC_CTYPE="en_US.UTF-8"
+export GUM_SPIN_SHOW_OUTPUT="true"
+export MARGIN="1 2"
+export PADDING="2 4"
+export WIDTH="50"
+export ALIGN="center"
+export BOLD="true"
+export FOREGROUND=212
+export BORDER="double"
+export BORDER_FOREGROUND=212
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
 network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
@@ -37,6 +43,10 @@ fs=disk0s1s$disk
 # =========
 # Functions
 # =========
+bold() {
+    gum style --foreground $1 $2
+}
+
 remote_cmd() {
     if [ "$os" = 'Linux' ]; then
         "$dir"/sshpass -p 'alpine' ssh -o ProxyCommand="sudo ${dir}/inetcat 22" -o StrictHostKeyChecking=no root@localhost "$@"
@@ -460,15 +470,13 @@ fi
 if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ] && [ -z "$restorerootfs" ]; then
 	# Displaying warnings with boxes is more noticed right?
 	gum style \
-        --foreground 178 --border-foreground 178 --border double \
-        --align center --width 50 --margin "1 2" --padding "2 4" \
-		'$(gum format "**!!! WARNING WARNING WARNING !!!**")' "This flag will add tweak support BUT WILL BE TETHERED." "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT." "THIS WORKS ON 15.0-16.3" "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT" "AND WE WARNED YOU" "DO YOU UNDERSTAND?" "TYPE $(gum style --foreground 226 'Yes, do as I say')" "TO CONTINUE"
+        --foreground 178 --border-foreground 178 
+		"$(gum format "**!!! WARNING WARNING WARNING !!!**")" "This flag will add tweak support BUT WILL BE TETHERED." "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT." "THIS WORKS ON 15.0-16.3" "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT IS YOUR OWN FAULT" "AND WE WARNED YOU" "DO YOU UNDERSTAND?" "TYPE $(bold 226 'Yes, do as I say')" "TO CONTINUE"
 	answer=$(gum input --placeholder 'Yes, do as I say')
 	if [ "$answer" = 'Yes, do as I say' ]; then
         gum style \
             --foreground 9 --border-foreground 9 --border thick\
-            --align center --width 50 --margin "1 2" --padding "2 4" \
-            "Are you REALLY sure? WE WARNED YOU" "Type $(gum style --foreground 1 'Yes, I am sure')" "to continue"
+            "Are you REALLY sure? WE WARNED YOU" "Type $(bold 1 'Yes, I am sure')" "to continue"
 		answer=$(gum input --placeholder 'Yes, I am sure')
         if [ "$answer" = 'Yes, I am sure' ]; then
             echo "[*] Enabling tweaks"
@@ -888,10 +896,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     sleep 2
     clear
-    gum style \
-        --foreground 212 --border-foreground 212 --border normal\
-        --align center --width 50 --margin "1 2" --padding "2 4" \
-        "Phase 1 done! Rebooting your device" "If it doesn't reboot, you may force reboot"
+    gum style --border normal "Phase 1 done! Rebooting your device" "If it doesn't reboot, you may force reboot"
     remote_cmd "/sbin/reboot"
     sleep 1
 
@@ -1078,30 +1083,19 @@ if [ -d "logs" ]; then
 fi
 
 rm -rf work rdwork
-echo ""
-echo "Done!"
-echo "The device should now boot to iOS"
-echo "When you unlock the device, it will respring about 30 seconds after"
-echo "If this is your first time jailbreaking, open the new palera1n app, then press Install"
-echo "Otherwise, press Do All in the settings section of the app"
-echo "If you have any issues, please first check the common-issues.md document for common issues"
-if [ "$china" != "1" ]; then
-	echo "If that list doesn't solve your issue, join the Discord server and ask for help: https://dsc.gg/palera1n"
-fi
-echo "Enjoy!"
 
 # Displaying gum with some blocks
 clear
-DONE=$(gum style --height 5 --width 25 --padding '1 3' --border rounded --border-foreground 57  "Done!" "The device should now boot to $(gum style --foreground 212 "iOS")")
-UNLOCK=$(gum style --width 25 --padding '1 3' --border rounded --border-foreground 212 "When you unlock the device, it will respring about $(gum style --foreground "#04B575" "30 seconds") later.")
-FIRST=$(gum style --height 5 --width 35 --padding '1 8' --border normal --border-foreground 255 "If this is your first time jailbreaking," "open the new palera1n app, then press $(gum style --foreground 57 "Install").")
-ISSUE=$(gum style --height 7 --width 35 --padding '1 5' --border normal --border-foreground 120  "If you have any issues, please first check the $(gum style --foreground 212 "common-issues.md") document for common issues")
+DONE=$(gum style --height 5 --width 25 --padding '1 3' --border rounded --border-foreground 57  "Done!" "The device should now boot to $(gum style "iOS")")
+UNLOCK=$(gum style --width 25 --padding '1 3' --border rounded "When you unlock the device, it will respring about $(bold "#04B575" "30 seconds") later.")
+FIRST=$(gum style --height 5 --width 35 --padding '1 8' --border normal --border-foreground 255 "If this is your first time jailbreaking," "open the new palera1n app, then press $(bold 57 "Install").")
+ISSUE=$(gum style --height 7 --width 35 --padding '1 5' --border normal --border-foreground 120  "If you have any issues, please first check the $(gum style "common-issues.md") document for common issues")
 if [ "$china" != "1" ]; then
-  DISCORD=$(gum style --height 7 --width 35 --padding '1 5' --border double --border-foreground 120  "If that list doesn't solve your issue," "join the $(gum style --foreground 212 "Discord") server" "and ask for help:" "$(gum format "https://dsc.gg/palera1n")")
+  DISCORD=$(gum style --height 7 --width 35 --padding '1 5' --border-foreground 120  "If that list doesn't solve your issue," "join the $(gum style "Discord") server" "and ask for help:" "$(gum format "https://dsc.gg/palera1n")")
 else
   DISCORD=$(echo '')
 fi
-ENJOY=$(gum style --width 15 --padding "1 1" --border thick --border-foreground 57 $(gum style --foreground 212 "Enjoy!"))
+ENJOY=$(gum style --width 15 --padding "1 1" --border thick --border-foreground 57 $(gum style "Enjoy!"))
 
 DONE_UNLOCK=$(gum join "$DONE" "$UNLOCK")
 FIRST_ISSUE=$(gum join "$FIRST" "$ISSUE")
