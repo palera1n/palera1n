@@ -28,7 +28,7 @@ export BOLD="true"
 export FOREGROUND=212
 export BORDER="double"
 export BORDER_FOREGROUND=212
-ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
+ipsw="" 
 network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
 os=$(uname)
@@ -89,6 +89,7 @@ Options:
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
     --debug             Debug the script
     --china             Enable Mainland China specific workarounds (启用对中国大陆网络环境的替代办法)
+    --ipsw              Specify a custom IPSW to use
     --serial            Enable serial output on the device (only needed for testing with a serial cable)
 
 Subcommands:
@@ -132,6 +133,12 @@ parse_opt() {
         --china)
             china=1
             ;;
+        --ipsw)
+            ipsw=$2
+            ;;
+        --ipsw=*)
+            ipsw=${1#*=}
+            ;;
         --debug)
             debug=1
             ;;
@@ -166,6 +173,8 @@ parse_cmdline() {
             parse_opt "$arg";
         elif [ "$arg_count" -lt "$max_args" ]; then
             parse_arg "$arg";
+        elif [[ $arg == http* ]]; then
+            continue
         else
             echo "[-] Too many arguments. Use $0 --help for help.";
             exit 1;
@@ -282,6 +291,11 @@ _wait() {
 
 dfuhelper_first_try=true
 _dfuhelper() {
+    if [ "$(get_device_mode)" = "dfu" ]; then
+        echo "[*] Device is already in DFU"
+        return
+    fi
+
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
@@ -515,9 +529,9 @@ function _wait_for_device() {
         _kill_if_running iproxy
         echo "[*] Rebooting device in SSH Ramdisk"
         if [ "$os" = 'Linux' ]; then
-            sudo "$dir"/iproxy 6413 22 &
+            sudo "$dir"/iproxy 6413 22 >/dev/null &
         else
-            "$dir"/iproxy 6413 22 &
+            "$dir"/iproxy 6413 22 >/dev/null &
         fi
         sleep 2
         remote_cmd "/usr/sbin/nvram auto-boot=false"
@@ -635,6 +649,12 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     fi
 
     # Execute the commands once the rd is booted
+    if [ "$os" = 'Linux' ]; then
+        sudo "$dir"/iproxy 6413 22 >/dev/null &
+    else
+        "$dir"/iproxy 6413 22 >/dev/null &
+    fi
+
     while ! (remote_cmd "echo connected" &> /dev/null); do
         sleep 1
     done
@@ -729,11 +749,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
     remote_cmd "rm -f /mnt6/$active/kpf"
-    if [[ "$version" == *"16"* ]]; then
-        remote_cp binaries/Kernel16Patcher.ios root@localhost:/mnt6/$active/kpf
-    else
-        remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt6/$active/kpf
-    fi
+    remote_cp binaries/kpf.ios root@localhost:/mnt6/$active/kpf
     remote_cmd "/usr/sbin/chown 0 /mnt6/$active/kpf"
     remote_cmd "/bin/chmod 755 /mnt6/$active/kpf"
 
@@ -767,7 +783,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
     if [ "$tweaks" = "1" ]; then
         if [[ "$version" == *"16"* ]]; then
-            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -l -t -h -d
+            "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -o -u -l -h -d
         else
             "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e -l
         fi
@@ -849,12 +865,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         echo 'cd other/rootfs/jbin' > buffer.sh 
         echo 'rm -rf loader.app' >> buffer.sh
-        echo 'curl -LO https://static.palera.in/deps/loader.zip' >> buffer.sh
-        echo 'unzip loader.zip -d .' >> buffer.sh
+        echo 'curl -LO https://static.palera.in/artifacts/loader/rootful/palera1n.ipa' >> buffer.sh
         echo 'unzip palera1n.ipa -d .' >> buffer.sh
         echo 'mv Payload/palera1nLoader.app loader.app' >> buffer.sh
         echo 'rm -rf palera1n.zip loader.zip palera1n.ipa Payload' >> buffer.sh
-		gum spin --spinner dot --title 'Downloading loader...' -- sh buffer.sh
+		    gum spin --spinner dot --title 'Downloading loader...' -- sh buffer.sh
         
         # download jbinit files
         echo 'rm -f jb.dylib jbinit jbloader launchd' > buffer.sh
