@@ -265,6 +265,13 @@ The directory where executable files that needs to be executed during boot, befo
 daemons are launched, are placed on rootless. They are executed after all filesystems
 has been mounted.
 .El
+.Sh BUGS
+.Nm
+may crash if the machine it is running on:
+.Pp
+.Dl "- Has no USB ports"
+.Pp
+.Dl "- Has non-compliant USB devices plugged in"
 .Sh NOTES
 .Nm
 injects a dylib into launchd to allow the
