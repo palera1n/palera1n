@@ -108,9 +108,9 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	getchar();
 	step(3, 0, "Get ready", NULL, 0);
 	if (NOHOME) 
-		step(4, 2, "Hold Volume Down + Side button", NULL, 0);
+		step(4, 2, "Hold volume down + side button", NULL, 0);
 	else
-		step(4, 2, "Hold Home + Power Button", NULL, 0);
+		step(4, 2, "Hold home + power button", NULL, 0);
 	set_ecid_wait_for_dfu(info->ecid);
 	ret = exitrecv_cmd(info->ecid);
 	info = NULL;
@@ -122,13 +122,13 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	printf("\r\e[K");
 	bool nohome = NOHOME;
 	if (nohome) 
-		step(2, 0, "Hold Volume Down + Side button", NULL, 0);
+		step(2, 0, "Hold volume down + side button", NULL, 0);
 	else
-		step(2, 0, "Hold Home + Power Button", NULL, 0);
+		step(2, 0, "Hold home + power Button", NULL, 0);
 	if (nohome) 
-		step(10, 0, "Hold Volume Down button", conditional, ecid);
+		step(10, 0, "Hold volume down button", conditional, ecid);
 	else
-		step(10, 0, "Hold Home button", conditional, ecid);
+		step(10, 0, "Hold home button", conditional, ecid);
 	if (get_ecid_wait_for_dfu() != ecid) {
 	} else {
 		LOG(LOG_WARNING, "Whoops, device did not enter DFU mode");
