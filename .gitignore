@@ -8,7 +8,6 @@ contrib/
 checkra1n*
 payload.c
 src/palera1n
-palera1n*
 !xxd-embedded.h
 src/binpack.dmg
 src/ramdisk.dmg
@@ -16,3 +15,5 @@ src/xxd-*.c
 .DS_Store
 !palera1n.1
 palera1n.1.html
+Payload
+docs/*.html
