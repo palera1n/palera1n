@@ -61,6 +61,8 @@ download-deps:
 palera1n.1.html: palera1n.1
 	mandoc -T html palera1n.1 > palera1n.1.html
 
+docs: palera1n.1.html
+
 distclean: clean
 	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg palera1n.html
 
