@@ -1,0 +1,269 @@
+/* $OpenBSD: mandoc.css,v 1.35 2021/03/30 19:23:50 schwarze Exp $ */
+/*
+ * Standard style sheet for mandoc(1) -Thtml and man.cgi(8).
+ *
+ * Written by Ingo Schwarze <schwarze@openbsd.org>.
+ * I place this file into the public domain.
+ * Permission to use, copy, modify, and distribute it for any purpose
+ * with or without fee is hereby granted, without any conditions.
+ */
+
+/* Global defaults. */
+
+html {
+		--bg: #FFFFFF;
+		--fg: #000000; }
+body {		background: var(--bg);
+		color: var(--fg);
+		font-family: monospace,Helvetica,Arial,sans-serif;
+		max-width: 80ch;
+		margin: 1em auto;
+		padding: 0 1ch;
+	}
+h1 {		font-size: 110%; }
+table {		margin-top: 0em;
+		margin-bottom: 0em;
+		border-collapse: collapse; }
+/* Some browsers set border-color in a browser style for tbody,
+ * but not for table, resulting in inconsistent border styling. */
+tbody {		border-color: inherit; }
+tr {		border-color: inherit; }
+td {		vertical-align: top;
+		padding-left: 0.2em;
+		padding-right: 0.2em;
+		border-color: inherit; }
+ul, ol, dl {	margin-top: 0em;
+		margin-bottom: 0em; }
+li, dt {	margin-top: 1em; }
+pre {		font-family: inherit; }
+
+.permalink {	border-bottom: thin dotted;
+		color: inherit;
+		font: inherit;
+		text-decoration: inherit; }
+* {		clear: both }
+
+/* Search form and search results. */
+
+form {
+	position: sticky;
+	top: 0px;
+	background-color: var(--bg);
+	z-index: 1;
+}
+
+fieldset {	border: thin solid silver;
+		border-radius: 0.3em;
+		text-align: center; }
+input[name=expr] {
+		width: 25%; }
+
+table.results {	margin-top: 1em;
+		margin-left: 2em;
+		font-size: smaller; }
+
+/* Header and footer lines. */
+
+table.head {	width: 100%;
+		border-bottom: 1px dotted #808080;
+		margin-bottom: 1em;
+		font-size: smaller;
+		overflow-wrap: anywhere; }
+td.head-vol {	text-align: center; }
+td.head-rtitle {
+		text-align: right; }
+
+table.foot {	width: 100%;
+		border-top: 1px dotted #808080;
+		margin-top: 1em;
+		font-size: smaller;
+		overflow-wrap: anywhere; }
+td.foot-os {	text-align: right; }
+
+table.Nm {
+	overflow-wrap:anywhere;
+}
+
+/* Sections and paragraphs. */
+
+.manual-text {
+		margin-left: 3.8em; }
+h1.Sh {		margin-top: 1.2em;
+		margin-bottom: 0.6em;
+		margin-left: -3.2em; }
+h2.Ss {		margin-top: 1.2em;
+		margin-bottom: 0.6em;
+		margin-left: -1.2em;
+		font-size: 105%; }
+.Pp {		margin: 0.6em 0em; }
+
+/* Displays and lists. */
+
+.Bd-indent {	margin-left: 3.8em; }
+
+.Bl-bullet {	list-style-type: disc;
+		padding-left: 1em; }
+.Bl-dash {	list-style-type: none;
+		padding-left: 0em; }
+.Bl-dash > li:before {
+		content: "\2014  "; }
+.Bl-item {	list-style-type: none;
+		padding-left: 0em; }
+.Bl-compact > li {
+		margin-top: 0em; }
+
+.Bl-enum {	padding-left: 2em; }
+.Bl-compact > li {
+		margin-top: 0em; }
+
+.Bl-diag > dt {
+		font-style: normal;
+		font-weight: bold; }
+.Bl-diag > dd {
+		margin-left: 0em; }
+.Bl-hang > dd {
+		margin-left: 5.5em; }
+.Bl-inset > dd {
+		margin-left: 0em; }
+.Bl-ohang > dd {
+		margin-left: 0em; }
+.Bl-tag {	margin-top: 0.6em;
+		margin-left: 5.5em; }
+.Bl-tag > dt {
+		float: left;
+		margin-top: 0em;
+		margin-left: -5.5em;
+		padding-right: 0.5em;
+		vertical-align: top; }
+.Bl-tag > dd {
+		clear: right;
+		column-count: 1;  /* Force block formatting context. */
+		width: 100%;
+		margin-top: 0em;
+		margin-left: 0em;
+		margin-bottom: 0.6em;
+		vertical-align: top; }
+.Bl-compact {	margin-top: 0em; }
+.Bl-compact > dd {
+		margin-bottom: 0em; }
+.Bl-compact > dt {
+		margin-top: 0em; }
+
+.Bl-column > tbody > tr > td {
+		margin-top: 1em; }
+.Bl-compact > tbody > tr > td {
+		margin-top: 0em; }
+
+.Rs {		font-style: normal;
+		font-weight: normal; }
+.RsB {		font-style: italic;
+		font-weight: normal; }
+.RsI {		font-style: italic;
+		font-weight: normal; }
+.RsJ {		font-style: italic;
+		font-weight: normal; }
+.RsT {		text-decoration: underline; }
+
+.tbl td {	vertical-align: middle; }
+
+.HP {		margin-left: 3.8em;
+		text-indent: -3.8em; }
+
+/* Semantic markup for command line utilities. */
+
+code.Nm {	font-style: normal;
+		font-weight: bold;
+		font-family: inherit;
+		overflow-wrap: normal; }
+.Fl {		font-style: normal;
+		font-weight: bold;
+		font-family: inherit; }
+.Cm {		font-style: normal;
+		font-weight: bold;
+		font-family: inherit; }
+.Ar {		font-style: italic;
+		font-weight: normal; }
+.Op {		display: inline; }
+.Ic {		font-style: normal;
+		font-weight: bold;
+		font-family: inherit; }
+.Ev {		font-style: normal;
+		font-weight: normal;
+		font-family: monospace; }
+.Pa {		font-style: italic;
+		font-weight: normal; }
+
+/* Semantic markup for function libraries. */
+
+code.In {	font-style: normal;
+		font-weight: bold;
+		font-family: inherit; }
+.Fd {		font-style: normal;
+		font-weight: bold;
+		font-family: inherit; }
+.Ft {		font-style: italic;
+		font-weight: normal; }
+.Fn {		font-style: normal;
+		font-weight: bold;
+		font-family: inherit; }
+.Fa {		font-style: italic;
+		font-weight: normal; }
+.Vt {		font-style: italic;
+		font-weight: normal; }
+.Va {		font-style: italic;
+		font-weight: normal; }
+.Dv {		font-style: normal;
+		font-weight: normal;
+		font-family: monospace; }
+.Er {		font-style: normal;
+		font-weight: normal;
+		font-family: monospace; }
+
+/* Various semantic markup. */
+
+.Cd {		font-style: normal;
+		font-weight: bold;
+		font-family: inherit; }
+.Ad {		font-style: italic;
+		font-weight: normal; }
+.Ms {		font-style: normal;
+		font-weight: bold; }
+
+/* Physical markup. */
+
+.Bf {		display: inline; }
+.No {		font-style: normal;
+		font-weight: normal; }
+.Em {		font-style: italic;
+		font-weight: normal; }
+.Sy {		font-style: normal;
+		font-weight: bold; }
+.Li {		font-style: normal;
+		font-weight: normal;
+		font-family: monospace; }
+
+/* Overrides to avoid excessive margins on small devices. */
+
+@media (max-width: 37.5em) {
+.manual-text {
+		margin-left: 0.5em; }
+h1.Sh, h2.Ss {	margin-left: 0em; }
+.Bd-indent {	margin-left: 2em; }
+.Bl-hang > dd {
+		margin-left: 2em; }
+.Bl-tag {	margin-left: 2em; }
+.Bl-tag > dt {
+		margin-left: -2em; }
+.HP {		margin-left: 2em;
+		text-indent: -2em; }
+}
+
+/* Overrides for a dark color scheme for accessibility. */
+
+@media (prefers-color-scheme: dark) {
+html {		--bg: #000000;
+		--fg: #FFFFFF; }
+:link {		color: #BAD7FF; }
+:visited {	color: #BAD7FF; }
+}
+

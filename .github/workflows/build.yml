@@ -21,7 +21,7 @@ jobs:
         run: |
           make -j$(nproc) docs
           mkdir ready
-          cp palera1n.1.html ready
+          cp palera1n.1.html mandoc.css ready
 
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
