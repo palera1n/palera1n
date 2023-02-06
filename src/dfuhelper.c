@@ -106,6 +106,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	}
 	LOG(LOG_INFO, "Press any key when ready for DFU mode");
 	getchar();
+	step(3, 0, "Get ready", NULL, 0);
 	if (NOHOME) 
 		step(4, 2, "Hold Volume Down + Side button", NULL, 0);
 	else
