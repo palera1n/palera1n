@@ -82,8 +82,10 @@ home screen on for a while even when the files are deleted as the icon cache
 still has their icons. When used with
 .Fl f , -fakefs ,
 this will actually boot the device in rootless mode then delete the jailbreak
-files. Aqs a result, using the loader app to install the jailbreak environment
-is not supported when this option is used.
+files. As a result, using the loader app to install the jailbreak environment
+is not supported when this option is used together with
+.Fl f , -fakefs
+\[char46]
 .It Fl 1 , -checkra1n-file Ar checkra1n file
 Specify the path to a custom checkra1n file.
 .It Fl c , -setup-fakefs
@@ -221,7 +223,7 @@ version of the Procursus fork of
 .Xr ldid 1
 before they can be ran on a device jailbroken with
 .Nm
-\[char46]q
+\[char46]
 .Sh POST INSTLLATION
 The palera1n loader app will take up to 30 seconds to appear on the homescreen after the
 device has booted. If it does not appear, you can try using the shortcut:
