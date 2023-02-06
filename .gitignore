@@ -14,3 +14,5 @@ src/binpack.dmg
 src/ramdisk.dmg
 src/xxd-*.c
 .DS_Store
+!palera1n.1
+palera1n.1.html

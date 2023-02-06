@@ -46,37 +46,37 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 #ifdef DEV_BUILD
-			"Usage: %s [-cCDhpvVldsOLtf]"
+			"Usage: %s [-cCdDfhlLOpstvV]"
 #else
-			"Usage: %s [-cCDhpvVldsOLf]"
+			"Usage: %s [-cCdDfhlLOpsvV]"
 #endif
 			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-1 checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
+			"\t-1, --override-checkra1n <file>\t\tOverride checkra1n\n"
 			"\t-c, --setup-fakefs\t\t\tSetup fakefs\n"
 			"\t-C, --setup-fakefs-forced\t\tSetup fakefs and overwrite any existing ones\n"
+			"\t-d, --demote\t\t\t\tDemote\n"
 			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
+			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
+			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
 			"\t-h, --help\t\t\t\tShow this help\n"
+			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
+			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
+			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
+			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
+			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
+			"\t-O, --disable-ohio\t\t\tDisable Ohio\n"
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
 			"\t-P, --pongo-full\t\t\tBoots to a PongoOS shell with default images already uploaded\n"
+			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
+			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
-			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
-			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
-			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
-			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
-			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
-			"\t-d, --demote\t\t\t\tDemote\n"
-			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
-			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
-			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
-			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
-			"\t-1, --override-checkra1n <file>\t\tOverride checkra1n\n"
-			"\t-O, --disable-ohio\t\t\tDisable Ohio\n"
-	
+
 #ifdef DEV_BUILD
 			"\t-t, --tui\t\t\t\tTerminal user interface\n"
 #endif

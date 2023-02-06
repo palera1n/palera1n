@@ -58,8 +58,11 @@ clean:
 download-deps:
 	$(MAKE) -C src checkra1n-macos checkra1n-linux-arm64 checkra1n-linux-armel checkra1n-linux-x86 checkra1n-linux-x86_64 checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
 
+palera1n.1.html: palera1n.1
+	mandoc -T html palera1n.1 > palera1n.1.html
+
 distclean: clean
-	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg
+	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg palera1n.html
 
 .PHONY: all palera1n clean
 
