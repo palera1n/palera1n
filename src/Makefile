@@ -24,7 +24,7 @@ ifneq (,$(findstring arm64, $(CFLAGS)))
 else ifneq (,$(findstring x86_64, $(CFLAGS)))
 	$(LIPO) -thin x86_64 -output checkra1n checkra1n-macos
 else ifeq ($(shell arch),i386)
-		$(LIPO) -thin x86_64 -output checkra1n checkra1n-macos
+	$(LIPO) -thin x86_64 -output checkra1n checkra1n-macos
 else
 	$(LIPO) -thin $(shell arch) -output checkra1n checkra1n-macos
 endif
