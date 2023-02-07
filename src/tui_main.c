@@ -22,23 +22,24 @@ int destroy_window() {
 
 int init_window() {
     setlocale(LC_ALL, NULL);
-    if (getenv("NEWT_COLORS") == NULL)
-        putenv(
-            "NEWT_COLORS=root=,black\n"
-            "border=lightgray,black\n"
-            "title=lightgray,black\n"
-            "roottext=red,black\n"
-            "label=lightgray,black\n"
-            "entry=lightgray,black\n"
-            "window=red,black\n"
-            "textbox=lightgray,black\n"
-            "button=black,lightgray\n"
-            "compactbutton=lightgray,black\n"
-            "listbox=lightgray,black\n"
-            "actlistbox=black,lightgray\n"
-            "actsellistbox=black,lightgray\n"
-            "checkbox=lightgray,black\n"
-            "actcheckbox=black,lightgray\n");
+    setenv(
+        "NEWT_COLORS",
+        "root=,black\n"
+        "border=lightgray,black\n"
+        "title=lightgray,black\n"
+        "roottext=red,black\n"
+        "label=lightgray,black\n"
+        "entry=lightgray,black\n"
+        "window=red,black\n"
+        "textbox=lightgray,black\n"
+        "button=black,lightgray\n"
+        "compactbutton=lightgray,black\n"
+        "listbox=lightgray,black\n"
+        "actlistbox=black,lightgray\n"
+        "actsellistbox=black,lightgray\n"
+        "checkbox=lightgray,black\n"
+        "actcheckbox=black,lightgray\n",
+        0);
 
     tui_started = true;
     newtInit();

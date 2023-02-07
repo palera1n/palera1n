@@ -269,17 +269,17 @@ int optparse(int argc, char* argv[]) {
 			usage(1, argv[0]);
 		}
 	}
-	if (verbose >= 2) putenv("LIBUSB_DEBUG=1");
+	if (verbose >= 2) setenv("LIBUSB_DEBUG", "1", 1);
 	if (verbose >= 3)
 	{
 		irecv_set_debug_level(1);
-		putenv("LIBUSB_DEBUG=2");
+		setenv("LIBUSB_DEBUG", "2", 1);
 	}
 	if (verbose >= 4) {
 		idevice_set_debug_level(1);
-		putenv("LIBUSB_DEBUG=3");
+		setenv("LIBUSB_DEBUG", "3", 1);
 	}
 	if (verbose >= 5)
-		putenv("LIBUSB_DEBUG=4");
+		setenv("LIBUSB_DEBUG", "4", 1);
     return 0;
 }
