@@ -302,9 +302,9 @@ jobs:
           find dep_root -name '*.dylib' -delete
           find dep_root -name '*.la' -delete
           if [ "${{ matrix.os }}" = "macosx" ]; then
-            gmake -j$(sysctl -n hw.ncpu)
+            CC="xcrun -sdk iphoneos cc" gmake -j$(sysctl -n hw.ncpu)
           elif [ "${{ matrix.os }}" = "iphoneos" ]; then
-            gmake -j$(sysctl -n hw.ncpu) FAKE_PLATFORM=2 FAKE_SDK=14.0 FAKE_MINOS=14.0
+            CC="xcrun -sdk iphoneos cc" gmake -j$(sysctl -n hw.ncpu) FAKE_PLATFORM=2 FAKE_SDK=14.0 FAKE_MINOS=14.0
           fi
           mv src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
           dsymutil palera1n-${{ matrix.os }}-${{ matrix.arch }}
