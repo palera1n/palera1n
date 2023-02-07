@@ -38,7 +38,6 @@ bool ohio = true;
 char xargs_cmd[0x270] = "xargs ", checkrain_flags_cmd[0x20] = "deadbeef", palerain_flags_cmd[0x20] = "deadbeef";
 char kpf_flags_cmd[0x20] = "deadbeef", dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
 extern char** environ;
-typedef unsigned char niarelap_file_t[];
 
 niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;
 niarelap_file_t* ramdisk_to_upload_1 = &ramdisk_dmg;
