@@ -32,6 +32,40 @@ fs=disk0s1s$disk
 # =========
 # Functions
 # =========
+
+check_wsl() {
+    if [[ $(uname -r) == *[mM]icrosoft* ]]; then
+        echo "You appear to be using Windows Subsystem for Linux (WSL)."
+        echo "palera1n will most likely NOT WORK with this setup."
+        echo "No support will be provided for WSL users."
+        read -r -n 1 -p "Continue? [y/N] " confirm
+        echo ""
+        echo ""
+        [[ $confirm == [yY] ]] || exit 0
+    fi
+}
+
+check_vm() {
+    vm=0
+
+    if [ "$os" = "Darwin" ]; then
+        [[ $(ioreg -l 2>/dev/null || true) == *@(Oracle|VirtualBox|VMware|Parallels|QEMU)* ]] && vm=1
+    elif [ "$os" = "Linux" ]; then
+        [[ $(cat /proc/cpuinfo 2>/dev/null || true) == *hypervisor* ]] && vm=1
+        [[ $(hostnamectl 2>/dev/null || true) == *@("Chassis: vm"|Virtualization:)* ]] && vm=1
+    fi
+
+    if (( vm )); then
+        echo "You appear to be using a virtual machine (VM)."
+        echo "palera1n will most likely NOT WORK with this setup, unless you're using KVM with full USB controller passthrough."
+        echo "No support will be provided for VM users."
+        read -r -n 1 -p "Continue? [y/N] " confirm
+        echo ""
+        echo ""
+        [[ $confirm == [yY] ]] || exit 0
+    fi
+}
+
 remote_cmd() {
     "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p6413 root@localhost "$@"
 }
@@ -379,6 +413,8 @@ fi
 # ============
 # Dependencies
 # ============
+check_wsl
+check_vm
 
 # Check for required commands
 if [ "$os" = 'Linux' ]; then
