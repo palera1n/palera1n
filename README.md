@@ -25,7 +25,6 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 		- If you are on A10(X), use [checkp4le](https://github.com/guacaplushy/checkp4le) instead for full SEP functionality (Passcode, TouchID, Apple Pay)
 		- On A11, **you must disable your passcode while in the jailbroken state**.
 		- On iOS 16 A11, if you EVER enabled a passcode on 16, you have to reset through the settings app/restore with a computer
-		- On A11, we don't have a SEP exploit yet.
 		- In the meantime, we recommend [FakePass](https://repo.alexia.lol/depictions/net.cadoth.fakepass) if you would like a passcode
 
 - A **USB-A to Lightning cable**
