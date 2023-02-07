@@ -1,6 +1,4 @@
 
-  
-
 # Common Issues
 
   
@@ -33,6 +31,10 @@
 24. [Cannot download apps from the App Store](#cannot-download-apps-from-the-app-store)
 25. [Snowboard theming incorrectly](#snowboard-theming-incorrectly)
 26. [End-of-central-directory signature not found](#end-of-central-directory-signature-not-found)
+27. [Filza crashing on launch](#filza-crashing-on-launch)
+28. [dpkg error: Read-only file system](#dpkg-error-read-only-file-system)
+29. [Library not loaded: /usr/lib/libSystem.B.dylib](#library-not-loaded-usrliblibsystembdylib)
+30. [pip error: legacy-install-failure](#pip-error-legacy-install-failure)
 
 ## GLIBC not found
 
@@ -43,7 +45,7 @@ Then, try again, and it should be fixed.
 
 ## \"Booted device\" but not booted
 This may happen when the downloading and patching process is interrupted. Please run `./palera1n.sh clean` (use with `sudo` if on Linux), then try again.
-If that doesn't fix it, it may be caused by an update from the Procursus repo. The quickest way to fix it is `./palera1n.sh --restorerootfs`. Alternatively, you can manually restore `/usr/libexec/dirs_cleaner` from the rootfs snapshot using the SSHRD script.
+If that doesn't fix it, it may be caused by an update from the Procursus repo. The quickest way to fix it is to [restore rootfs](https://ios.cfw.guide/removing-palera1n/). Alternatively, you can manually restore `/usr/libexec/dirs_cleaner` from the rootfs snapshot using the SSHRD script.
 
 ## NewTerm not launching
 Install NewTerm 2 from [https://apt.itsnebula.net/](https://apt.itsnebula.net/ "https://apt.itsnebula.net/") or get NewTerm3 beta.
@@ -107,8 +109,8 @@ Example image:
 **Note**: Some tweaks (e.g. Watusi) are known to not work with this method.
 
 ## Loader app not appearing
-restorerootfs and rejailbreak with `--restorerootfs` at the end of your previous command. If neither of these help, make sure you're waiting enough time (15-30 seconds).
-On iPads, the loader may not show up. You can try to open it using [this shortcut](https://www.icloud.com/shortcuts/8cd5f489c8854ee0ab9ee38f2e62f87d). If other apps don’t appear along side the loader, try installing TrollHelper from [Havoc](https://havoc.app), and install TrollStore.
+[restorerootfs](https://ios.cfw.guide/removing-palera1n/) and rejailbreak. If neither of these help, make sure you're waiting enough time (15-30 seconds).
+On iPads, the loader may not show up. You can try to open it using [this shortcut](https://www.icloud.com/shortcuts/8cd5f489c8854ee0ab9ee38f2e62f87d). If other apps don’t appear alongside the loader, try installing TrollHelper from [Havoc](https://havoc.app), and install TrollStore.
 
 ## Your local changes would be overwritten by checkout
 Run the following commands, and then try again:
@@ -205,6 +207,27 @@ Example image:
 If the unzip error message it cannot find "`palera1n.zip(.ZIP, period.)`", you are running an outdated version of palera1n and need to update using `git pull`. If this doesn't work, reclone the palera1n repository by running `cd .. && sudo rm -rf palera1n && sudo git clone --recursive --depth=1 --shallow-submodules https://github.com/palera1n/palera1n && cd palera1n`. 
 
 Otherwise, this error most likely indicates a problem with your internet connection, and you simply need to try running palera1n again.
+
+## Filza crashing on launch
+Install the latest version of Filza from the [TIGI Software repo](https://www.tigisoftware.com/repo). **The version on BigBoss is outdated**. You do not need AutoSign or FilzaFixer anymore.
+
+## dpkg error: Read-only file system
+  - Open the palera1n loader app
+  - Press the gear icon
+  - Remount R/W
+
+Then try again.
+
+## Library not loaded: /usr/lib/libSystem.B.dylib
+This usually means the fakefs wasn't created properly. It might be left over from a restore. [Restore rootfs](https://ios.cfw.guide/removing-palera1n/) and try jailbreaking again.
+
+## pip error: legacy-install-failure
+- Ubuntu/Debian
+  - `sudo apt install python3-dev`
+- Fedora
+  - `sudo dnf install python3-devel`
+- openSUSE
+  - `sudo dnf install python3-devel`
 
 <br>
 
