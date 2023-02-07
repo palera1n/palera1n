@@ -31,7 +31,7 @@ int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *
 		return errno;
 	}
 	LOG(LOG_VERBOSE5, "override_file: fstat fd %d succeeded!", fd);	
-	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0);
+	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (addr == MAP_FAILED) {
 		LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", filename, errno, strerror(errno));
 		return errno;

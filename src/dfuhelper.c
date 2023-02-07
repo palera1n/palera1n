@@ -91,9 +91,6 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	cpid = info->cpid;
 	ecid = info->ecid;
 	bdid = info->bdid;
-#if defined(__APPLE__) || defined(__linux__)
-	pthread_setname_np("in.palera.recovery-mode-handler");
-#endif
 	if (!cpid_is_arm64(info->cpid)) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		return NULL;
@@ -142,9 +139,6 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 }
 
 void* connected_dfu_mode(struct irecv_device_info* info) {
-#if defined(__APPLE__) || defined(__linux__)
-	pthread_setname_np("in.palera.dfu-mode-handler");
-#endif
 	if (get_ecid_wait_for_dfu() == info->ecid) {
 		set_ecid_wait_for_dfu(0);
 		puts("");
@@ -190,9 +184,6 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 
 void *dfuhelper(void* ptr) {
 	dfuhelper_thr_running = true;
-#if defined(__APPLE__) || defined(__linux__)
-	pthread_setname_np("in.palera.dfu-helper");
-#endif
 	subscribe_cmd(device_event_cb, irecv_device_event_cb);
 	set_spin(1);
 	while (get_spin()) {

@@ -66,7 +66,7 @@ int build_checks() {
 		return -1;
 	}
 	if (c1_header->cputype != _mh_execute_header.cputype) {
-		LOG(LOG_FATAL, "Broken build: checkra1n CPU type is not the same as %s CPU type", getprogname());
+		LOG(LOG_FATAL, "Broken build: checkra1n CPU type does not match palera1n CPU type");
 		return -1;
 	}
 #endif
@@ -91,9 +91,6 @@ bool use_tui = false, tui_started = false;
 
 int palera1n(int argc, char *argv[]) {
 	int ret = 0;
-#if defined(__APPLE__) || defined(__linux__)
-	pthread_setname_np("in.palera.main-thread");
-#endif
 	pthread_mutex_init(&log_mutex, NULL);
 	pthread_mutex_init(&spin_mutex, NULL);
 	pthread_mutex_init(&found_pongo_mutex, NULL);
