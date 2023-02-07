@@ -11,6 +11,7 @@ ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)
 endif
 ifeq ($(TARGET_OS),Darwin)
+CFLAGS += -Wno-nullability-extension
 ifeq (,$(findstring version-min=, $(CFLAGS)))
 CFLAGS += -mmacosx-version-min=10.8
 endif
