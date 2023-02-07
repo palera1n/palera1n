@@ -1,6 +1,10 @@
 #ifndef PALERAIN_H
 #define PALERAIN_H
 
+#if defined(__APPLE__)
+#define _DARWIN_C_SOURCE 1
+#endif
+
 #include "xxd-embedded.h"
 #include "kerninfo.h"
 #include <stdbool.h>

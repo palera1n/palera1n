@@ -1,3 +1,5 @@
+#include <palerain.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,7 +14,6 @@
 #include <sys/mman.h>
 #include <errno.h>
 
-#include <palerain.h>
 
 int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename) {
 	int ret = 0;
@@ -46,4 +47,4 @@ int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *
 	*orig_len = (unsigned int)st.st_size;
 	LOG(LOG_VERBOSE5, "override_file() finished!");
 	return 0;
-};
+}

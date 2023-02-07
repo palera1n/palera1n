@@ -36,7 +36,7 @@ int dfuhelper_thr_running = false;
 
 void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
     for (int i = time2; i < time; i++) {
-        printf(CYN "\r\e[K%s (%d)" CRESET, text, time - i + time2);
+        printf(CYN "\r\033[K%s (%d)" CRESET, text, time - i + time2);
         fflush(stdout);
         sleep(1);
 		if (cond != NULL && cond(cond_arg)) pthread_exit(NULL);
@@ -119,7 +119,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		set_ecid_wait_for_dfu(0);
 		return NULL;
 	}
-	printf("\r\e[K");
+	printf("\r\033[K");
 	bool nohome = NOHOME;
 	if (nohome) 
 		step(2, 0, "Hold volume down + side button", NULL, 0);

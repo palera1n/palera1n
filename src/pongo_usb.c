@@ -196,7 +196,7 @@ static int LostDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_ev
 
 int wait_for_pongo(void)
 {
-    stuff_t stuff = {};
+    stuff_t stuff;
     libusb_hotplug_callback_handle hp[2];
 
     int r = libusb_init(NULL);
@@ -240,7 +240,7 @@ int wait_for_pongo(void)
 
     for(ssize_t i = 0; i < sz; ++i)
     {
-        struct libusb_device_descriptor desc = {};
+        struct libusb_device_descriptor desc;
         r = libusb_get_device_descriptor(list[i], &desc);
         if(r != LIBUSB_SUCCESS)
         {
