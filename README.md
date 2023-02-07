@@ -22,9 +22,9 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 		- **palera1n will never work with devices above the iPhone X/A11.** Please stop asking in the Discord, and remember: *this is mainly a developer jailbreak*
 	-	If you want the device to be semi-tethered, **you will need 5-10GB of space** for the fakefs. This means that 16GB devices cannot be semi-tethered
 	- ### A10 and A11 devices
-		- On A10 and A11, **you must disable your passcode while in the jailbroken state**.
-		- On iOS 16 A10+, if you EVER enabled a passcode on 16, you have to reset through the settings app/restore with a computer
-		- On A10, this can be fixed in the future by implementing blackbird.
+		- If you are on A10(X), use [checkp4le](https://github.com/guacaplushy/checkp4le) instead for full SEP functionality (Passcode, TouchID, Apple Pay)
+		- On A11, **you must disable your passcode while in the jailbroken state**.
+		- On iOS 16 A11, if you EVER enabled a passcode on 16, you have to reset through the settings app/restore with a computer
 		- On A11, we don't have a SEP exploit yet.
 		- In the meantime, we recommend [FakePass](https://repo.alexia.lol/depictions/net.cadoth.fakepass) if you would like a passcode
 
@@ -35,7 +35,7 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 - A Linux or macOS computer
 	- Python 3 must be installed.
 	- This must be a **physical computer**. Virtual machines **do not work.**
-	- AMD CPUs have an issue [with (likely) their USB controllers] that causes them to have a very low success rate with checkm8. It is unrecommended that you use them with palera1n.
+	- AMD CPUs have an issue [with (likely) their USB controllers] that causes them to have a very low success rate with checkm8. It is not recommended that you use them with palera1n.
 		- If your device does not successfully jailbreak, try a computer with an Intel or other CPU
 
 # Warning
