@@ -597,7 +597,7 @@ _wait_for_device
 
 # Dump blobs, and install pogo if needed 
 if [ -f blobs/"$deviceid"-"$version".der ]; then
-    if [ -f .rd_in_progress ]; then
+    if [ -f .rd_in_progress ] || ! [ -f .fs-"$deviceid" ]; then
         rm blobs/"$deviceid"-"$version".der
     fi
 fi
@@ -638,7 +638,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     touch .rd_in_progress
     
-    if [ "$tweaks" = "1" ]; then
+    if [ "$tweaks" = "1" ] && [ "$semi_tethered" = "1" ]; then
         echo "[*] Testing for baseband presence"
         if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
             disk=7
@@ -649,18 +649,16 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
                 disk=7
             fi
         fi
+    else
+        disk=1
+    fi
 
-        if [ -z "$semi_tethered" ]; then
-            disk=1
-        fi
+    echo "$disk" > .fs-"$deviceid"
 
-        if [[ "$version" == *"16"* ]]; then
-            fs=disk1s$disk
-        else
-            fs=disk0s1s$disk
-        fi
-
-        echo "$disk" > .fs-"$deviceid"
+    if [[ "$version" == *"16"* ]]; then
+        fs=disk1s$disk
+    else
+        fs=disk0s1s$disk
     fi
 
     # mount filesystems, no user data partition
