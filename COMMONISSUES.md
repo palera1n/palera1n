@@ -57,6 +57,9 @@ Install NewTerm 2 from [https://apt.itsnebula.net/](https://apt.itsnebula.net/ "
 Binaries will need to be resigned by the Procursus Team to fix Killed: 9. In the meantime, use the palera1n strap repo. you can install it from [nebula’s repo](https://apt.itsnebula.net).
 
 ## App crashes on open
+Refer to [this](#how-to-fix-rocketbootstrap) first.
+
+Otherwise, run this in NewTerm or SSH
 - `ldid -s /Applications/<appname>.app`
 	- Don't include the <>
 
@@ -170,6 +173,8 @@ Example image:
 Make sure to use a USB-A cable, and enter recovery mode first before entering DFU (you can use `./palera1n.sh dfuhelper` for this - use `sudo` if on Linux).
 
 ## How to fix RocketBootstrap
+If you have Ryan Petrich's RocketBootstrap installed on iOS 15 or above, it may cause nearly every app to crash or even respring loops, especially when Cephei is also installed. To fix this, follow the steps below.
+
 1. Uninstall any existing version of RocketBootstrap you have installed
 2. Remove the Odyssey repo if you have it
 3. Install RocketBootstrap from [this repo](https://rpetri.ch/repo).
