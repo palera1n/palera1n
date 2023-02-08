@@ -33,9 +33,12 @@ typedef struct stuff
 } stuff_t;
 usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, int len);
 #else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpedantic"
 #include <IOKit/IOKitLib.h>
 #include <IOKit/usb/IOUSBLib.h>
 #include <IOKit/IOCFPlugIn.h>
+#pragma clang diagnostic pop
 
 #define USB_RET_SUCCESS         KERN_SUCCESS
 #define USB_RET_NOT_RESPONDING  kIOReturnNotResponding
