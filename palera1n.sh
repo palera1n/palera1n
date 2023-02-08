@@ -351,9 +351,7 @@ _kill_if_running() {
 
 _exit_handler() {
     if [ "$os" = "Darwin" ]; then
-        defaults write com.apple.AMPDeviceDiscoveryAgent ignore-devices -bool false
-        defaults write com.apple.AMPDeviceDiscoveryAgent reveal-devices -bool true
-        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
+        killall -CONT AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater
     fi
 
     [ $? -eq 0 ] && exit
@@ -456,9 +454,7 @@ chmod +x "$dir"/*
 #fi
 
 if [ "$os" = "Darwin" ]; then
-    defaults write com.apple.AMPDeviceDiscoveryAgent ignore-devices -bool true
-    defaults write com.apple.AMPDeviceDiscoveryAgent reveal-devices -bool false
-    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
+    killall -STOP AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater
 fi
 
 if [ "$clean" = "1" ]; then
