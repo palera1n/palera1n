@@ -247,5 +247,6 @@ int wait_for_pongo(void) {
     while (get_spin()) {
         sleep(1);
     }
+    CFRelease(cfdict);
     return -1;
 }

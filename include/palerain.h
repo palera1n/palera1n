@@ -10,7 +10,6 @@
 #include <usbmuxd.h>
 #include <libirecovery.h>
 #include <libimobiledevice/libimobiledevice.h>
-#include <libusb-1.0/libusb.h>
 
 #define LOG(loglevel, ...) p1_log(loglevel, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define CLEAR() printf("\33[2K\r");
@@ -18,6 +17,7 @@
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
 #ifdef USE_LIBUSB
+#include <libusb-1.0/libusb.h>
 
 #define USB_RET_SUCCESS         LIBUSB_SUCCESS
 #define USB_RET_NOT_RESPONDING  LIBUSB_ERROR_OTHER
