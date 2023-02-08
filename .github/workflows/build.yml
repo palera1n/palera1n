@@ -24,6 +24,7 @@ jobs:
           cp docs/*.html docs/mandoc.css ready
 
       - name: Upload artifact
+        if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
@@ -298,6 +299,7 @@ jobs:
           tar -zcf ready/dep_root-${{ matrix.os }}-${{ matrix.arch }}.tgz dep_root
 
       - name: Upload artifact
+        if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
@@ -310,6 +312,7 @@ jobs:
           remoteDir: '/palera1n/artifacts/c-rewrite'
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
+        if: ${{ github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@v3
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}
@@ -317,6 +320,7 @@ jobs:
           retention-days: 1
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} debug symbols
+        if: ${{ github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@v3
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
@@ -324,6 +328,7 @@ jobs:
           retention-days: 1
 
   darwin-dist:
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: macos-latest
     needs: build-darwin
     steps:
@@ -346,6 +351,7 @@ jobs:
           zip -r9 ready/palera1n-macos.dSYM.zip palera1n-macos.dSYM
 
       - name: Upload artifact
+        if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
@@ -633,6 +639,7 @@ jobs:
           tar -zcf ready/dep_root_${{ matrix.triple }}.tgz dep_root
 
       - name: Upload artifact
+        if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
