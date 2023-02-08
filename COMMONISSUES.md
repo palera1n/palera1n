@@ -227,7 +227,7 @@ This usually means the fakefs wasn't created properly. It might be left over fro
 - Fedora
   - `sudo dnf install python3-devel`
 - openSUSE
-  - `sudo dnf install python3-devel`
+  - `sudo zypper install python3-devel`
 
 <br>
 
