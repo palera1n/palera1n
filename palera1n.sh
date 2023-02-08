@@ -350,6 +350,12 @@ _kill_if_running() {
 }
 
 _exit_handler() {
+    if [ "$os" = "Darwin" ]; then
+        defaults write com.apple.AMPDeviceDiscoveryAgent ignore-devices -bool false
+        defaults write com.apple.AMPDeviceDiscoveryAgent reveal-devices -bool true
+        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
+    fi
+
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
 
@@ -448,6 +454,12 @@ chmod +x "$dir"/*
 #if [ "$os" = 'Darwin' ]; then
 #    xattr -d com.apple.quarantine "$dir"/*
 #fi
+
+if [ "$os" = "Darwin" ]; then
+    defaults write com.apple.AMPDeviceDiscoveryAgent ignore-devices -bool true
+    defaults write com.apple.AMPDeviceDiscoveryAgent reveal-devices -bool false
+    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool true
+fi
 
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
