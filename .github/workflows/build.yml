@@ -251,6 +251,9 @@ jobs:
           sudo cp -a sysroot/usr/local/* /usr/local
           cd libirecovery
           autoreconf -fiv
+          if [ "${{ matrix.os }}" != "macosx" ]; then
+            gsed -i '/case kIOUSBTransactionTimeout/d' src/libirecovery.c
+          fi
           ./configure ${{ env.CONFIGURE_ARGS }}
           echo -e 'all:\ninstall:' > tools/Makefile
           make -j$(sysctl -n hw.ncpu) LIBS="-lncurses"
