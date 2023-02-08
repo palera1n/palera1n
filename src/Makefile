@@ -1,7 +1,7 @@
 all: palera1n
 
 OBJECTS  = main.o dfuhelper.o devhelper.o lockdown_helper.o exec_checkra1n.o
-OBJECTS += pongo_usb.o optparse.o override_file.o pongo_helper.o log.o
+OBJECTS += optparse.o override_file.o pongo_helper.o log.o
 OBJECTS += xxd-checkra1n.o xxd-checkra1n-kpf-pongo.o xxd-ramdisk.dmg.o
 OBJECTS += xxd-binpack.dmg.o lock_vars.o
 ifeq ($(DEV_BUILD),1)
@@ -12,6 +12,20 @@ endif
 CHECKRA1N_VERSION ?= 0.1337.1
 LIPO = lipo
 LDID = ldid
+
+ifeq ($(TARGET_OS),Darwin)
+ifneq ($(USE_LIBUSB),1)
+OBJECTS += usb_iokit.o
+endif
+else
+USE_LIBUSB = 1
+endif
+
+ifeq ($(USE_LIBUSB),1)
+OBJECTS += usb_libusb.o
+CFLAGS += -DUSE_LIBUSB=1
+LIBS += $(DEP)/lib/libusb-1.0.a
+endif
 
 checkra1n-%:
 	curl -LO https://assets.checkra.in/downloads/preview/$(CHECKRA1N_VERSION)/$@

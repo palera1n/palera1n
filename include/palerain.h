@@ -17,9 +17,42 @@
 #define palerain_option_version 129
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
+#ifdef USE_LIBUSB
+
 #define USB_RET_SUCCESS         LIBUSB_SUCCESS
 #define USB_RET_NOT_RESPONDING  LIBUSB_ERROR_OTHER
 #define USB_RET_IO              LIBUSB_ERROR_IO
+typedef int usb_ret_t;
+typedef libusb_device_handle *usb_device_handle_t;
+
+typedef struct stuff
+{
+    pthread_t th;
+    libusb_device *dev;
+    usb_device_handle_t handle;
+} stuff_t;
+usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, int len);
+#else
+#include <IOKit/IOKitLib.h>
+#include <IOKit/usb/IOUSBLib.h>
+#include <IOKit/IOCFPlugIn.h>
+
+#define USB_RET_SUCCESS         KERN_SUCCESS
+#define USB_RET_NOT_RESPONDING  kIOReturnNotResponding
+#define USB_RET_IO				kIOReturnNotResponding
+
+typedef IOReturn usb_ret_t;
+typedef IOUSBInterfaceInterface245 **usb_device_handle_t;
+
+typedef struct
+{
+    pthread_t th;
+    volatile uint64_t regID;
+    IOUSBDeviceInterface245 **dev;
+    usb_device_handle_t handle;
+} stuff_t;
+usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len);
+#endif
 
 #ifndef PALERAIN_VERSION
 #define PALERAIN_VERSION "2.0.0"
@@ -52,6 +85,12 @@ struct mach_header_64
 	uint32_t reserved;		  /* reserved */
 };
 #endif
+
+// Keep in sync with Pongo
+#define PONGO_USB_VENDOR    0x05ac
+#define PONGO_USB_PRODUCT   0x4141
+#define CMD_LEN_MAX         512
+#define UPLOADSZ_MAX        (1024 * 1024 * 128)
 
 typedef enum {
 	LOG_FATAL = 0,
@@ -92,8 +131,6 @@ typedef struct {
 } override_file_t;
 
 typedef unsigned char niarelap_file_t[];
-typedef int usb_ret_t;
-typedef libusb_device_handle *usb_device_handle_t;
 
 extern unsigned int verbose;
 extern int demote;
@@ -154,7 +191,6 @@ void* pongo_helper(void* ptr);
 
 extern void* pongo_usb_callback(void* arg);
 usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint32_t wLength, void *data, uint32_t *wLenDone);
-usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, int len);
 const char *usb_strerror(usb_ret_t err);
 int wait_for_pongo();
 int issue_pongo_command();
@@ -169,6 +205,10 @@ void* pongo_helper(void* _);
 bool set_found_pongo(bool val);
 uint64_t get_ecid_wait_for_dfu();
 uint64_t set_ecid_wait_for_dfu(uint64_t ecid);
+
+void write_stdout(char *buf, uint32_t len);
+void io_start(stuff_t *stuff);
+void io_stop(stuff_t *stuff);
 
 #ifdef DEV_BUILD
 #include <newt.h>

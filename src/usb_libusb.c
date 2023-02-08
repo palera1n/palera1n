@@ -24,8 +24,7 @@
  * SOFTWARE.
  *
  */
-
-
+#ifdef USE_LIBUSB
 #include <errno.h>
 #include <fcntl.h>              // open
 #include <pthread.h>
@@ -41,17 +40,8 @@
 #include <palerain.h>
 #define ERR(...) LOG(LOG_VERBOSE, __VA_ARGS__)
 
-// Keep in sync with Pongo
-#define PONGO_USB_VENDOR    0x05ac
-#define PONGO_USB_PRODUCT   0x4141
-#define CMD_LEN_MAX         512
-#define UPLOADSZ_MAX        (1024 * 1024 * 128)
-
-typedef struct stuff stuff_t;
-
-static void io_start(stuff_t *stuff);
-static void io_stop(stuff_t *stuff);
-
+void io_start(stuff_t *stuff);
+void io_stop(stuff_t *stuff);
 
 const char *usb_strerror(usb_ret_t err)
 {
@@ -121,13 +111,6 @@ usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, int len)
     }
     return LIBUSB_SUCCESS;
 }
-
-struct stuff
-{
-    pthread_t th;
-    libusb_device *dev;
-    usb_device_handle_t handle;
-};
 
 static int FoundDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event, void *arg)
 {
@@ -280,124 +263,4 @@ int wait_for_pongo(void)
     libusb_exit(NULL);
     return 0;
 }
-
-
-static void io_start(stuff_t *stuff)
-{
-    int r = pthread_create(&stuff->th, NULL, &pongo_usb_callback, &stuff->handle);
-    if(r != 0)
-    {
-        ERR("pthread_create: %s", strerror(r));
-        exit(-1); // TODO: ok with libusb?
-    }
-    pthread_join(stuff->th, NULL);
-}
-
-static void io_stop(stuff_t *stuff)
-{
-    int r = pthread_cancel(stuff->th);
-    if(r != 0)
-    {
-        ERR("pthread_cancel: %s", strerror(r));
-        exit(-1); // TODO: ok with libusb?
-    }
-    r = pthread_join(stuff->th, NULL);
-    if(r != 0)
-    {
-        ERR("pthread_join: %s", strerror(r));
-        exit(-1); // TODO: ok with libusb?
-    }
-}
-
-static void write_stdout(char *buf, uint32_t len)
-{
-    while(len > 0) {
-        if (verbose >= 3) {
-                ssize_t s = write(1, buf, len);
-            if(s < 0) {
-                LOG(LOG_ERROR, "write: %s", strerror(errno));
-                pthread_exit(NULL);
-            }
-            buf += s;
-            len -= s;
-        } else break;
-    }
-}
-
-int issue_pongo_command(usb_device_handle_t handle, char *command)
-{
-	uint32_t outpos = 0;
-	uint32_t outlen = 0;
-	int ret = USB_RET_SUCCESS;
-	uint8_t in_progress = 1;
-	if (command == NULL) goto fetch_output;
-	size_t len = strlen(command);
-	char command_buf[512];
-	char stdout_buf[0x2000];
-	if (len > (CMD_LEN_MAX - 2))
-	{
-		LOG(LOG_ERROR, "Pongo command %s too long (max %d)", command, CMD_LEN_MAX - 2);
-		return EINVAL;
-	}
-    if (verbose < 3 || verbose > 4) {
-	    LOG(LOG_VERBOSE, "Executing PongoOS command: '%s'", command);
-    } else {
-        printf("%s\n", command);
-    }
-	snprintf(command_buf, 512, "%s\n", command);
-	len = strlen(command_buf);
-	ret = USBControlTransfer(handle, 0x21, 4, 1, 0, 0, NULL, NULL);
-	if (ret)
-		goto bad;
-	ret = USBControlTransfer(handle, 0x21, 3, 0, 0, (uint32_t)len, command_buf, NULL);
-fetch_output:
-	while (in_progress) {
-		ret = USBControlTransfer(handle, 0xa1, 2, 0, 0, (uint32_t)sizeof(in_progress), &in_progress, NULL);
-		if (ret == USB_RET_SUCCESS)
-		{
-			ret = USBControlTransfer(handle, 0xa1, 1, 0, 0, 0x1000, stdout_buf + outpos, &outlen);
-			if (ret == USB_RET_SUCCESS)
-			{
-				write_stdout(stdout_buf + outpos, outlen);
-				outpos += outlen;
-				if (outpos > 0x1000)
-				{
-					memmove(stdout_buf, stdout_buf + outpos - 0x1000, 0x1000);
-					outpos = 0x1000;
-				}
-			}
-		}
-		if (ret != USB_RET_SUCCESS)
-		{
-			goto bad;
-		}
-	}
-bad:
-	if (ret != USB_RET_SUCCESS)
-	{
-		if (ret == USB_RET_NOT_RESPONDING)
-			return 0;
-        if (command != NULL && (!strncmp("boot", command, 4) && ret == USB_RET_IO))
-            return 0;
-		LOG(LOG_ERROR, "USB error: %s", usb_strerror(ret));
-		return ret;
-	}
-	else
-		return ret;
-}
-
-int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned int buf_len)
-{
-	int ret = 0;
-	ret = USBControlTransfer(handle, 0x21, 1, 0, 0, 4, &buf_len, NULL);
-	if (ret == USB_RET_SUCCESS)
-	{
-		ret = USBBulkUpload(handle, buf, buf_len);
-		if (ret == USB_RET_SUCCESS)
-		{
-			LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
-		}
-	}
-	return ret;
-}
-
+#endif
