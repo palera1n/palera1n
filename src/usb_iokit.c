@@ -248,5 +248,5 @@ int wait_for_pongo(void) {
         sleep(1);
     }
     CFRelease(cfdict);
-    return -1;
+    return 0;
 }
