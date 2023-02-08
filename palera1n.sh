@@ -325,7 +325,7 @@ function _wait_for() {
 }
 
 function _network() {
-    ping -q -c 1 -W 1 static.palera.in &>/dev/null
+    curl -s -m 1 https://static.palera.in &>/dev/null
 }
 
 function _check_network_connection() {
