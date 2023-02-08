@@ -351,7 +351,7 @@ _kill_if_running() {
 
 _exit_handler() {
     if [ "$os" = "Darwin" ]; then
-        killall -CONT AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater
+        killall -CONT AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater || true
     fi
 
     [ $? -eq 0 ] && exit
@@ -454,7 +454,7 @@ chmod +x "$dir"/*
 #fi
 
 if [ "$os" = "Darwin" ]; then
-    killall -STOP AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater
+    killall -STOP AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater || true
 fi
 
 if [ "$clean" = "1" ]; then
