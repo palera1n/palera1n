@@ -460,7 +460,7 @@ jobs:
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
             https://www.jedsoft.org/releases/slang/slang-${{ env.SLANG_VERSION }}.tar.bz2 \
             https://releases.pagure.org/newt/newt-${{ env.NEWT_VERSION }}.tar.gz \
-            http://www.nico.schottelius.org/software/gpm/archives/gpm-${{ env.GPM_VERSION }}.tar.gz \
+            https://github.com/telmich/gpm/archive/refs/tags/${{ env.GPM_VERSION }}.tar.gz \
             https://github.com/rpm-software-management/popt/archive/refs/tags/popt-${{ env.POPT_VERSION }}-release.tar.gz
 
           tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
@@ -468,7 +468,7 @@ jobs:
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
           tar -xjf slang-${{ env.SLANG_VERSION }}.tar.bz2
           tar -xf newt-${{ env.NEWT_VERSION }}.tar.gz
-          tar -xf gpm-${{ env.GPM_VERSION }}.tar.gz
+          tar -xf ${{ env.GPM_VERSION }}.tar.gz
           tar -xf popt-${{ env.POPT_VERSION }}-release.tar.gz
           git clone --depth=1 https://github.com/libimobiledevice/libplist
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
