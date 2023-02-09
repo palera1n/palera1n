@@ -35,8 +35,10 @@ static struct option longopts[] = {
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
 	{"disable-ohio", no_argument, NULL, 'O'},
-	{"override-checkra1n", required_argument, NULL, '1'},
+	{"override-checkra1n", required_argument, NULL, 'i'},
 #ifdef DEV_BUILD
+	{"test1", no_argument, NULL, '1'},
+	{"test2", no_argument, NULL, '2'},
 	{"tui", no_argument, NULL, 't'},
 #endif
 	{NULL, 0, NULL, 0}
@@ -46,16 +48,19 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 #ifdef DEV_BUILD
-			"Usage: %s [-cCdDfhlLOpstvV]"
+			"Usage: %s [-12cCdDfhlLOpstvV]"
 #else
 			"Usage: %s [-cCdDfhlLOpsvV]"
 #endif
-			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-1 checkra1n file]\n"
+			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15+ arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
-			"\t-1, --override-checkra1n <file>\t\tOverride checkra1n\n"
+#ifdef DEV_BUILD
+			"\t-1, --test1\t\t\t\tSet palerain_option_test1\n"
+			"\t-2, --test2\t\t\t\tSet palerain_option_test2\n"
+#endif
 			"\t-c, --setup-fakefs\t\t\tSetup fakefs\n"
 			"\t-C, --setup-fakefs-forced\t\tSetup fakefs and overwrite any existing ones\n"
 			"\t-d, --demote\t\t\t\tDemote\n"
@@ -63,6 +68,7 @@ static int usage(int e, char* prog_name)
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
 			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
 			"\t-h, --help\t\t\t\tShow this help\n"
+			"\t-i, --override-checkra1n <file>\t\tOverride checkra1n\n"
 			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
@@ -92,9 +98,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"cCDhpvVldsOLtfPe:o:r:K:k:1:", 
+	"12cCDhpvVldsOLtfPe:o:r:K:k:i:", 
 #else
-	"cCDhpvVldsOLfPe:o:r:K:k:1:", 
+	"cCDhpvVldsOLfPe:o:r:K:k:i:", 
 #endif
 	longopts, NULL)) != -1)
 	{
@@ -184,7 +190,7 @@ int optparse(int argc, char* argv[]) {
 				return -1;
 			}
 			break;
-		case '1': {};
+		case 'i': {};
 			struct stat st;
 			if (stat(optarg, &st) != 0) {
 				LOG(LOG_FATAL, "cannot stat external checkra1n file: %d (%s)", errno, strerror(errno));
@@ -202,6 +208,12 @@ int optparse(int argc, char* argv[]) {
 #ifdef DEV_BUILD
 		case 't':
 			use_tui = true;
+			break;
+		case '1':
+			palerain_flags |= palerain_option_test1;
+			break;
+		case '2':
+			palerain_flags |= palerain_option_test2;
 			break;
 #endif
 		case checkrain_option_force_revert:

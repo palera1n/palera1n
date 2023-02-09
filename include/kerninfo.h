@@ -59,6 +59,11 @@
 #define palerain_option_setup_rootful        (1 << 2) /* create fakefs */
 #define palerain_option_setup_rootful_forced (1 << 3) /* create fakefs over an existing one */
 
+#ifdef DEV_BUILD
+#define palerain_option_test1               (1 << 29)
+#define palerain_option_test2               (1 << 30)
+#endif
+
 #define PALEINFO_MAGIC 'PLSH'
 #define PALEINFO_CIGAM 'HSLP'
 

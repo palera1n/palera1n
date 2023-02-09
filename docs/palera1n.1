@@ -17,7 +17,7 @@
 .Op Fl o Ar overlay file
 .Op Fl r Ar ramdisk file
 .Op Fl K Ar KPF file
-.Op Fl 1 Ar checkra1n file
+.Op Fl i Ar checkra1n file
 .Sh DESCRIPTION
 .Nm
 jailbreaks any iOS/iPadOS device with an arm64 (arm64e excluded) on iOS 15+,
@@ -99,8 +99,6 @@ files. As a result, using the loader app to install the jailbreak environment
 is not supported when this option is used together with
 .Fl f , -fakefs
 \[char46]
-.It Fl 1 , -checkra1n-file Ar checkra1n file
-Specify the path to a custom checkra1n file.
 .It Fl c , -setup-fakefs
 When used with
 .Fl f , -fakefs ,
@@ -128,6 +126,8 @@ argument is used during fakefs setup.
 Jailbreak in rootful mode.
 .It Fl h , -help
 Prints help text.
+.It Fl i , -checkra1n-file Ar checkra1n file
+Specify the path to a custom checkra1n file.
 .It Fl k , -override-pongo Ar pongo file
 Override PongoOS image. The raw image, named
 .Em Pongo.bin
