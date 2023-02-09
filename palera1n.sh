@@ -350,6 +350,10 @@ _kill_if_running() {
 }
 
 _exit_handler() {
+    if [ "$os" = "Darwin" ]; then
+        killall -CONT AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater || true
+    fi
+
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
 
@@ -448,6 +452,10 @@ chmod +x "$dir"/*
 #if [ "$os" = 'Darwin' ]; then
 #    xattr -d com.apple.quarantine "$dir"/*
 #fi
+
+if [ "$os" = "Darwin" ]; then
+    killall -STOP AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater || true
+fi
 
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
