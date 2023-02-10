@@ -5,7 +5,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 #set(SRC ${CMAKE_CURRENT_SOURCE_DIR})
 #set(DEP ${SRC}/../dep_root)
 
-
+cmake_parse_arguments(palera1n "" "" "-arch" ${ARGN})
 
 set(CHECKRA1N_VERSION 0.1337.1)
 if( ${LDID})
@@ -43,6 +43,7 @@ add_executable(palera1n
         ../include/xxd-embedded.h
         )
 
+add_compile_options(-Wall -Wextra -Wno-unused-parameter -pedantic-errors -g)
 
 # adds dev mode files
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -67,7 +68,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "ASAN")
     set_property(TARGET palera1n PROPERTY SOURCES ${MY_TARGET_SOURCES})
     add_compile_options(-fsanitize=address,undefined -fsanitize-address-use-after-return=runtime)
 elseif(CMAKE_BUILD_TYPE STREQUAL "TSAN")
-get_property(MY_TARGET_SOURCES TARGET palera1n PROPERTY SOURCES)
+    get_property(MY_TARGET_SOURCES TARGET palera1n PROPERTY SOURCES)
     list(APPEND MY_TARGET_SOURCES tui_main.c
             tui_screen_enter_dfu.c
             tui_screen_enter_recovery.c
@@ -140,6 +141,8 @@ if(APPLE)
                 usb_iokit.c)
         set_property(TARGET palera1n PROPERTY SOURCES ${MY_TARGET_SOURCES})
     endif()
+
+
 
     if(IOS AND CMAKE_C_FLAGS MATCHES "arm64")
         add_custom_command(
@@ -224,17 +227,17 @@ target_include_directories(palera1n PRIVATE
         )
 
 #if(${STATIC})
-    target_link_libraries(palera1n
-            ${DEP}/lib/libimobiledevice-1.0.a
-            ${DEP}/lib/libirecovery-1.0.a
-            ${DEP}/lib/libusbmuxd-2.0.a
-            ${DEP}/lib/libimobiledevice-glue-1.0.a
-            ${DEP}/lib/libplist-2.0.a
-            ${DEP}/lib/libmbedtls.a
-            ${DEP}/lib/libmbedcrypto.a
-            ${DEP}/lib/libmbedx509.a
-            ${DEP}/lib/libreadline.a
-            )
+target_link_libraries(palera1n
+        ${DEP}/lib/libimobiledevice-1.0.a
+        ${DEP}/lib/libirecovery-1.0.a
+        ${DEP}/lib/libusbmuxd-2.0.a
+        ${DEP}/lib/libimobiledevice-glue-1.0.a
+        ${DEP}/lib/libplist-2.0.a
+        ${DEP}/lib/libmbedtls.a
+        ${DEP}/lib/libmbedcrypto.a
+        ${DEP}/lib/libmbedx509.a
+        ${DEP}/lib/libreadline.a
+        )
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBS OFF)
@@ -319,10 +322,10 @@ add_compile_options(palera1n
 
 
 if(!BUILD_DATE)
-execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
+    execute_process(COMMAND date OUTPUT_VARIABLE BUILD_DATE)
 endif()
 if(!BUILD_TAG)
-execute_process(COMMAND git describe --dirty --tags --abbrev=7 OUTPUT_VARIABLE BUILD_TAG)
+    execute_process(COMMAND git describe --dirty --tags --abbrev=7 OUTPUT_VARIABLE BUILD_TAG)
 endif()
 if(!BUILD_WHOAMI)
     execute_process(COMMAND whoami OUTPUT_VARIABLE BUILD_WHOAMI)
