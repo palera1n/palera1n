@@ -12,7 +12,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 {
     if (verbose >= 5 
 #ifdef DEV_BUILD
-	&& !use_tui
+	&& !checkrain_option_enabled(host_flags, host_option_tui)
 #endif
 	) fprintf(stderr, "p1_log: loglevel %d from %s:%d:%s()\n", loglevel, fname, lineno, fxname);
 	int ret = 0;
@@ -58,7 +58,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		break;
 	}
 #ifdef DEV_BUILD
-	if (use_tui && tui_started) {
+	if (checkrain_option_enabled(host_flags, host_option_tui) && tui_started) {
 		newtComponent co = get_tui_log();
 		if (co == NULL) {
 			return 0; /* 0 bytes printed */

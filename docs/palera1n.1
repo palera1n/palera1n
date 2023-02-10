@@ -11,7 +11,7 @@
 .Nd iOS 15+ arm64 iOS/iPadOS jailbreaking tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl cCdDfhlLOpsvV
+.Op Fl cCdDEfhlnLOpRsvV
 .Op Fl e Ar Boot arguments
 .Op Fl k Ar Pongo image
 .Op Fl o Ar overlay file
@@ -122,6 +122,8 @@ argument is used by
 and cannot be overriden. Additionally, the
 .Em wdt=-1
 argument is used during fakefs setup.
+.It Fl E , -enter-recovery
+Exit after entering recovery mode.q
 .It Fl f , -fakefs
 Jailbreak in rootful mode.
 .It Fl h , -help
@@ -149,6 +151,8 @@ is specified.
 Makes jbinit log to
 .Em /cores/jbinit.log
 This file may be viewed from sandboxed applications while jailbroken.
+.It Fl n , -exit-recovery
+Exit recovery mode and exit.
 .It Fl o , -override-overlay Ar overlay file
 Specify the path to a custom overlay file, which is then mounted onto /cores/binpack
 during boot, if the default ramdisk is used. The default ramdisk expects the overlay
@@ -172,6 +176,8 @@ Override the ramdisk. At a very minimum, it should contain a
 as well as a fake dyld
 .Em /usr/lib/dyld
 where the logic is expected to be in.
+.It Fl R , -reboot-device
+Reboot device in normal mode and exit.
 .It Fl s , -safe-mode
 Enter safe mode. An alert will be displayed. Jailbreak daemons nor early boot executable files
 specified (see
@@ -188,7 +194,7 @@ Boots the device in verbose mode, allowing boot logs to be seen.
 .It TMPDIR
 This environmental variable should contain the a directory for temporary
 files. Without the
-.Fl 1 , -override-checkra1n
+.Fl i , -override-checkra1n
 option, files must be executable from it as the built-in checkra1n file
 is extracted and executed here. When not set, /tmp is used.
 .El
@@ -218,6 +224,10 @@ To remove the jailbreak in rootless mode:
 To verbose boot in rootful mode:
 .Pp
 .Dl "palera1n -Vf"
+.Pp
+To exit recovery mode:
+.Pp
+.Dl "palera1n -n"
 .Pp
 .Sh CAVEATS
 .Pp

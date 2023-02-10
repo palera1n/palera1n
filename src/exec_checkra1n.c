@@ -55,7 +55,7 @@ int exec_checkra1n() {
 	}
 checkra1n_exec: {};
 	char args[0x10] = "-pE";
-	if (demote) strncat(args, "d", 0xf);
+	if (checkrain_option_enabled(host_flags, host_option_demote)) strncat(args, "d", 0xf);
 	if (verbose >= 2) strncat(args, "v", 0xf);
 	if (pongo_path != NULL) strncat(args, "k", 0xf); // keep this at last
 	pid_t pid;

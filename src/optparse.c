@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <palerain.h>
 
+checkrain_option_t host_flags = 0;
+checkrain_option_p host_flags_p = &host_flags;
 
 static struct option longopts[] = {
 	{"setup-fakefs", no_argument, NULL, 'c'},
@@ -36,6 +38,9 @@ static struct option longopts[] = {
 	{"override-kpf", required_argument, NULL, 'K'},
 	{"disable-ohio", no_argument, NULL, 'O'},
 	{"override-checkra1n", required_argument, NULL, 'i'},
+	{"reboot-device", no_argument, NULL, 'R'},
+	{"exit-recovery", no_argument, NULL, 'n'},
+	{"enter-recovery", no_argument, NULL, 'E'},
 #ifdef DEV_BUILD
 	{"test1", no_argument, NULL, '1'},
 	{"test2", no_argument, NULL, '2'},
@@ -48,9 +53,9 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 #ifdef DEV_BUILD
-			"Usage: %s [-12cCdDfhlLOpstvV]"
+			"Usage: %s [-12cCdDEfhlLnOpRstvV]"
 #else
-			"Usage: %s [-cCdDfhlLOpsvV]"
+			"Usage: %s [-cCdDEfhlLnOpRsvV]"
 #endif
 			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
@@ -66,6 +71,7 @@ static int usage(int e, char* prog_name)
 			"\t-d, --demote\t\t\t\tDemote\n"
 			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
+			"\t-E, --enter-recovery\t\t\tEnter recovery mode\n"
 			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
 			"\t-h, --help\t\t\t\tShow this help\n"
 			"\t-i, --override-checkra1n <file>\t\tOverride checkra1n\n"
@@ -73,11 +79,13 @@ static int usage(int e, char* prog_name)
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
 			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
+			"\t-n, --exit-recovery\t\t\tExit recovery mode\n"
 			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
 			"\t-O, --disable-ohio\t\t\tDisable Ohio\n"
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
 			"\t-P, --pongo-full\t\t\tBoots to a PongoOS shell with default images already uploaded\n"
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
+			"\t-R, --reboot-device\t\t\tReboot connected device in normal mode\n"
 			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
@@ -98,9 +106,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"12cCDhpvVldsOLtfPe:o:r:K:k:i:", 
+	"12cCDEhpvVldsOLftRnPe:o:r:K:k:i:", 
 #else
-	"cCDhpvVldsOLfPe:o:r:K:k:i:", 
+	"cCDEhpvVldsOLfRnPe:o:r:K:k:i:", 
 #endif
 	longopts, NULL)) != -1)
 	{
@@ -115,13 +123,13 @@ int optparse(int argc, char* argv[]) {
 			kpf_flags |= checkrain_option_verbose_boot;
 			break;
 		case 'p':
-			pongo_exit = true;
+			host_flags |= host_option_pongo_exit;
 			break;
 		case 'P':
-			pongo_full = 1;
+			host_flags |= host_option_pongo_full;
 			break;
 		case 'D':
-			dfuhelper_only = true;
+			host_flags |= host_option_dfuhelper_only;
 			break;
 		case 'h':
 			usage(0, argv[0]);
@@ -145,16 +153,19 @@ int optparse(int argc, char* argv[]) {
 		case 'f':
 			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
 			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
-			enable_rootful = 1;
+			palerain_flags |= palerain_option_rootful;
 			break;
 		case 'l':
-			enable_rootful = 0;
+			palerain_flags &= ~palerain_option_rootful;
 			break;
 		case 'L':
 			palerain_flags |= palerain_option_jbinit_log_to_file;
 			break;
 		case 'd':
-			demote = 1;
+			host_flags |= host_option_demote;
+			break;
+		case 'E':
+			host_flags |= host_option_enter_recovery;
 			break;
 		case 's':
 			checkrain_flags |= checkrain_option_safemode;
@@ -202,12 +213,18 @@ int optparse(int argc, char* argv[]) {
 			ext_checkra1n = calloc(1, strlen(optarg) + 1);
 			snprintf(ext_checkra1n, strlen(optarg) + 1, "%s", optarg);
 			break;
+		case 'R':
+			host_flags |= host_option_reboot_device;
+			break;
+		case 'n':
+			host_flags |= host_option_exit_recovery;
+			break;
 		case 'O':
-			ohio = false;
+			host_flags |= host_option_no_ohio;
 			break;
 #ifdef DEV_BUILD
 		case 't':
-			use_tui = true;
+			host_flags |= host_option_tui;
 			break;
 		case '1':
 			palerain_flags |= palerain_option_test1;
@@ -220,20 +237,16 @@ int optparse(int argc, char* argv[]) {
 			checkrain_flags |= checkrain_option_force_revert;
 			break;
 		case palerain_option_version:
-			palerain_version = true;
+			host_flags |= host_option_palerain_version;
 			break;
 		default:
 			usage(1, argv[0]);
 			break;
 		}
 	}
-	if (palerain_version) {
+	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) {
 		printf("palera1n version " PALERAIN_VERSION ": " BUILD_DATE "; " BUILD_WHOAMI ":" BUILD_TAG "/" BUILD_STYLE "\n");
 		return 0;
-	}
-
-	if (enable_rootful) {
-		palerain_flags |= palerain_option_rootful;
 	}
 
 	if (checkrain_option_enabled(checkrain_flags, checkrain_option_force_revert) && checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
@@ -246,6 +259,7 @@ int optparse(int argc, char* argv[]) {
 	LOG(LOG_VERBOSE3, "checkrain_flags: %s", checkrain_flags_cmd);
 	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);
 	LOG(LOG_VERBOSE3, "kpf_flags: %s", kpf_flags_cmd);
+	LOG(LOG_VERBOSE3, "host_flags: 0x%x", host_flags);
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
 		LOG(LOG_VERBOSE4, "kpf override length %u -> %u", override_kpf.orig_len, checkra1n_kpf_pongo_len);
 		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p", override_kpf.orig_ptr, **kpf_to_upload);

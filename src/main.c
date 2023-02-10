@@ -33,8 +33,6 @@
 #define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
-int enable_rootful = 0, demote = 0;
-bool ohio = true;
 char xargs_cmd[0x270] = "xargs ", checkrain_flags_cmd[0x20] = "deadbeef", palerain_flags_cmd[0x20] = "deadbeef";
 char kpf_flags_cmd[0x20] = "deadbeef", dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
 extern char** environ;
@@ -84,9 +82,8 @@ int build_checks() {
 	return 0;
 }
 
-bool dfuhelper_only = false, pongo_exit = false, palerain_version = false;
 #ifdef DEV_BUILD
-bool use_tui = false, tui_started = false;
+bool tui_started = false;
 #endif
 
 int palera1n(int argc, char *argv[]) {
@@ -97,9 +94,9 @@ int palera1n(int argc, char *argv[]) {
 	pthread_mutex_init(&ecid_dfu_wait_mutex, NULL);
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
-	if (palerain_version) goto normal_exit;
+	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) goto normal_exit;
 #ifdef DEV_BUILD
-	if (use_tui) {
+	if (checkrain_option_enabled(host_flags, host_option_tui)) {
 		ret = tui();
 		if (ret) goto cleanup;
 		else goto normal_exit;
@@ -110,10 +107,14 @@ int palera1n(int argc, char *argv[]) {
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
 	set_spin(0);
-	if (dfuhelper_only || device_has_booted)
+	if (checkrain_option_enabled(host_flags, host_option_dfuhelper_only) ||
+		checkrain_option_enabled(host_flags, host_option_reboot_device) || 
+		checkrain_option_enabled(host_flags, host_option_exit_recovery) || 
+		checkrain_option_enabled(host_flags, host_option_enter_recovery) || 
+		device_has_booted)
 		goto normal_exit;
 	if (exec_checkra1n()) goto cleanup;
-	if (pongo_exit || demote)
+	if (checkrain_option_enabled(host_flags, host_option_pongo_exit) || checkrain_option_enabled(host_flags, host_option_demote))
 		goto normal_exit;
 	set_spin(1);
 	sleep(2);
@@ -124,7 +125,7 @@ int palera1n(int argc, char *argv[]) {
 		sleep(1);
 	}
 normal_exit:
-	if (access("/usr/bin/curl", F_OK) == 0 && ohio) {
+	if (access("/usr/bin/curl", F_OK) == 0 && !checkrain_option_enabled(host_flags, host_option_no_ohio)) {
 		LOG(LOG_VERBOSE4, "Ohio");
 		char* ohio_argv[] = {
 			"/usr/bin/curl",

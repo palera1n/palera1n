@@ -12,7 +12,7 @@
 
 #include <palerain.h>
 
-bool pongo_full, device_has_booted = 0;
+bool device_has_booted = 0;
 int pongo_thr_running = 0;
 
 #define ERR(...) LOG(LOG_VERBOSE, __VA_ARGS__)
@@ -46,7 +46,7 @@ void *pongo_usb_callback(void *arg) {
 	issue_pongo_command(handle, kpf_flags_cmd);
 	issue_pongo_command(handle, checkrain_flags_cmd);
 	issue_pongo_command(handle, palerain_flags_cmd);
-	if (enable_rootful)
+	if (checkrain_option_enabled(palerain_flags, palerain_option_rootful))
 	{
 		issue_pongo_command(handle, "rootfs");
 	}
@@ -55,7 +55,7 @@ void *pongo_usb_callback(void *arg) {
 	upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
 	issue_pongo_command(handle, "overlay");
 	issue_pongo_command(handle, xargs_cmd);
-	if (pongo_full) goto done;
+	if (checkrain_option_enabled(host_flags, host_option_pongo_full)) goto done;
 	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
 	if (dfuhelper_thr_running) {

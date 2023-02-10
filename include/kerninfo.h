@@ -64,6 +64,22 @@
 #define palerain_option_test2               (1 << 30)
 #endif
 
+// palerain host options
+#define host_option_dfuhelper_only       (1 << 0) /* dfuhelper only */
+#define host_option_pongo_exit           (1 << 1) /* boot to clean pongo shell */
+#ifdef DEV_BUILD
+#define host_option_tui                  (1 << 2) /* use terminal user interface */
+#else
+#define host_option_res1                 (1 << 2) /* reserved */
+#endif
+#define host_option_demote               (1 << 3) /* Demote effective production fuse status */
+#define host_option_no_ohio              (1 << 4) /* Disable Ohio (Analytics) */
+#define host_option_pongo_full           (1 << 5) /* Boot to pongo with default images and options */
+#define host_option_palerain_version     (1 << 6) /* Print version */
+#define host_option_exit_recovery        (1 << 7) /* Exit recovery mode */
+#define host_option_reboot_device        (1 << 8) /* Reboot device in normal mode */
+#define host_option_enter_recovery       (1 << 9) /* Enter recovery mode */
+
 #define PALEINFO_MAGIC 'PLSH'
 #define PALEINFO_CIGAM 'HSLP'
 

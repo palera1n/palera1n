@@ -77,6 +77,11 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
 	enter_recovery_cmd(usbmuxd_device->udid);
 	devinfo_free(&dev);
+	if (checkrain_option_enabled(host_flags, host_option_enter_recovery)) {
+		device_has_booted = true;
+		set_spin(0);
+		unsubscribe_cmd();
+	}
 	return 0;
 }
 
@@ -144,8 +149,8 @@ void* connected_dfu_mode(struct irecv_device_info* info) {
 		puts("");
 		LOG(LOG_INFO, "Device entered DFU mode successfully");
 	}
-	unsubscribe_cmd();
 	set_spin(0);
+	unsubscribe_cmd();
 	pthread_exit(NULL);
 	return NULL;
 }
@@ -155,6 +160,16 @@ void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	switch (event->event) {
 	case UE_DEVICE_ADD:
 		LOG(LOG_VERBOSE, "Normal mode device connected");
+		if (checkrain_option_enabled(host_flags, host_option_exit_recovery)) {
+			break;
+		} else if (checkrain_option_enabled(host_flags, host_option_reboot_device)) {
+			reboot_cmd(event->device.udid);
+			LOG(LOG_INFO, "Restarted device");
+			set_spin(0);
+			unsubscribe_cmd();
+			pthread_exit(NULL);
+			break;
+		}
 		connected_normal_mode(&event->device);
 		break;
 	case UE_DEVICE_REMOVE:
@@ -170,9 +185,27 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 		case IRECV_DEVICE_ADD:
 		if (event->mode == IRECV_K_RECOVERY_MODE_1 || event->mode == IRECV_K_RECOVERY_MODE_2 || event->mode == IRECV_K_RECOVERY_MODE_3 || event->mode == IRECV_K_RECOVERY_MODE_4) {
 			LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
+			if (checkrain_option_enabled(host_flags, host_option_exit_recovery)) {
+				exitrecv_cmd(event->device_info->ecid);
+				LOG(LOG_INFO, "Exited recovery mode");
+				device_has_booted = true;
+				set_spin(0);
+				unsubscribe_cmd();
+				if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
+				pthread_exit(NULL);
+				break;
+			}
+			if (checkrain_option_enabled(host_flags, host_option_enter_recovery) ||
+			checkrain_option_enabled(host_flags, host_option_reboot_device)) return;
 			pthread_create(&recovery_thread, NULL, (void* (*)(void*))connected_recovery_mode, event->device_info);
 		} else if (event->mode == IRECV_K_DFU_MODE) {
 			LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
+			if (
+				checkrain_option_enabled(host_flags, host_option_exit_recovery) ||
+				checkrain_option_enabled(host_flags, host_option_enter_recovery) ||
+				checkrain_option_enabled(host_flags, host_option_reboot_device)) {
+					break;
+			}
 			pthread_create(&dfu_thread, NULL, (void* (*)(void*))connected_dfu_mode, event->device_info);
 		}
 		break;
