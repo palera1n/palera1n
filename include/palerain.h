@@ -17,9 +17,14 @@
 
 #define LOG(loglevel, ...) p1_log(loglevel, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define CLEAR() printf("\33[2K\r");
+#define palerain_option_case(x) (512 + x)
 #define palerain_option_version 129
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
+
+#define palerain_option_case_version      palerain_option_case(0)
+#define palerain_option_case_force_revert palerain_option_case(1)
+
 #ifdef USE_LIBUSB
 #include <libusb-1.0/libusb.h>
 

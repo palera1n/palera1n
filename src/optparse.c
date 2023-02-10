@@ -29,9 +29,9 @@ static struct option longopts[] = {
 	{"rootless", no_argument, NULL, 'l'},
 	{"jbinit-log-to-file", no_argument, NULL, 'L'},
 	{"demote", no_argument, NULL, 'd'},
-	{"force-revert", no_argument, NULL, checkrain_option_force_revert},
+	{"force-revert", no_argument, NULL, palerain_option_case_force_revert},
 	{"safe-mode", no_argument, NULL, 's'},
-	{"version", no_argument, NULL, palerain_option_version},
+	{"version", no_argument, NULL, palerain_option_case_version},
 	{"override-pongo", required_argument, NULL, 'k'},
 	{"override-overlay", required_argument, NULL, 'o'},
 	{"override-ramdisk", required_argument, NULL, 'r'},
@@ -233,10 +233,10 @@ int optparse(int argc, char* argv[]) {
 			palerain_flags |= palerain_option_test2;
 			break;
 #endif
-		case checkrain_option_force_revert:
+		case palerain_option_case_force_revert:
 			checkrain_flags |= checkrain_option_force_revert;
 			break;
-		case palerain_option_version:
+		case palerain_option_case_version:
 			host_flags |= host_option_palerain_version;
 			break;
 		default:
@@ -293,20 +293,6 @@ int optparse(int argc, char* argv[]) {
 		}
 		if (!(checkrain_option_enabled(host_flags, host_option_pongo_exit) || checkrain_option_enabled(host_flags, host_option_pongo_exit)))
 		{
-#ifdef NO_BINPACK
-			if (binpack_dmg_len == 0)
-			{
-				LOG(LOG_FATAL, "binpack omitted in build but no override specified");
-				return -1;
-			}
-#endif
-#ifdef NO_RAMDISK
-			if (ramdisk_dmg_len == 0)
-			{
-				LOG(LOG_FATAL, "ramdisk omitted in build but no override specified");
-				return -1;
-			}
-#endif
 #ifdef NO_KPF
 			if (checkra1n_kpf_pongo_len == 0)
 			{

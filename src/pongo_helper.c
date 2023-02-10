@@ -32,7 +32,6 @@ void *pongo_usb_callback(void *arg) {
 	if (get_found_pongo())
 		return NULL;
 	set_found_pongo(1);
-	strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
 	if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
 		strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);	
 	}
@@ -50,10 +49,21 @@ void *pongo_usb_callback(void *arg) {
 	{
 		issue_pongo_command(handle, "rootfs");
 	}
-	upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
-	issue_pongo_command(handle, "ramdisk");
-	upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
-	issue_pongo_command(handle, "overlay");
+#ifdef NO_RAMDISK
+	if (ramdisk_dmg_len != 0)
+#endif
+	{
+		strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
+		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
+		issue_pongo_command(handle, "ramdisk");
+	}
+#ifdef NO_BINPACK
+	if (binpack_dmg_len != 0)
+#endif
+	{
+		upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
+		issue_pongo_command(handle, "overlay");
+	}
 	issue_pongo_command(handle, xargs_cmd);
 	if (checkrain_option_enabled(host_flags, host_option_pongo_full)) goto done;
 	issue_pongo_command(handle, "bootx");
