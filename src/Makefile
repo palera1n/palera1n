@@ -1,9 +1,30 @@
 all: palera1n
 
-OBJECTS  = main.o dfuhelper.o devhelper.o lockdown_helper.o exec_checkra1n.o
-OBJECTS += optparse.o override_file.o pongo_helper.o log.o
-OBJECTS += xxd-checkra1n.o xxd-checkra1n-kpf-pongo.o xxd-ramdisk.dmg.o
-OBJECTS += xxd-binpack.dmg.o lock_vars.o
+OBJECTS  = main.o dfuhelper.o devhelper.o lockdown_helper.o
+OBJECTS += optparse.o override_file.o log.o lock_vars.o
+OBJECTS += fake_embedded.o exec_checkra1n.o pongo_helper.o
+
+ifneq ($(NO_RAMDISK),1)
+OBJECTS += xxd-ramdisk.dmg.o
+else
+CFLAGS += -DNO_RAMDISK
+endif
+ifneq ($(NO_KPF),1)
+OBJECTS += xxd-checkra1n-kpf-pongo.o
+else
+CFLAGS += -DNO_KPF
+endif
+ifneq ($(NO_BINPACK),1)
+OBJECTS += xxd-binpack.dmg.o
+else
+CFLAGS += -DNO_BINPACK
+endif
+ifneq ($(NO_CHECKRAIN),1)
+OBJECTS += xxd-checkra1n.o
+else
+CFLAGS += -DNO_CHECKRAIN
+endif
+
 ifeq ($(DEV_BUILD),1)
 OBJECTS += tui_screen_enter_recovery.o tui_screen_enter_dfu.o tui_main.o
 OBJECTS += tui_screen_jailbreak.o tui_screen_main.o tui_screen_options.o

@@ -58,6 +58,7 @@ void thr_cleanup(void* ptr) {
 
 int build_checks() {
 #if defined(__APPLE__)
+#ifndef NO_CHECKRAIN
 	struct mach_header_64* c1_header = (struct mach_header_64*)&checkra1n[0];
 	if (c1_header->magic != MH_MAGIC_64 && c1_header->magic != MH_CIGAM_64) {
 		LOG(LOG_FATAL, "Broken build: checkra1n is not a thin Mach-O");
@@ -68,17 +69,21 @@ int build_checks() {
 		return -1;
 	}
 #endif
+#endif
+#ifndef NO_KPF
 	struct mach_header_64 *kpf_hdr = (struct mach_header_64 *)checkra1n_kpf_pongo;
 	if (kpf_hdr->magic != MH_MAGIC_64 && kpf_hdr->magic != MH_CIGAM_64) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not thin 64-bit Mach-O");
 		return -1;
-	} else if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
+	} else
+	if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not a kext bundle");
 		return -1;
 	} else if (kpf_hdr->cputype != CPU_TYPE_ARM64) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: CPU type is not arm64");
 		return -1;
 	}
+#endif
 	return 0;
 }
 
@@ -114,6 +119,7 @@ int palera1n(int argc, char *argv[]) {
 		device_has_booted)
 		goto normal_exit;
 	if (exec_checkra1n()) goto cleanup;
+
 	if (checkrain_option_enabled(host_flags, host_option_pongo_exit) || checkrain_option_enabled(host_flags, host_option_demote))
 		goto normal_exit;
 	set_spin(1);
