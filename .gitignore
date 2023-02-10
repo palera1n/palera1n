@@ -1,4 +1,3 @@
-dep_root/**
 contrib/**
 !dep_root/.keep
 !contrib/.keep
@@ -17,3 +16,6 @@ src/xxd-*.c
 palera1n.1.html
 Payload
 docs/*.html
+build
+src/*.dmg.c
+.idea
