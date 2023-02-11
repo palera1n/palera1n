@@ -63,7 +63,7 @@ Join the [Support Discord](https://dsc.gg/palera1n) if you need help with palera
 - [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.
 - [Nick Chan](https://github.com/asdfugil) general help with patches and iBoot payload stuff
 - [Dora](https://github.com/dora2-iOS) for iBoot payload and iBootpatcher2
-- [nyuszika7h](https://github.com/nyuszika7h) for the script to help get into DFU
+- [alexia](https://github.com/0xallie) for the script to help get into DFU
 
 </details>
 <details><summary>Other credits for tools used in palera1n</summary>
