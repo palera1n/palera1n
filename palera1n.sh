@@ -1105,7 +1105,7 @@ echo "The device should now boot to iOS"
 echo "When you unlock the device, it will respring about 30 seconds after"
 echo "If this is your first time jailbreaking, open the new palera1n app, then press Install"
 echo "Otherwise, press Do All in the settings section of the app"
-echo "If you have any issues, please first check the common-issues.md document for common issues"
+echo "If you have any issues, please first check the COMMONISSUES.md document for common issues"
 if [ "$china" != "1" ]; then
 	echo "If that list doesn't solve your issue, join the Discord server and ask for help: https://dsc.gg/palera1n"
 fi
