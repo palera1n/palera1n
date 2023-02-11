@@ -1,35 +1,5 @@
-<style>
-hcustom {
-  font-size: 4em;
-  float: left;
-  margin-top: 30px;
-}
-.no-border-bottom {
-  border-bottom: none;
-  margin-right: 100px;
-}
-.clear {
-  clear: both;
-}
-</style>
-
-<img align="left" src="https://avatars.githubusercontent.com/u/114239186?s=100&v=4" alt="palera1n logo" style="float: left; margin-top: 30px; border-radius: 25%; margin-right: 30px; margin-bottom: 30px;"/>
-<hcustom class="no-border-bottom">palera1n</hcustom>
-<style>
-hcustom2[custom="right"] {
-  text-align: right;
-  font-size: 1.7em;
-  margin-top: 40px;
-  width: 56%;
-  display: inline-block;
-}
-.right-alignment {
-  border-bottom: none;
-  margin-top: 100px;
-}
-</style>
-
-<hcustom2 custom="right">An iOS 15.0-16.3 work-in-progress, <br>(semi-)tethered checkm8 jailbreak</hcustom2> 
+<img align="left" height="150" src="https://cdn.discordapp.com/attachments/1017854329887129611/1073858292159352862/thing.png" alt="palera1n logo" style="float: left; margin-top: 30px; border-radius:25%; margin-right: 30px; margin-bottom: 30px;"/>
+<h3 align="right"><br>An iOS 15.0-16.3 work-in-progress, <br>(semi-)tethered checkm8 jailbreak</h3> 
 
 <p  align="right" >
   <strong><a  href="https://ios.cfw.guide/installing-palera1n">Guide</a></strong>
@@ -42,7 +12,6 @@ hcustom2[custom="right"] {
   •
   <strong><a  href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
-
 <div class="clear"></div>
 
 # How does it work?
