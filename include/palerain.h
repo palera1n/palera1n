@@ -219,6 +219,8 @@ void write_stdout(char *buf, uint32_t len);
 void io_start(stuff_t *stuff);
 void io_stop(stuff_t *stuff);
 
+void print_credits();
+
 #ifdef DEV_BUILD
 #include <newt.h>
 newtComponent get_tui_log();
