@@ -35,6 +35,7 @@ add_executable(palera1n
         optparse.c
         override_file.c
         pongo_helper.c
+        credits.c
         ramdisk.dmg.c
         ../include/kerninfo.h
         ../include/palerain.h
