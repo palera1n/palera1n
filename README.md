@@ -8,7 +8,7 @@
   •
   <strong><a  href="CHANGELOG.md">Changelog</a></strong>
   •
-  <strong><a  href="https://dsc.gg/palera1n">Support Discord</a></strong>
+  <strong><a  href="https://dsc.gg/palera1n">Discord</a></strong>
   •
   <strong><a  href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
