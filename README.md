@@ -18,11 +18,12 @@
 
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi-tethered), installs the loader app, and patches your kernel. 
 
-# Warnings / Requirements
+# Warnings
 - We are **NOT** responsible for any data loss, or the result of a device being bricked. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device refuses to boot after using palera1n please use `iTunes` or `Finder` to restore iOS (or if you used tethered, use `--restorerootfs` at the end of your palera1n command).
 
 - palera1n will never work in VirtualBox, VMware or any virtual machine that doesn't support a PCI passthrough.
 
+# Requirements
 - Needs a checkm8 vulnerable iOS device on iOS 15.x or 16.x (`A8` - `A11`)
 	-	If you want the device to be semi-tethered, **you will need 5-10GB of space** for the fakefs. This means that 16GB devices cannot be semi-tethered
 	- If you are on `A10(X)`, use [checkp4le](https://github.com/guacaplushy/checkp4le) instead for full SEP functionality (Passcode, TouchID, Apple Pay)
