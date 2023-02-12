@@ -53,8 +53,8 @@ step() {
         printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
         if [[ $i -eq 0 ]]; then
             say "done"
-		  else
-		      say "$i"
+        else
+            say "$i"
         fi &
         sleep 1
     done
@@ -71,8 +71,8 @@ Options:
     --tweaks            Enable tweaks
     --semi-tethered     When used with --tweaks, make the jailbreak semi-tethered instead of tethered
     --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
-	 --skip-first-try		Skip the confirmation for starting DFU helper as if it wasn't the first try
-	 --blind-dfu			Hear the DFU helper countdowns
+    --skip-first-try		Skip the confirmation for starting DFU helper as if it wasn't the first try
+    --blind-dfu			Hear the DFU helper countdowns
     --skip-fakefs       Don't create the fakefs even if --semi-tethered is specified
     --no-baseband       Indicate that the device does not have a baseband
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
@@ -107,9 +107,9 @@ parse_opt() {
         --skip-first-try)
             dfuhelper_first_try=false
             ;;
-		  --blind-dfu)
-				blind=true
-				;;
+        --blind-dfu)
+            blind=true
+            ;;
         --skip-fakefs)
             skip_fakefs=1
             ;;
@@ -289,7 +289,7 @@ dfuhelper_first_try=true
 _dfuhelper() {
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device is already in DFU"
-		  [ $blind ] && say "Device is already in DFU"
+        [ $blind ] && say "Device is already in DFU"
         return
     fi
 
@@ -301,12 +301,12 @@ _dfuhelper() {
         step_one="Hold home + power button"
     fi
     if $dfuhelper_first_try; then
-	     [ $blind ] && say "Press any key when ready for DFU mode"
+        [ $blind ] && say "Press any key when ready for DFU mode"
         echo "[*] Press any key when ready for DFU mode"
         read -n 1 -s
         dfuhelper_first_try=false
     fi
-	 [ $blind ] && say "Get ready"
+    [ $blind ] && say "Get ready"
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
@@ -1123,7 +1123,7 @@ echo "If this is your first time jailbreaking, open the new palera1n app, then p
 echo "Otherwise, press Do All in the settings section of the app"
 echo "If you have any issues, please first check the COMMONISSUES.md document for common issues"
 if [ "$china" != "1" ]; then
-	echo "If that list doesn't solve your issue, join the Discord server and ask for help: https://dsc.gg/palera1n"
+   echo "If that list doesn't solve your issue, join the Discord server and ask for help: https://dsc.gg/palera1n"
 fi
 echo "Enjoy!"
 
