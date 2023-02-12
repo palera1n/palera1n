@@ -11,7 +11,6 @@
   <strong><a  href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
 <div class="clear"></div>
-<br></br>
 
 ### You can obtain v2.0.0 beta [here](https://github.com/palera1n/palera1n-c/releases).
 
