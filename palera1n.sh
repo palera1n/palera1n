@@ -64,10 +64,15 @@ remote_cp() {
 }
 
 step() {
+    rm -f .entered_dfu
     for i in $(seq "$1" -1 0); do
-        if [ "$(get_device_mode)" = "dfu" ]; then
+        if [[ -e .entered_dfu ]]; then
+            rm -f .entered_dfu
             break
         fi
+        if [[ $(get_device_mode) == "dfu" || ($1 == "10" && $(get_device_mode) != "none") ]]; then
+            touch .entered_dfu
+        fi &
         printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
         sleep 1
     done
@@ -223,7 +228,8 @@ _reset() {
 
 get_device_mode() {
     if [ "$os" = "Darwin" ]; then
-        apples="$(system_profiler SPUSBDataType 2> /dev/null | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r)"
+        sp="$(system_profiler SPUSBDataType 2> /dev/null)"
+        apples="$(printf '%s' "$sp" | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r)"
     elif [ "$os" = "Linux" ]; then
         apples="$(lsusb | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2)"
     fi
@@ -267,7 +273,7 @@ get_device_mode() {
     if [ "$os" = "Linux" ]; then
         usbserials=$(cat /sys/bus/usb/devices/*/serial)
     elif [ "$os" = "Darwin" ]; then
-        usbserials=$(system_profiler SPUSBDataType 2> /dev/null | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
+        usbserials=$(printf '%s' "$sp" | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
     fi
     if grep -qE '(ramdisk tool|SSHRD_Script) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
         device_mode=ramdisk
@@ -342,7 +348,7 @@ function _wait_for() {
 }
 
 function _network() {
-    ping -q -c 1 -W 1 static.palera.in &>/dev/null
+    curl -s -m 1 https://static.palera.in &>/dev/null
 }
 
 function _check_network_connection() {
@@ -367,6 +373,10 @@ _kill_if_running() {
 }
 
 _exit_handler() {
+    if [ "$os" = "Darwin" ]; then
+        killall -CONT AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater || true
+    fi
+
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
 
@@ -467,6 +477,10 @@ chmod +x "$dir"/*
 #if [ "$os" = 'Darwin' ]; then
 #    xattr -d com.apple.quarantine "$dir"/*
 #fi
+
+if [ "$os" = "Darwin" ]; then
+    killall -STOP AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater || true
+fi
 
 if [ "$clean" = "1" ]; then
     rm -rf boot* work .tweaksinstalled
@@ -621,7 +635,7 @@ _wait_for_device
 
 # Dump blobs, and install pogo if needed 
 if [ -f blobs/"$deviceid"-"$version".der ]; then
-    if [ -f .rd_in_progress ]; then
+    if [ -f .rd_in_progress ] || ! [ -f .fs-"$deviceid" ]; then
         rm blobs/"$deviceid"-"$version".der
     fi
 fi
@@ -661,7 +675,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     touch .rd_in_progress
     
-    if [ "$tweaks" = "1" ]; then
+    if [ "$tweaks" = "1" ] && [ "$semi_tethered" = "1" ]; then
         echo "[*] Testing for baseband presence"
         if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
             disk=7
@@ -672,18 +686,16 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
                 disk=7
             fi
         fi
+    else
+        disk=1
+    fi
 
-        if [ -z "$semi_tethered" ]; then
-            disk=1
-        fi
+    echo "$disk" > .fs-"$deviceid"
 
-        if [[ "$version" == *"16"* ]]; then
-            fs=disk1s$disk
-        else
-            fs=disk0s1s$disk
-        fi
-
-        echo "$disk" > .fs-"$deviceid"
+    if [[ "$version" == *"16"* ]]; then
+        fs=disk1s$disk
+    else
+        fs=disk0s1s$disk
     fi
 
     # mount filesystems, no user data partition
@@ -1104,7 +1116,7 @@ clear
 DONE=$(gum style --height 5 --width 25 --padding '1 3' --border rounded --border-foreground 57  "Done!" "The device should now boot to $(gum style "iOS")")
 UNLOCK=$(gum style --width 25 --padding '1 3' --border rounded "When you unlock the device, it will respring about $(bold "#04B575" "30 seconds") later.")
 FIRST=$(gum style --height 5 --width 35 --padding '1 8' --border normal --border-foreground 255 "If this is your first time jailbreaking," "open the new palera1n app, then press $(bold 57 "Install").")
-ISSUE=$(gum style --height 7 --width 35 --padding '1 5' --border normal --border-foreground 120  "If you have any issues, please first check the $(gum style "common-issues.md") document for common issues")
+ISSUE=$(gum style --height 7 --width 35 --padding '1 5' --border normal --border-foreground 120  "If you have any issues, please first check the $(gum style "COMMONISSUES.md") document for common issues")
 if [ "$china" != "1" ]; then
   DISCORD=$(gum style --height 7 --width 35 --padding '1 5' --border-foreground 120  "If that list doesn't solve your issue," "join the $(gum style "Discord") server" "and ask for help:" "$(gum format "https://dsc.gg/palera1n")")
 else
