@@ -51,12 +51,14 @@ step() {
             touch .entered_dfu
         fi &
         printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
-        if [[ $i -eq 0 ]]; then
-            say "done"
-        else
-            say "$i"
-        fi &
-        sleep 1
+		  if [ $blind = 1 ]; then
+			if [[ $i -eq 0 ]]; then
+					say "done"
+			else
+					say "$i"
+			fi
+		  fi &
+			sleep 1
     done
     printf '\e[0m\n'
 }
