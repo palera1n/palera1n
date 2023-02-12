@@ -289,7 +289,7 @@ dfuhelper_first_try=true
 _dfuhelper() {
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device is already in DFU"
-        [ $blind == 1 ] && say "Device is already in DFU"
+        [ $blind = 1 ] && say "Device is already in DFU"
         return
     fi
 
@@ -301,12 +301,12 @@ _dfuhelper() {
         step_one="Hold home + power button"
     fi
     if $dfuhelper_first_try; then
-        [ $blind == 1 ] && say "Press any key when ready for DFU mode"
+        [ $blind = 1 ] && say "Press any key when ready for DFU mode"
         echo "[*] Press any key when ready for DFU mode"
         read -n 1 -s
         dfuhelper_first_try=false
     fi
-    [ $blind == 1 ] && say "Get ready"
+    [ $blind = 1 ] && say "Get ready"
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
