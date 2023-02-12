@@ -1,97 +1,81 @@
-<h1 align="center">
-  palera1n
-</h1>
+<img align="left" height="120" src="https://cdn.discordapp.com/attachments/1017854329887129611/1073858292159352862/thing.png" alt="palera1n logo" style="float: left;"/>
+<h3 align="right">An iOS 15.0-16.3 work-in-progress, <br>(semi-)tethered checkm8 jailbreak</h3> 
 
-<p align="center">
-  <a href="#">
-    <img src="https://img.shields.io/badge/made%20with-love-E760A4.svg" alt="Made with love"></img>
-  </a>
-  <a href="https://github.com/palera1n/palera1n-c/blob/main/LICENSE" target="_blank">
-    <img src="https://img.shields.io/github/license/palera1n/palera1n-c.svg" alt="License"></img>
-  </a>
-  <a href="https://github.com/palera1n/palera1n-c/graphs/contributors" target="_blank">
-    <img src="https://img.shields.io/github/contributors/palera1n/palera1n-c.svg" alt="Contributors"></img>
-  </a>
-  <a href="https://github.com/palera1n/palera1n-c/commits/main" target="_blank">
-    <img src="https://img.shields.io/github/commit-activity/w/palera1n/palera1n-c.svg" alt="Commits"></img>
-  </a>
-  <img src="https://img.shields.io/github/search/palera1n/palera1n-c/goto.svg" alt="goto counter"></img>
-  <a href="https://dsc.gg/palera1n" target="_blank">
-    <img src="https://img.shields.io/discord/1028398973452570725?label=discord" alt="Discord"></img>
-  </a>
+<p  align="right" >
+  <strong><a  href="https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.1/palera1n.1.html">Usage</a></strong>
+  •
+  <strong><a  href="https://github.com/palera1n/palera1n-c/graphs/contributors">Contributors</a></strong>
+  •
+  <strong><a  href="https://dsc.gg/palera1n">Discord</a></strong>
+  •
+  <strong><a  href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
+<div class="clear"></div>
+<br></br>
 
-<p align="center">
-iOS 15.0-16.3 work in progress, semi-tethered checkm8 jailbreak
-</p>
+### You can obtain v2.0.0 beta [here](https://github.com/palera1n/palera1n-c/releases).
 
-# BEFORE YOU USE
+# Warnings
+- This palera1n rewrite has noticeably different arguments compared to older palera1n, would recommend you take a look at how to use palera1n-c [here](https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.1/palera1n.1.html).
 
-This is mainly for ROOTLESS, and is NOT READY. It was made public so you can contribute and explore the code. This is not the final product.
+- This does **NOT** support tethered creation or booting. You must use older [palera1n](https://github.com/palera1n/palera1n).
 
-This version of palera1n supports booting fakefs setups with the `-f` option. No arguments required.
+- We are **NOT** responsible for any data loss, or the result of a device being bricked. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run futurerestore `--exit-recovery`, or use `irecovery -n`.
 
-This version of palera1n is able to create fakefs with the `-c` option, however as of right now if the `/jbin/loader.app`
-doesn't exist (which is true for any fakefs created with this version of palera1n), the loader that appears would be rootless.
+- palera1n-c will never work in VirtualBox, VMware or any virtual machine that doesn't support a PCI passthrough.
 
-Loader app does appear on rootless, and you can use the SSH server listening at 127.0.0.1:44 (IPv4) or ::1:44 (IPv6).
+# Requirements
+- Needs a checkm8 vulnerable iOS device on iOS 15.x or 16.x (`A8` - `A11`)
+	-	If using Rootful, **you will need 5-10GB of space** for the fakefs. This means that 16GB devices cannot be semi-tethered with Rootful.
+	- On `A11`, **you must disable your passcode while in the jailbroken state** (on iOS 16, you need to reset your device before proceeding with palera1n `A11`).
 
-If the device is previously jailbroken, the jailbreak environment is automatically prepared. 
-You can use the `-s` option to skip this behaviour.
+- **USB-A** cables are recommended to use, USB-C may have issues with palera1n and getting into DFU mode.
 
-Usbmuxd is only required for starting in normal mode, it is not required when started from recovery or DFU mode. (Usbmuxd is preinstalled with macOS)
+- A Linux or macOS computer
+	- AMD CPUs (not AMD Mobile) have an issue [with (likely) their USB controllers] that causes them to have a very low success rate with checkm8. It is not recommended that you use them with palera1n.
+		- If your device does not successfully jailbreak, try a computer with an Intel or other CPU
 
-You can obtain the latest build of palera1n-c [here](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/).
+# Reporting Issues
 
-# This is a work in progress.
+Make sure you provide full details on your device, such as:
+- iDevice
+- iOS Version
+- Passcode enabled?
+- Logs, if panicked send latest panic-full from your iDevice.
 
-Read this throughly, feel free to ask questions, know the risks. If you want to ask questions, either:
+Using `-V` and `-v` would help with debugging.
 
-1. Ask in the [palera1n Discord](https://discord.gg/4S3yUMxuQH)
-2. Ask in the r/jailbreak Discord #palera1n channel
-
-Please, please, please, provide necessary info:
-
-- iOS version and device (eg. iPhone 7+ 15.1, iPhone 6s 15.3.1)
-- Computer's OS and version (eg. Ubuntu 22.04, macOS 13.0)
-- The command you ran
-
-**DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/itsnebulalol/ios15-tweaks) for compatiblity.
-
-# Patreons
-
-Thank you so much to our Patreons that make the future development possible! You may sub [here](https://patreon.com/palera1n), if you'd like to. If you subscribe, please message [Nebula](https://twitter.com/itsnebulalol) in any way preferred to have you put here.
-
-<a href="https://github.com/samh06"><img width=64 src="https://user-images.githubusercontent.com/18669106/206333607-881d7ca1-f3bf-4e18-b620-25de0c527315.png"></img></a>
-<a href="https://havoc.app"><img width=64 src="https://docs.havoc.app/img/standard_icon.png"></img></a>
-<a href="https://twitter.com/yyyyyy_public"><img width=64 src="https://pbs.twimg.com/profile_images/1429332550112079876/dQQgsURc_400x400.jpg"></img></a>
-<a href="https://twitter.com/0xSp00kyb0t"><img width=64 src="https://pbs.twimg.com/profile_images/1603601553226620935/1t4yD1bD_400x400.jpg"></img></a>
-<a href="https://chariz.com"><img width=64 src="https://chariz.com/img/favicon.png"></img></a>
-<a href="https://twitter.com/stars6220"><img width=64 src="https://pbs.twimg.com/profile_images/1606990218925670400/Y4JBl6OS_400x400.jpg"></img></a>
-<a href="https://github.com/beast9265"><img width=64 src="https://avatars.githubusercontent.com/u/79794946?v=4"></img></a>
-
-# What does this do?
-
-It boots the device with patches for the jailbreak. 
-
-**WARNING**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`.
-
-On A11, you **must disable your passcode while in the jailbroken state**. We don't have an A11 SEP exploit yet.
-
-<!--# Usage
-See the [wiki](https://github.com/palera1n/palera1n-c/wiki).-->
+Join the [Support Discord](https://dsc.gg/palera1n), and find the palera1n-c thread under #jailbreak [here](https://discord.com/channels/1028398973452570725/1074251283143344180).
 
 # Credits
+<details><summary>palera1n-c Contributors and Credits</summary>
+<p>
 
 - [Nebula](https://github.com/itsnebulalol), palera1n owner and Python rewrite lead developer
-- [Nathan](https://github.com/verygenericname)
 - [Mineek](https://github.com/mineek)
-- [Nick Chan](https://github.com/asdfugil)
-- [Amy](https://github.com/elihwyma) for the [Pogo](https://github.com/elihwyma/Pogo) app
+- [Tom](https://github.com/guacaplushy) for updated ploosh kpf
+- [Lakhan Lothiyi](https://github.com/llsc12) for palera1n loader app
 - [checkra1n](https://github.com/checkra1n) for the base of the kpf
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing [bootstrap](https://github.com/ProcursusTeam/Procursus)
-- [F121](https://github.com/F121Live) for helping test
-- [Tom](https://github.com/guacaplushy) for a couple patches and bugfixes
-- [Nick Chan](https://github.com/asdfugil) general help with patches and jbinit
-- [Serena](https://github.com/SerenaKit) for helping with boot ramdisk
-- [Évelyne](https://github.com/evelyneee) for ElleKit, rootless tweak injection
+- [Évelyne](https://github.com/evelyneee) for [ElleKit](https://github.com/evelyneee/ellekit), rootless tweak injection
+- [Sam Bingner](https://github.com/sbingner) for [Substitute](https://github.com/sbingner/substitute), rootful tweak injection
+
+</details>
+</p>
+
+<br>
+<p align="center">
+Thank you so much to our Patreons that make the future development possible! You may sub <a href="https://patreon.com/palera1n">here</a>, if you'd like to.</br>
+</p>
+<p align="center">
+<a href="https://github.com/samh06"><img width=64 style="border-radius: 25%;" src="https://user-images.githubusercontent.com/18669106/206333607-881d7ca1-f3bf-4e18-b620-25de0c527315.png"></img></a>
+<a href="https://havoc.app"><img width=64 style="border-radius: 25%;" src="https://docs.havoc.app/img/standard_icon.png"></img></a>
+<a href="https://twitter.com/yyyyyy_public"><img width=64 style="border-radius: 25%;" src="https://cdn.discordapp.com/attachments/1054239098006683688/1072587455779328040/image.png?size=400"></img></a>
+<a href="https://twitter.com/0xSp00kyb0t"><img width=64 style="border-radius: 25%;" src="https://pbs.twimg.com/profile_images/1603601553226620935/1t4yD1bD_400x400.jpg"></img></a>
+<a href="https://chariz.com"><img width=64 src="https://chariz.com/img/favicon.png"></img></a>
+<a href="https://twitter.com/stars6220"><img width=64 style="border-radius: 25%;" src="https://pbs.twimg.com/profile_images/1621062976982728706/pWVZQ-NO_400x400.jpg"></img></a>
+<a href="https://github.com/beast9265"><img width=64 style="border-radius: 25%;" src="https://avatars.githubusercontent.com/u/79794946?v=4"></img></a>
+<a href="https://twitter.com/0x7FF7"><img width=64 style="border-radius: 25%;" src="https://pbs.twimg.com/profile_images/1616888462665306113/AsjJvtyt_400x400.jpg"></img></a>
+<a href="https://sideloadly.io/"><img width=64 style="border-radius: 25%;" src="https://sideloadly.io/icon.png"></img></a>
+<a href="https://blog.stevesec.com/"><img width=64 style="border-radius: 25%;"  src="https://blog.stevesec.com/img/avatar.jpg"></img></a>
+</p>
