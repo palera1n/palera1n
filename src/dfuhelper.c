@@ -96,12 +96,13 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	cpid = info->cpid;
 	ecid = info->ecid;
 	bdid = info->bdid;
-	if (!cpid_is_arm64(info->cpid)) {
+	info = NULL;
+	if (!cpid_is_arm64(cpid)) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		return NULL;
 	}
 	sleep(1);
-	ret = autoboot_cmd(info->ecid);
+	ret = autoboot_cmd(ecid);
 	if (ret) {
 		LOG(LOG_ERROR, "Cannot set auto-boot back to true");
 		return NULL;
@@ -113,9 +114,8 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		step(4, 2, "Hold volume down + side button", NULL, 0);
 	else
 		step(4, 2, "Hold home + power button", NULL, 0);
-	set_ecid_wait_for_dfu(info->ecid);
-	ret = exitrecv_cmd(info->ecid);
-	info = NULL;
+	set_ecid_wait_for_dfu(ecid);
+	ret = exitrecv_cmd(ecid);
 	if (ret) {
 		LOG(LOG_ERROR, "Cannot exit recovery mode");
 		set_ecid_wait_for_dfu(0);
