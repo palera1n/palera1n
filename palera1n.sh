@@ -66,6 +66,7 @@ Options:
     --tweaks            Enable tweaks
     --semi-tethered     When used with --tweaks, make the jailbreak semi-tethered instead of tethered
     --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
+	 --skip-first-try		Skip the confirmation for starting DFU helper as if it wasn't the first try
     --skip-fakefs       Don't create the fakefs even if --semi-tethered is specified
     --no-baseband       Indicate that the device does not have a baseband
     --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
@@ -96,6 +97,9 @@ parse_opt() {
             ;;
         --dfuhelper)
             dfuhelper=1
+            ;;
+        --skip-first-try)
+            dfuhelper_first_try=false
             ;;
         --skip-fakefs)
             skip_fakefs=1
