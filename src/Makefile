@@ -92,7 +92,7 @@ endif
 endif
 
 checkra1n-kpf-pongo:
-	curl -LO https://github.com/guacaplushy/checkp4le/raw/main/binaries/checkra1n-kpf-pongo
+	curl -LO https://cdn.nickchan.lol/palera1n/artifacts/kpf/checkra1n-kpf-pongo
 
 ramdisk.dmg:
 	curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
