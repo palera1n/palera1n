@@ -58,6 +58,7 @@
 #define palerain_option_jbinit_log_to_file   (1 << 1) /* log to /cores/jbinit.log */
 #define palerain_option_setup_rootful        (1 << 2) /* create fakefs */
 #define palerain_option_setup_rootful_forced (1 << 3) /* create fakefs over an existing one */
+#define palerain_option_setup_partial_root   (1 << 4) /* fakefs creating should be partial */
 
 #ifdef DEV_BUILD
 #define palerain_option_test1               (1 << 29)

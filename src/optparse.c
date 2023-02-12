@@ -16,8 +16,8 @@ checkrain_option_t host_flags = 0;
 checkrain_option_p host_flags_p = &host_flags;
 
 static struct option longopts[] = {
+	{"setup-partial-fakefs", no_argument, NULL, 'B'},
 	{"setup-fakefs", no_argument, NULL, 'c'},
-	{"setup-fakefs-forced", no_argument, NULL, 'C'},
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
@@ -66,8 +66,8 @@ static int usage(int e, char* prog_name)
 			"\t-1, --test1\t\t\t\tSet palerain_option_test1\n"
 			"\t-2, --test2\t\t\t\tSet palerain_option_test2\n"
 #endif
+			"\t-B, --setup-partial-fakefs\t\tSetup partial fakefs\n"
 			"\t-c, --setup-fakefs\t\t\tSetup fakefs\n"
-			"\t-C, --setup-fakefs-forced\t\tSetup fakefs and overwrite any existing ones\n"
 			"\t-d, --demote\t\t\t\tDemote\n"
 			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
@@ -106,20 +106,20 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"12cCDEhpvVldsOLftRnPe:o:r:K:k:i:", 
+	"12BcDEhpvVldsOLftRnPe:o:r:K:k:i:", 
 #else
-	"cCDEhpvVldsOLfRnPe:o:r:K:k:i:", 
+	"BcDEhpvVldsOLfRnPe:o:r:K:k:i:", 
 #endif
 	longopts, NULL)) != -1)
 	{
 		switch (opt) {
-		case 'c':
+		case 'B':
+			palerain_flags |= palerain_option_setup_partial_root;
 			palerain_flags |= palerain_option_setup_rootful;
 			kpf_flags |= checkrain_option_verbose_boot;
 			break;
-		case 'C':
-			palerain_flags |= palerain_option_setup_rootful;	
-			palerain_flags |= palerain_option_setup_rootful_forced;
+		case 'c':
+			palerain_flags |= palerain_option_setup_rootful;
 			kpf_flags |= checkrain_option_verbose_boot;
 			break;
 		case 'p':
@@ -247,10 +247,6 @@ int optparse(int argc, char* argv[]) {
 	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) {
 		printf("palera1n version " PALERAIN_VERSION ": " BUILD_DATE "; " BUILD_WHOAMI ":" BUILD_TAG "/" BUILD_STYLE "\n");
 		return 0;
-	}
-
-	if (checkrain_option_enabled(checkrain_flags, checkrain_option_force_revert) && checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
-		LOG(LOG_WARNING, "force revert and setup rootful requested at the same time, behaviour here is undefined");
 	}
 
 	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);

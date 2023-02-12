@@ -11,7 +11,7 @@
 .Nd iOS 15+ arm64 iOS/iPadOS jailbreaking tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl cCdDEfhlnLOpRsvV
+.Op Fl BcdDEfhlnLOpRsvV
 .Op Fl e Ar Boot arguments
 .Op Fl k Ar Pongo image
 .Op Fl o Ar overlay file
@@ -99,16 +99,15 @@ files. As a result, using the loader app to install the jailbreak environment
 is not supported when this option is used together with
 .Fl f , -fakefs
 \[char46]
+.It Fl B , -setup-fakefs-partial
+Like
+.Fl c , -setup-fakefs
+but the size of the created fakefs is smaller at the expense of having unwritable
+parts in rarely-written paths. (good for 16 GB devices)
 .It Fl c , -setup-fakefs
 When used with
 .Fl f , -fakefs ,
 Create the new APFS volume required for rootful. Will fail if one already exists.
-.It Fl C , -setup-fakefs-forced
-When used with
-.Fl f , -fakefs ,
-behaves like
-.Fl c , -setup-fakefs ,
-but existing fakefs, if exists, will be overwritten instead.
 .It Fl d , -demote
 Set the effective production fuse to 0, so as to enable hardware debugging features.
 .It Fl D , -dfuhelper-only
