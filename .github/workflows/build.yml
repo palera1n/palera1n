@@ -29,7 +29,7 @@ jobs:
         run: |
           make -j$(nproc) docs
           mkdir ready
-          cp docs/*.html docs/mandoc.css ready
+          cp docs/*.html docs/mandoc.css docs/palera1n.1 ready
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
