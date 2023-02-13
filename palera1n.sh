@@ -288,7 +288,7 @@ _wait() {
     fi
 }
 
-$dfuhelper_first_try = !dfuhelper_skip_first_try$
+dfuhelper_first_try=$( (! "$dfu_skip_first_try") && echo true || echo false )
 _dfuhelper() {
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device is already in DFU"
