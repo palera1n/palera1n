@@ -1,3 +1,5 @@
+NAME = The Beginning of the End
+
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
 STRIP = strip

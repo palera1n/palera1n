@@ -245,7 +245,9 @@ int optparse(int argc, char* argv[]) {
 		}
 	}
 	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) {
+#ifndef __INTELLISENSE__
 		printf("palera1n version " PALERAIN_VERSION ": " BUILD_DATE "; " BUILD_WHOAMI ":" BUILD_TAG "/" BUILD_STYLE "\n");
+#endif
 		return 0;
 	}
 
