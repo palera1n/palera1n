@@ -31,6 +31,7 @@
 #define USB_RET_SUCCESS         LIBUSB_SUCCESS
 #define USB_RET_NOT_RESPONDING  LIBUSB_ERROR_OTHER
 #define USB_RET_IO              LIBUSB_ERROR_IO
+#define USB_RET_NO_DEVICE		LIBUSB_ERROR_NO_DEVICE
 typedef int usb_ret_t;
 typedef libusb_device_handle *usb_device_handle_t;
 
@@ -51,7 +52,8 @@ usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, int len);
 
 #define USB_RET_SUCCESS         KERN_SUCCESS
 #define USB_RET_NOT_RESPONDING  kIOReturnNotResponding
-#define USB_RET_IO				kIOReturnNotResponding
+#define USB_RET_IO              kIOReturnNotReady
+#define USB_RET_NO_DEVICE       kIOReturnNoDevice
 
 typedef IOReturn usb_ret_t;
 typedef IOUSBInterfaceInterface245 **usb_device_handle_t;

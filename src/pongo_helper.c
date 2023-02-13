@@ -129,10 +129,10 @@ fetch_output:
 bad:
 	if (ret != USB_RET_SUCCESS)
 	{
-		if (ret == USB_RET_NOT_RESPONDING)
-			return 0;
-        if (command != NULL && (!strncmp("boot", command, 4) && ret == USB_RET_IO))
-            return 0;
+        if (command != NULL && (!strncmp("boot", command, 4))) {
+			if (ret == USB_RET_IO || ret == USB_RET_NO_DEVICE || ret == USB_RET_NOT_RESPONDING)
+				return 0;
+		}
 		LOG(LOG_ERROR, "USB error: %s", usb_strerror(ret));
 		return ret;
 	}
