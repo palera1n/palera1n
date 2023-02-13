@@ -108,6 +108,7 @@ parse_opt() {
             ;;
         --skip-first-try)
             dfuhelper_first_try=false
+            dfu_helper_skip_first_try=true
             ;;
         --blind-dfu)
             blind=1
@@ -287,7 +288,7 @@ _wait() {
     fi
 }
 
-dfuhelper_first_try=true
+$dfuhelper_first_try = !dfuhelper_skip_first_try$
 _dfuhelper() {
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device is already in DFU"
