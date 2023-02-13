@@ -1,6 +1,8 @@
 #include <stdio.h>
 
+#ifndef BAKERAIN_DEVELOPER
 #define BAKERAIN_DEVELOPER "dora2ios"
+#endif
 #define THE_PLUSH "Tom"
 
 #define T void
