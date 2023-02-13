@@ -17,7 +17,7 @@
 # Warnings
 - This palera1n rewrite has noticeably different arguments compared to older palera1n, would recommend you take a look at how to use palera1n-c [here](https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.1/palera1n.1.html).
 
-- This does **NOT** support tethered creation or booting. You must use older [palera1n](https://github.com/palera1n/palera1n).
+- This does **NOT** support tethered creation or booting. You must use the older [shell version of palera1n](https://github.com/palera1n/palera1n).
 
 - We are **NOT** responsible for any data loss, or the result of a device being bricked. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run futurerestore `--exit-recovery`, or use `irecovery -n`.
 
@@ -28,19 +28,19 @@
 	-	If using Rootful, **you will need 5-10GB of space** for the fakefs. This means that 16GB devices cannot be semi-tethered with Rootful.
 	- On `A11`, **you must disable your passcode while in the jailbroken state** (on iOS 16, you need to reset your device before proceeding with palera1n `A11`).
 
-- **USB-A** cables are recommended to use, USB-C may have issues with palera1n and getting into DFU mode.
+- **USB-A** cables are recommended to use, USB-C may have issues with palera1n and getting into DFU mode.<details><summary>Technical explanation</summary>The BootROM will only enter DFU if it detects USB voltage, which boils down to checking whether a certain pin is asserted from the Tristar chip. The Tristar does this based on the cable's accessory ID, and apparently USB-A and USB-C cables have different accessory IDs, and the one of the USB-C cables makes the Tristar not assert the USB voltage pin.</details>
 
 - A Linux or macOS computer
 	- AMD CPUs (not AMD Mobile) have an issue [with (likely) their USB controllers] that causes them to have a very low success rate with checkm8. It is not recommended that you use them with palera1n.
 		- If your device does not successfully jailbreak, try a computer with an Intel or other CPU
 
-# Reporting Issues
+# Need help?
 
 Make sure you provide full details on your device, such as:
 - iDevice
 - iOS Version
 - Passcode enabled?
-- Logs, if panicked send latest panic-full from your iDevice.
+- Logs, if panicked then send latest `panic-full` log from your iDevice.
 
 Using `-V` and `-v` would help with debugging.
 
@@ -50,6 +50,7 @@ Join the [Support Discord](https://dsc.gg/palera1n), and find the palera1n-c thr
 <details><summary>palera1n-c Contributors and Credits</summary>
 <p>
 
+- [Nick Chan](https://github.com/asdfugil) for the rewrite
 - [Nebula](https://github.com/itsnebulalol), palera1n owner and Python rewrite lead developer
 - [Mineek](https://github.com/mineek)
 - [Tom](https://github.com/guacaplushy) for updated ploosh kpf
