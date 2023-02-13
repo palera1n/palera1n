@@ -309,7 +309,11 @@ jobs:
           mv build/src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
           dsymutil palera1n-${{ matrix.os }}-${{ matrix.arch }}
           strip palera1n-${{ matrix.os }}-${{ matrix.arch }}
-          ldid -s palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          if [ "${{ matrix.os }}" == "macosx" ]; then
+            ldid -S palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          else
+            ldid -Ssrc/usb.xml palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          fi
           mkdir -p ready
           tar -zcf ready/dep_root-${{ matrix.os }}-${{ matrix.arch }}.tgz dep_root
 
