@@ -36,6 +36,7 @@
 29. [No space left on device](#no-space-left-on-device)
 30. [Found the USB handle followed by an error occurred](#found-the-usb-handle-followed-by-an-error-occurred)
 31. [pip error: legacy-install-failure](#pip-error-legacy-install-failure)
+32. [Stuck at "Creating ramdisk"](#stuck-at-creating-ramdisk)
 
 ## \"Booted device\" but not booted
 This may happen when the downloading and patching process is interrupted. Please run `./palera1n.sh clean` (use with `sudo` if on Linux), then try again.
@@ -301,6 +302,13 @@ Reboot the device and rerun the script, and make sure to follow the DFU helper e
 	- If it still doesn't work, try this command:
 		- `ARCHFLAGS="-arch $(uname -m)" python3 -m pip install --compile pyimg4`
 
-<br>
+## Stuck at \"Creating ramdisk\"
+This issue happens most often on AMD x86_64 CPUs. If you encounter it:
+
+1. Disconnect and then reconnect the USB-A lightning cable directly from your computer's USB port when you get stuck at the "Creating ramdisk" step.
+2. Palera1n will most likely get stuck further in the proccess after you reconnect the USB-A lightning cable, in such a case `CTRL-C` to stop palera1n.
+3. Execute palera1n once again after stopping it, if you get stuck at the "Creating ramdisk" step again do the same as before. Disconnect and reconnect the USB-A lightning cable from your computer's USB port. This time it should work as expected and continue to completion past this issue. If this is not the case, try again from step 2.
+
+This workaround has a better success rate on mobile AMD x86_64 CPUs (found in laptops) in comparison to the desktop variants, however it should still work on either. If you can not get this to work after multiple attempts, you may want to consider using palera1n with an Intel computer to avoid the issue entirely.
 
 ### If none of these solve your issue, please join the [Discord server](https://dsc.gg/palera1n).
