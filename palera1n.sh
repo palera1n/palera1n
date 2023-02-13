@@ -51,7 +51,7 @@ step() {
             touch .entered_dfu
         fi &
         printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
-        if [ $blind = 1 ]; then
+        if [ $blind -eq 1 ]; then
          if [[ $i -eq 0 ]]; then
                say "done"
          else
@@ -292,7 +292,7 @@ $dfuhelper_first_try = !dfuhelper_skip_first_try$
 _dfuhelper() {
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device is already in DFU"
-        [ $blind = 1 ] && say "Device is already in DFU"
+        [ $blind -eq 1 ] && say "Device is already in DFU"
         return
     fi
 
@@ -304,12 +304,12 @@ _dfuhelper() {
         step_one="Hold home + power button"
     fi
     if $dfuhelper_first_try; then
-        [ $blind = 1 ] && say "Press any key when ready for DFU mode"
+        [ $blind -eq 1 ] && say "Press any key when ready for DFU mode"
         echo "[*] Press any key when ready for DFU mode"
         read -n 1 -s
         dfuhelper_first_try=false
     fi
-    [ $blind = 1 ] && say "Get ready"
+    [ $blind -eq 1 ] && say "Get ready"
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
