@@ -38,7 +38,7 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 
 # Still need help?
 
-Join the [Support Discord](https://dsc.gg/palera1n) if you need help with palera1n :)
+Join the [Support Discord](https://dsc.gg/palera1n) or [Telegram](https://t.me/palera1nchat) if you need help with palera1n :)
 
 # Credits
 <details><summary>palera1n Contributors</summary>
