@@ -39,40 +39,36 @@ newtComponent tui_log_output = NULL;
 bool spin, found_pongo = 0;
 uint64_t ecid_wait_for_dfu = 0;
 
-bool get_spin() {
-    LOG(LOG_VERBOSE5, "locking spin mutex for get");
-    pthread_mutex_lock(&spin_mutex);
-    bool ret = spin;
-    LOG(LOG_VERBOSE5, "UN-locking spin mutex, spin value is %d", spin);
-    pthread_mutex_unlock(&spin_mutex);
+static bool get_locked_bool(bool* val, pthread_mutex_t* mutex) {
+    // fprintf(stderr, "%s: val = %p mutex = %p\n", __func__, (void*)val, (void*)mutex);
+    pthread_mutex_lock(mutex);
+    bool ret = *val;
+    pthread_mutex_unlock(mutex);
     return ret;
 }
 
-bool set_spin(bool val) {
-    LOG(LOG_VERBOSE5, "locking spin mutex for set spin = %d", val);
-    pthread_mutex_lock(&spin_mutex);
-    spin = val;
-    LOG(LOG_VERBOSE5, "UN-locking spin mutex after setting spin\n");
-    pthread_mutex_unlock(&spin_mutex);
-    return val;
+static bool set_locked_bool(bool* val, bool newval, pthread_mutex_t* mutex) {
+    // fprintf(stderr, "%s: val = %p mutex = %p, newval = %d\n", __func__, (void*)val, (void*)mutex, newval);
+    pthread_mutex_lock(mutex);
+    *val = newval;
+    pthread_mutex_unlock(mutex);
+    return newval;
+}
+
+bool get_spin() {
+    return get_locked_bool(&spin, &spin_mutex);
+}
+
+bool set_spin(bool newval) {
+    return set_locked_bool(&spin, newval, &spin_mutex);
 }
 
 bool get_found_pongo() {
-    LOG(LOG_VERBOSE5, "locking found pongo mutex for get");
-    pthread_mutex_lock(&found_pongo_mutex);
-    bool ret = found_pongo;
-    LOG(LOG_VERBOSE5, "UN-locking pongo mutex, found_pongo value is %d", found_pongo);
-    pthread_mutex_unlock(&found_pongo_mutex);
-    return ret;
+   return get_locked_bool(&found_pongo, &found_pongo_mutex);
 }
 
 bool set_found_pongo(bool val) {
-    LOG(LOG_VERBOSE5, "locking found pongo mutex for set found_pongo = %d", val);
-    pthread_mutex_lock(&found_pongo_mutex);
-    found_pongo = val;
-    LOG(LOG_VERBOSE5, "UN-locking pongo mutex after setting found_pongo");
-    pthread_mutex_unlock(&found_pongo_mutex);
-    return val;
+    return set_locked_bool(&found_pongo, val, &found_pongo_mutex);
 }
 
 uint64_t get_ecid_wait_for_dfu() {
