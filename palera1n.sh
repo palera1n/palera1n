@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+os=$(uname)
+
+if [ "$os" = 'Linux' ]; then
+    if [ "$EUID" != 0 ]; then
+        echo "Error: Palera1n requires root privileges on Linux to connect to your device, please execute palera1n with sudo or as root."
+        exit 1
+    fi
+    systemctl stop usbmuxd > /dev/null 2>&1
+    killall usbmuxd > /dev/null 2>&1
+    usbmuxd -f -p &> /dev/null 2>&1 &
+fi
+
 pushd $(dirname "$0") &> /dev/null
 
 mkdir -p logs
@@ -20,7 +32,6 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 ipsw=""
 network_timeout=-1 # seconds; -1 - unlimited
 version="1.4.1"
-os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD || true)
 branch=$(git rev-parse --abbrev-ref HEAD || true)
@@ -352,6 +363,9 @@ _kill_if_running() {
 _exit_handler() {
     if [ "$os" = "Darwin" ]; then
         killall -CONT AMPDevicesAgent AMPDeviceDiscoveryAgent MobileDeviceUpdater || true
+    elif [ "$os" = 'Linux' ]; then
+        killall usbmuxd > /dev/null 2>&1
+        systemctl start usbmuxd > /dev/null 2>&1
     fi
 
     [ $? -eq 0 ] && exit
