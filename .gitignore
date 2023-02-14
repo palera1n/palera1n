@@ -20,3 +20,4 @@ docs/*.html
 build
 src/*.dmg.c
 .idea
+src/stage2/

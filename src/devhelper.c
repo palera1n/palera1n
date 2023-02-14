@@ -37,6 +37,7 @@
 #include <palerain.h>
 
 irecv_device_event_context_t irecvctx = NULL;
+usbmuxd_subscription_context_t usbmuxdctx = NULL;
 
 void devinfo_free(devinfo_t *dev) {
 	free(dev->buildVersion);
@@ -87,16 +88,17 @@ bool cpid_is_arm64(unsigned int cpid) {
 
 int subscribe_cmd(usbmuxd_event_cb_t device_event_cb, irecv_device_event_cb_t irecv_event_cb)
 {
-	usbmuxd_subscribe(device_event_cb, NULL);
+	usbmuxd_events_subscribe(&usbmuxdctx, device_event_cb, NULL);
 	irecv_device_event_subscribe(&irecvctx, irecv_event_cb, NULL);
 	return 0;
 }
 
 int unsubscribe_cmd()
 {
-	usbmuxd_unsubscribe();
+	usbmuxd_events_unsubscribe(usbmuxdctx);
 	irecv_device_event_unsubscribe(irecvctx);
 	irecvctx = NULL;
+	usbmuxdctx = NULL;
 	return 0;
 }
 

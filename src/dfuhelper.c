@@ -217,8 +217,8 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 
 void *dfuhelper(void* ptr) {
 	dfuhelper_thr_running = true;
-	subscribe_cmd(device_event_cb, irecv_device_event_cb);
 	set_spin(1);
+	subscribe_cmd(device_event_cb, irecv_device_event_cb);
 	while (get_spin()) {
 		sleep(1);
 	};
