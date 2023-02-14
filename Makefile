@@ -34,6 +34,9 @@ CFLAGS += -O0 -g -DDEV_BUILD -fno-omit-frame-pointer
 ifeq ($(ASAN),1)
 BUILD_STYLE=ASAN
 CFLAGS += -fsanitize=address,undefined -fsanitize-address-use-after-return=runtime
+else ifeq ($(TSAN),1)
+BUILD_STYLE=TSAN
+CFLAGS += -fsanitize=thread,undefined
 else
 BUILD_STYLE = DEVELOPMENT
 endif
