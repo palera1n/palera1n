@@ -70,7 +70,7 @@ static int usage(int e, char* prog_name)
 			"\t-B, --setup-partial-fakefs\t\tSetup partial fakefs\n"
 			"\t-c, --setup-fakefs\t\t\tSetup fakefs\n"
 			"\t-d, --demote\t\t\t\tDemote\n"
-			"\t-D, --dfuhelper-only\t\t\tExit after entering DFU\n"
+			"\t-D, --dfuhelper\t\t\tExit after entering DFU\n"
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
 			"\t-E, --enter-recovery\t\t\tEnter recovery mode\n"
 			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
