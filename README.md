@@ -13,6 +13,9 @@
   <strong><a  href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
 <div class="clear"></div>
+<br>
+
+# The [C rewrite of palera1n](https://github.com/palera1n/palera1n-c) has been released (in beta). It's recommended that you use that from now on, unless you need to use tethered.
 
 # How does it work?
 
