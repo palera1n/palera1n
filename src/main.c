@@ -98,8 +98,9 @@ int palera1n(int argc, char *argv[]) {
 	pthread_mutex_init(&found_pongo_mutex, NULL);
 	pthread_mutex_init(&ecid_dfu_wait_mutex, NULL);
 	if ((ret = build_checks())) return ret;
-	print_credits();
 	if ((ret = optparse(argc, argv))) goto cleanup;
+	if (!checkrain_option_enabled(host_flags, host_option_device_info))
+		print_credits();
 	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) goto normal_exit;
 #ifdef DEV_BUILD
 	if (checkrain_option_enabled(host_flags, host_option_tui)) {
@@ -108,7 +109,9 @@ int palera1n(int argc, char *argv[]) {
 		else goto normal_exit;
 	}
 #endif
-	LOG(LOG_INFO, "Waiting for devices");
+	if (!checkrain_option_enabled(host_flags, host_option_device_info))
+		LOG(LOG_INFO, "Waiting for devices");
+	
 	pthread_create(&pongo_thread, NULL, pongo_helper, NULL);
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
@@ -117,6 +120,7 @@ int palera1n(int argc, char *argv[]) {
 		checkrain_option_enabled(host_flags, host_option_reboot_device) || 
 		checkrain_option_enabled(host_flags, host_option_exit_recovery) || 
 		checkrain_option_enabled(host_flags, host_option_enter_recovery) || 
+		checkrain_option_enabled(host_flags, host_option_device_info) || 
 		device_has_booted)
 		goto normal_exit;
 	if (exec_checkra1n()) goto cleanup;

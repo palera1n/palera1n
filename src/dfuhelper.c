@@ -59,7 +59,8 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		return -1;
 	}
 	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
-		LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
+		if (!checkrain_option_enabled(host_flags, host_option_device_info))
+			LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
 		unsigned char passcode_state = 0;
 		ret = passstat_cmd(&passcode_state, usbmuxd_device->udid);
 		if (ret != 0) {
@@ -69,10 +70,24 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		}
 		if (passcode_state) {
 			LOG(LOG_ERROR, "Passcode must be disabled on this device");
-			LOG(LOG_ERROR, "Additionally, passcode must never be set since restore on iOS 16+");
+			if (!checkrain_option_enabled(host_flags, host_option_device_info))
+				LOG(LOG_ERROR, "Additionally, passcode must never be set since restore on iOS 16+");
 			devinfo_free(&dev);
 			return -1;
 		}
+	}
+
+	if (checkrain_option_enabled(host_flags, host_option_device_info)) {
+		printf("Mode: normal\n");
+		printf("ProductType: %s\n", dev.productType);
+		printf("Architecture: %s\n", dev.CPUArchitecture);
+		printf("Version: %s\n", dev.productVersion);
+		printf("DisplayName: %s\n", dev.displayName);
+
+		device_has_booted = true;
+		set_spin(0);
+		unsubscribe_cmd();
+		return 0;
 	}
 	LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
 	enter_recovery_cmd(usbmuxd_device->udid);
@@ -184,7 +199,8 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 	switch(event->type) {
 		case IRECV_DEVICE_ADD:
 		if (event->mode == IRECV_K_RECOVERY_MODE_1 || event->mode == IRECV_K_RECOVERY_MODE_2 || event->mode == IRECV_K_RECOVERY_MODE_3 || event->mode == IRECV_K_RECOVERY_MODE_4) {
-			LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
+			if (!checkrain_option_enabled(host_flags, host_option_device_info))
+				LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
 			if (checkrain_option_enabled(host_flags, host_option_exit_recovery)) {
 				exitrecv_cmd(event->device_info->ecid);
 				LOG(LOG_INFO, "Exited recovery mode");
@@ -195,11 +211,44 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 				pthread_exit(NULL);
 				break;
 			}
+
+			if (checkrain_option_enabled(host_flags, host_option_device_info)) {
+				recvinfo_t info;
+				recvinfo_cmd(&info, event->device_info->ecid);
+				printf("Mode: recovery\n");
+				printf("ProductType: %s\n", info.product_type);
+				printf("DisplayName: %s\n", info.display_name);
+
+				device_has_booted = true;
+				set_spin(0);
+				unsubscribe_cmd();
+				if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
+				pthread_exit(NULL);
+				break;
+			}
+
 			if (checkrain_option_enabled(host_flags, host_option_enter_recovery) ||
 			checkrain_option_enabled(host_flags, host_option_reboot_device)) return;
 			pthread_create(&recovery_thread, NULL, (void* (*)(void*))connected_recovery_mode, event->device_info);
 		} else if (event->mode == IRECV_K_DFU_MODE) {
-			LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
+			if (!checkrain_option_enabled(host_flags, host_option_device_info))
+				LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
+			
+			if (checkrain_option_enabled(host_flags, host_option_device_info)) {
+				recvinfo_t info;
+				recvinfo_cmd(&info, event->device_info->ecid);
+				printf("Mode: dfu\n");
+				printf("ProductType: %s\n", info.product_type);
+				printf("DisplayName: %s\n", info.display_name);
+
+				device_has_booted = true;
+				set_spin(0);
+				unsubscribe_cmd();
+				if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
+				pthread_exit(NULL);
+				break;
+			}
+			
 			if (
 				checkrain_option_enabled(host_flags, host_option_exit_recovery) ||
 				checkrain_option_enabled(host_flags, host_option_enter_recovery) ||

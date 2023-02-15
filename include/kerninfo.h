@@ -80,6 +80,7 @@
 #define host_option_exit_recovery        (1 << 7) /* Exit recovery mode */
 #define host_option_reboot_device        (1 << 8) /* Reboot device in normal mode */
 #define host_option_enter_recovery       (1 << 9) /* Enter recovery mode */
+#define host_option_device_info          (1 << 10) /* Print device info */
 
 #define PALEINFO_MAGIC 'PLSH'
 #define PALEINFO_CIGAM 'HSLP'
