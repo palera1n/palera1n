@@ -109,6 +109,18 @@ int palera1n(int argc, char *argv[]) {
 		else goto normal_exit;
 	}
 #endif
+#ifdef USE_LIBUSB
+	{
+		int test_libusb = libusb_init(NULL);
+		if (test_libusb) {
+			LOG(LOG_ERROR, "cannot initialize libusb: %d (%s)\n", test_libusb, libusb_strerror(test_libusb));
+			libusb_exit(NULL);
+			goto cleanup;
+		}
+	libusb_exit(NULL);
+	}
+#endif
+
 	if (!checkrain_option_enabled(host_flags, host_option_device_info))
 		LOG(LOG_INFO, "Waiting for devices");
 	
