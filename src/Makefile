@@ -38,6 +38,8 @@ LDID = ldid
 ifeq ($(TARGET_OS),Darwin)
 ifneq ($(USE_LIBUSB),1)
 OBJECTS += usb_iokit.o
+else
+LIBS += -framework SystemConfiguration -framework Security
 endif
 else
 USE_LIBUSB = 1

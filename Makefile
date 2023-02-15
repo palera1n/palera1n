@@ -18,7 +18,7 @@ ifeq (,$(findstring version-min=, $(CFLAGS)))
 CFLAGS += -mmacosx-version-min=10.8
 endif
 LDFLAGS += -Wl,-dead_strip
-LIBS += -framework CoreFoundation -framework SystemConfiguration -framework IOKit -framework Security
+LIBS += -framework CoreFoundation -framework IOKit
 else
 CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -static -no-pie -Wl,--gc-sections
