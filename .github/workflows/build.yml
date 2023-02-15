@@ -297,20 +297,9 @@ jobs:
           cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
           find dep_root -name '*.dylib' -delete
           find dep_root -name '*.la' -delete
-          mkdir build
-          cd build
-          cmake .. -DSTATIC=1 -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CROSSCOMPILING=true \
-            -DCMAKE_SYSTEM_NAME=Darwin \
-            -DCMAKE_C_COMPILER="${{ env.CC }}" \
-            -DCMAKE_C_FLAGS='${{ env.CFLAGS }}' \
-            -DCMAKE_FIND_ROOT_PATH="${{ env.DESTDIR }}" \
-            -DCMAKE_INSTALL_PREFIX="${{ env.PREFIX }}" \
-            -DSTATIC=1
-          make -j$(sysctl -n hw.ncpu)
-          cd ..
+          gmake -j$(sysctl -n hw.ncpu)
           mkdir -p ready
-          mv build/src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          mv src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
           dsymutil palera1n-${{ matrix.os }}-${{ matrix.arch }}
           strip palera1n-${{ matrix.os }}-${{ matrix.arch }}
           if [ "${{ matrix.os }}" == "macosx" ]; then
@@ -640,29 +629,20 @@ jobs:
           cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
           find dep_root -name '*.so' -delete
           find dep_root -name '*.la' -delete
-          mkdir build
-          cd build
-          CC="${{ matrix.triple }}-gcc" cmake .. -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=${{ env.PREFIX }} \
-          -DCMAKE_FIND_ROOT_PATH=${{ env.DESTDIR }}${{ env.PREFIX }} \
-          -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-          -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
-          -DCMAKE_C_FLAGS="-I${{ env.DESTDIR }}${{ env.PREFIX }}/include \
-          -L${{ env.DESTDIR }}${{ env.PREFIX }}/lib -Wl,-rpath,${{ env.PREFIX }}/lib" -DSTATIC=1
-          make -j$(nproc) CC="${{ matrix.triple }}-gcc"
+          CC="${{ matrix.triple }}-gcc" make -j$(nproc)
 
       - name: Seperate debug symbols
         run: |
-          ${{ matrix.triple }}-objcopy --only-keep-debug build/src/palera1n palera1n.debug
-          ${{ matrix.triple }}-strip --strip-debug --strip-unneeded build/src/palera1n
-          ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug build/src/palera1n
+          ${{ matrix.triple }}-objcopy --only-keep-debug src/palera1n palera1n.debug
+          ${{ matrix.triple }}-strip --strip-debug --strip-unneeded src/palera1n
+          ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug src/palera1n
           chmod -x palera1n.debug
       
       - name: Prepare artifact
         run: |
           mkdir ready
           mv palera1n.debug ready/palera1n-${{ env.CHECKRA1N_NAME }}.debug
-          mv build/src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
+          mv src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
           tar -zcf ready/dep_root_${{ matrix.triple }}.tgz dep_root
 
       - name: Upload artifact
