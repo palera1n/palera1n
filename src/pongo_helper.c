@@ -36,7 +36,7 @@ void *pongo_usb_callback(void *arg) {
 		strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);	
 	}
 	LOG(LOG_INFO, "Found PongoOS USB Device");
-	usb_device_handle_t handle = *(usb_device_handle_t *)arg;
+	usb_device_handle_t handle = (((stuff_t *)arg)->handle);
 	issue_pongo_command(handle, NULL);	
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
@@ -74,6 +74,9 @@ void *pongo_usb_callback(void *arg) {
 	}
 done:
 	device_has_booted = true;
+#ifdef USE_LIBUSB
+	libusb_unref_device(((stuff_t *)arg)->dev);
+#endif
 	set_spin(0);
 	return NULL;
 }
@@ -157,11 +160,12 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 
 void io_start(stuff_t *stuff)
 {
-    int r = pthread_create(&stuff->th, NULL, &pongo_usb_callback, &stuff->handle);
+    int r = pthread_create(&stuff->th, NULL, &pongo_usb_callback, stuff);
     if(r != 0)
     {
         ERR("pthread_create: %s", strerror(r));
-        exit(-1); // TODO: ok with libusb?
+        set_spin(0);
+		return;
     }
     pthread_join(stuff->th, NULL);
 }
@@ -172,14 +176,19 @@ void io_stop(stuff_t *stuff)
     if(r != 0)
     {
         ERR("pthread_cancel: %s", strerror(r));
-        exit(-1); // TODO: ok with libusb?
+        set_spin(0);
+		return;
     }
     r = pthread_join(stuff->th, NULL);
     if(r != 0)
     {
         ERR("pthread_join: %s", strerror(r));
-        exit(-1); // TODO: ok with libusb?
+        set_spin(0);
+		return;
     }
+#ifdef USE_LIBUSB
+	libusb_unref_device(stuff->dev);
+#endif
 }
 
 void write_stdout(char *buf, uint32_t len)

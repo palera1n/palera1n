@@ -171,6 +171,7 @@ static int LostDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_ev
 
     io_stop(stuff);
     libusb_close(stuff->handle);
+    libusb_unref_device(dev);
     stuff->handle = NULL;
     stuff->dev = NULL;
 
