@@ -131,6 +131,13 @@ jobs:
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
+      - name: Prepare iPhoneOS environment
+        if: matrix.os == 'iphoneos'
+        run: |
+          echo "FAKE_PLATFORM=2" >> $GITHUB_ENV
+          echo "FAKE_SDK=14.0" >> $GITHUB_ENV
+          echo "FAKE_MINOS=14.0" >> $GITHUB_ENV
+
       - name: Prepare headers
         if: matrix.os != 'macosx'
         run: |
