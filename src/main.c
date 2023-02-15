@@ -91,6 +91,12 @@ int build_checks() {
 bool tui_started = false;
 #endif
 
+#ifdef USE_LIBUSB
+void log_cb(libusb_context *ctx, enum libusb_log_level level, const char *str) {
+    LOG(level + 0, str);
+}
+#endif
+
 int palera1n(int argc, char *argv[]) {
 	int ret = 0;
 	pthread_mutex_init(&log_mutex, NULL);
@@ -111,13 +117,15 @@ int palera1n(int argc, char *argv[]) {
 #endif
 #ifdef USE_LIBUSB
 	{
-		int test_libusb = libusb_init(NULL);
+		libusb_set_log_cb(NULL, log_cb, LIBUSB_LOG_CB_GLOBAL);
+		libusb_context* ctx = NULL;
+		int test_libusb = libusb_init(&ctx);
 		if (test_libusb) {
 			LOG(LOG_ERROR, "cannot initialize libusb: %d (%s)\n", test_libusb, libusb_strerror(test_libusb));
-			libusb_exit(NULL);
+			libusb_exit(ctx);
 			goto cleanup;
 		}
-	libusb_exit(NULL);
+	libusb_exit(ctx);
 	}
 #endif
 

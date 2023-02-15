@@ -181,8 +181,9 @@ int wait_for_pongo(void)
 {
     stuff_t stuff;
     libusb_hotplug_callback_handle hp[2];
+    libusb_context* ctx = NULL;
 
-    int r = libusb_init(NULL);
+    int r = libusb_init(&ctx);
     if(r != LIBUSB_SUCCESS)
     {
         ERR("libusb_init: %s", libusb_error_name(r));
@@ -192,32 +193,32 @@ int wait_for_pongo(void)
     if(!libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG))
     {
         ERR("libusb: no hotplug capability");
-        libusb_exit(NULL);
+        libusb_exit(ctx);
         return -1;
     }
 
-    r = libusb_hotplug_register_callback(NULL, LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED, 0, PONGO_USB_VENDOR, PONGO_USB_PRODUCT, LIBUSB_HOTPLUG_MATCH_ANY, FoundDevice, &stuff, &hp[0]);
+    r = libusb_hotplug_register_callback(ctx, LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED, 0, PONGO_USB_VENDOR, PONGO_USB_PRODUCT, LIBUSB_HOTPLUG_MATCH_ANY, FoundDevice, &stuff, &hp[0]);
     if(r != LIBUSB_SUCCESS)
     {
         ERR("libusb_hotplug: %s", libusb_error_name(r));
-        libusb_exit(NULL);
+        libusb_exit(ctx);
         return -1;
     }
 
-    r = libusb_hotplug_register_callback(NULL, LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT, 0, PONGO_USB_VENDOR, PONGO_USB_PRODUCT, LIBUSB_HOTPLUG_MATCH_ANY, LostDevice, &stuff, &hp[1]);
+    r = libusb_hotplug_register_callback(ctx, LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT, 0, PONGO_USB_VENDOR, PONGO_USB_PRODUCT, LIBUSB_HOTPLUG_MATCH_ANY, LostDevice, &stuff, &hp[1]);
     if(r != LIBUSB_SUCCESS)
     {
         ERR("libusb_hotplug: %s", libusb_error_name(r));
-        libusb_exit(NULL);
+        libusb_exit(ctx);
         return -1;
     }
 
     libusb_device **list;
-    ssize_t sz = libusb_get_device_list(NULL, &list);
+    ssize_t sz = libusb_get_device_list(ctx, &list);
     if(sz < 0)
     {
         ERR("libusb_get_device_list: %s", libusb_error_name((int)sz));
-        libusb_exit(NULL);
+        libusb_exit(ctx);
         return -1;
     }
 
@@ -235,7 +236,7 @@ int wait_for_pongo(void)
             libusb_unref_device(list[i]);
             continue;
         }
-        r = FoundDevice(NULL, list[i], LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED, &stuff);
+        r = FoundDevice(ctx, list[i], LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED, &stuff);
         for(ssize_t j = i + 1; j < sz; ++j)
         {
             libusb_unref_device(list[j]);
@@ -243,7 +244,7 @@ int wait_for_pongo(void)
         if(r != LIBUSB_SUCCESS)
         {
             libusb_free_device_list(list, 0);
-            libusb_exit(NULL);
+            libusb_exit(ctx);
             return -1;
         }
         break;
@@ -252,7 +253,7 @@ int wait_for_pongo(void)
 
     while(get_spin())
     {
-        r = libusb_handle_events(NULL);
+        r = libusb_handle_events(ctx);
         if(r != LIBUSB_SUCCESS)
         {
             ERR("libusb_handle_events: %s", libusb_error_name(r));
@@ -260,7 +261,7 @@ int wait_for_pongo(void)
         }
     }
 
-    libusb_exit(NULL);
+    libusb_exit(ctx);
     return 0;
 }
 #endif

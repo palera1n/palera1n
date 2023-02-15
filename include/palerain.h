@@ -180,7 +180,7 @@ extern char* ext_checkra1n;
 
 void thr_cleanup(void* ptr);
 void* dfuhelper(void* ptr);
-int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, char* __restrict format, ...);
+int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, const char* __restrict format, ...);
 /* devhelper helpers */
 void devinfo_free(devinfo_t *dev);
 bool cpid_is_arm64(unsigned int cpid);
