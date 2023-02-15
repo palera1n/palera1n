@@ -38,7 +38,7 @@
 #include <sys/stat.h>           // fstst
 
 #include <palerain.h>
-#define ERR(...) LOG(LOG_VERBOSE, __VA_ARGS__)
+#define ERR(...) LOG(LOG_ERROR, __VA_ARGS__)
 
 void io_start(stuff_t *stuff);
 void io_stop(stuff_t *stuff);
