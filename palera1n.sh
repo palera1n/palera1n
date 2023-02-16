@@ -19,7 +19,7 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # =========
 ipsw=""
 network_timeout=-1 # seconds; -1 - unlimited
-version="1.4.1"
+version="1.4.2"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD || true)
