@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2
+- Add iOS 16.4 support
+- Various fixes
+
 ## 1.4.1
 - ibot.patched fix
 - Use payload on the X
