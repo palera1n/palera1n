@@ -141,7 +141,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	if (nohome) 
 		step(2, 0, "Hold volume down + side button", NULL, 0);
 	else
-		step(2, 0, "Hold home + power Button", NULL, 0);
+		step(2, 0, "Hold home + power button", NULL, 0);
 	if (nohome) 
 		step(10, 0, "Hold volume down button", conditional, ecid);
 	else
