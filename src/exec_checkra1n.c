@@ -66,7 +66,7 @@ int exec_checkra1n() {
 		uname(&name);
 		unsigned long darwinMajor = strtoul(name.release, NULL, 10);
 		assert(darwinMajor != 0);
-#if !defined(DEV_BUILD)
+#if !defined(FORCE_HELPER)
 		if (darwinMajor < 20) {
 #endif
 			libcheckra1nhelper_dylib_path = malloc(strlen(tmpdir) + 40);
@@ -91,7 +91,7 @@ int exec_checkra1n() {
 				return -1;
 			}
 			setenv("DYLD_INSERT_LIBRARIES", libcheckra1nhelper_dylib_path, 1);
-#if !defined(DEV_BUILD)
+#if !defined(FORCE_HELPER)
 		}
 #endif
 	}
