@@ -59,7 +59,7 @@ int exec_checkra1n() {
 		unlink(checkra1n_path);
 		return -1;
 	}
-#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD))
+#if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
 	char* libcheckra1nhelper_dylib_path = NULL;
 	{
 		struct utsname name;
@@ -123,7 +123,7 @@ checkra1n_exec: {};
 		free(checkra1n_path);
 		checkra1n_path = NULL;
 	}
-#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD))
+#if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
 	if (libcheckra1nhelper_dylib_path != NULL) {
 		unlink(libcheckra1nhelper_dylib_path);
 		unsetenv("DYLD_INSERT_LIBRARIES");

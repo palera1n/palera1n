@@ -10,12 +10,9 @@ OBJECTS += xxd-libcheckra1nhelper.dylib.o
 endif
 endif
 
-ifeq (,$(findstring xxd-libcheckra1nhelper.dylib.o, $(CFLAGS)))
-ifeq ($(TARGET_OS),Darwin)
-ifeq ($(DEV_BUILD),1)
+ifeq ($(FORCE_HELPER),1)
 OBJECTS += xxd-libcheckra1nhelper.dylib.o
-endif
-endif
+CFLAGS += -DFORCE_HELPER
 endif
 
 ifneq ($(NO_RAMDISK),1)
