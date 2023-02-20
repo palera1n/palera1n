@@ -11,6 +11,7 @@
 #include <sys/stat.h>           // fstst
 
 #include <palerain.h>
+#include <ANSI-color-codes.h>
 
 bool device_has_booted = 0;
 int pongo_thr_running = 0;
@@ -152,7 +153,11 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 		ret = USBBulkUpload(handle, buf, buf_len);
 		if (ret == USB_RET_SUCCESS)
 		{
-			LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
+		    if (verbose < 3 || verbose > 4) {
+				LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
+    		} else {
+        		printf("/send mem:%p:%p\n" BCYN "[Uploaded %llu bytes]\n" CRESET, (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
+    		}
 		}
 	}
 	if (verbose >= 3) printf("pongoOS> ");
