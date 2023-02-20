@@ -155,6 +155,7 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 			LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
 		}
 	}
+	if (verbose >= 3) printf("pongoOS> ");
 	return ret;
 }
 
