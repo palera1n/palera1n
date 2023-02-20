@@ -59,7 +59,7 @@ jobs:
           - arch: arm64
             gnu_triple: aarch64-apple-darwin
             os: iphoneos
-            minos: 14.0
+            minos: 7.0
     runs-on: macos-12
     env:
       MBEDTLS_VERSION: 3.3.0
@@ -135,8 +135,8 @@ jobs:
         if: matrix.os == 'iphoneos'
         run: |
           echo "FAKE_PLATFORM=2" >> $GITHUB_ENV
-          echo "FAKE_SDK=14.0" >> $GITHUB_ENV
-          echo "FAKE_MINOS=14.0" >> $GITHUB_ENV
+          echo "FAKE_SDK=7.0" >> $GITHUB_ENV
+          echo "FAKE_MINOS=7.0" >> $GITHUB_ENV
 
       - name: Prepare headers
         if: matrix.os != 'macosx'

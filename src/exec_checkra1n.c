@@ -11,9 +11,15 @@
 #include <errno.h>
 #include <limits.h>
 
+#include <assert.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
+
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
 
 extern char **environ;
 
@@ -53,6 +59,43 @@ int exec_checkra1n() {
 		unlink(checkra1n_path);
 		return -1;
 	}
+#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD))
+	char* libcheckra1nhelper_dylib_path = NULL;
+	{
+		struct utsname name;
+		uname(&name);
+		unsigned long darwinMajor = strtoul(name.release, NULL, 10);
+		assert(darwinMajor != 0);
+#if !defined(DEV_BUILD)
+		if (darwinMajor < 20) {
+#endif
+			libcheckra1nhelper_dylib_path = malloc(strlen(tmpdir) + 40);
+			snprintf(libcheckra1nhelper_dylib_path, strlen(tmpdir) + 40, "%s/libcheckra1nhelper.dylib.XXXXXX", tmpdir);
+			int helper_fd = mkstemp(libcheckra1nhelper_dylib_path);
+			if (helper_fd == -1) {
+				LOG(LOG_FATAL, "Cannot open temporary file: %d (%s)", errno, strerror(errno));
+				return -1;
+			}
+			ssize_t didWrite = write(helper_fd, libcheckra1nhelper_dylib, libcheckra1nhelper_dylib_len);
+			if ((unsigned int)didWrite != libcheckra1nhelper_dylib_len) {
+				LOG(LOG_FATAL, "Size written does not match expected: %lld != %d: %d (%s)", didWrite, libcheckra1nhelper_dylib_len, errno, strerror(errno));
+				close(helper_fd);
+				unlink(libcheckra1nhelper_dylib_path);
+				return -1;
+			}
+			close(helper_fd);
+			ret = chmod(libcheckra1nhelper_dylib_path, 0700);
+			if (ret) {
+				LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", libcheckra1nhelper_dylib_path, errno, strerror(errno));
+				unlink(libcheckra1nhelper_dylib_path);
+				return -1;
+			}
+			setenv("DYLD_INSERT_LIBRARIES", libcheckra1nhelper_dylib_path, 1);
+#if !defined(DEV_BUILD)
+		}
+#endif
+	}
+#endif
 checkra1n_exec: {};
 	char args[0x10] = "-pE";
 	if (checkrain_option_enabled(host_flags, host_option_demote)) strncat(args, "d", 0xf);
@@ -80,6 +123,15 @@ checkra1n_exec: {};
 		free(checkra1n_path);
 		checkra1n_path = NULL;
 	}
+#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD))
+	if (libcheckra1nhelper_dylib_path != NULL) {
+		unlink(libcheckra1nhelper_dylib_path);
+		unsetenv("DYLD_INSERT_LIBRARIES");
+		unsetenv("DYLD_FORCE_FLAT_NAMESPACE");
+		free(libcheckra1nhelper_dylib_path);
+		libcheckra1nhelper_dylib_path = NULL;
+	}
+#endif
 	waitpid(pid, NULL, 0);
 	return 0;
 }
