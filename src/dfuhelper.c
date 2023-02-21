@@ -36,7 +36,7 @@ int dfuhelper_thr_running = false;
 
 void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
     for (int i = time2; i < time; i++) {
-        printf(CYN "\r\033[K%s (%d)" CRESET, text, time - i + time2);
+        printf(BCYN "\r\033[K%s (%d)" CRESET, text, time - i + time2);
         fflush(stdout);
         sleep(1);
 		if (cond != NULL && cond(cond_arg)) pthread_exit(NULL);
