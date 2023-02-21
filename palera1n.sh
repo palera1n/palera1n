@@ -293,7 +293,7 @@ _dfuhelper() {
     fi
     step 3 "Get ready"
     step 4 "$step_one" &
-    sleep 3
+    sleep 2
     "$dir"/irecovery -c "reset" &
     wait
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
