@@ -69,6 +69,13 @@ void *pongo_usb_callback(void *arg) {
 	if (checkrain_option_enabled(host_flags, host_option_pongo_full)) goto done;
 	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
+	if (checkrain_option_enabled(palerain_flags, palerain_option_setup_partial_root)) {
+		LOG(LOG_INFO, "Please wait up to 5 minutes for the bindfs to be created.");
+		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -B (Create BindFS) option to jailbreak.");
+	} else if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
+		LOG(LOG_INFO, "Please wait up to 10 minutes for the fakefs to be created.");
+		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -c (Create FakeFS) option to jailbreak.");
+	}
 	if (dfuhelper_thr_running) {
 		pthread_cancel(dfuhelper_thread);
 		dfuhelper_thr_running = false;
