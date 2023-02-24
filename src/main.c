@@ -16,7 +16,6 @@
 #include <signal.h>
 #include <pthread.h>
 #include <inttypes.h>
-#include <getopt.h>
 #include <errno.h>
 #include <spawn.h>
 #include <sys/mman.h>
@@ -56,7 +55,7 @@ void thr_cleanup(void* ptr) {
 	*(int*)ptr = 0;
 }
 
-int build_checks() {
+int build_checks(void) {
 #if defined(__APPLE__)
 #ifndef NO_CHECKRAIN
 	struct mach_header_64* c1_header = (struct mach_header_64*)&checkra1n[0];

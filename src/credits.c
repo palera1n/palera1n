@@ -6,7 +6,7 @@
 #define THE_PLUSH "Ploosh"
 
 #define T void
-#define R print_credits() {
+#define R print_credits(void) {
 #define O fprintf
 #define U (
 #define B stdout

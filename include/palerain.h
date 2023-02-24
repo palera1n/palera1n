@@ -186,7 +186,7 @@ void devinfo_free(devinfo_t *dev);
 bool cpid_is_arm64(unsigned int cpid);
 /* devhelper commands */
 int subscribe_cmd(usbmuxd_event_cb_t device_event_cb, irecv_device_event_cb_t irecv_event_cb);
-int unsubscribe_cmd();
+int unsubscribe_cmd(void);
 int devinfo_cmd(devinfo_t *dev, const char *udid);
 int enter_recovery_cmd(const char* udid);
 int reboot_cmd(const char* udid);
@@ -195,7 +195,7 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid);
 int autoboot_cmd(const uint64_t ecid);
 int exitrecv_cmd(const uint64_t ecid);
 
-int exec_checkra1n();
+int exec_checkra1n(void);
 int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename);
 void* pongo_helper(void* ptr);
 
@@ -203,25 +203,25 @@ void* pongo_helper(void* ptr);
 extern void* pongo_usb_callback(void* arg);
 usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint32_t wLength, void *data, uint32_t *wLenDone);
 const char *usb_strerror(usb_ret_t err);
-int wait_for_pongo();
-int issue_pongo_command();
-int upload_pongo_file();
-int tui();
+int wait_for_pongo(void);
+int upload_pongo_file(usb_device_handle_t, unsigned char*, unsigned int);
+int issue_pongo_command(usb_device_handle_t, char*);
+int tui(void);
 int optparse(int argc, char* argv[]);
 
-bool get_spin();
+bool get_spin(void);
 bool set_spin(bool val);
-bool get_found_pongo();
+bool get_found_pongo(void);
 void* pongo_helper(void* _);
 bool set_found_pongo(bool val);
-uint64_t get_ecid_wait_for_dfu();
+uint64_t get_ecid_wait_for_dfu(void);
 uint64_t set_ecid_wait_for_dfu(uint64_t ecid);
 
 void write_stdout(char *buf, uint32_t len);
 void io_start(stuff_t *stuff);
 void io_stop(stuff_t *stuff);
 
-void print_credits();
+void print_credits(void);
 
 #ifdef DEV_BUILD
 #include <newt.h>

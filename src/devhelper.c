@@ -93,7 +93,7 @@ int subscribe_cmd(usbmuxd_event_cb_t device_event_cb, irecv_device_event_cb_t ir
 	return 0;
 }
 
-int unsubscribe_cmd()
+int unsubscribe_cmd(void)
 {
 	usbmuxd_events_unsubscribe(usbmuxdctx);
 	irecv_device_event_unsubscribe(irecvctx);

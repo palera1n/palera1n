@@ -30,7 +30,7 @@ char* ext_checkra1n = NULL;
 
 #define tmpdir getenv("TMPDIR") == NULL ? "/tmp" : getenv("TMPDIR")
 
-int exec_checkra1n() {
+int exec_checkra1n(void) {
 	LOG(LOG_INFO, "About to execute checkra1n");
 	int fd, ret;
 	char* checkra1n_path = NULL;

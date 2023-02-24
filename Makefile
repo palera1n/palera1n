@@ -6,7 +6,7 @@ STRIP = strip
 CC ?= cc
 CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC)
 CFLAGS += -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\" -Wall -Wextra -Wno-unused-parameter
-CFLAGS += -Wno-unused-variable -I$(SRC)/src -std=c99 -pedantic-errors -D_C99_SOURCE -D_POSIX_C_SOURCE=200112L -D_DARWIN_C_SOURCE
+CFLAGS += -Wno-unused-variable -I$(SRC)/src -std=c99 -pedantic-errors -D_C99_SOURCE -D_POSIX_C_SOURCE=200112L -D_DARWIN_C_SOURCE -lc
 LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a
 LIBS += $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread
 ifeq ($(TARGET_OS),)
@@ -21,7 +21,7 @@ LDFLAGS += -Wl,-dead_strip
 LIBS += -framework CoreFoundation -framework IOKit
 else
 CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += -static -no-pie -Wl,--gc-sections
+LDFLAGS += -static -no-pie -Wl,--gc-sections -lc
 endif
 LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
 
