@@ -20,6 +20,9 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 - Install *way* too many tweaks which you don't need, this can lead to potential battery drain
 - Jailbreak without making a backup first, so if the worst happens, you can just restore.
 
+# Image of a chicken
+<img  src="https://github.com/0xilis/palera1n/raw/tweaks/chicken-3592434612.jpg"  alt="image of a chicken">
+
 # Requirements
 
 - A checkm8 vulnerable iOS device on iOS 15 or 16 (A8-A11)
