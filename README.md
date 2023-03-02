@@ -1,5 +1,5 @@
 <img align="left" height="120" src="https://cdn.discordapp.com/attachments/1017854329887129611/1073858292159352862/thing.png" alt="palera1n logo" style="float: left;"/>
-<h3 align="right">An iOS 15.0-16.3 work-in-progress, <br>(semi-)tethered checkm8 jailbreak</h3> 
+<h3 align="right">An iOS 15.0-16.3.1 work-in-progress, <br>(semi-)tethered checkm8 jailbreak</h3> 
 
 <p  align="right" >
   <strong><a  href="https://ios.cfw.guide/installing-palera1n">Guide</a></strong>
@@ -28,6 +28,7 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 	-	If you want the device to be semi-tethered, **you will need 5-10GB of space** for the fakefs. This means that 16GB devices cannot be semi-tethered
 	- If you are on `A10(X)`, use [checkp4le](https://github.com/guacaplushy/checkp4le) instead for full SEP functionality (Passcode, TouchID, Apple Pay)
 	- On `A11`, **you must disable your passcode while in the jailbroken state** (on iOS 16, you need to reset your device before proceeding with palera1n `A11`).
+	- palera1n is currently broken on iOS 16.4
 
 - **USB-A** cables are recommended to use, USB-C may have issues with palera1n and getting into DFU mode.
 

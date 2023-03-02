@@ -82,7 +82,7 @@ step() {
 print_help() {
     cat << EOF
 Usage: $0 [Options] [ subcommand | iOS version ]
-iOS 15.0-16.3 jailbreak tool for checkm8 devices
+iOS 15.0-16.3.1 jailbreak tool for checkm8 devices
 
 Options:
     --help              Print this help
