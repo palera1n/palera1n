@@ -107,7 +107,7 @@ EOF
 }
 
 parse_opt() {
-    case "$1" in
+    case $1 in
         --)
             no_more_opts=1
             ;;
