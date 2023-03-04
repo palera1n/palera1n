@@ -26,7 +26,7 @@ It boots the device with multiple patches required. On first run, it'll boot a r
 # Requirements
 - Needs a checkm8 vulnerable iOS device on iOS 15.x or 16.x (`A8` - `A11`)
 	-	If you want the device to be semi-tethered, **you will need 5-10GB of space** for the fakefs. This means that 16GB devices cannot be semi-tethered
-	- If you are on `A10(X)`, use [checkp4le](https://github.com/guacaplushy/checkp4le) instead for full SEP functionality (Passcode, TouchID, Apple Pay)
+	- If you are on `A10(X)`, use [palera1n-c](https://github.com/palera1n/palera1n-c) instead for full SEP functionality (Passcode, TouchID, Apple Pay)
 	- On `A11`, **you must disable your passcode while in the jailbroken state** (on iOS 16, you need to reset your device before proceeding with palera1n `A11`).
 	- palera1n is currently broken on iOS 16.4
 
