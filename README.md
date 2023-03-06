@@ -55,7 +55,7 @@ Join the [Support Discord](https://dsc.gg/palera1n), and find the palera1n-c thr
 - [Nick Chan](https://github.com/asdfugil) for the rewrite
 - [Nebula](https://github.com/itsnebulalol), palera1n owner and Python rewrite lead developer
 - [Mineek](https://github.com/mineek)
-- [Tom](https://github.com/guacaplushy) for updated ploosh kpf
+- [Tom](https://github.com/plooshi) for updated ploosh kpf and universal loader
 - [Lakhan Lothiyi](https://github.com/llsc12) for palera1n loader app
 - [checkra1n](https://github.com/checkra1n) for the base of the kpf
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing [bootstrap](https://github.com/ProcursusTeam/Procursus)
