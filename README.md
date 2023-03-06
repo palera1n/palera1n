@@ -59,7 +59,7 @@ Join the [Support Discord](https://dsc.gg/palera1n) if you need help with palera
 	- [Kernel15Patcher](https://github.com/mineek/PongoOS/tree/iOS15/checkra1n/Kernel15Patcher)
 	- [Kernel64Patcher](https://github.com/mineek/Kernel64Patcher)
 	- Work on jbinit, together with [Nick Chan](https://github.com/asdfugil)
-- [Tom](https://github.com/guacaplushy) for a couple patches and bugfixes
+- [Tom](https://github.com/plooshi) for a couple patches and bugfixes
 	- For maintaining [Kernel64Patcher](https://github.com/palera1n/Kernel64Patcher)
 - [Serena](https://github.com/SerenaKit) for helping with boot ramdisk.
 - [Nick Chan](https://github.com/asdfugil) general help with patches and iBoot payload stuff
