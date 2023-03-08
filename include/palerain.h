@@ -198,6 +198,9 @@ int exitrecv_cmd(const uint64_t ecid);
 int exec_checkra1n(void);
 int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename);
 void* pongo_helper(void* ptr);
+const unsigned char *
+boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
+                           const unsigned char* needle,   size_t nlen);
 
 
 extern void* pongo_usb_callback(void* arg);

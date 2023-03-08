@@ -3,6 +3,7 @@ all: palera1n
 OBJECTS  = main.o dfuhelper.o devhelper.o lockdown_helper.o
 OBJECTS += optparse.o override_file.o log.o lock_vars.o credits.o
 OBJECTS += fake_embedded.o exec_checkra1n.o pongo_helper.o
+OBJECTS += boyermoore_memmem.o
 
 ifeq (,$(findstring macosx, $(CFLAGS)))
 ifneq (,$(findstring version-min=, $(CFLAGS)))

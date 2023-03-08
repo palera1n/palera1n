@@ -9,8 +9,10 @@
 #include <ctype.h>
 #include <assert.h>
 #include <getopt.h>
+#include <limits.h>
 #include <errno.h>
 #include <palerain.h>
+#include <sys/mman.h>
 
 checkrain_option_t host_flags = 0;
 checkrain_option_p host_flags_p = &host_flags;
@@ -211,7 +213,36 @@ int optparse(int argc, char* argv[]) {
 			} else if (!(st.st_mode & S_IXUSR) && !(st.st_mode & S_IXGRP) && !(st.st_mode & S_IXOTH)) {
 				LOG(LOG_FATAL, "%s is not executable", optarg);
 				return -1;
-			};
+			} else if (!(st.st_mode & S_IFREG)) {
+				LOG(LOG_FATAL, "%s is not a regular file", optarg);
+				return -1;
+			}
+			if (st.st_size < (UCHAR_MAX+1)) {
+				LOG(LOG_FATAL, "%s too small", optarg);
+				return -1;
+			}
+			int checkra1n_fd = open(optarg, O_RDONLY);
+			if (checkra1n_fd == -1) {
+				LOG(LOG_FATAL, "Cannot open %s: %d (%s)", optarg, errno, strerror(errno));
+				return -1;
+			}
+			void* addr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, checkra1n_fd, 0);
+			if (addr == MAP_FAILED) {
+				LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", optarg, errno, strerror(errno));
+				return -1;
+			}
+			if (boyermoore_horspool_memmem(addr, st.st_size, (const unsigned char*)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) 
+				{
+					host_flags |= palerain_option_checkrain_is_clone;
+					LOG(LOG_VERBOSE3, "%s is checkra1n clone", optarg);
+				}
+			else
+			{
+				host_flags &= ~palerain_option_checkrain_is_clone;
+				LOG(LOG_VERBOSE3, "%s is checkra1n", optarg);
+			}
+			munmap(addr, st.st_size);
+			close(checkra1n_fd);
 			ext_checkra1n = calloc(1, strlen(optarg) + 1);
 			snprintf(ext_checkra1n, strlen(optarg) + 1, "%s", optarg);
 			break;

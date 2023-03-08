@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <limits.h>
 #include <assert.h>
 
 #include <sys/select.h>
@@ -56,8 +57,8 @@ void thr_cleanup(void* ptr) {
 }
 
 int build_checks(void) {
-#if defined(__APPLE__)
 #ifndef NO_CHECKRAIN
+#if defined(__APPLE__)
 	struct mach_header_64* c1_header = (struct mach_header_64*)&checkra1n[0];
 	if (c1_header->magic != MH_MAGIC_64 && c1_header->magic != MH_CIGAM_64) {
 		LOG(LOG_FATAL, "Broken build: checkra1n is not a thin Mach-O");
@@ -68,6 +69,13 @@ int build_checks(void) {
 		return -1;
 	}
 #endif
+	if (checkra1n_len <= (UCHAR_MAX + 1)) {
+		LOG(LOG_FATAL, "checkra1n too small");
+	}
+	if (boyermoore_horspool_memmem(&checkra1n[0], checkra1n_len, (const unsigned char*)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) {
+		host_flags |= palerain_option_checkrain_is_clone;
+		LOG(LOG_WARNING, "Do not distribute!");
+	}
 #endif
 #ifndef NO_KPF
 	struct mach_header_64 *kpf_hdr = (struct mach_header_64 *)checkra1n_kpf_pongo;
