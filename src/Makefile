@@ -111,7 +111,7 @@ checkra1n-kpf-pongo:
 	curl -LO https://cdn.nickchan.lol/palera1n/artifacts/kpf/checkra1n-kpf-pongo
 
 ramdisk.dmg:
-	curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
+	curl -LO https://cdn.nickchan.lol/palera1n/artifacts/jbinit_rootless/ramdisk.dmg
 
 binpack.dmg:
 	curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.dmg
