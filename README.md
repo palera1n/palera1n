@@ -2,28 +2,28 @@
 <h3 align="right">An iOS 15.0-16.3.1 work-in-progress, <br>semi-tethered checkm8 jailbreak</h3> 
 
 <p  align="right" >
-  <strong><a  href="https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.1/palera1n.1.html">Usage</a></strong>
+  <strong><a href="https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.4/palera1n.1.html">Usage</a></strong>
   •
-  <strong><a  href="https://github.com/palera1n/palera1n-c/graphs/contributors">Contributors</a></strong>
+  <strong><a href="https://github.com/palera1n/palera1n/graphs/contributors">Contributors</a></strong>
   •
-  <strong><a  href="https://dsc.gg/palera1n">Discord</a></strong>
+  <strong><a href="https://dsc.gg/palera1n">Discord</a></strong>
   •
-  <strong><a  href="https://twitter.com/palera1n">Twitter</a></strong>
+  <strong><a href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
 <div class="clear"></div>
 
-### You can obtain v2.0.0 beta [here](https://github.com/palera1n/palera1n-c/releases).
+### You can obtain v2.0.0 beta [here](https://github.com/palera1n/palera1n/releases).
 
 # Warnings
 - This palera1n rewrite has noticeably different arguments compared to the shell version of palera1n.
   - Highly recommended that you take a look at how to use palera1n-c [here](https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.1/palera1n.1.html).
 
-- This does **NOT** support tethered creation or booting. You must use the older [shell version of palera1n](https://github.com/palera1n/palera1n).
+- This does **NOT** support tethered creation or booting. You must use the older [shell version of palera1n](https://github.com/palera1n/palera1n/tree/legacy) (clone with `-b legacy`).
 
 - We are **NOT** responsible for any data loss, or the result of a device being bricked. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself.
   - If your device is stuck in recovery, please run futurerestore `--exit-recovery`, or use `irecovery -n`.
 
-- palera1n-c will never work in VirtualBox, VMware or any virtual machine that doesn't support PCI passthrough.
+- palera1n will never work in VirtualBox, VMware or any virtual machine that doesn't support PCI passthrough.
 
 # Requirements
 - A checkm8 vulnerable iOS device on iOS 15.x or 16.x (`A8` - `A11`)
@@ -53,7 +53,7 @@ Join the [Support Discord](https://dsc.gg/palera1n), and find the palera1n-c thr
 <p>
 
 - [Nick Chan](https://github.com/asdfugil) for the rewrite
-- [Nebula](https://github.com/itsnebulalol), palera1n owner and Python rewrite lead developer
+- [Nebula](https://github.com/itsnebulalol) - palera1n owner and manager
 - [Mineek](https://github.com/mineek)
 - [Tom](https://github.com/plooshi) for updated ploosh kpf and universal loader
 - [Lakhan Lothiyi](https://github.com/llsc12) for palera1n loader app
