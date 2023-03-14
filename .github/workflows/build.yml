@@ -235,30 +235,38 @@ jobs:
           sudo apt-key adv --fetch-keys https://assets.checkra.in/debian/archive.key
           sudo apt-get update
           sudo apt-get install -y ld64 cctools-strip
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Get Pongo commit
+        run: echo "PONGO_COMMIT=$(git -C src/PongoOS rev-parse HEAD)" >> $GITHUB_ENV
+
       - name: Voodoo magic
         id: voodoo
         uses: actions/cache@v2
         with:
-          key: ${{ github.event_name }}-${{ github.ref }}-${{ github.run_id }}
+          key: ${{ github.event_name }}-${{ env.PONGO_COMMIT }}-${{ github.run_id }}
           restore-keys: |
-            pongo-${{ github.ref }}-
+            pongo-${{ env.PONGO_COMMIT }}-
             pongo-
           path: |
-            **
-      - name: Checkout repository
-        if: steps.voodoo.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Update repository
-        if: steps.voodoo.outputs.cache-hit == 'true'
-        run: |
-          git fetch --all
-          git reset --hard origin/$(git branch --show-current)
-          git submodule update --recursive --remote
+            src/PongoOS/**
+  
       - name: Compile
         run: |
+          cd src/PongoOS
           EMBEDDED_CC='clang-10' EMBEDDED_AR='llvm-ar-10' EMBEDDED_RANLIB='llvm-ranlib-10' DEV_BUILD=1 make build/checkra1n-kpf-pongo
+
+      - name: Upload checkra1n-kpf-pongo
+        uses: actions/upload-artifact@v3
+        with:
+          name: checkra1n-kpf-pongo
+          path: src/PongoOS/checkra1n-kpf-pongo
+          retention-days: 1
 
   build-darwin:
     strategy:
