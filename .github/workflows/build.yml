@@ -205,6 +205,12 @@ jobs:
           path: src/jbinit/ramdisk.dmg
           key: jbinit-${{ env.JBINIT_COMMIT }}
 
+      - name: Download dependencies
+        if: steps.jbinit_cache.cache_hit != 'true'
+        run: |
+          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
+          sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
+
       - name: Build jbinit
         if: steps.jbinit_cache.cache_hit != 'true'
         run: |
