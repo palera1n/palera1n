@@ -159,7 +159,7 @@ jobs:
           sudo cp -R cores/binpack .
           sudo chown $UID:$GID .
           sudo mkdir -p binpack/Library/LaunchDaemons
-          sudo sed 's|/binpack|/cores/binpack|' binpack/usr/share/dropbear.plist.example > binpack/Library/LaunchDaemons/dropbear.plist
+          sudo sed 's|/binpack|/cores/binpack|' binpack/usr/share/dropbear.plist.example | sudo tee binpack/Library/LaunchDaemons/dropbear.plist
           sudo rm -rf binpack/usr/share/dropbear.plist.example
           sudo plutil -convert binary1 binpack/Library/LaunchDaemons/dropbear.plist
           sudo chown 0:0 binpack/Library/LaunchDaemons/dropbear.plist
