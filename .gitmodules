@@ -1,0 +1,12 @@
+[submodule "src/PongoOS"]
+	path = src/PongoOS
+	url = git@github.com:plooshi/PongoOS.git
+[submodule "src/jbinit"]
+	path = src/jbinit
+	url = git@github.com:palera1n/jbinit.git
+[submodule "src/loader"]
+	path = src/loader
+	url = git@github.com:palera1n/loader.git
+[submodule "src/binpack"]
+	path = src/binpack
+	url = git@github.com:palera1n/binpack.git

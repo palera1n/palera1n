@@ -44,6 +44,222 @@ jobs:
           localDir: 'ready/'
           remoteDir: '/palera1n/artifacts/c-rewrite'
 
+  build-loader:
+    runs-on: macos-12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Get loader commit
+        run: echo "LOADER_COMMIT=$(git -C src/loader rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Cache compile
+        id: loader_cache
+        uses: actions/cache@v3
+        with:
+          path: src/loader/packages
+          key: loader-${{ env.LOADER_COMMIT }}
+
+      - name: Install dependencies (packages)
+        if: steps.loader_cache.outputs.cache-hit != 'true'
+        run: |
+          curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
+          sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
+
+      - name: Compile
+        if: steps.loader_cache.outputs.cache-hit != 'true'
+        run: make -C src/loader
+
+      - name: Upload loader
+        uses: actions/upload-artifact@v3
+        with:
+          name: palera1n.ipa
+          path: src/loader/packages/palera1n.ipa
+          retention-days: 1        
+
+  build-binpack:
+    needs: build-loader
+    runs-on: macos-12
+    steps:
+      - name: Cache Procursus
+        uses: actions/cache@v3
+        id: procache  
+        with:
+          path: |
+            ~/__cache
+          key: ${{ runner.os }}-procursus
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Get binpack commit
+        run: echo "BINPACK_COMMIT=$(git -C src/binpack rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Cache binpack.tgz
+        uses: actions/cache@v3
+        id: binpack_cache
+        with:
+          path: src/jbinit/binpack.tgz
+          key: binpack-${{ env.BINPACK_COMMIT }}
+
+      - name: Download loader
+        uses: actions/download-artifact@v3
+        with:
+          name: palera1n.ipa
+          path: src/jbinit/palera1n.ipa
+
+      - name: Checkout Procursus
+        if: steps.binpack_cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v3
+        with:
+          repository: ProcursusTeam/Procursus
+          path: src/Procursus
+
+      - name: Setup Procursus Bootstrap (install)
+        if: steps.procache.outputs.cache-hit != 'true' && steps.binpack_cache.outputs.cache-hit != 'true'
+        run: |
+          wget https://apt.procurs.us/bootstraps/big_sur/bootstrap-darwin-amd64.tar.zst
+          sudo gtar --preserve-permissions -xkf ./bootstrap-darwin-amd64.tar.zst -C /
+          echo '/opt/procursus/sbin:/opt/procursus/bin' >> $GITHUB_PATH
+          PATH=/opt/procursus/sbin:/opt/procursus/bin:$PATH sudo /opt/procursus/bin/apt update
+          sudo /opt/procursus/bin/apt -V full-upgrade -y || :
+          sudo /opt/procursus/bin/apt install asciidoc autoconf autoconf-archive automake autopoint bash bison cmake docbook-xml docbook-xsl fakeroot findutils flex file gawk git gnupg gpgrt-tools groff gzip ldid libtool libltdl-dev make ncurses-bin openssl patch pkg-config po4a python3 sed tar triehash wget xz-utils zstd -y
+
+      - name: Add Procursus to PATH
+        if: steps.binpack_cache.outputs.cache-hit != 'true'
+        run: |
+          echo '/opt/procursus/sbin:/opt/procursus/bin' >> $GITHUB_PATH
+
+      - name: Setup Procursus Bootstrap (cache)
+        if: steps.procache.outputs.cache-hit == 'true' && steps.binpack_cache.outputs.cache-hit != 'true'
+        run: |
+          sudo mkdir -p ~/__cache/procursus/var/cache/apt/archives/partial ~/__cache/procursus/var/lib/apt/lists/partial
+          sudo rsync -aP ~/__cache/procursus /opt
+          sudo /opt/procursus/bin/apt update
+          sudo /opt/procursus/bin/apt --allow-downgrades -V dist-upgrade -y
+          sudo /opt/procursus/bin/apt --allow-downgrades -V dist-upgrade -y
+
+      - name: Build binpack
+        if: steps.binpack_cache.outputs.cache-hit != 'true'
+        run: |
+          cd src/binpack
+          gmake MEMO_CFVER=1800 MEMO_PREFIX=/cores/binpack binpack
+          cd ../..
+
+      - name: Process binpack.tar into binpack.tgz
+        if: steps.binpack_cache.outputs.cache-hit != 'true'
+        run:
+          cd src/jbinit
+          cp ../binpack/build_strap/iphoneos-arm64/1800/binpack.tar .
+          sudo tar --preserve-permissions -xf binpack.tar
+          sudo cp cores/binpack .
+          sudo chown $UID:$GID .
+          sudo mkdir -p binpack/Library/LaunchDaemons
+          sudo sed 's|/binpack|/cores/binpack|' binpack/usr/share/dropbear.plist.example > binpack/Library/LaunchDaemons/dropbear.plist
+          sudo rm -rf binpack/usr/share/dropbear.plist.example
+          sudo plutil -convert binary1 binpack/Library/LaunchDaemons/dropbear.plist
+          sudo chown 0:0 binpack/Library/LaunchDaemons/dropbear.plist
+          sudo gchmod 755 -R binpack/Library
+          sudo gchmod 644 binpack/Library/LaunchDaemons/dropbear.plist
+          tar -zcf binpack.tgz binpack
+          cd ../..
+
+      - name: Generate binpack.dmg
+        run:
+          cd src/jbinit
+          gmake binpack.dmg
+          cd ../..
+
+      - name: Upload binpack
+        uses: actions/upload-artifact@v3
+        with:
+          name: binpack.dmg
+          path: src/jbinit/binpack.dmg
+          retention-days: 1
+
+      - name: Copy Procursus to Cache Location
+        run: |
+          sudo mkdir -p ~/__cache
+          sudo rsync -aP /opt/procursus ~/__cache
+          sudo rm -rf ~/__cache/procursus/var/cache/apt/archives/partial ~/__cache/procursus/var/lib/apt/lists/partial ~/__cache/procursus/Library/dpkg/triggers/Lock
+
+  build-jbinit:
+    needs: [build-binpack]
+    runs-on: macos-12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Get jbinit commit
+        run: echo "JBINIT_COMMIT=$(git -C src/jbinit rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Cache jbinit
+        uses: actions/cache@v3
+        id: jbinit_cache
+        with:
+          path: src/jbinit/ramdisk.dmg
+          key: jbinit-${{ env.JBINIT_COMMIT }}
+
+      - name: Build jbinit
+        if: steps.jbinit_cache.cache_hit != 'true'
+        run: |
+          cd src/jbinit
+          sudo cp -a $(xcrun -sdk macosx --show-sdk-path)/usr/include/{xpc,{launch,bootstrap}.h} $(xcrun -sdk iphoneos --show-sdk-path)/usr/include
+          sudo sed -i.bak -Ee 's/API_UNAVAILABLE\(.*\)//g' $(xcrun -sdk iphoneos --show-sdk-path)//System/Library/Frameworks/CoreFoundation.framework/Headers/CFUserNotification.h
+          sudo sed -i.bak -e 's/;}/;/g' $(xcrun -sdk iphoneos --show-sdk-path)//System/Library/Frameworks/CoreFoundation.framework/Headers/CFUserNotification.h
+          sudo sed -i.bak -e 's/__UNAVAILABLE_PUBLIC_IOS;/;/g' $(xcrun -sdk iphoneos --show-sdk-path)/System/Library/Frameworks/IOKit.framework/Headers/IOKitLib.h
+          ruby -e "File.write(ARGV[0], File.read(ARGV[0]).gsub(ARGV[1]) { ARGV[2] })" $(xcrun -sdk iphoneos --show-sdk-path)/System/Library/Frameworks/IOKit.framework/Headers/IOKitLib.h '__API_DEPRECATED_WITH_REPLACEMENT("kIOMainPortDefault", macos(10.0, 12.0)) __API_UNAVAILABLE(ios, watchos, tvos);' '__API_DEPRECATED_WITH_REPLACEMENT("kIOMainPortDefault", macos(10.0, 12.0)) /*__API_UNAVAILABLE(ios, watchos, tvos)*/;'
+          sudo tar -xf --preserve-permissions binpack.tgz
+          sudo chown $UID:$GID .
+          sudo gmake ramdisk.dmg
+
+      - name: Upload ramdisk
+        uses: actions/upload-artifact@v3
+        with:
+          name: ramdisk.dmg
+          path: src/jbinit/ramdisk.dmg
+          retention-days: 1
+
+  build-kpf:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install toolchain
+        run: |
+          echo 'deb https://assets.checkra.in/debian /' | sudo tee /etc/apt/sources.list.d/checkra1n.list
+          sudo apt-key adv --fetch-keys https://assets.checkra.in/debian/archive.key
+          sudo apt-get update
+          sudo apt-get install -y ld64 cctools-strip
+      - name: Voodoo magic
+        id: voodoo
+        uses: actions/cache@v2
+        with:
+          key: ${{ github.event_name }}-${{ github.ref }}-${{ github.run_id }}
+          restore-keys: |
+            pongo-${{ github.ref }}-
+            pongo-
+          path: |
+            **
+      - name: Checkout repository
+        if: steps.voodoo.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Update repository
+        if: steps.voodoo.outputs.cache-hit == 'true'
+        run: |
+          git fetch --all
+          git reset --hard origin/$(git branch --show-current)
+          git submodule update --recursive --remote
+      - name: Compile
+        run: |
+          EMBEDDED_CC='clang-10' EMBEDDED_AR='llvm-ar-10' EMBEDDED_RANLIB='llvm-ranlib-10' DEV_BUILD=1 make build/checkra1n-kpf-pongo
+
   build-darwin:
     strategy:
       matrix:
@@ -61,6 +277,7 @@ jobs:
             os: iphoneos
             minos: 7.0
     runs-on: macos-12
+    needs: [build-loader, build-jbinit, build-binpack, build-kpf]
     env:
       MBEDTLS_VERSION: 3.3.0
       READLINE_VERSION: 8.2
@@ -85,6 +302,24 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           echo "SDK=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)" >> $GITHUB_ENV
+      
+      - name: Download binpack.dmg
+        uses: actions/download-artifact@v3
+        with:
+          name: binpack.dmg
+          path: src/palera1n/binpack.dmg
+
+      - name: Download ramdisk.dmg
+        uses: actions/download-artifact@v3
+        with:
+          name: ramdisk.dmg
+          path: src/palera1n/ramdisk.dmg
+
+      - name: Download checkra1n-kpf-pongo
+        uses: actions/download-artifact@v3
+        with:
+          name: checkra1n-kpf-pongo
+          path: src/palera1n/checkra1n-kpf-pongo
 
       - name: Download dependencies (source code)
         run: |
@@ -391,6 +626,7 @@ jobs:
         - armel-linux-musleabi
         - aarch64-linux-musl
     runs-on: ubuntu-latest
+    needs: [build-loader, build-jbinit, build-binpack, build-kpf]
     env:
       MBEDTLS_VERSION: 3.3.0
       LIBUSB_VERSION: 1.0.26
@@ -428,6 +664,24 @@ jobs:
         if: steps.toolchain_cache.outputs.cache-hit != 'true'
         run: |
           curl -LO https://musl.cc/${{ matrix.triple }}-cross.tgz
+
+      - name: Download binpack.dmg
+        uses: actions/download-artifact@v3
+        with:
+          name: binpack.dmg
+          path: src/palera1n/binpack.dmg
+
+      - name: Download ramdisk.dmg
+        uses: actions/download-artifact@v3
+        with:
+          name: ramdisk.dmg
+          path: src/palera1n/ramdisk.dmg
+
+      - name: Download checkra1n-kpf-pongo
+        uses: actions/download-artifact@v3
+        with:
+          name: checkra1n-kpf-pongo
+          path: src/palera1n/checkra1n-kpf-pongo
 
       - name: Setup environment
         run: |
@@ -664,3 +918,13 @@ jobs:
           dryRun: false
           localDir: 'ready/'
           remoteDir: '/palera1n/artifacts/c-rewrite'
+
+  delete-artifacts:
+    runs-on: ubuntu-latest
+    needs: [darwin-dist, build-Linux]
+    steps:
+      - name: Delete all artifacts on GitHub
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: '*'
+          failOnError: false
