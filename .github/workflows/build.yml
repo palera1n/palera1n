@@ -215,6 +215,7 @@ jobs:
         if: steps.jbinit_cache.cache_hit != 'true'
         run: |
           cd src/jbinit
+          git submodules update --init
           sudo cp -a $(xcrun -sdk macosx --show-sdk-path)/usr/include/{xpc,{launch,bootstrap}.h} $(xcrun -sdk iphoneos --show-sdk-path)/usr/include
           sudo sed -i.bak -Ee 's/API_UNAVAILABLE\(.*\)//g' $(xcrun -sdk iphoneos --show-sdk-path)//System/Library/Frameworks/CoreFoundation.framework/Headers/CFUserNotification.h
           sudo sed -i.bak -e 's/;}/;/g' $(xcrun -sdk iphoneos --show-sdk-path)//System/Library/Frameworks/CoreFoundation.framework/Headers/CFUserNotification.h
