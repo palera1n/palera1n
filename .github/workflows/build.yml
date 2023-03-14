@@ -147,7 +147,7 @@ jobs:
         if: steps.binpack_cache.outputs.cache-hit != 'true'
         run: |
           cd src/binpack
-          gmake MEMO_CFVER=1800 MEMO_PREFIX=/cores/binpack binpack
+          gmake MEMO_CFVER=1800 MEMO_PREFIX=/cores/binpack MEMO_TARGET=iphoneos-arm64 binpack
           cd ../..
 
       - name: Process binpack.tar into binpack.tgz
@@ -188,7 +188,6 @@ jobs:
           sudo rm -rf ~/__cache/procursus/var/cache/apt/archives/partial ~/__cache/procursus/var/lib/apt/lists/partial ~/__cache/procursus/Library/dpkg/triggers/Lock
 
   build-jbinit:
-    needs: [build-binpack]
     runs-on: macos-12
     steps:
       - name: Checkout
