@@ -152,7 +152,7 @@ jobs:
 
       - name: Process binpack.tar into binpack.tgz
         if: steps.binpack_cache.outputs.cache-hit != 'true'
-        run:
+        run: |
           cd src/jbinit
           cp ../binpack/build_strap/iphoneos-arm64/1800/binpack.tar .
           sudo tar --preserve-permissions -xf binpack.tar
@@ -169,14 +169,14 @@ jobs:
           cd ../..
 
       - name: Generate binpack.dmg
-        run:
+        run: |
           cd src/jbinit
           gmake binpack.dmg
           cd ../..
 
       - name: Upload binpack
         uses: actions/upload-artifact@v3
-        with:
+        with: |
           name: binpack.dmg
           path: src/jbinit/binpack.dmg
           retention-days: 1
