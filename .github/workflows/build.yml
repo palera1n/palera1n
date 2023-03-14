@@ -265,7 +265,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: checkra1n-kpf-pongo
-          path: src/PongoOS/checkra1n-kpf-pongo
+          path: src/PongoOS/build/checkra1n-kpf-pongo
           retention-days: 1
 
   build-darwin:
