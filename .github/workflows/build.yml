@@ -156,7 +156,7 @@ jobs:
           cd src/jbinit
           cp ../binpack/build_strap/iphoneos-arm64/1800/binpack.tar .
           sudo tar --preserve-permissions -xf binpack.tar
-          sudo cp cores/binpack .
+          sudo cp -R cores/binpack .
           sudo chown $UID:$GID .
           sudo mkdir -p binpack/Library/LaunchDaemons
           sudo sed 's|/binpack|/cores/binpack|' binpack/usr/share/dropbear.plist.example > binpack/Library/LaunchDaemons/dropbear.plist
