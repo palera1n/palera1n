@@ -127,7 +127,7 @@ jobs:
           echo '/opt/procursus/sbin:/opt/procursus/bin' >> $GITHUB_PATH
           PATH=/opt/procursus/sbin:/opt/procursus/bin:$PATH sudo /opt/procursus/bin/apt update
           sudo /opt/procursus/bin/apt -V full-upgrade -y || :
-          sudo /opt/procursus/bin/apt install asciidoc autoconf autoconf-archive automake autopoint bash bison cmake docbook-xml docbook-xsl fakeroot findutils flex file gawk git gnupg gpgrt-tools groff gzip ldid libtool libltdl-dev make ncurses-bin openssl patch pkg-config po4a python3 sed tar triehash wget xz-utils zstd -y
+          sudo /opt/procursus/bin/apt install asciidoc autoconf autoconf-archive automake autopoint bash bison cmake docbook-xml docbook-xsl fakeroot findutils flex file gawk git gnupg gpgrt-tools groff gzip ldid libtool libltdl-dev llvm make ncurses-bin openssl patch pkg-config po4a python3 sed tar triehash wget xz-utils zstd -y
 
       - name: Add Procursus to PATH
         if: steps.binpack_cache.outputs.cache-hit != 'true'
