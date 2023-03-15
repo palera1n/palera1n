@@ -32,6 +32,7 @@ static struct option longopts[] = {
 	{"jbinit-log-to-file", no_argument, NULL, 'L'},
 	{"demote", no_argument, NULL, 'd'},
 	{"force-revert", no_argument, NULL, palerain_option_case_force_revert},
+	{"no-colors", no_argument, NULL, 'S'},
 	{"safe-mode", no_argument, NULL, 's'},
 	{"version", no_argument, NULL, palerain_option_case_version},
 	{"override-pongo", required_argument, NULL, 'k'},
@@ -56,9 +57,9 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 #ifdef DEV_BUILD
-			"Usage: %s [-12cCdDEfhlLnOpRstvV]"
+			"Usage: %s [-12cCdDEfhlLnOpRsStvV]"
 #else
-			"Usage: %s [-cCdDEfhlLnOpRsvV]"
+			"Usage: %s [-cCdDEfhlLnOpRsSvV]"
 #endif
 			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
@@ -91,6 +92,7 @@ static int usage(int e, char* prog_name)
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
 			"\t-R, --reboot-device\t\t\tReboot connected device in normal mode\n"
 			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
+			"\t-S, --no-colors\t\t\tDisable colors on the command line\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
@@ -110,9 +112,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"12BcDEhpvVldsOLftRnPIe:o:r:K:k:i:", 
+	"12BcDEhpvVldsSOLftRnPIe:o:r:K:k:i:", 
 #else
-	"BcDEhpvVldsOLfRnPIe:o:r:K:k:i:", 
+	"BcDEhpvVldsSOLfRnPIe:o:r:K:k:i:", 
 #endif
 	longopts, NULL)) != -1)
 	{
@@ -257,6 +259,9 @@ int optparse(int argc, char* argv[]) {
 			break;
 		case 'I':
 			host_flags |= host_option_device_info;
+			break;
+		case 'S':
+			host_flags |= host_option_no_colors;
 			break;
 #ifdef DEV_BUILD
 		case 't':

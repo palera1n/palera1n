@@ -82,6 +82,7 @@
 #define host_option_reboot_device        (1 << 8) /* Reboot device in normal mode */
 #define host_option_enter_recovery       (1 << 9) /* Enter recovery mode */
 #define host_option_device_info          (1 << 10) /* Print device info */
+#define host_option_no_colors            (1 << 11) /* no colors */
 
 #define PALEINFO_MAGIC 'PLSH'
 #define PALEINFO_CIGAM 'HSLP'

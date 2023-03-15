@@ -102,6 +102,7 @@ checkra1n_exec: {};
 	if (!checkrain_option_enabled(host_flags, palerain_option_checkrain_is_clone)) {
 		strncat(args, "p", 0xf);
 		if (verbose >= 2) strncat(args, "v", 0xf);
+		if (checkrain_option_enabled(host_flags, host_option_no_colors)) strncat(args, "n", 0xf);
 	} else {
 		strncat(args, "R", 0xf);
 	}

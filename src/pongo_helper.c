@@ -163,7 +163,10 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 		    if (verbose < 3 || verbose > 4) {
 				LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
     		} else {
-        		printf("/send mem:%p:%p\n" BCYN "[Uploaded %llu bytes]\n" CRESET, (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
+				if (checkrain_option_enabled(host_flags, host_option_no_colors))
+				    printf("/send mem:%p:%p\nUploaded %llu bytes]\n", (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
+				else
+        			printf("/send mem:%p:%p\n" BCYN "[Uploaded %llu bytes]\n" CRESET, (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
     		}
 		}
 	}

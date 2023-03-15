@@ -36,12 +36,12 @@ int dfuhelper_thr_running = false;
 
 void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
     for (int i = time2; i < time; i++) {
-        printf(BCYN "\r\033[K%s (%d)" CRESET, text, time - i + time2);
+			printf(checkrain_option_enabled(host_flags, host_option_no_colors) ? "\r\033[K%s (%d)" : BCYN "\r\033[K%s (%d)" CRESET, text, time - i + time2);
         fflush(stdout);
         sleep(1);
 		if (cond != NULL && cond(cond_arg)) pthread_exit(NULL);
     }
-    printf(CYN "\r%s (%d)" CRESET, text, time2);
+    printf(checkrain_option_enabled(host_flags, host_option_no_colors) ? "\r%s (%d)" : CYN "\r%s (%d)" CRESET, text, time2);
 	if (time2 == 0) puts("");
 }
 
