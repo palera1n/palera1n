@@ -171,7 +171,7 @@ jobs:
       - name: Generate binpack.dmg
         run: |
           cd src/jbinit
-          gmake binpack.dmg
+          sudo gmake binpack.dmg
           cd ../..
 
       - name: Upload binpack
