@@ -208,7 +208,7 @@ jobs:
       - name: Download dependencies
         if: steps.jbinit_cache.cache_hit != 'true'
         run: |
-          brew install make
+          brew install make coreutils
           curl -LO https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
           sudo install -m755 ldid_macosx_x86_64 /usr/local/bin/ldid
 
