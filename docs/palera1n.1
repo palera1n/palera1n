@@ -2,7 +2,7 @@
 .\" Copyright (c) 2023 Nick Chan
 .\" SPDX-License-Identifier: MIT
 .\"
-.Dd "06 February 2023"
+.Dd "03 March 2023"
 .Dt "Nick Chan utilities manual" 1 "palera1n"
 .Dt palera1n 1
 .Os
@@ -48,8 +48,11 @@ On iOS 16, the passcode must be off since restore, and
 from settings app counts as a restore.
 A backup may be used in this case.
 .Pp
+In the remainder of this document, the term "iOS" and "iPadOS" will be used interchangably
+as the difference is negligible as far as the jailbreak is concerened.
+.Pp
 .Sh SUPPORTED DEVICES
-As described above, arm64 iOS/iPadOS 15.0-16.3.1 devices are supported, here is an explicit
+As described above, arm64 iOS 15.0-16.3.1 devices are supported, here is an explicit
 list of supported devicecs:
 
 .Bl -tag -compact
@@ -103,11 +106,13 @@ is not supported when this option is used together with
 Like
 .Fl c , -setup-fakefs
 but the size of the created fakefs is smaller at the expense of having unwritable
-parts in rarely-written paths. (good for 16 GB devices)
+parts in rarely-written paths. When jailbreaking 16 GB devices, this option must be used
+when setting up fakefs for rootful, as they do not have enough storage for full fakefs.
+This option currently does not work on iOS 16.
 .It Fl c , -setup-fakefs
 When used with
 .Fl f , -fakefs ,
-Create the new APFS volume required for rootful. Will fail if one already exists.
+creates the new APFS volume required for rootful. Will fail if one already exists.
 .It Fl d , -demote
 Set the effective production fuse to 0, so as to enable hardware debugging features.
 .It Fl D , -dfuhelper
@@ -124,7 +129,7 @@ argument is used during fakefs setup.
 .It Fl E , -enter-recovery
 Exit after entering recovery mode.
 .It Fl f , -fakefs
-Jailbreak in rootful mode.
+Proceed in rootful mode. This applies to both full fakefs and partial fakefs.
 .It Fl h , -help
 Prints help text.
 .It Fl i , -checkra1n-file Ar checkra1n file
@@ -141,7 +146,7 @@ command. If in doubt, use
 .Sy https://github.com/guacaplushy/PongoOS
 iOS15 branch or your own fork of it.
 .It Fl l , -rootless
-Jailbreak in rootless mode, this is the default when neither
+Proceed in rootless mode, this is the default when neither
 .Fl l , -rootless
 and
 .Fl f , -fakefs
@@ -162,7 +167,7 @@ at the root of it, as well as a dmg named
 at the root of it. Otherwise, the device will not boot. It is also expected that it
 contains a shell, a ssh server, and various command line utilities.
 .It Fl O , -disable-ohio
-Disable ohio (disable analytics)
+Disable analytics, which would otherwise be sent to a server named "Ohio".
 .It Fl p , -pongo-shell
 Exit after booting into a clean PongoOS shell
 .It Fl P , -pongo-full
@@ -239,7 +244,7 @@ To exit recovery mode:
 .Sh CAVEATS
 .Pp
 .Em -v
-is not a real XNU boot argument. It is intercepted by iBoot. However, since XNU
+is not a real XNU boot argument. It is interpreted by iBoot. However, since XNU
 boot arguments are set in PongoOS, which is ran after iBoot has ran, it does nothing.
 To verbose boot, use the
 .Fl V , -verbose-boot
@@ -254,7 +259,12 @@ version of the Procursus fork of
 before they can be ran on a device jailbroken with
 .Nm
 \[char46]
-.Sh POST INSTLLATION
+.Pp
+When using rootful mode, the
+.Fl f , -fakefs
+flag must be specified at all times. It does not matter whether you want to create fakefs,
+create partial fakefs, rejailbreak or remove jailbreak.
+.Sh POST INSTALLATION
 The palera1n loader app will take up to 30 seconds to appear on the homescreen after the
 device has booted. If it does not appear, you can try using the shortcut:
 .Pp
@@ -302,11 +312,24 @@ may crash if the machine it is running on:
 .Dl "- Has non-compliant USB devices plugged in"
 .Pp
 The exploit may also work less reliably on some hosts, like AMD desktops, or some MediaTek devices.
+.Pp
+.Fl B , -setup-fakefs-partial
+does not work on iOS 16.
 .Sh NOTES
 .Nm
 injects a dylib into launchd to allow the
 .Sy launchctl runstats
 command to be used on the device.
+.Sh DEPRECATED AND REMOVED FUNCTIONALITY
+There was an option in 
+.Nm
+to force create the fakefs even when one already exists (which would overwrite
+the existing fakefs), by setting the palerain_option_setup_rootful_forced flag
+in palera1n flags. This option was removed because using
+.Fl -force-revert
+and
+.Fl c
+at the same time has exactly the same effect.
 .Sh SEE ALSO
 .Xr launchd 8
 .Xr launchd.plist 5
