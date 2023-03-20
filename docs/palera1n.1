@@ -2,16 +2,14 @@
 .\" Copyright (c) 2023 Nick Chan
 .\" SPDX-License-Identifier: MIT
 .\"
-.Dd "03 March 2023"
-.Dt "Nick Chan utilities manual" 1 "palera1n"
+.Dd "20 March 2023"
 .Dt palera1n 1
-.Os
 .Sh NAME
 .Nm palera1n
 .Nd iOS 15.0-16.3.1 arm64 iOS/iPadOS jailbreaking tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl BcdDEfhlnLOpRsSvVI
+.Op Fl cCdDEfhIlLnOpRsSvV
 .Op Fl e Ar Boot arguments
 .Op Fl k Ar Pongo image
 .Op Fl o Ar overlay file
@@ -199,7 +197,7 @@ Prints info about device and exits.
 .El
 .Sh ENVIRONMENTAL VARIABLES
 .Bl -tag -width -indent
-.It TMPDIR
+.It Ev TMPDIR
 This environmental variable should contain the a directory for temporary
 files. Without the
 .Fl i , -override-checkra1n
@@ -268,7 +266,7 @@ create partial fakefs, rejailbreak or remove jailbreak.
 The palera1n loader app will take up to 30 seconds to appear on the homescreen after the
 device has booted. If it does not appear, you can try using the shortcut:
 .Pp
-.Sy https://www.icloud.com/shortcuts/8cd5f489c8854ee0ab9ee38f2e62f87d
+.Lk https://www.icloud.com/shortcuts/8cd5f489c8854ee0ab9ee38f2e62f87d
 .Pp
 to open it. After opening the loader app, press install to install a bootstrap as well as
 the

@@ -57,9 +57,9 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 #ifdef DEV_BUILD
-			"Usage: %s [-12cCdDEfhlLnOpRsStvV]"
+			"Usage: %s [-12cCdDEfhIlLnOpRsStvV]"
 #else
-			"Usage: %s [-cCdDEfhlLnOpRsSvV]"
+			"Usage: %s [-cCdDEfhIlLnOpRsSvV]"
 #endif
 			" [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
