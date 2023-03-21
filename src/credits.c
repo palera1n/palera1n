@@ -9,7 +9,7 @@
 #define R print_credits(void) {
 #define O fprintf
 #define U (
-#define B stdout
+#define B stderr
 #define L ,
 #define E "# == palera1n-c == \n#\n"
 #define M "# Made by: Nick Chan, " THE_PLUSH ", Mineek, Nebula, llsc12\n#\n"
