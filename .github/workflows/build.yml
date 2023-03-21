@@ -378,12 +378,13 @@ jobs:
 
       - name: Build debs
         run: |
+          curl -LO https://raw.githubusercontent.com/palera1n/palera1n/main/packaging/control
+
           # Darwin x86_64
           mkdir -p stage/DEBIAN
           mkdir -p stage/opt/procursus/usr/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
-          ls
-          cp packaging/control stage/DEBIAN/control
+          cp control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|darwin-amd64|g' -i DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
@@ -399,7 +400,7 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/opt/procursus/usr/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
-          cp packaging/control stage/DEBIAN/control
+          cp control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|darwin-arm64|g' -i stage/DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i stage/DEBIAN/control
@@ -415,7 +416,7 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/usr/bin
           mkdir -p stage/usr/share/man/man1
-          cp packaging/control stage/DEBIAN/control
+          cp control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i stage/DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i stage/DEBIAN/control
@@ -431,7 +432,7 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/var/jb/usr/bin
           mkdir -p stage/var/jb/usr/share/man/man1
-          cp packaging/control stage/DEBIAN/control
+          cp control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i stage/DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
