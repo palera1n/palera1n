@@ -484,7 +484,7 @@ jobs:
       - name: Install build dependencies (packages)
         run: |
           sudo apt-get remove -y libssl-dev libreadline-dev
-          sudo apt-get install -y pkg-config autoconf automake autopoint
+          sudo apt-get install -y pkg-config autoconf automake autopoint mandoc
           sudo pip3 install jsonschema jinja2
 
       - name: Download toolchain checksum
