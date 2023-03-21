@@ -384,7 +384,7 @@ jobs:
       - name: Build debs
         run: |
           make -j$(sysctl -n hw.ncpu) docs
-          version=$(cat version)
+          version=$(git describe --tags --always --dirty | sed 's|-|~|' | sed 's|-|.|g' | sed 's|.g|.|g' | sed 's|^v||g')
 
           # Darwin x86_64
           mkdir -p stage/DEBIAN
@@ -398,7 +398,7 @@ jobs:
           ginstall -Dm644 ready/palera1n-macos-x86_64 stage/opt/procursus/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
 
-          dpkg-deb -b stage .
+          dpkg-deb -b stage palera1n_darwin-amd64.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -414,7 +414,7 @@ jobs:
           ginstall -Dm644 ready/palera1n-macos-arm64 stage/opt/procursus/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
 
-          dpkg-deb -b stage .
+          dpkg-deb -b stage palera1n_darwin-arm64.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -430,7 +430,7 @@ jobs:
           ginstall -Dm644 ready/palera1n-macos-arm64 stage/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
 
-          dpkg-deb -b stage .
+          dpkg-deb -b stage palera1n_iphoneos-arm.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -446,7 +446,7 @@ jobs:
           ginstall -Dm644 ready/palera1n-macos-arm64 stage/var/jb/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/var/jb/usr/share/man/man1/palera1n.1
 
-          dpkg-deb -b stage .
+          dpkg-deb -b stage palera1n_iphoneos-arm64.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -740,7 +740,7 @@ jobs:
 
       - name: Build debs
         run: |
-          version=$(cat version)
+          version=$(git describe --tags --always --dirty | sed 's|-|~|' | sed 's|-|.|g' | sed 's|.g|.|g' | sed 's|^v||g')
 
           make -j$(nproc) docs
           mkdir -p stage/DEBIAN
@@ -754,7 +754,7 @@ jobs:
           install -Dm644 ready/palera1n-${{ env.CHECKRA1N_NAME }} stage/usr/bin/palera1n
           install -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
 
-          dpkg-deb -b stage .
+          dpkg-deb -b stage palera1n_${{ env.ARCH_NAME }}.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
