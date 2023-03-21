@@ -518,15 +518,19 @@ jobs:
           case ${{ matrix.triple }} in
             i486-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86" >> $GITHUB_ENV
+              echo "ARCH_NAME=i386" >> $GITHUB_ENV
               ;;
             x86_64-linux-musl)
               echo "CHECKRA1N_NAME=linux-x86_64" >> $GITHUB_ENV
+              echo "ARCH_NAME=amd64" >> $GITHUB_ENV
               ;;
             armel-linux-musleabi)
               echo "CHECKRA1N_NAME=linux-armel" >> $GITHUB_ENV
+              echo "ARCH_NAME=armel" >> $GITHUB_ENV
               ;;
             aarch64-linux-musl)
               echo "CHECKRA1N_NAME=linux-arm64" >> $GITHUB_ENV
+              echo "ARCH_NAME=arm64" >> $GITHUB_ENV
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
@@ -736,20 +740,6 @@ jobs:
 
       - name: Build debs
         run: |
-          case ${{ matrix.triple }} in
-            i486-linux-musl)
-              echo "ARCH_NAME=i386" >> $GITHUB_ENV
-              ;;
-            x86_64-linux-musl)
-              echo "ARCH_NAME=amd64" >> $GITHUB_ENV
-              ;;
-            armel-linux-musleabi)
-              echo "ARCH_NAME=armel" >> $GITHUB_ENV
-              ;;
-            aarch64-linux-musl)
-              echo "ARCH_NAME=arm64" >> $GITHUB_ENV
-              ;;
-          esac
           version=$(cat version)
 
           make -j$(nproc) docs
