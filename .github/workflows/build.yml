@@ -351,6 +351,13 @@ jobs:
     runs-on: macos-latest
     needs: build-darwin
     steps:
+      - name: Setup Procursus
+        uses: beerpiss/procursus-action@v2.0.2
+        with:
+          packages: sed coreutils
+          cache: true
+          mirror: 'https://procursus.itsnebula.net/'
+
       - name: Download all Darwin artifacts
         uses: actions/download-artifact@v3
 
@@ -368,6 +375,80 @@ jobs:
           cp ./palera1n-iphoneos-arm64/palera1n-iphoneos-arm64 ready/palera1n-ios
           zip -r9 ready/palera1n-ios.dSYM.zip palera1n-iphoneos-arm64.dSYM
           zip -r9 ready/palera1n-macos.dSYM.zip palera1n-macos.dSYM
+
+      - name: Build debs
+        run: |
+          # Darwin x86_64
+          mkdir -p stage/DEBIAN
+          mkdir -p stage/opt/procursus/usr/bin
+          mkdir -p stage/opt/procursus/usr/share/man/man1
+          cd stage
+          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+
+          gsed 's|@DEB_ARCH@|darwin-amd64|g' -i DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          
+          ginstall -Dm644 ../ready/palera1n-macos-x86_64 opt/procursus/usr/bin/palera1n
+          ginstall -Dm644 ../ready/palera1n.1 opt/procursus/usr/share/man/man1/palera1n.1
+
+          cd ..
+          dpkg-deb -b stage .
+          mv palera1n*.deb ready/
+          rm -rf stage
+
+          # Darwin arm64
+          mkdir -p stage/DEBIAN
+          mkdir -p stage/opt/procursus/usr/bin
+          mkdir -p stage/opt/procursus/usr/share/man/man1
+          cd stage
+          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+
+          gsed 's|@DEB_ARCH@|darwin-arm64|g' -i DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          
+          ginstall -Dm644 ../ready/palera1n-macos-arm64 opt/procursus/usr/bin/palera1n
+          ginstall -Dm644 ../ready/palera1n.1 opt/procursus/usr/share/man/man1/palera1n.1
+
+          cd ..
+          dpkg-deb -b stage .
+          mv palera1n*.deb ready/
+          rm -rf stage
+
+          # iPhoneOS
+          mkdir -p stage/DEBIAN
+          mkdir -p stage/usr/bin
+          mkdir -p stage/usr/share/man/man1
+          cd stage
+          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+
+          gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          
+          ginstall -Dm644 ../ready/palera1n-macos-arm64 usr/bin/palera1n
+          ginstall -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
+
+          cd ..
+          dpkg-deb -b stage .
+          mv palera1n*.deb ready/
+          rm -rf stage
+
+          # iPhoneOS (rootless)
+          mkdir -p stage/DEBIAN
+          mkdir -p stage/var/jb/usr/bin
+          mkdir -p stage/var/jb/usr/share/man/man1
+          cd stage
+          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+
+          gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          
+          ginstall -Dm644 ../ready/palera1n-macos-arm64 var/jb/usr/bin/palera1n
+          ginstall -Dm644 ../ready/palera1n.1 var/jb/usr/share/man/man1/palera1n.1
+
+          cd ..
+          dpkg-deb -b stage .
+          mv palera1n*.deb ready/
+          rm -rf stage
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
@@ -459,6 +540,7 @@ jobs:
           echo "CROSS_COMPILE=${{ matrix.triple }}-" >> $GITHUB_ENV
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+
       - name: Download dependencies (source code)
         run: |
           curl -LOOOOOOO \
@@ -651,6 +733,44 @@ jobs:
           mv palera1n.debug ready/palera1n-${{ env.CHECKRA1N_NAME }}.debug
           mv src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
           tar -zcf ready/dep_root_${{ matrix.triple }}.tgz dep_root
+
+      - name: Build debs
+        run: |
+          # Linux amd64
+          mkdir -p stage/DEBIAN
+          mkdir -p stage/usr/bin
+          mkdir -p stage/usr/share/man/man1
+          cd stage
+          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+
+          gsed 's|@DEB_ARCH@|amd64|g' -i DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          
+          ginstall -Dm644 ../ready/palera1n-macos-x86_64 usr/bin/palera1n
+          ginstall -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
+
+          cd ..
+          dpkg-deb -b stage .
+          mv palera1n*.deb ready/
+          rm -rf stage
+
+          # Linux arm64
+          mkdir -p stage/DEBIAN
+          mkdir -p stage/usr/bin
+          mkdir -p stage/usr/share/man/man1
+          cd stage
+          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+
+          gsed 's|@DEB_ARCH@|arm64|g' -i DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          
+          ginstall -Dm644 ../ready/palera1n-macos-arm64 usr/bin/palera1n
+          ginstall -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
+
+          cd ..
+          dpkg-deb -b stage .
+          mv palera1n*.deb ready/
+          rm -rf stage
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
