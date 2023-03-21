@@ -441,7 +441,7 @@ jobs:
           cp packaging/control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i stage/DEBIAN/control
-          gsed "s|@DEB_VERSION@|$version|g" -i DEBIAN/control
+          gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
           ginstall -Dm644 ready/palera1n-macos-arm64 stage/var/jb/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/var/jb/usr/share/man/man1/palera1n.1
