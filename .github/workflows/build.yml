@@ -384,7 +384,7 @@ jobs:
       - name: Build debs
         run: |
           make -j$(sysctl -n hw.ncpu) docs
-          version=$(git describe --tags --always --dirty | sed 's|-|~|' | sed 's|-|.|g' | sed 's|.g|.|g' | sed 's|^v||g')
+          version=$(git describe --dirty --tags --abbrev=7)
 
           # Darwin x86_64
           mkdir -p stage/DEBIAN
@@ -740,7 +740,7 @@ jobs:
 
       - name: Build debs
         run: |
-          version=$(git describe --tags --always --dirty | sed 's|-|~|' | sed 's|-|.|g' | sed 's|.g|.|g' | sed 's|^v||g')
+          version=$(git describe --dirty --tags --abbrev=7)
 
           make -j$(nproc) docs
           mkdir -p stage/DEBIAN
