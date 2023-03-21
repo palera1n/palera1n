@@ -382,16 +382,15 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/opt/procursus/usr/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
-          cp packaging/control static.DEBIAN/control
-          cd stage
+          ls
+          cp packaging/control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|darwin-amd64|g' -i DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
           
-          ginstall -Dm644 ../ready/palera1n-macos-x86_64 opt/procursus/usr/bin/palera1n
-          ginstall -Dm644 ../ready/palera1n.1 opt/procursus/usr/share/man/man1/palera1n.1
+          ginstall -Dm644 ready/palera1n-macos-x86_64 opt/procursus/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n.1 opt/procursus/usr/share/man/man1/palera1n.1
 
-          cd ..
           dpkg-deb -b stage .
           mv palera1n*.deb ready/
           rm -rf stage
@@ -400,16 +399,14 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/opt/procursus/usr/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
-          cp packaging/control static.DEBIAN/control
-          cd stage
+          cp packaging/control stage/DEBIAN/control
 
-          gsed 's|@DEB_ARCH@|darwin-arm64|g' -i DEBIAN/control
-          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          gsed 's|@DEB_ARCH@|darwin-arm64|g' -i stage/DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i stage/DEBIAN/control
           
-          ginstall -Dm644 ../ready/palera1n-macos-arm64 opt/procursus/usr/bin/palera1n
-          ginstall -Dm644 ../ready/palera1n.1 opt/procursus/usr/share/man/man1/palera1n.1
+          ginstall -Dm644 ready/palera1n-macos-arm64 stage/opt/procursus/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
 
-          cd ..
           dpkg-deb -b stage .
           mv palera1n*.deb ready/
           rm -rf stage
@@ -418,16 +415,14 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/usr/bin
           mkdir -p stage/usr/share/man/man1
-          cp packaging/control static.DEBIAN/control
-          cd stage
+          cp packaging/control stage/DEBIAN/control
 
-          gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i DEBIAN/control
-          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i stage/DEBIAN/control
+          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i stage/DEBIAN/control
           
-          ginstall -Dm644 ../ready/palera1n-macos-arm64 usr/bin/palera1n
-          ginstall -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
+          ginstall -Dm644 ready/palera1n-macos-arm64 stage/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n.1 stage/usr/share/man/man1/palera1n.1
 
-          cd ..
           dpkg-deb -b stage .
           mv palera1n*.deb ready/
           rm -rf stage
@@ -436,16 +431,14 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/var/jb/usr/bin
           mkdir -p stage/var/jb/usr/share/man/man1
-          cp packaging/control static.DEBIAN/control
-          cd stage
+          cp packaging/control stage/DEBIAN/control
 
-          gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i DEBIAN/control
+          gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i stage/DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
           
-          ginstall -Dm644 ../ready/palera1n-macos-arm64 var/jb/usr/bin/palera1n
-          ginstall -Dm644 ../ready/palera1n.1 var/jb/usr/share/man/man1/palera1n.1
+          ginstall -Dm644 ready/palera1n-macos-arm64 stage/var/jb/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n.1 stage/var/jb/usr/share/man/man1/palera1n.1
 
-          cd ..
           dpkg-deb -b stage .
           mv palera1n*.deb ready/
           rm -rf stage
@@ -754,16 +747,14 @@ jobs:
           mkdir -p stage/DEBIAN
           mkdir -p stage/usr/bin
           mkdir -p stage/usr/share/man/man1
-          cd stage
-          cp ../packaging/control DEBIAN/control
+          cp packaging/control stage/DEBIAN/control
 
-          sed 's|@DEB_ARCH@|${{ env.ARCH_NAME }}|g' -i DEBIAN/control
-          sed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          sed 's|@DEB_ARCH@|${{ env.ARCH_NAME }}|g' -i stage/DEBIAN/control
+          sed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i stage/DEBIAN/control
           
-          install -Dm644 ../ready/palera1n-${{ env.CHECKRA1N_NAME }} usr/bin/palera1n
-          install -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
+          install -Dm644 ready/palera1n-${{ env.CHECKRA1N_NAME }} stage/usr/bin/palera1n
+          install -Dm644 ready/palera1n.1 stage/usr/share/man/man1/palera1n.1
 
-          cd ..
           dpkg-deb -b stage .
           mv palera1n*.deb ready/
           rm -rf stage
