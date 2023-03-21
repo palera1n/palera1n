@@ -744,6 +744,7 @@ jobs:
               ;;
           esac
 
+          make -j$(nproc) docs
           mkdir -p stage/DEBIAN
           mkdir -p stage/usr/bin
           mkdir -p stage/usr/share/man/man1
@@ -753,7 +754,7 @@ jobs:
           sed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i stage/DEBIAN/control
           
           install -Dm644 ready/palera1n-${{ env.CHECKRA1N_NAME }} stage/usr/bin/palera1n
-          install -Dm644 ready/palera1n.1 stage/usr/share/man/man1/palera1n.1
+          install -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
 
           dpkg-deb -b stage .
           mv palera1n*.deb ready/
