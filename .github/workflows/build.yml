@@ -743,11 +743,11 @@ jobs:
           cd stage
           cp ${{ github.workspace }}/packaging/control DEBIAN/control
 
-          gsed 's|@DEB_ARCH@|amd64|g' -i DEBIAN/control
-          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          sed 's|@DEB_ARCH@|amd64|g' -i DEBIAN/control
+          sed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
           
-          ginstall -Dm644 ../ready/palera1n-macos-x86_64 usr/bin/palera1n
-          ginstall -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
+          install -Dm644 ../ready/palera1n-macos-x86_64 usr/bin/palera1n
+          install -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
 
           cd ..
           dpkg-deb -b stage .
@@ -761,11 +761,11 @@ jobs:
           cd stage
           cp ${{ github.workspace }}/packaging/control DEBIAN/control
 
-          gsed 's|@DEB_ARCH@|arm64|g' -i DEBIAN/control
-          gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
+          sed 's|@DEB_ARCH@|arm64|g' -i DEBIAN/control
+          sed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
           
-          ginstall -Dm644 ../ready/palera1n-macos-arm64 usr/bin/palera1n
-          ginstall -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
+          install -Dm644 ../ready/palera1n-macos-arm64 usr/bin/palera1n
+          install -Dm644 ../ready/palera1n.1 usr/share/man/man1/palera1n.1
 
           cd ..
           dpkg-deb -b stage .
