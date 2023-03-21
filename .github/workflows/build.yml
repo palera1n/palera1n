@@ -383,7 +383,7 @@ jobs:
           mkdir -p stage/opt/procursus/usr/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
           cd stage
-          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+          cp ../packaging/control DEBIAN/control
 
           gsed 's|@DEB_ARCH@|darwin-amd64|g' -i DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
@@ -401,7 +401,7 @@ jobs:
           mkdir -p stage/opt/procursus/usr/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
           cd stage
-          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+          cp ../packaging/control DEBIAN/control
 
           gsed 's|@DEB_ARCH@|darwin-arm64|g' -i DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
@@ -419,7 +419,7 @@ jobs:
           mkdir -p stage/usr/bin
           mkdir -p stage/usr/share/man/man1
           cd stage
-          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+          cp ../packaging/control DEBIAN/control
 
           gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
@@ -437,7 +437,7 @@ jobs:
           mkdir -p stage/var/jb/usr/bin
           mkdir -p stage/var/jb/usr/share/man/man1
           cd stage
-          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+          cp ../packaging/control DEBIAN/control
 
           gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i DEBIAN/control
           gsed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
@@ -741,7 +741,7 @@ jobs:
           mkdir -p stage/usr/bin
           mkdir -p stage/usr/share/man/man1
           cd stage
-          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+          cp ../packaging/control DEBIAN/control
 
           sed 's|@DEB_ARCH@|amd64|g' -i DEBIAN/control
           sed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
@@ -759,7 +759,7 @@ jobs:
           mkdir -p stage/usr/bin
           mkdir -p stage/usr/share/man/man1
           cd stage
-          cp ${{ github.workspace }}/packaging/control DEBIAN/control
+          cp ../packaging/control DEBIAN/control
 
           sed 's|@DEB_ARCH@|arm64|g' -i DEBIAN/control
           sed 's|@DEB_VERSION@|$(cat {{ github.workspace }}/version)|g' -i DEBIAN/control
