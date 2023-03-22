@@ -39,7 +39,6 @@ static struct option longopts[] = {
 	{"override-overlay", required_argument, NULL, 'o'},
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
-	{"disable-ohio", no_argument, NULL, 'O'},
 	{"override-checkra1n", required_argument, NULL, 'i'},
 	{"reboot-device", no_argument, NULL, 'R'},
 	{"exit-recovery", no_argument, NULL, 'n'},
@@ -86,7 +85,6 @@ static int usage(int e, char* prog_name)
 			"\t-n, --exit-recovery\t\t\tExit recovery mode\n"
 			"\t-I, --device-info\t\t\tPrint info about the connected device\n"
 			"\t-o, --override-overlay <file>\t\tOverride overlay\n"
-			"\t-O, --disable-ohio\t\t\tDisable Ohio\n"
 			"\t-p, --pongo-shell\t\t\tBoots to PongoOS shell\n"
 			"\t-P, --pongo-full\t\t\tBoots to a PongoOS shell with default images already uploaded\n"
 			"\t-r, --override-ramdisk <file>\t\tOverride ramdisk\n"
@@ -112,9 +110,9 @@ int optparse(int argc, char* argv[]) {
 	int index;
 	while ((opt = getopt_long(argc, argv, 
 #ifdef DEV_BUILD
-	"12BcDEhpvVldsSOLftRnPIe:o:r:K:k:i:", 
+	"12BcDEhpvVldsSLftRnPIe:o:r:K:k:i:", 
 #else
-	"BcDEhpvVldsSOLfRnPIe:o:r:K:k:i:", 
+	"BcDEhpvVldsSLfRnPIe:o:r:K:k:i:", 
 #endif
 	longopts, NULL)) != -1)
 	{
@@ -254,9 +252,6 @@ int optparse(int argc, char* argv[]) {
 		case 'n':
 			host_flags |= host_option_exit_recovery;
 			break;
-		case 'O':
-			host_flags |= host_option_no_ohio;
-			break;
 		case 'I':
 			host_flags |= host_option_device_info;
 			break;
@@ -286,7 +281,19 @@ int optparse(int argc, char* argv[]) {
 		}
 	}
 	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) {
-		printf("palera1n version " PALERAIN_VERSION ": " BUILD_DATE "; " BUILD_WHOAMI ":" BUILD_TAG "/" BUILD_STYLE "\n");
+		printf(
+			"palera1n " PALERAIN_VERSION "\n"
+			BUILD_COMMIT " " BUILD_NUMBER " (" BUILD_BRANCH ")\n\n"
+			"Build date: " BUILD_DATE "\n"
+			"Build style: " BUILD_STYLE "\n"
+			"Build tag: " BUILD_TAG "\n"
+			"Built by: " BUILD_WHOAMI "\n"
+#ifdef USE_LIBUSB
+			"USB backend: libusb\n"
+#else
+			"USB backend: IOKit\n"
+#endif
+		);
 		return 0;
 	}
 

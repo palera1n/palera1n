@@ -75,7 +75,7 @@
 #define host_option_res1                 (1 << 2) /* reserved */
 #endif
 #define host_option_demote               (1 << 3) /* Demote effective production fuse status */
-#define host_option_no_ohio              (1 << 4) /* Disable Ohio (Analytics) */
+// (1 << 4) is removed
 #define host_option_pongo_full           (1 << 5) /* Boot to pongo with default images and options */
 #define host_option_palerain_version     (1 << 6) /* Print version */
 #define host_option_exit_recovery        (1 << 7) /* Exit recovery mode */

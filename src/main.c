@@ -105,6 +105,7 @@ void log_cb(libusb_context *ctx, enum libusb_log_level level, const char *str) {
 #endif
 
 int palera1n(int argc, char *argv[]) {
+	print_credits();
 	int ret = 0;
 	pthread_mutex_init(&log_mutex, NULL);
 	pthread_mutex_init(&spin_mutex, NULL);
@@ -113,7 +114,6 @@ int palera1n(int argc, char *argv[]) {
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
 	if (!checkrain_option_enabled(host_flags, host_option_device_info))
-		print_credits();
 	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) goto normal_exit;
 #ifdef DEV_BUILD
 	if (checkrain_option_enabled(host_flags, host_option_tui)) {
@@ -166,27 +166,6 @@ int palera1n(int argc, char *argv[]) {
 		sleep(1);
 	}
 normal_exit:
-	if (access("/usr/bin/curl", F_OK) == 0 && !checkrain_option_enabled(host_flags, host_option_no_ohio)) {
-		LOG(LOG_VERBOSE4, "Ohio");
-		char* ohio_argv[] = {
-			"/usr/bin/curl",
-			"-sX",
-			"POST",
-			"-d",
-			"{\"app_name\": \"palera1n_c-rewrite\"}",
-			"-H",
-			"Content-Type: application/json",
-			"-H",
-			"User-Agent: python-requests/99 palera1n-c-rewrite/0",
-			"-o",
-			"/dev/null",
-			"https://ohio.itsnebula.net/hit",
-			NULL
-		};
-		pid_t pid;
-		posix_spawn(&pid, ohio_argv[0], NULL, NULL, ohio_argv, environ);
-	}
-
 cleanup:
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
 		munmap(override_kpf.ptr, (size_t)override_kpf.len);
