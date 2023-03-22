@@ -399,7 +399,7 @@ jobs:
           ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
           chmod +x stage/opt/procursus/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_${version}_darwin-amd64.deb
+          dpkg-deb -Zzstd -b stage palera1n_darwin-amd64.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -416,7 +416,7 @@ jobs:
           ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
           chmod +x stage/opt/procursus/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_${version}_darwin-arm64.deb
+          dpkg-deb -Zzstd -b stage palera1n_darwin-arm64.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -433,7 +433,7 @@ jobs:
           ginstall -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
           chmod +x stage/usr/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_${version}_iphoneos-arm.deb
+          dpkg-deb -Zzstd -b stage palera1n_iphoneos-arm.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -450,7 +450,7 @@ jobs:
           ginstall -Dm644 docs/palera1n.1 stage/var/jb/usr/share/man/man1/palera1n.1
           chmod +x stage/var/jb/usr/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_${version}_iphoneos-arm64.deb
+          dpkg-deb -Zzstd -b stage palera1n_iphoneos-arm64.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
@@ -759,7 +759,7 @@ jobs:
           install -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
           chmod +x stage/usr/bin/palera1n
 
-          dpkg-deb -b stage palera1n_${version}_${{ env.ARCH_NAME }}.deb
+          dpkg-deb -b stage palera1n_${{ env.ARCH_NAME }}.deb
           mv palera1n*.deb ready/
           rm -rf stage
 
