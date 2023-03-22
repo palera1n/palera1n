@@ -12,6 +12,8 @@
 </p>
 <div class="clear"></div>
 
+## If you want a jailbreak, you should read the [guide](https://palera.in).
+
 ### You can obtain v2.0.0 beta [here](https://github.com/palera1n/palera1n/releases).
 If you need an older v2.0.0 beta, please get it [here](https://github.com/palera1n/palera1n-c/releases/tag/v2.0.0-beta.4).
 
