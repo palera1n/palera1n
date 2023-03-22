@@ -3,6 +3,7 @@ Name: palera1n
 Version: @DEB_VERSION@
 Architecture: @DEB_ARCH@
 Maintainer: palera1n team
+Depends: usbmuxd
 Author: palera1n team
 Section: Utilities
 Priority: optional
