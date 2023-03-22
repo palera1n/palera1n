@@ -3,9 +3,15 @@ Name: palera1n
 Version: @DEB_VERSION@
 Architecture: @DEB_ARCH@
 Maintainer: palera1n team
-Depends: usbmuxd
 Author: palera1n team
+Depends: usbmuxd
 Section: Utilities
 Priority: optional
 Homepage: https://palera.in
 Description: iOS 15.0-16.3.1 semi-tethered checkm8 jailbreak
+ palera1n is an iOS/iPadOS 15.0-15.3.1 semi tethered jailbreak
+ based on the checkm8 exploit.
+ .
+ palera1n is able to jailbreak the device in fakefs-rootful mode,
+ where / is writable, as well as rootless mode, where / cannot be
+ written to.
