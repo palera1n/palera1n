@@ -388,15 +388,16 @@ jobs:
 
           # Darwin x86_64
           mkdir -p stage/DEBIAN
-          mkdir -p stage/opt/procursus/usr/bin
+          mkdir -p stage/opt/procursus/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
           cp packaging/control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|darwin-amd64|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-macos-x86_64 stage/opt/procursus/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n-macos-x86_64 stage/opt/procursus/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
+          chmod +x stage/opt/procursus/bin/palera1n
 
           dpkg-deb -b stage palera1n_darwin-amd64.deb
           mv palera1n*.deb ready/
@@ -404,15 +405,16 @@ jobs:
 
           # Darwin arm64
           mkdir -p stage/DEBIAN
-          mkdir -p stage/opt/procursus/usr/bin
+          mkdir -p stage/opt/procursus/bin
           mkdir -p stage/opt/procursus/usr/share/man/man1
           cp packaging/control stage/DEBIAN/control
 
           gsed 's|@DEB_ARCH@|darwin-arm64|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-macos-arm64 stage/opt/procursus/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n-macos-arm64 stage/opt/procursus/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
+          chmod +x stage/opt/procursus/bin/palera1n
 
           dpkg-deb -b stage palera1n_darwin-arm64.deb
           mv palera1n*.deb ready/
@@ -429,6 +431,7 @@ jobs:
           
           ginstall -Dm644 ready/palera1n-macos-arm64 stage/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
+          chmod +x stage/usr/bin/palera1n
 
           dpkg-deb -b stage palera1n_iphoneos-arm.deb
           mv palera1n*.deb ready/
@@ -445,6 +448,7 @@ jobs:
           
           ginstall -Dm644 ready/palera1n-macos-arm64 stage/var/jb/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/var/jb/usr/share/man/man1/palera1n.1
+          chmod +x stage/var/jb/usr/bin/palera1n
 
           dpkg-deb -b stage palera1n_iphoneos-arm64.deb
           mv palera1n*.deb ready/
@@ -753,6 +757,7 @@ jobs:
           
           install -Dm644 ready/palera1n-${{ env.CHECKRA1N_NAME }} stage/usr/bin/palera1n
           install -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
+          chmod +x stage/usr/bin/palera1n
 
           dpkg-deb -b stage palera1n_${{ env.ARCH_NAME }}.deb
           mv palera1n*.deb ready/
