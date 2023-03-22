@@ -1,4 +1,7 @@
-<img align="left" height="120" src="https://cdn.discordapp.com/attachments/1017854329887129611/1073858292159352862/thing.png" alt="palera1n logo" style="float: left;"/>
+<picture>
+	<source media="(prefers-color-scheme: light)" srcset="https://cdn.discordapp.com/attachments/1028398976640229380/1088049124441604136/IMG_0033.png">
+	<img align="left" height="120" src="https://cdn.discordapp.com/attachments/1017854329887129611/1073858292159352862/thing.png" alt="palera1n logo" style="float: left;"/>
+</picture>
 <h3 align="right">An iOS 15.0-16.3.1 work-in-progress, <br>semi-tethered checkm8 jailbreak</h3> 
 
 <p align="right" >
