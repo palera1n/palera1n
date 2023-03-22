@@ -49,7 +49,7 @@ Make sure you provide full details on your device, such as:
 
 Using `-V` and `-v` would help with debugging.
 
-Join the [Support Discord](https://dsc.gg/palera1n), and find the palera1n-c thread under #jailbreak [here](https://discord.com/channels/1028398973452570725/1074251283143344180).
+Join the [Support Discord](https://dsc.gg/palera1n), and find the palera1n-c thread under [#support](https://discord.com/channels/1028398973452570725/1028730487700738130) or [#general](https://discord.com/channels/1028398973452570725/1074251283143344180).
 
 # Credits
 <details><summary>palera1n-c Contributors and Credits</summary>
