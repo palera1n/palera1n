@@ -546,7 +546,7 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -g -flto=full -Wl,-object_path_lto,lto.o" >> $GITHUB_ENV
           echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
