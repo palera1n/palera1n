@@ -4,6 +4,7 @@ SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
 STRIP = strip
 CC ?= cc
+CLI_BUILD = 1
 CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC)
 CFLAGS += -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\" -Wall -Wextra -Wno-unused-parameter
 CFLAGS += -Wno-unused-variable -I$(SRC)/src -std=c99 -pedantic-errors -D_C99_SOURCE -D_POSIX_C_SOURCE=200112L -D_DARWIN_C_SOURCE
@@ -25,6 +26,10 @@ LDFLAGS += -static -no-pie -Wl,--gc-sections
 endif
 LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
 
+
+ifeq ($(CLI_BUILD),1)
+CFLAGS += -DCLI_BUILD
+endif
 ifeq ($(DEV_BUILD),1)
 LIBS += $(DEP)/lib/libnewt.a $(DEP)/lib/libpopt.a $(DEP)/lib/libslang.a
 ifeq ($(TARGET_OS),Linux)
@@ -62,7 +67,7 @@ CFLAGS += -DBUILD_WHOAMI="\"$(BUILD_WHOAMI)\"" -DBUILD_TAG="\"$(BUILD_TAG)\""
 CFLAGS += -DBUILD_NUMBER="\"$(BUILD_NUMBER)\"" -DBUILD_BRANCH="\"$(BUILD_BRANCH)\""
 CFLAGS += -DBUILD_COMMIT="\"$(BUILD_COMMIT)\""
 
-export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG BUILD_WHOAMI BUILD_STYLE BUILD_NUMBER BUILD_BRANCH
+export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD CLI_BUILD BUILD_DATE BUILD_TAG BUILD_WHOAMI BUILD_STYLE BUILD_NUMBER BUILD_BRANCH
 
 all: palera1n
 
