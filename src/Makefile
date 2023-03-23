@@ -52,6 +52,9 @@ OBJECTS += usb_iokit.o
 else
 LIBS += -framework SystemConfiguration -framework Security
 endif
+# add lto and debug symbols for lto
+CFLAGS += -flto -g
+LDFLAGS += -Wl,-object_path_lto,lto.o
 else
 USE_LIBUSB = 1
 endif
