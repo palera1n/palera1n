@@ -4,6 +4,11 @@ dep_root/**
 !contrib/.keep
 contrib/
 *.o
+deps/
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles/
+output/
 .vscode
 checkra1n*
 payload.c
@@ -22,3 +27,5 @@ src/*.dmg.c
 .idea
 src/stage2/
 src/libcheckra1nhelper.dylib*
+Makefile
+
