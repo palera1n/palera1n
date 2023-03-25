@@ -2,7 +2,7 @@
 #define PALERAIN_H
 
 #if defined(__APPLE__)
-#define _DARWIN_C_SOURCE 1
+#define NSIG	__DARWIN_NSIG
 #endif
 
 #include "xxd-embedded.h"
