@@ -213,7 +213,7 @@ int optparse(int argc, char* argv[]) {
 			} else if (!(st.st_mode & S_IXUSR) && !(st.st_mode & S_IXGRP) && !(st.st_mode & S_IXOTH)) {
 				LOG(LOG_FATAL, "%s is not executable", optarg);
 				return -1;
-			} else if (!(st.st_mode & S_IFREG)) {
+			} else if (!S_ISREG(st.st_mode)) {
 				LOG(LOG_FATAL, "%s is not a regular file", optarg);
 				return -1;
 			}
