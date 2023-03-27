@@ -555,6 +555,15 @@ function _wait_for_device() {
         exit
     fi
 
+    version_major=${version%%.*}
+    version_minor=${version#*.}
+    version_minor=${version_minor%%.*}
+    if [[ $version_major -eq 16 && $version_minor -ge 4 ]] || [[ $version_major -ge 17 ]]; then
+        echo "[-] palera1n.sh does not work on iOS 16.4 and above."
+        echo "[-] Refusing to proceed as it would bootloop your device and force you to restore."
+        exit
+    fi
+
     if [ "$dfuhelper" = "1" ]; then
         echo "[*] Running DFU helper"
         _dfuhelper "$cpid" || {
