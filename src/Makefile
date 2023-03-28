@@ -37,6 +37,12 @@ else
 CFLAGS += -DNO_CHECKRAIN
 endif
 
+ifneq ($(NO_CUSTOM_PONGO),1)
+OBJECTS += xxd-Pongo.bin.o
+else
+CFLAGS += -DNO_CUSTOM_PONGO
+endif
+
 ifeq ($(DEV_BUILD),1)
 OBJECTS += tui_screen_enter_recovery.o tui_screen_enter_dfu.o tui_main.o
 OBJECTS += tui_screen_jailbreak.o tui_screen_main.o tui_screen_options.o
@@ -118,6 +124,9 @@ ramdisk.dmg:
 
 binpack.dmg:
 	curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.dmg
+
+Pongo.bin:
+	curl -LO https://cdn.nickchan.lol/palera1n/artifacts/kpf/Pongo.bin
 
 clean:
 	rm -rf *.o palera1n checkra1n checkra1n.c palera1n.dSYM libcheckra1nhelper.dylib
