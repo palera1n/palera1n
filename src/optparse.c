@@ -364,8 +364,10 @@ int optparse(int argc, char* argv[]) {
 		}
 	}
 	if (verbose >= 2) setenv("LIBUSB_DEBUG", "1", 1);
+
 	if (verbose >= 3)
 	{
+		libusbmuxd_set_debug_level(verbose - 2);
 		irecv_set_debug_level(1);
 		setenv("LIBUSB_DEBUG", "2", 1);
 	}

@@ -152,13 +152,6 @@ checkra1n_exec: {};
 			NULL
 		}, environ);
 	}
-
-	waitpid(pid, NULL, 0);
-	if (!external_pongo && pongo_path != NULL) {
-		unlink(pongo_path);
-	}
-	if (pongo_path != NULL) free(pongo_path);
-	pongo_path = NULL;
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		if (ext_checkra1n != NULL) unlink(checkra1n_path);
@@ -171,6 +164,12 @@ checkra1n_exec: {};
 		free(checkra1n_path);
 		checkra1n_path = NULL;
 	}
+	waitpid(pid, NULL, 0);
+		if (!external_pongo && pongo_path != NULL) {
+		unlink(pongo_path);
+	}
+	if (pongo_path != NULL) free(pongo_path);
+	pongo_path = NULL;
 #if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
 	if (libcheckra1nhelper_dylib_path != NULL) {
 		unlink(libcheckra1nhelper_dylib_path);
