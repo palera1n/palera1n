@@ -134,18 +134,25 @@ checkra1n_exec: {};
 	} else {
 		strncat(args, "R", 0xf);
 	}
-	if (pongo_path != NULL) {
-		setenv("CHECKRA1N_OVERRIDE_PONGO", pongo_path, 1);
-	}
 	LOG(LOG_VERBOSE5, args);
 	if (pongo_path != NULL) LOG(LOG_VERBOSE5, pongo_path);
 	pid_t pid;
-	char* checkra1n_argv[] = {
-		checkra1n_path,
-		args,
-		NULL
-	};
-	ret = posix_spawn(&pid, checkra1n_path, NULL, NULL, checkra1n_argv, environ);
+	if (pongo_path != NULL) {
+		ret = posix_spawn(&pid, checkra1n_path, NULL, NULL, (char* []){
+			checkra1n_path,
+			args,
+			"-k",
+			pongo_path,
+			NULL
+		}, environ);
+	} else {
+		ret = posix_spawn(&pid, checkra1n_path, NULL, NULL, (char* []){
+			checkra1n_path,
+			args,
+			NULL
+		}, environ);
+	}
+
 	waitpid(pid, NULL, 0);
 	if (!external_pongo && pongo_path != NULL) {
 		unlink(pongo_path);
