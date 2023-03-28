@@ -58,7 +58,7 @@ void *pongo_usb_callback(void *arg) {
 		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
 		issue_pongo_command(handle, "ramdisk");
 	}
-#ifdef NO_BINPACK
+#ifdef NO_OVERLAY
 	if (binpack_dmg_len != 0)
 #endif
 	{

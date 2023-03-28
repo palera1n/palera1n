@@ -15,7 +15,12 @@ unsigned char* checkra1n = NULL;
 unsigned int checkra1n_len = 0;
 #endif
 
-#ifdef NO_BINPACK
+#ifdef NO_OVERLAY
 unsigned char* binpack_dmg = NULL;
 unsigned int binpack_dmg_len = 0;
+#endif
+
+#ifdef NO_CUSTOM_PONGO
+unsigned char* Pongo_bin = NULL;
+unsigned int Pongo_bin_len = 0;
 #endif

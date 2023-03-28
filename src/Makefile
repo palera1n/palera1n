@@ -26,10 +26,10 @@ OBJECTS += xxd-checkra1n-kpf-pongo.o
 else
 CFLAGS += -DNO_KPF
 endif
-ifneq ($(NO_BINPACK),1)
+ifneq ($(NO_OVERLAY),1)
 OBJECTS += xxd-binpack.dmg.o
 else
-CFLAGS += -DNO_BINPACK
+CFLAGS += -DNO_OVERLAY
 endif
 ifneq ($(NO_CHECKRAIN),1)
 OBJECTS += xxd-checkra1n.o
