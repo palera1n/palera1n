@@ -1,4 +1,4 @@
-NAME = Tumbleweed
+NAME = baked palera1n
 
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
