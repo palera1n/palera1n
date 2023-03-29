@@ -28,6 +28,8 @@
 #include <palerain.h>
 #include <xxd-embedded.h>
 #include <kerninfo.h>
+#include <gui.h>
+
 
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
@@ -186,7 +188,8 @@ cleanup:
 	return ret;
 }
 
-
+#ifndef GUI_BUILD
 int main (int argc, char* argv[]) {
 	return palera1n(argc, argv);
 }
+#endif
