@@ -14,33 +14,39 @@ endif
 ifeq ($(FORCE_HELPER),1)
 OBJECTS += xxd-libcheckra1nhelper.dylib.o
 CFLAGS += -DFORCE_HELPER
+BUILD_OPTIONS += FORCE_HELPER
 endif
 
 ifneq ($(NO_RAMDISK),1)
 OBJECTS += xxd-ramdisk.dmg.o
 else
 CFLAGS += -DNO_RAMDISK
+BUILD_OPTIONS += NO_RAMDISK
 endif
 ifneq ($(NO_KPF),1)
 OBJECTS += xxd-checkra1n-kpf-pongo.o
 else
 CFLAGS += -DNO_KPF
+BUILD_OPTIONS += NO_KPF
 endif
 ifneq ($(NO_OVERLAY),1)
 OBJECTS += xxd-binpack.dmg.o
 else
 CFLAGS += -DNO_OVERLAY
+BUILD_OPTIONS += NO_OVERLAY
 endif
 ifneq ($(NO_CHECKRAIN),1)
 OBJECTS += xxd-checkra1n.o
 else
 CFLAGS += -DNO_CHECKRAIN
+BUILD_OPTIONS += NO_CHECKRAIN
 endif
 
 ifneq ($(NO_CUSTOM_PONGO),1)
 OBJECTS += xxd-Pongo.bin.o
 else
 CFLAGS += -DNO_CUSTOM_PONGO
+BUILD_OPTIONS += NO_CUSTOM_PONGO
 endif
 
 ifeq ($(DEV_BUILD),1)
@@ -57,6 +63,7 @@ ifneq ($(USE_LIBUSB),1)
 OBJECTS += usb_iokit.o
 else
 LIBS += -framework SystemConfiguration -framework Security
+BUILD_OPTIONS += USE_LIBUSB
 endif
 # add lto and debug symbols for lto
 CFLAGS += -flto=full -g
@@ -70,6 +77,17 @@ OBJECTS += usb_libusb.o
 CFLAGS += -DUSE_LIBUSB=1
 LIBS += $(DEP)/lib/libusb-1.0.a
 endif
+
+ifneq ($(ROOTFUL),0)
+CFLAGS += -DROOTFUL=1
+BUILD_OPTIONS += ROOTFUL
+endif
+
+ifeq ($(BUILD_OPTIONS),)
+BUILD_OPTIONS = (none)
+endif
+
+CFLAGS += -DBUILD_OPTIONS=\""$(BUILD_OPTIONS)"\"
 
 checkra1n-%:
 	curl -LO https://assets.checkra.in/downloads/preview/$(CHECKRA1N_VERSION)/$@
