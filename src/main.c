@@ -74,7 +74,6 @@ int build_checks(void) {
 	}
 	if (boyermoore_horspool_memmem(&checkra1n[0], checkra1n_len, (const unsigned char*)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) {
 		host_flags |= palerain_option_checkrain_is_clone;
-		LOG(LOG_WARNING, "Do not distribute!");
 	}
 #endif
 #ifndef NO_KPF
