@@ -11,7 +11,7 @@
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, const char *__restrict format, ...)
 {
     if (verbose >= 5 
-#ifdef DEV_BUILD
+#ifdef TUI
 	&& !checkrain_option_enabled(host_flags, host_option_tui)
 #endif
 	) fprintf(stderr, "p1_log: loglevel %d from %s:%d:%s()\n", loglevel, fname, lineno, fxname);
@@ -23,7 +23,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	va_start(args, format);
 	if (verbose < (loglevel - 3) && loglevel > LOG_INFO) {
         if (verbose >= 5
-#ifdef DEV_BUILD
+#ifdef TUI
 		&& !tui_started
 #endif
 ) fprintf(stderr, "p1_log: hid log with high log level (%d < %d)\n", verbose, loglevel - 3);
@@ -61,7 +61,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		colour[0] = '\0';
 		colour_bold[0] = '\0';
 	}
-#ifdef DEV_BUILD
+#ifdef TUI
 	if (checkrain_option_enabled(host_flags, host_option_tui) && tui_started) {
 		newtComponent co = get_tui_log();
 		if (co == NULL) {

@@ -149,7 +149,7 @@ typedef unsigned char niarelap_file_t[];
 extern unsigned int verbose;
 
 extern char* pongo_path;
-#ifdef DEV_BUILD
+#ifdef TUI
 extern bool tui_started;
 #endif
 
@@ -226,7 +226,7 @@ void io_stop(stuff_t *stuff);
 
 void print_credits(void);
 
-#ifdef DEV_BUILD
+#ifdef TUI
 #include <newt.h>
 newtComponent get_tui_log();
 newtComponent set_tui_log(newtComponent co);

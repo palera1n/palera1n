@@ -70,7 +70,7 @@
 // palerain host options
 #define host_option_dfuhelper_only       (1 << 0) /* dfuhelper only */
 #define host_option_pongo_exit           (1 << 1) /* boot to clean pongo shell */
-#ifdef DEV_BUILD
+#ifdef TUI
 #define host_option_tui                  (1 << 2) /* use terminal user interface */
 #else
 #define host_option_res1                 (1 << 2) /* reserved */

@@ -11,6 +11,7 @@
 #include <locale.h>
 #include <unistd.h>
 #include <newt.h>
+#include <kerninfo.h>
 
 #define WIDTH 76
 #define HEIGHT 19

@@ -49,9 +49,11 @@ CFLAGS += -DNO_CUSTOM_PONGO
 BUILD_OPTIONS += NO_CUSTOM_PONGO
 endif
 
-ifeq ($(DEV_BUILD),1)
+ifeq ($(TUI),1)
 OBJECTS += tui_screen_enter_recovery.o tui_screen_enter_dfu.o tui_main.o
 OBJECTS += tui_screen_jailbreak.o tui_screen_main.o tui_screen_options.o
+BUILD_OPTIONS += TUI
+CFLAGS += -DTUI
 endif
 
 CHECKRA1N_VERSION ?= 0.1337.1

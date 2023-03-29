@@ -30,7 +30,7 @@
 #include <kerninfo.h>
 
 pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
-#ifdef DEV_BUILD
+#ifdef TUI
 #include <newt.h>
 pthread_mutex_t tui_log_mutex;
 newtComponent tui_log_output = NULL;
@@ -89,7 +89,7 @@ uint64_t set_ecid_wait_for_dfu(uint64_t ecid) {
     return ecid;
 }
 
-#ifdef DEV_BUILD
+#ifdef TUI
 newtComponent get_tui_log() {
     pthread_mutex_lock(&tui_log_mutex);
     newtComponent ret = tui_log_output;

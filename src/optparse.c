@@ -51,6 +51,8 @@ static struct option longopts[] = {
 #ifdef DEV_BUILD
 	{"test1", no_argument, NULL, '1'},
 	{"test2", no_argument, NULL, '2'},
+#endif
+#ifdef TUI
 	{"tui", no_argument, NULL, 't'},
 #endif
 	{NULL, 0, NULL, 0}
@@ -60,12 +62,15 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 	"Usage: %s [-"
-	"DEhpvVldsSLtRnPI"
+	"DEhpvVldsSLRnPI"
 #ifdef DEV_BUILD
 			"12"
 #endif
 #ifdef ROOTFUL
 			"cfB"
+#endif
+#ifdef TUI
+			"t"
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
@@ -106,7 +111,7 @@ static int usage(int e, char* prog_name)
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
 
-#ifdef DEV_BUILD
+#ifdef TUI
 			"\t-t, --tui\t\t\t\tTerminal user interface\n"
 #endif
 		"\nEnvironmental variables:\n"
@@ -277,10 +282,12 @@ int optparse(int argc, char* argv[]) {
 		case 'S':
 			host_flags |= host_option_no_colors;
 			break;
-#ifdef DEV_BUILD
+#ifdef TUI
 		case 't':
 			host_flags |= host_option_tui;
 			break;
+#endif
+#ifdef DEV_BUILD
 		case '1':
 			palerain_flags |= palerain_option_test1;
 			break;
