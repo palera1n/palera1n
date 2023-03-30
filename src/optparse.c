@@ -16,6 +16,7 @@
 
 checkrain_option_t host_flags = 0;
 checkrain_option_p host_flags_p = &host_flags;
+static bool force_use_verbose_boot = false;
 
 static struct option longopts[] = {
 #ifdef ROOTFUL
@@ -163,6 +164,7 @@ int optparse(int argc, char* argv[]) {
 			break;
 		case 'V':
 			kpf_flags |= checkrain_option_verbose_boot;
+			force_use_verbose_boot = true;
 			break;
 		case 'e':
 			if (strstr(optarg, "rootdev=") != NULL) {
@@ -324,6 +326,10 @@ int optparse(int argc, char* argv[]) {
 		return 0;
 	}
 
+	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
+		kpf_flags &= ~checkrain_option_verbose_boot;
+	}
+    
 	snprintf(checkrain_flags_cmd, 0x20, "checkra1n_flags 0x%x", checkrain_flags);
 	snprintf(palerain_flags_cmd, 0x20, "palera1n_flags 0x%x", palerain_flags);
 	snprintf(kpf_flags_cmd, 0x20, "kpf_flags 0x%x", kpf_flags);
