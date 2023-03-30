@@ -1,4 +1,4 @@
-NAME = baked palera1n
+NAME = bakepale
 
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
