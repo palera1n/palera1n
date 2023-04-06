@@ -56,6 +56,12 @@ BUILD_OPTIONS += TUI
 CFLAGS += -DTUI
 endif
 
+ifeq ($(GUI),1)
+CXXOBJECTS = gui_alerts.o gui_design.o gui_device.o gui_main.o
+BUILD_OPTIONS += GUI
+CFLAGS += -DGUI
+endif
+
 CHECKRA1N_VERSION ?= 0.1337.1
 LIPO = lipo
 LDID = ldid
@@ -125,8 +131,15 @@ xxd-%.c: %
 %.o: %.c $(wildcard ../include/*.h)
 	$(CC) -c $(CFLAGS) $<
 
+%.o: %.cpp $(wildcard ../include/*.h)
+	$(CXX) -c $(CXXFLAGS) $<
+
 palera1n: $(OBJECTS)
+ifeq ($(GUI),1)
+	$(CXX) $(LDFLAGS) $(OBJECTS) $(CXXOBJECTS) $(LIBS) -o palera1n
+else
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) $(LIBS) -o palera1n
+endif
 ifeq (,$(findstring macosx, $(CFLAGS)))
 ifneq (,$(findstring version-min=, $(CFLAGS)))
 	$(LDID) -Susb.xml palera1n

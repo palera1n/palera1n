@@ -4,9 +4,11 @@ SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
 STRIP = strip
 CC ?= cc
+CXX ?= c++
 CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC)
 CFLAGS += -Wall -Wextra -DPALERAIN_VERSION=\"2.0.0\" -Wall -Wextra -Wno-unused-parameter
 CFLAGS += -Wno-unused-variable -I$(SRC)/src -std=c99 -pedantic-errors -D_C99_SOURCE -D_POSIX_C_SOURCE=200112L
+CXXFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC) -std=c++11
 LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a
 LIBS += $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread
 ifeq ($(TARGET_OS),)
@@ -29,6 +31,13 @@ ifeq ($(TUI),1)
 LIBS += $(DEP)/lib/libnewt.a $(DEP)/lib/libpopt.a $(DEP)/lib/libslang.a
 ifeq ($(TARGET_OS),Linux)
 LIBS += $(DEP)/lib/libgpm.a
+endif
+endif
+ifeq ($(GUI),1)
+LIBS += $(DEP)/lib/libguira1n.a
+ifeq ($(TARGET_OS),Darwin)
+LIBS += -framework Foundation -framework AppKit
+CXXFLAGS += -x objective-c++ 
 endif
 endif
 ifeq ($(DEV_BUILD),1)
@@ -64,7 +73,7 @@ CFLAGS += -DBUILD_WHOAMI="\"$(BUILD_WHOAMI)\"" -DBUILD_TAG="\"$(BUILD_TAG)\""
 CFLAGS += -DBUILD_NUMBER="\"$(BUILD_NUMBER)\"" -DBUILD_BRANCH="\"$(BUILD_BRANCH)\""
 CFLAGS += -DBUILD_COMMIT="\"$(BUILD_COMMIT)\""
 
-export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG BUILD_WHOAMI BUILD_STYLE BUILD_NUMBER BUILD_BRANCH
+export SRC DEP CC CXX CFLAGS CXXFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG BUILD_WHOAMI BUILD_STYLE BUILD_NUMBER BUILD_BRANCH
 
 all: palera1n
 
