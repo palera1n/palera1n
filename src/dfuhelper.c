@@ -71,7 +71,7 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		if (passcode_state) {
 			LOG(LOG_ERROR, "Passcode must be disabled on this device");
 			if (!checkrain_option_enabled(host_flags, host_option_device_info))
-				LOG(LOG_ERROR, "Additionally, passcode must never be set since restore on iOS 16+");
+				LOG(LOG_ERROR, "Additionally, passcode must never be set since a restore on iOS 16+");
 			devinfo_free(&dev);
 			return -1;
 		}
