@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=palera1n
+Exec=~/usr/local/bin
+Icon=~/.palera1n/icon.ico
+Terminal=false
+Type=Application

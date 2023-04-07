@@ -1,0 +1,27 @@
+class Palera1n < Formula
+  desc "iOS 15.0-16.3.1 semi-tethered checkm8 jailbreak"
+  homepage "https://palera.in/"
+  url ""
+  version "2.0.0"
+  sha256 ""
+  license "MIT"
+
+  depends_on "cmake" => :build
+  depends_on "libimobiledevice" => :build
+  depends_on "libirecovery" => :build
+  depends_on "libusb" => :build
+  depends_on "libusbmuxd" => :build
+  depends_on "mbedtls" => :build
+  depends_on "pkg-config" => :build
+  depends_on "readline" => :build
+
+  def install
+    system "cmake", "."
+    system "make"
+    bin.install "output/palera1n" => "palera1n"
+  end
+
+  test do
+    system "false"
+  end
+end
