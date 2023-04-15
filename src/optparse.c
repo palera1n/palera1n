@@ -52,6 +52,9 @@ static struct option longopts[] = {
 #ifdef DEV_BUILD
 	{"test1", no_argument, NULL, '1'},
 	{"test2", no_argument, NULL, '2'},
+	{"ignore-ssv", no_argument, NULL, palerain_option_case_ignore_ssv},
+	{"rootless-livefs", no_argument, NULL, palerain_option_case_rootless_livefs},
+	{"force-fakefs", no_argument, NULL, palerain_option_case_force_fakefs},
 #endif
 #ifdef TUI
 	{"tui", no_argument, NULL, 't'},
@@ -79,6 +82,9 @@ static int usage(int e, char* prog_name)
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
 #ifdef DEV_BUILD
+			"\t--ignore-ssv\t\t\t\tAssume the platform has no SSV\n"
+			"\t--force-fakefs\t\t\t\tAllow fakefs to be created and used even on platforms without SSV\n"
+			"\t--rootless-livefs\t\t\t\tMount the root livefs on rootless\n"
 			"\t-1, --test1\t\t\t\tSet palerain_option_test1\n"
 			"\t-2, --test2\t\t\t\tSet palerain_option_test2\n"
 #endif
@@ -91,13 +97,13 @@ static int usage(int e, char* prog_name)
 			"\t-e, --boot-args <boot arguments>\tXNU boot arguments\n"
 			"\t-E, --enter-recovery\t\t\tEnter recovery mode\n"
 #ifdef ROOTFUL
-			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
+			"\t-f, --rootful \t\t\t\tSet jailbreak mode to rootful.\n"
 #endif
 			"\t-h, --help\t\t\t\tShow this help\n"
 			"\t-i, --override-checkra1n <file>\t\tOverride checkra1n\n"
 			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
-			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
+			"\t-l, --rootless\t\t\t\tSet jailbreak mode to rootless.\n"
 			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
 			"\t-n, --exit-recovery\t\t\tExit recovery mode\n"
 			"\t-I, --device-info\t\t\tPrint info about the connected device\n"
@@ -185,7 +191,7 @@ int optparse(int argc, char* argv[]) {
 #endif
 		case 'l':
 #ifdef ROOTFUL
-			palerain_flags &= ~palerain_option_rootful;
+			palerain_flags |= palerain_option_rootless;
 #endif
 			break;
 		case 'L':
@@ -296,6 +302,15 @@ int optparse(int argc, char* argv[]) {
 		case '2':
 			palerain_flags |= palerain_option_test2;
 			break;
+		case palerain_option_case_force_fakefs:
+			palerain_flags |= palerain_option_case_force_fakefs;
+			break;
+		case palerain_option_case_rootless_livefs:
+			palerain_flags |= palerain_option_case_rootless_livefs;
+			break;
+		case palerain_option_case_ignore_ssv:
+			palerain_flags |= palerain_option_no_ssv;
+			break;
 #endif
 		case palerain_option_case_force_revert:
 			checkrain_flags |= checkrain_option_force_revert;
@@ -349,6 +364,17 @@ int optparse(int argc, char* argv[]) {
 		LOG(LOG_VERBOSE4, "overlay override length %u -> %u", override_overlay.orig_len, binpack_dmg_len);
 		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
 	}
+
+	if (checkrain_option_enabled(palerain_flags, palerain_option_rootful) && checkrain_option_enabled(palerain_flags, palerain_option_rootless)) {
+		LOG(LOG_FATAL, "cannot have rootful and rootless at the same time");
+		return -1;
+	}
+
+	if (!checkrain_option_enabled(palerain_flags, palerain_option_rootful) && !checkrain_option_enabled(palerain_flags, palerain_option_rootless)) {
+		LOG(LOG_FATAL, "must have either rootful or rootless, use --help for help");
+		return -1;
+	}
+
 
 	if (!checkrain_option_enabled(palerain_flags, palerain_option_rootful)) {
 		if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful) || checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful_forced)) {

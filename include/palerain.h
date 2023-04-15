@@ -22,8 +22,14 @@
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
 
-#define palerain_option_case_version      palerain_option_case(0)
-#define palerain_option_case_force_revert palerain_option_case(1)
+#define palerain_option_case_version           palerain_option_case(0)
+#define palerain_option_case_force_revert      palerain_option_case(1)
+#ifdef DEV_BUILD
+#define palerain_option_case_ignore_ssv        palerain_option_case(2)
+#define palerain_option_case_force_fakefs      palerain_option_case(3)
+#define palerain_option_case_rootless_livefs   palerain_option_case(4)
+#endif
+
 
 #ifdef USE_LIBUSB
 #include <libusb-1.0/libusb.h>

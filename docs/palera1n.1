@@ -96,11 +96,11 @@ Remove the jailbreak while keeping user data. Some jailbreak files may remain
 after running this command. Additionally, jailbreak apps will remain on the 
 home screen on for a while even when the files are deleted as the icon cache
 still has their icons. When used with
-.Fl f , -fakefs ,
+.Fl f , -rootful ,
 this will actually boot the device in rootless mode then delete the jailbreak
 files. As a result, using the loader app to install the jailbreak environment
 is not supported when this option is used together with
-.Fl f , -fakefs
+.Fl f , -rootful
 \[char46]
 .It Fl B , -setup-fakefs-partial
 Like
@@ -111,8 +111,8 @@ when setting up fakefs for rootful, as they do not have enough storage for full 
 This option currently does not work on iOS 16.
 .It Fl c , -setup-fakefs
 When used with
-.Fl f , -fakefs ,
-creates the new APFS volume required for rootful. Will fail if one already exists.
+.Fl f , -rootful ,
+creates the new APFS volume required for rootful on iOS/iPadOS. Will fail if one already exists.
 .It Fl d , -demote
 Set the effective production fuse to 0, so as to enable hardware debugging features.
 .It Fl D , -dfuhelper
@@ -128,7 +128,7 @@ and cannot be overriden. Additionally, the
 argument is used during fakefs setup.
 .It Fl E , -enter-recovery
 Exit after entering recovery mode.
-.It Fl f , -fakefs
+.It Fl f , -rootful
 Proceed in rootful mode. This applies to both full fakefs and partial fakefs.
 .It Fl h , -help
 Prints help text.
@@ -149,7 +149,7 @@ iOS15 branch or your own fork of it.
 Proceed in rootless mode, this is the default when neither
 .Fl l , -rootless
 and
-.Fl f , -fakefs
+.Fl f , -rootful
 is specified.
 .Fl L , -jbinit-log-to-file
 Makes jbinit log to
@@ -259,7 +259,7 @@ before they can be ran on a device jailbroken with
 \[char46]
 .Pp
 When using rootful mode, the
-.Fl f , -fakefs
+.Fl f , -rootful
 flag must be specified at all times. It does not matter whether you want to create fakefs,
 create partial fakefs, rejailbreak or remove jailbreak.
 .Sh POST INSTALLATION
@@ -310,9 +310,6 @@ may crash if the machine it is running on:
 .Dl "- Has non-compliant USB devices plugged in"
 .Pp
 The exploit may also work less reliably on some hosts, like AMD desktops, or some MediaTek devices.
-.Pp
-.Fl B , -setup-fakefs-partial
-does not work on iOS 16.
 .Pp
 The device may randomly crash and reboot due to launchd receiving signal 7 (SIGEMT).
 .Sh NOTES
