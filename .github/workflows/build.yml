@@ -24,7 +24,7 @@ on:
 jobs:
   build-docs:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -258,6 +258,7 @@ jobs:
       - name: Build libplist
         run: |
           cd libplist
+          git checkout bfc97788f081584ced9cd35d85b69b3fec6b907c
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
           gmake -j$(sysctl -n hw.ncpu)
@@ -680,6 +681,7 @@ jobs:
       - name: Build libplist
         run: |
           cd libplist
+          git checkout bfc97788f081584ced9cd35d85b69b3fec6b907c
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
           make -j$(nproc)
