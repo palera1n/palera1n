@@ -258,6 +258,7 @@ jobs:
       - name: Build libplist
         run: |
           cd libplist
+          git fetch origin bfc97788f081584ced9cd35d85b69b3fec6b907c
           git checkout bfc97788f081584ced9cd35d85b69b3fec6b907c
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
@@ -681,6 +682,7 @@ jobs:
       - name: Build libplist
         run: |
           cd libplist
+          git fetch origin bfc97788f081584ced9cd35d85b69b3fec6b907c
           git checkout bfc97788f081584ced9cd35d85b69b3fec6b907c
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --without-cython
