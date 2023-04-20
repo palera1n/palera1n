@@ -100,6 +100,8 @@ struct mach_header_64
 };
 #endif
 
+typedef void *(*pthread_start_t)(void *);
+
 // Keep in sync with Pongo
 #define PONGO_USB_VENDOR    0x05ac
 #define PONGO_USB_PRODUCT   0x4141
@@ -203,7 +205,7 @@ boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
                            const unsigned char* needle,   size_t nlen);
 
 
-extern void* pongo_usb_callback(void* arg);
+extern void* pongo_usb_callback(stuff_t* arg);
 usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint32_t wLength, void *data, uint32_t *wLenDone);
 const char *usb_strerror(usb_ret_t err);
 int wait_for_pongo(void);

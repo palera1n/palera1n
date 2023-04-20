@@ -122,18 +122,8 @@ struct kpfinfo {
         options = (checkrain_option_t)(options & ~option);  \
 } while (0);
 
-static inline bool checkrain_option_enabled(checkrain_option_t flags, checkrain_option_t opt)
+static inline bool checkrain_options_enabled(checkrain_option_t flags, checkrain_option_t opt)
 {
-    if(flags == checkrain_option_failure)
-    {
-        switch(opt)
-        {
-            case checkrain_option_safemode:
-                return true;
-            default:
-                return false;
-        }
-    }
     return (flags & opt) != 0;
 }
 

@@ -72,7 +72,7 @@ int build_checks(void) {
 	if (checkra1n_len <= (UCHAR_MAX + 1)) {
 		LOG(LOG_FATAL, "checkra1n too small");
 	}
-	if (boyermoore_horspool_memmem(&checkra1n[0], checkra1n_len, (const unsigned char*)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) {
+	if (boyermoore_horspool_memmem(&checkra1n[0], checkra1n_len, (const unsigned char *)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) {
 		host_flags |= palerain_option_checkrain_is_clone;
 	}
 #endif
@@ -81,8 +81,7 @@ int build_checks(void) {
 	if (kpf_hdr->magic != MH_MAGIC_64 && kpf_hdr->magic != MH_CIGAM_64) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not thin 64-bit Mach-O");
 		return -1;
-	} else
-	if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
+	} else if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
 		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not a kext bundle");
 		return -1;
 	} else if (kpf_hdr->cputype != CPU_TYPE_ARM64) {
@@ -112,10 +111,9 @@ int palera1n(int argc, char *argv[]) {
 	pthread_mutex_init(&ecid_dfu_wait_mutex, NULL);
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
-	if (!checkrain_option_enabled(host_flags, host_option_device_info))
-	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) goto normal_exit;
+	if (!checkrain_options_enabled(host_flags, host_option_device_info) && checkrain_options_enabled(host_flags, host_option_palerain_version)) goto normal_exit;
 #ifdef TUI
-	if (checkrain_option_enabled(host_flags, host_option_tui)) {
+	if (checkrain_options_enabled(host_flags, host_option_tui)) {
 		ret = tui();
 		if (ret) goto cleanup;
 		else goto normal_exit;
@@ -135,7 +133,7 @@ int palera1n(int argc, char *argv[]) {
 	}
 #endif
 
-	if (!checkrain_option_enabled(host_flags, host_option_device_info))
+	if (!checkrain_options_enabled(host_flags, host_option_device_info))
 		LOG(LOG_INFO, "Waiting for devices");
 
 	if (access("/var/run/usbmuxd", F_OK) != 0) 
@@ -145,16 +143,16 @@ int palera1n(int argc, char *argv[]) {
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
 	set_spin(0);
-	if (checkrain_option_enabled(host_flags, host_option_dfuhelper_only) ||
-		checkrain_option_enabled(host_flags, host_option_reboot_device) || 
-		checkrain_option_enabled(host_flags, host_option_exit_recovery) || 
-		checkrain_option_enabled(host_flags, host_option_enter_recovery) || 
-		checkrain_option_enabled(host_flags, host_option_device_info) || 
-		device_has_booted)
+	if (checkrain_options_enabled(host_flags, host_option_dfuhelper_only | 
+											  host_option_reboot_device  | 
+											  host_option_exit_recovery  | 
+											  host_option_enter_recovery | 
+											  host_option_device_info
+								 ) || device_has_booted)
 		goto normal_exit;
 	if (exec_checkra1n()) goto cleanup;
 
-	if (checkrain_option_enabled(host_flags, host_option_pongo_exit) || checkrain_option_enabled(host_flags, host_option_demote))
+	if (checkrain_options_enabled(host_flags, host_option_pongo_exit | host_option_demote))
 		goto normal_exit;
 	set_spin(1);
 	sleep(2);
