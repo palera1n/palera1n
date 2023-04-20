@@ -11,22 +11,19 @@
 #ifdef DEBUG
 #define log_debug(...) fprintf(stderr, __VA_ARGS__); fputc('\n', stderr)
 #else
-#define log_debug(...)
+#define log_debug(...) do {} while (0)
 #endif
 #define log_error(...) fprintf(stderr, __VA_ARGS__); fputc('\n', stderr)
 
-int lockdown_connect_handle(uint32_t handle)
-{
+int lockdown_connect_handle(uint32_t handle) {
 	int fd = usbmuxd_connect(handle, 62078);
 	if (fd < 0) {
 		log_debug("Can't connect to lockownd on device #%u", handle);
-		return fd;
 	}
 	return fd;
 }
 
-int lockdown_connect_udid(const char* udid)
-{
+int lockdown_connect_udid(const char* udid) {
 	usbmuxd_device_info_t device;
 	if (usbmuxd_get_device_by_udid(udid, &device) < 0) {
 		log_debug("Can't find device %s", udid);
@@ -35,8 +32,7 @@ int lockdown_connect_udid(const char* udid)
 	return lockdown_connect_handle(device.handle);
 }
 
-void lockdown_disconnect(int fd)
-{
+void lockdown_disconnect(int fd) {
 	usbmuxd_disconnect(fd);
 }
 
@@ -56,8 +52,7 @@ static const int INTEGER_NODE_SIZE = sizeof(INTEGER_NODE)-1;
 static const int STRING_NODE_SIZE = sizeof(STRING_NODE)-1;
 static const int ERROR_KEY_NODE_SIZE = sizeof(ERROR_KEY_NODE)-1;
 
-static void skip_ws(char** cur, char* end)
-{
+static void skip_ws(char** cur, char* end) {
     char* p = *cur;
     while (p < end && ((*p == ' ') || (*p == '\t') || (*p == '\r') || (*p == '\n'))) {
         p++;
@@ -65,8 +60,7 @@ static void skip_ws(char** cur, char* end)
     *cur = p;
 }
 
-static char* _send_request_and_get_reply(int fd, const char* request, uint32_t len, uint32_t* received)
-{
+static char* _send_request_and_get_reply(int fd, const char* request, uint32_t len, uint32_t* received) {
 	uint32_t sent_bytes = 0;
 	usbmuxd_send(fd, request, len, &sent_bytes);
 	if (sent_bytes != len) {
@@ -100,8 +94,7 @@ static char* _send_request_and_get_reply(int fd, const char* request, uint32_t l
 	return resp;
 }
 
-int lockdown_check_type(int fd, const char* type_match)
-{
+int lockdown_check_type(int fd, const char* type_match) {
 	unsigned char tmp[512];
 	uint32_t len = (uint32_t)snprintf((char*)tmp, 512, QUERY_TYPE_REQUEST);
 	uint32_t belen = htonl(len-4);
@@ -119,8 +112,7 @@ int lockdown_check_type(int fd, const char* type_match)
 	return result;
 }
 
-int lockdown_get_uint_value(int fd, const char* domain, const char* key, uint64_t* value)
-{
+int lockdown_get_uint_value(int fd, const char* domain, const char* key, uint64_t* value) {
 	char tmp[1024];
 	uint32_t len;
 	if (domain) {
@@ -159,8 +151,7 @@ int lockdown_get_uint_value(int fd, const char* domain, const char* key, uint64_
 	return 0;
 }
 
-int lockdown_get_string_value(int fd, const char* domain, const char* key, char** value)
-{
+int lockdown_get_string_value(int fd, const char* domain, const char* key, char** value) {
 	char tmp[1024];
 	uint32_t len;
 	if (domain) {
@@ -212,8 +203,7 @@ int lockdown_get_string_value(int fd, const char* domain, const char* key, char*
 	return 0;
 }
 
-int lockdown_enter_recovery(int fd)
-{
+int lockdown_enter_recovery(int fd) {
 	char tmp[512];
 	uint32_t len = (uint32_t)snprintf(tmp, 512, ENTER_RECOVERY_REQUEST);
 	*(uint32_t*)&tmp = htonl(len-4);

@@ -126,11 +126,11 @@ int exec_checkra1n(void) {
 #endif
 checkra1n_exec: {};
 	char args[0x10] = "-E";
-	if (checkrain_option_enabled(host_flags, host_option_demote)) strncat(args, "d", 0xf);
-	if (!checkrain_option_enabled(host_flags, palerain_option_checkrain_is_clone)) {
+	if (checkrain_options_enabled(host_flags, host_option_demote)) strncat(args, "d", 0xf);
+	if (!checkrain_options_enabled(host_flags, palerain_option_checkrain_is_clone)) {
 		strncat(args, "p", 0xf);
 		if (verbose >= 2) strncat(args, "v", 0xf);
-		if (checkrain_option_enabled(host_flags, host_option_no_colors)) strncat(args, "n", 0xf);
+		if (checkrain_options_enabled(host_flags, host_option_no_colors)) strncat(args, "n", 0xf);
 	} else {
 		strncat(args, "R", 0xf);
 	}

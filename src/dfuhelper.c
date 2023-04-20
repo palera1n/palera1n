@@ -36,12 +36,20 @@ int dfuhelper_thr_running = false;
 
 void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
     for (int i = time2; i < time; i++) {
-			printf(checkrain_option_enabled(host_flags, host_option_no_colors) ? "\r\033[K%s (%d)" : BCYN "\r\033[K%s (%d)" CRESET, text, time - i + time2);
+		printf(
+			checkrain_options_enabled(host_flags, host_option_no_colors) 
+			? "\r\033[K%s (%d)" 
+			: BCYN "\r\033[K%s (%d)" CRESET, text, time - i + time2
+		);
         fflush(stdout);
         sleep(1);
 		if (cond != NULL && cond(cond_arg)) pthread_exit(NULL);
     }
-    printf(checkrain_option_enabled(host_flags, host_option_no_colors) ? "\r%s (%d)" : CYN "\r%s (%d)" CRESET, text, time2);
+    printf(
+		checkrain_options_enabled(host_flags, host_option_no_colors)
+		? "\r%s (%d)" 
+		: CYN "\r%s (%d)" CRESET, text, time2
+	);
 	if (time2 == 0) puts("");
 }
 
@@ -53,14 +61,14 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		LOG(LOG_ERROR, "Unable to get device information");
 		return 0;
 	}
-	if (strcmp(dev.CPUArchitecture, "arm64")) {
+	if (strncmp(dev.CPUArchitecture, "arm64", strlen("arm64"))) {
 		devinfo_free(&dev);
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
 		LOG(LOG_WARNING, "palera1n doesn't and never will work on A12+ (arm64e)");
 		return -1;
 	}
 	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
-		if (!checkrain_option_enabled(host_flags, host_option_device_info))
+		if (!checkrain_options_enabled(host_flags, host_option_device_info))
 			LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
 		unsigned char passcode_state = 0;
 		ret = passstat_cmd(&passcode_state, usbmuxd_device->udid);
@@ -71,14 +79,14 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		}
 		if (passcode_state) {
 			LOG(LOG_ERROR, "Passcode must be disabled on this device");
-			if (!checkrain_option_enabled(host_flags, host_option_device_info))
+			if (!checkrain_options_enabled(host_flags, host_option_device_info))
 				LOG(LOG_ERROR, "Additionally, passcode must never be set since a restore on iOS 16+");
 			devinfo_free(&dev);
 			return -1;
 		}
 	}
 
-	if (checkrain_option_enabled(host_flags, host_option_device_info)) {
+	if (checkrain_options_enabled(host_flags, host_option_device_info)) {
 		printf("Mode: normal\n");
 		printf("ProductType: %s\n", dev.productType);
 		printf("Architecture: %s\n", dev.CPUArchitecture);
@@ -93,7 +101,7 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
 	enter_recovery_cmd(usbmuxd_device->udid);
 	devinfo_free(&dev);
-	if (checkrain_option_enabled(host_flags, host_option_enter_recovery)) {
+	if (checkrain_options_enabled(host_flags, host_option_enter_recovery)) {
 		device_has_booted = true;
 		set_spin(0);
 		unsubscribe_cmd();
@@ -138,17 +146,14 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		return NULL;
 	}
 	printf("\r\033[K");
-	bool nohome = NOHOME;
-	if (nohome) 
+	if (NOHOME) {
 		step(2, 0, "Hold volume down + side button", NULL, 0);
-	else
-		step(2, 0, "Hold home + power button", NULL, 0);
-	if (nohome) 
 		step(10, 0, "Hold volume down button", conditional, ecid);
-	else
-		step(10, 0, "Hold home button", conditional, ecid);
-	if (get_ecid_wait_for_dfu() != ecid) {
 	} else {
+		step(2, 0, "Hold home + power button", NULL, 0);
+		step(10, 0, "Hold home button", conditional, ecid);
+	}
+	if (get_ecid_wait_for_dfu() == ecid) {
 		LOG(LOG_WARNING, "Whoops, device did not enter DFU mode");
 		LOG(LOG_INFO, "Waiting for device to reconnect...");
 		set_ecid_wait_for_dfu(0);
@@ -176,13 +181,15 @@ void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	switch (event->event) {
 	case UE_DEVICE_ADD:
 		LOG(LOG_VERBOSE, "Normal mode device connected");
-		if (checkrain_option_enabled(host_flags, host_option_exit_recovery)) {
+		if (checkrain_options_enabled(host_flags, host_option_exit_recovery)) {
 			break;
-		} else if (checkrain_option_enabled(host_flags, host_option_reboot_device)) {
-			reboot_cmd(event->device.udid);
-			LOG(LOG_INFO, "Restarted device");
-			set_spin(0);
-			unsubscribe_cmd();
+		} else if (checkrain_options_enabled(host_flags, host_option_reboot_device)) {
+			int ret = reboot_cmd(event->device.udid);
+			if (!ret) {
+				LOG(LOG_INFO, "Restarted device");
+				set_spin(0);
+				unsubscribe_cmd();
+			}
 			pthread_exit(NULL);
 			break;
 		}
@@ -196,69 +203,85 @@ void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 
 void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 	pthread_t recovery_thread, dfu_thread;
+	int ret;
 	
 	switch(event->type) {
 		case IRECV_DEVICE_ADD:
-		if (event->mode == IRECV_K_RECOVERY_MODE_1 || event->mode == IRECV_K_RECOVERY_MODE_2 || event->mode == IRECV_K_RECOVERY_MODE_3 || event->mode == IRECV_K_RECOVERY_MODE_4) {
-			if (!checkrain_option_enabled(host_flags, host_option_device_info))
-				LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
-			if (checkrain_option_enabled(host_flags, host_option_exit_recovery)) {
-				exitrecv_cmd(event->device_info->ecid);
-				LOG(LOG_INFO, "Exited recovery mode");
-				device_has_booted = true;
-				set_spin(0);
-				unsubscribe_cmd();
-				if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
-				pthread_exit(NULL);
-				break;
-			}
-
-			if (checkrain_option_enabled(host_flags, host_option_device_info)) {
-				recvinfo_t info;
-				recvinfo_cmd(&info, event->device_info->ecid);
-				printf("Mode: recovery\n");
-				printf("ProductType: %s\n", info.product_type);
-				printf("DisplayName: %s\n", info.display_name);
-
-				device_has_booted = true;
-				set_spin(0);
-				unsubscribe_cmd();
-				if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
-				pthread_exit(NULL);
-				break;
-			}
-
-			if (checkrain_option_enabled(host_flags, host_option_enter_recovery) ||
-			checkrain_option_enabled(host_flags, host_option_reboot_device)) return;
-			pthread_create(&recovery_thread, NULL, (void* (*)(void*))connected_recovery_mode, event->device_info);
-		} else if (event->mode == IRECV_K_DFU_MODE) {
-			if (!checkrain_option_enabled(host_flags, host_option_device_info))
-				LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
-			
-			if (checkrain_option_enabled(host_flags, host_option_device_info)) {
-				recvinfo_t info;
-				recvinfo_cmd(&info, event->device_info->ecid);
-				printf("Mode: dfu\n");
-				printf("ProductType: %s\n", info.product_type);
-				printf("DisplayName: %s\n", info.display_name);
-
-				device_has_booted = true;
-				set_spin(0);
-				unsubscribe_cmd();
-				if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
-				pthread_exit(NULL);
-				break;
-			}
-			
-			if (
-				checkrain_option_enabled(host_flags, host_option_exit_recovery) ||
-				checkrain_option_enabled(host_flags, host_option_enter_recovery) ||
-				checkrain_option_enabled(host_flags, host_option_reboot_device)) {
+			if (event->mode == IRECV_K_RECOVERY_MODE_1 || 
+				event->mode == IRECV_K_RECOVERY_MODE_2 || 
+				event->mode == IRECV_K_RECOVERY_MODE_3 || 
+				event->mode == IRECV_K_RECOVERY_MODE_4) {
+				if (!checkrain_options_enabled(host_flags, host_option_device_info))
+					LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
+				if (checkrain_options_enabled(host_flags, host_option_exit_recovery)) {
+					ret = exitrecv_cmd(event->device_info->ecid);
+					if (!ret) {
+						LOG(LOG_INFO, "Exited recovery mode");
+						device_has_booted = true;
+						set_spin(0);
+						unsubscribe_cmd();
+					} else {
+						LOG(LOG_WARNING, "Could not exit recovery mode");
+					}
+					if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
+					pthread_exit(NULL);
 					break;
+				}
+
+				if (checkrain_options_enabled(host_flags, host_option_device_info)) {
+					recvinfo_t info;
+					ret = recvinfo_cmd(&info, event->device_info->ecid);
+					if (ret) {
+						LOG(LOG_WARNING, "Could not get info from device");
+					} else {
+						printf("Mode: Recovery\n");
+						printf("ProductType: %s\n", info.product_type);
+						printf("DisplayName: %s\n", info.display_name);
+
+						device_has_booted = true;
+						set_spin(0);
+						unsubscribe_cmd();
+					}
+					if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
+					pthread_exit(NULL);
+					break;
+				}
+
+				if (checkrain_options_enabled(host_flags, host_option_enter_recovery) ||
+					checkrain_options_enabled(host_flags, host_option_reboot_device)) return;
+				pthread_create(&recovery_thread, NULL, (pthread_start_t)connected_recovery_mode, event->device_info);
+			} else if (event->mode == IRECV_K_DFU_MODE) {
+				if (!checkrain_options_enabled(host_flags, host_option_device_info))
+					LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
+
+				if (checkrain_options_enabled(host_flags, host_option_device_info)) {
+					recvinfo_t info;
+					ret = recvinfo_cmd(&info, event->device_info->ecid);
+					if (ret) {
+						LOG(LOG_WARNING, "Could not get info from device");
+					} else {
+						printf("Mode: DFU\n");
+						printf("ProductType: %s\n", info.product_type);
+						printf("DisplayName: %s\n", info.display_name);
+
+						device_has_booted = true;
+						set_spin(0);
+						unsubscribe_cmd();
+					}
+					if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
+					pthread_exit(NULL);
+					break;
+				}
+
+				if (
+					checkrain_options_enabled(host_flags, host_option_exit_recovery) ||
+					checkrain_options_enabled(host_flags, host_option_enter_recovery) ||
+					checkrain_options_enabled(host_flags, host_option_reboot_device)) {
+						break;
+				}
+				pthread_create(&dfu_thread, NULL, (pthread_start_t)connected_dfu_mode, event->device_info);
 			}
-			pthread_create(&dfu_thread, NULL, (void* (*)(void*))connected_dfu_mode, event->device_info);
-		}
-		break;
+			break;
 		case IRECV_DEVICE_REMOVE:
 			LOG(LOG_VERBOSE, "Recovery mode device disconnected");
 		break;

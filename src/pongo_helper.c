@@ -29,15 +29,15 @@ void* pongo_helper(void* ptr) {
 	return NULL;
 }
 
-void *pongo_usb_callback(void *arg) {
+void *pongo_usb_callback(stuff_t *arg) {
 	if (get_found_pongo())
 		return NULL;
 	set_found_pongo(1);
-	if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
+	if (checkrain_options_enabled(palerain_flags, palerain_option_setup_rootful)) {
 		strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);	
 	}
 	LOG(LOG_INFO, "Found PongoOS USB Device");
-	usb_device_handle_t handle = (((stuff_t *)arg)->handle);
+	usb_device_handle_t handle = arg->handle;
 	issue_pongo_command(handle, NULL);	
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
@@ -46,7 +46,7 @@ void *pongo_usb_callback(void *arg) {
 	issue_pongo_command(handle, kpf_flags_cmd);
 	issue_pongo_command(handle, checkrain_flags_cmd);
 	issue_pongo_command(handle, palerain_flags_cmd);
-	if (checkrain_option_enabled(palerain_flags, palerain_option_rootful))
+	if (checkrain_options_enabled(palerain_flags, palerain_option_rootful))
 	{
 		issue_pongo_command(handle, "rootfs");
 	}
@@ -66,13 +66,13 @@ void *pongo_usb_callback(void *arg) {
 		issue_pongo_command(handle, "overlay");
 	}
 	issue_pongo_command(handle, xargs_cmd);
-	if (checkrain_option_enabled(host_flags, host_option_pongo_full)) goto done;
+	if (checkrain_options_enabled(host_flags, host_option_pongo_full)) goto done;
 	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
-	if (checkrain_option_enabled(palerain_flags, palerain_option_setup_partial_root)) {
+	if (checkrain_options_enabled(palerain_flags, palerain_option_setup_partial_root)) {
 		LOG(LOG_INFO, "Please wait up to 5 minutes for the bindfs to be created.");
 		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -B (Create BindFS) option to jailbreak.");
-	} else if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
+	} else if (checkrain_options_enabled(palerain_flags, palerain_option_setup_rootful)) {
 		LOG(LOG_INFO, "Please wait up to 10 minutes for the fakefs to be created.");
 		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -c (Create FakeFS) option to jailbreak.");
 	}
@@ -83,7 +83,7 @@ void *pongo_usb_callback(void *arg) {
 done:
 	device_has_booted = true;
 #ifdef USE_LIBUSB
-	libusb_unref_device(((stuff_t *)arg)->dev);
+	libusb_unref_device(arg->dev);
 #endif
 	set_spin(0);
 	return NULL;
@@ -163,7 +163,7 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 		    if (verbose < 3 || verbose > 4) {
 				LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
     		} else {
-				if (checkrain_option_enabled(host_flags, host_option_no_colors))
+				if (checkrain_options_enabled(host_flags, host_option_no_colors))
 				    printf("/send mem:%p:%p\nUploaded %llu bytes]\n", (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
 				else
         			printf("/send mem:%p:%p\n" BCYN "[Uploaded %llu bytes]\n" CRESET, (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
@@ -176,7 +176,7 @@ int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned i
 
 void io_start(stuff_t *stuff)
 {
-    int r = pthread_create(&stuff->th, NULL, &pongo_usb_callback, stuff);
+    int r = pthread_create(&stuff->th, NULL, (pthread_start_t)pongo_usb_callback, stuff);
     if(r != 0)
     {
         ERR("pthread_create: %s", strerror(r));

@@ -76,27 +76,27 @@ bool cpid_is_arm64(unsigned int cpid) {
 	* ========== 0x8960 ===========
 	* (ARM64)      A7     
 	*/
-	if (
-		cpid == 0x8960 || cpid == 0x7000 || cpid == 0x7001
-		|| cpid == 0x8000 || cpid == 0x8001 || cpid == 0x8003
-		|| cpid == 0x8010 || cpid == 0x8011 || cpid == 0x8012
-		|| cpid == 0x8015
-	
-	) return true;
-	return false;
+	return (
+		cpid == 0x8960 || cpid == 0x7000 || cpid == 0x7001 || 
+		cpid == 0x8000 || cpid == 0x8001 || cpid == 0x8003 || 
+		cpid == 0x8010 || cpid == 0x8011 || cpid == 0x8012 || 
+		cpid == 0x8015
+	);
 }
 
 int subscribe_cmd(usbmuxd_event_cb_t device_event_cb, irecv_device_event_cb_t irecv_event_cb)
 {
-	usbmuxd_events_subscribe(&usbmuxdctx, device_event_cb, NULL);
-	irecv_device_event_subscribe(&irecvctx, irecv_event_cb, NULL);
+	int ret;
+	if (ret = usbmuxd_events_subscribe(&usbmuxdctx, device_event_cb, NULL)) return ret;
+	if (ret = irecv_device_event_subscribe(&irecvctx, irecv_event_cb, NULL)) return ret;
 	return 0;
 }
 
 int unsubscribe_cmd(void)
 {
-	usbmuxd_events_unsubscribe(usbmuxdctx);
-	irecv_device_event_unsubscribe(irecvctx);
+	int ret;
+	if (ret = usbmuxd_events_unsubscribe(usbmuxdctx)) return ret;
+	if (ret = irecv_device_event_unsubscribe(irecvctx)) return ret;
 	irecvctx = NULL;
 	usbmuxdctx = NULL;
 	return 0;
@@ -119,15 +119,15 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	}
 	if (lockdownd_client_new(device, &lockdown, "palera1n") != LOCKDOWN_E_SUCCESS)
 	{
-		idevice_free(device);
+		(void)idevice_free(device);
 		LOG(LOG_ERROR, "Device is not in normal mode.");
 		return -1;
 	}
 	plist_t node = NULL;
 	if (lockdownd_get_value(lockdown, NULL, "UniqueChipID", &node) != LOCKDOWN_E_SUCCESS)
 	{
-		lockdownd_client_free(lockdown);
-		idevice_free(device);
+		(void)lockdownd_client_free(lockdown);
+		(void)idevice_free(device);
 		LOG(LOG_ERROR, "Error getting ECID");
 		return -1;
 	}
@@ -137,8 +137,8 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	node = NULL;
 	if (lockdownd_get_value(lockdown, NULL, "ProductType", &node) != LOCKDOWN_E_SUCCESS)
 	{
-		lockdownd_client_free(lockdown);
-		idevice_free(device);
+		(void)lockdownd_client_free(lockdown);
+		(void)idevice_free(device);
 		LOG(LOG_ERROR, "Error getting product type");
 		return -1;
 	}
@@ -148,8 +148,8 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	node = NULL;
 	if (lockdownd_get_value(lockdown, NULL, "CPUArchitecture", &node) != LOCKDOWN_E_SUCCESS)
 	{
-		lockdownd_client_free(lockdown);
-		idevice_free(device);
+		(void)lockdownd_client_free(lockdown);
+		(void)idevice_free(device);
 		LOG(LOG_ERROR, "Error getting CPU type");
 		return -1;
 	}
@@ -159,8 +159,8 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	node = NULL;
 	if (lockdownd_get_value(lockdown, NULL, "ProductVersion", &node) != LOCKDOWN_E_SUCCESS)
 	{
-		lockdownd_client_free(lockdown);
-		idevice_free(device);
+		(void)lockdownd_client_free(lockdown);
+		(void)idevice_free(device);
 		LOG(LOG_ERROR, "Error getting product version");
 		return -1;
 	}
@@ -170,21 +170,21 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	node = NULL;
 	if (lockdownd_get_value(lockdown, NULL, "BuildVersion", &node) != LOCKDOWN_E_SUCCESS)
 	{
-		lockdownd_client_free(lockdown);
-		idevice_free(device);
+		(void)lockdownd_client_free(lockdown);
+		(void)idevice_free(device);
 		LOG(LOG_ERROR, "Error getting build version");
 		return -1;
 	}
 	plist_get_string_val(node, &buildVersion);
 	plist_free(node);
-	lockdownd_client_free(lockdown);
-	idevice_free(device);
+	(void)lockdownd_client_free(lockdown);
+	(void)idevice_free(device);
+
 	irecv_device_t rcvydev;
 	if (irecv_devices_get_device_by_product_type(productType, &rcvydev) == IRECV_E_SUCCESS)
 	{
 		displayName = rcvydev->display_name;
-	}
-	else
+	} else
 	{
 		displayName = productType;
 	}
@@ -209,23 +209,22 @@ int enter_recovery_cmd(const char* udid) {
 		LOG(LOG_ERROR, "Could not connect to lockdownd: %s", lockdownd_strerror(ldret));
 		return -1;
 	}
-	do {
-		ldret = lockdownd_enter_recovery(lockdown);
-		if (ldret == LOCKDOWN_E_SESSION_INACTIVE) {
-			lockdownd_client_free(lockdown);
-			lockdown = NULL;
-			if (LOCKDOWN_E_SUCCESS != (ldret = lockdownd_client_new_with_handshake(device, &lockdown, "palera1n"))) {
-				LOG(LOG_ERROR, "Could not connect to lockdownd: %s", lockdownd_strerror(ldret));
-				return -1;
-			}
-			ldret = lockdownd_enter_recovery(lockdown);
-		}
+	ldret = lockdownd_enter_recovery(lockdown);
+	if (ldret == LOCKDOWN_E_SESSION_INACTIVE) {
+		lockdownd_client_free(lockdown);
+		lockdown = NULL;
+		ldret = lockdownd_client_new_with_handshake(device, &lockdown, "palera1n");
 		if (ldret != LOCKDOWN_E_SUCCESS) {
-			LOG(LOG_ERROR, "Could not trigger entering recovery mode: %s", lockdownd_strerror(ldret));
+			LOG(LOG_ERROR, "Could not connect to lockdownd: %s", lockdownd_strerror(ldret));
 			return -1;
 		}
-		lockdownd_client_free(lockdown);
-	} while (0);
+		ldret = lockdownd_enter_recovery(lockdown);
+	}
+	if (ldret != LOCKDOWN_E_SUCCESS) {
+		LOG(LOG_ERROR, "Could not trigger entering recovery mode: %s", lockdownd_strerror(ldret));
+		return -1;
+	}
+	lockdownd_client_free(lockdown);
 	idevice_free(device);
 	return 0;
 }
@@ -242,8 +241,8 @@ int reboot_cmd(const char* udid) {
 			if (diagnostics_relay_restart(diag, DIAGNOSTICS_RELAY_ACTION_FLAG_WAIT_FOR_DISCONNECT) != DIAGNOSTICS_RELAY_E_SUCCESS) {
 				LOG(LOG_ERROR, "Could not reboot device.");
 			}
-			diagnostics_relay_goodbye(diag);
-			diagnostics_relay_client_free(diag);
+			(void)diagnostics_relay_goodbye(diag);
+			(void)diagnostics_relay_client_free(diag);
 		} else {
 			LOG(LOG_ERROR, "Could not connect to device.");
 			return -1;
@@ -302,9 +301,9 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 	derr = diagnostics_relay_query_mobilegestalt(diagnostics_client, keys, &node);
 
 	plist_free(keys);
-	diagnostics_relay_client_free(diagnostics_client);
-	lockdownd_service_descriptor_free(service);
-	idevice_free(dev);
+	(void)diagnostics_relay_client_free(diagnostics_client);
+	(void)lockdownd_service_descriptor_free(service);
+	(void)idevice_free(dev);
 
 	if (derr != DIAGNOSTICS_RELAY_E_SUCCESS || !node)
 	{
@@ -322,7 +321,7 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 	plist_get_string_val(status_node, &passstat_status);
 	if (!status || strncmp(passstat_status, "Succ", 4))
 	{
-		if (passstat_status)
+		if (passstat_status) 
 			free(passstat_status);
 		passstat_status = NULL;
 		plist_free(node);
@@ -349,20 +348,16 @@ int passstat_cmd(unsigned char* status, const char* udid) {
 int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid) {
 	irecv_client_t client = NULL;
 	irecv_error_t err = irecv_open_with_ecid(&client, ecid);
-	if (err != IRECV_E_SUCCESS) {
-		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
-		return -1;
-	}
+	if (err != IRECV_E_SUCCESS) goto err;
 	int mode = 0;
-	irecv_get_mode(client, &mode);
+	err = irecv_get_mode(client, &mode);
+	if (err != IRECV_E_SUCCESS) goto err;
 	char *ibootver = NULL;
-	irecv_getenv(client, "build-version", &ibootver);
+	err = irecv_getenv(client, "build-version", &ibootver);
+	if (err != IRECV_E_SUCCESS) goto err;
 	irecv_device_t device;
 	err = irecv_devices_get_device_by_client(client, &device);
-	if (err != IRECV_E_SUCCESS) {
-		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
-		return -1;
-	}
+	if (err != IRECV_E_SUCCESS) goto err;
 	info->mode = mode;
 	info->cpid = device->chip_id;
 	snprintf(info->product_type, 0x20, "%s", device->product_type);
@@ -371,33 +366,41 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid) {
 	free(ibootver);
 	irecv_close(client);
 	return 0;
+err:
+	LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
+	return -1;
 }
 
 int autoboot_cmd(const uint64_t ecid) {
 	irecv_client_t client = NULL;
 	irecv_error_t err = irecv_open_with_ecid(&client, ecid);
-	if (err == IRECV_E_SUCCESS) {
-		irecv_setenv(client, "auto-boot", "true");
-		irecv_saveenv(client);
-		irecv_close(client);
-		return 0;
-	} else { 
-		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
+	if (err != IRECV_E_SUCCESS) goto err;
+	err = irecv_setenv(client, "auto-boot", "true");
+	if (err != IRECV_E_SUCCESS) goto err;
+	err = irecv_saveenv(client);
+	if (err != IRECV_E_SUCCESS) goto err;
+	err = irecv_close(client);
+	if (err != IRECV_E_SUCCESS) goto err;
+	return 0;
+err:
+	LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
 		return -1;
-	}
 }
 
 int exitrecv_cmd(const uint64_t ecid) {
 	irecv_client_t client = NULL;
 	irecv_error_t err = irecv_open_with_ecid(&client, ecid);
-	if (err == IRECV_E_SUCCESS) {
-		irecv_setenv(client, "auto-boot", "true");
-		irecv_saveenv(client);
-		irecv_reboot(client);
-		irecv_close(client);
-		return 0;
-	} else {
-		LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
-		return -1;
-	}
+	if (err != IRECV_E_SUCCESS) goto err;
+	err = irecv_setenv(client, "auto-boot", "true");
+	if (err != IRECV_E_SUCCESS) goto err;
+	err = irecv_saveenv(client);
+	if (err != IRECV_E_SUCCESS) goto err;
+	err = irecv_reboot(client);
+	if (err != IRECV_E_SUCCESS) goto err;
+	err = irecv_close(client);
+	if (err != IRECV_E_SUCCESS) goto err;
+	return 0;
+err:
+	LOG(LOG_ERROR, "libirecovery error: %d (%s)", err, irecv_strerror(err));
+	return -1;
 }
