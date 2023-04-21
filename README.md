@@ -31,6 +31,9 @@ If you need an older v2.0.0 beta, please get it [here](https://github.com/palera
 
 - palera1n will never work in VirtualBox, VMware or any virtual machine that doesn't support PCI passthrough.
 
+# Image of a chicken
+<img src="https://github.com/0xilis/palera1n/raw/tweaks/chicken-3592434612.jpg"  alt="image of a chicken">
+
 # Requirements
 - A checkm8 vulnerable iOS device on iOS 15.x or 16.x (`A8` - `A11`)
 	-	If using rootful, you will need **5-10GB of space** for the fakefs. This means 16GB devices cannot use the full fakefs creation. However, you can change the arguments to `-Bf` to create a fakefs with bind mounts, so it uses a smaller size, at the expense having unwritable parts in rarely-written paths, and then boot it
