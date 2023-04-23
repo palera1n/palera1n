@@ -19,10 +19,8 @@ checkrain_option_p host_flags_p = &host_flags;
 static bool force_use_verbose_boot = false;
 
 static struct option longopts[] = {
-#ifdef ROOTFUL
 	{"setup-partial-fakefs", no_argument, NULL, 'B'},
 	{"setup-fakefs", no_argument, NULL, 'c'},
-#endif
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
@@ -30,9 +28,7 @@ static struct option longopts[] = {
 	{"debug-logging", no_argument, NULL, 'v'},
 	{"verbose-boot", no_argument, NULL, 'V'},
 	{"boot-args", required_argument, NULL, 'e'},
-#ifdef ROOTFUL
 	{"fakefs", no_argument, NULL, 'f'},
-#endif
 	{"rootless", no_argument, NULL, 'l'},
 	{"jbinit-log-to-file", no_argument, NULL, 'L'},
 	{"demote", no_argument, NULL, 'd'},
@@ -130,13 +126,10 @@ int optparse(int argc, char* argv[]) {
 #ifdef DEV_BUILD
 	"12"
 #endif
-#ifdef ROOTFUL
 	"fcB"
-#endif
 	,longopts, NULL)) != -1)
 	{
 		switch (opt) {
-#ifdef ROOTFUL
 		case 'B':
 			palerain_flags |= palerain_option_setup_partial_root;
 			palerain_flags |= palerain_option_setup_rootful;
@@ -146,7 +139,6 @@ int optparse(int argc, char* argv[]) {
 			palerain_flags |= palerain_option_setup_rootful;
 			kpf_flags |= checkrain_option_verbose_boot;
 			break;
-#endif
 		case 'p':
 			host_flags |= host_option_pongo_exit;
 			break;
@@ -176,17 +168,13 @@ int optparse(int argc, char* argv[]) {
             }
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
 			break;
-#ifdef ROOTFUL
 		case 'f':
 			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
 			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
 			palerain_flags |= palerain_option_rootful;
 			break;
-#endif
 		case 'l':
-#ifdef ROOTFUL
 			palerain_flags &= ~palerain_option_rootful;
-#endif
 			break;
 		case 'L':
 			palerain_flags |= palerain_option_jbinit_log_to_file;
