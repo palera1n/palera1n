@@ -87,16 +87,16 @@ bool cpid_is_arm64(unsigned int cpid) {
 int subscribe_cmd(usbmuxd_event_cb_t device_event_cb, irecv_device_event_cb_t irecv_event_cb)
 {
 	int ret;
-	if (ret = usbmuxd_events_subscribe(&usbmuxdctx, device_event_cb, NULL)) return ret;
-	if (ret = irecv_device_event_subscribe(&irecvctx, irecv_event_cb, NULL)) return ret;
+	if ((ret = usbmuxd_events_subscribe(&usbmuxdctx, device_event_cb, NULL))) return ret;
+	if ((ret = irecv_device_event_subscribe(&irecvctx, irecv_event_cb, NULL))) return ret;
 	return 0;
 }
 
 int unsubscribe_cmd(void)
 {
 	int ret;
-	if (ret = usbmuxd_events_unsubscribe(usbmuxdctx)) return ret;
-	if (ret = irecv_device_event_unsubscribe(irecvctx)) return ret;
+	if ((ret = usbmuxd_events_unsubscribe(usbmuxdctx))) return ret;
+	if ((ret = irecv_device_event_unsubscribe(irecvctx))) return ret;
 	irecvctx = NULL;
 	usbmuxdctx = NULL;
 	return 0;
