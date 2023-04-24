@@ -311,10 +311,7 @@ may crash if the machine it is running on:
 .Pp
 The exploit may also work less reliably on some hosts, like AMD desktops, or some MediaTek devices.
 .Pp
-.Fl B , -setup-fakefs-partial
-does not work on iOS 16.
-.Pp
-The device may randomly crash and reboot due to launchd receiving signal 7 (SIGEMT).
+The device may randomly crash and reboot due to launchd exiting with code 7.
 .Sh NOTES
 .Nm
 injects a dylib into launchd to allow the
