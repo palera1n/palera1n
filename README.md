@@ -14,6 +14,9 @@
 </p>
 <div class="clear"></div>
 
+> **Warning**
+> ### **The shell version of palera1n is no longer updated. Please use the [C version of palera1n](https://github.com/palera1n/palera1n) unless it isn't working for you or you need a tethered jailbreak.**
+
 # How does it work?
 
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi-tethered), installs the loader app, and patches your kernel. 
