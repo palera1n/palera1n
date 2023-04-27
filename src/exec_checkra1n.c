@@ -162,7 +162,7 @@ checkra1n_exec: {};
 		return -1;
 	}
 	LOG(LOG_VERBOSE2, "%s spawned successfully", checkra1n_path);
-
+	sleep(2);
 	if (ext_checkra1n == NULL) {
 		unlink(checkra1n_path);
 		free(checkra1n_path);
