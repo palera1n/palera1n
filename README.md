@@ -41,6 +41,10 @@ If you need an older v2.0.0 beta, please get it [here](https://github.com/palera
 - A Linux or macOS computer
 	- AMD CPUs (not AMD Mobile) have an issue [with (likely) their USB controllers] that causes them to have a very low success rate with checkm8. It is not recommended that you use them with palera1n.
 		- If your device does not successfully jailbreak, try a computer with an Intel or other CPU
+    
+- Apple Silicon Macs with USB-C
+	- USB-C port on Apple Silicon Macs may require manual unplugging and replugging of the lightning cable after checkm8 exploit.
+	- This problem may be solved by connecting via USBHub.
 
 # Need help?
 
