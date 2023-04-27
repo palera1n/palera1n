@@ -1,3 +1,7 @@
+#ifdef __gnu_linux__
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -158,7 +162,7 @@ checkra1n_exec: {};
 		return -1;
 	}
 	LOG(LOG_VERBOSE2, "%s spawned successfully", checkra1n_path);
-	sleep(2);
+
 	if (ext_checkra1n == NULL) {
 		unlink(checkra1n_path);
 		free(checkra1n_path);
