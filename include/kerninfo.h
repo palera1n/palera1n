@@ -61,6 +61,10 @@
 #define palerain_option_setup_partial_root   (1 << 4) /* fakefs creating should be partial */
 #define palerain_option_checkrain_is_clone   (1 << 5) /* supplied checkra1n is checkra1n clone */
 #define palerain_option_rootless_livefs      (1 << 6) /* mount root livefs on rootless */
+/* reserved values */
+// #define palerain_option_no_ssv               (1 << 7) /* no signed system volume */
+// #define palerain_option_force_fakefs         (1 << 8) /* force fakefs, even without SSV */
+// #define palerain_option_rootless             (1 << 9) /* rootless jailbreak */
 
 #ifdef DEV_BUILD
 #define palerain_option_test1               (1 << 29)
