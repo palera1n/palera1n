@@ -31,6 +31,7 @@
 #define FORMAT_XML 2
 
 #define NOHOME (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e)))
+#define APPLETV (cpid == 0x7000 && bdid == 0x34)
 
 int dfuhelper_thr_running = false;
 
@@ -134,7 +135,10 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	LOG(LOG_INFO, "Press Enter when ready for DFU mode");
 	getchar();
 	step(3, 0, "Get ready", NULL, 0);
-	if (NOHOME) 
+	if (APPLETV) {
+		step(15, 3, "Hold menu + play/pause button", NULL, 0);
+		step(3, 0, "Release buttons", NULL, 0);
+	} else if (NOHOME)
 		step(4, 2, "Hold volume down + side button", NULL, 0);
 	else
 		step(4, 2, "Hold home + power button", NULL, 0);
@@ -146,7 +150,8 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		return NULL;
 	}
 	printf("\r\033[K");
-	if (NOHOME) {
+	if (APPLETV) {
+	} else if (NOHOME) {
 		step(2, 0, "Hold volume down + side button", NULL, 0);
 		step(10, 0, "Hold volume down button", conditional, ecid);
 	} else {
