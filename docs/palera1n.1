@@ -106,7 +106,7 @@ is not supported when this option is used together with
 Like
 .Fl c , -setup-fakefs
 but the size of the created fakefs is smaller at the expense of having unwritable
-parts in rarely-written paths. When jailbreaking 16 GB devices, this option must be used
+parts in rarely-written paths. When jailbreaking 16 GB devices, this option must be usedqq
 when setting up fakefs for rootful, as they do not have enough storage for full fakefs.
 This option currently does not work on iOS 16.
 .It Fl c , -setup-fakefs
@@ -122,7 +122,9 @@ allows resetting the rootful environment without deleting the entire fakefs.
 Note that this option will not work if the fakefs is created in an older version
 of palera1n that does not create the
 .Em orig-fs
-snapshot on the fakefs. 
+snapshot on the fakefs. This option will also remove some jailbreak files inside
+of /var. The files in /var will not be deleted when a userspace reboot is done
+with this flag set.
 .It Fl d , -demote
 Set the effective production fuse to 0, so as to enable hardware debugging features.
 .It Fl D , -dfuhelper
