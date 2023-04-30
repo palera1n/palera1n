@@ -65,6 +65,7 @@
 // #define palerain_option_no_ssv               (1 << 7) /* no signed system volume */
 // #define palerain_option_force_fakefs         (1 << 8) /* force fakefs, even without SSV */
 // #define palerain_option_rootless             (1 << 9) /* rootless jailbreak */
+#define palerain_option_clean_fakefs        (1 << 10) /* clean fakefs, but does not delete it */
 
 #ifdef DEV_BUILD
 #define palerain_option_test1               (1 << 29)

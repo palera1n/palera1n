@@ -21,6 +21,7 @@ static bool force_use_verbose_boot = false;
 static struct option longopts[] = {
 	{"setup-partial-fakefs", no_argument, NULL, 'B'},
 	{"setup-fakefs", no_argument, NULL, 'c'},
+	{"clean-fakefs", no_argument, NULL, 'c'},
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
@@ -64,7 +65,7 @@ static int usage(int e, char* prog_name)
 			"12"
 #endif
 #ifdef ROOTFUL
-			"cfB"
+			"cCfB"
 #endif
 #ifdef TUI
 			"t"
@@ -81,6 +82,7 @@ static int usage(int e, char* prog_name)
 #ifdef ROOTFUL
 			"\t-B, --setup-partial-fakefs\t\tSetup partial fakefs\n"
 			"\t-c, --setup-fakefs\t\t\tSetup fakefs\n"
+			"\t-C, --clean-fakefs\t\t\tClean fakefs\n"
 #endif
 			"\t-d, --demote\t\t\t\tDemote\n"
 			"\t-D, --dfuhelper\t\t\t\tExit after entering DFU\n"
@@ -126,7 +128,7 @@ int optparse(int argc, char* argv[]) {
 #ifdef DEV_BUILD
 	"12"
 #endif
-	"fcB"
+	"fCcB"
 	,longopts, NULL)) != -1)
 	{
 		switch (opt) {
@@ -138,6 +140,9 @@ int optparse(int argc, char* argv[]) {
 		case 'c':
 			palerain_flags |= palerain_option_setup_rootful;
 			kpf_flags |= checkrain_option_verbose_boot;
+			break;
+		case 'C':
+			palerain_flags |= palerain_option_clean_fakefs;
 			break;
 		case 'p':
 			host_flags |= host_option_pongo_exit;

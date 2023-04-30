@@ -113,6 +113,16 @@ This option currently does not work on iOS 16.
 When used with
 .Fl f , -fakefs ,
 creates the new APFS volume required for rootful. Will fail if one already exists.
+.It Fl C , -clean-fakefs
+This reverts the fakefs to the 
+.Em orig-fs
+snapshot that is created when the fakefs
+is first created, then the device will continue to boot jailbroken. This option 
+allows resetting the rootful environment without deleting the entire fakefs. 
+Note that this option will not work if the fakefs is created in an older version
+of palera1n that does not create the
+.Em orig-fs
+snapshot on the fakefs. 
 .It Fl d , -demote
 Set the effective production fuse to 0, so as to enable hardware debugging features.
 .It Fl D , -dfuhelper
