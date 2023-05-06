@@ -103,7 +103,7 @@ void log_cb(libusb_context *ctx, enum libusb_log_level level, const char *str) {
 #endif
 
 int palera1n(int argc, char *argv[]) {
-	print_credits();
+	printf("Ariez on top.\n");
 	int ret = 0;
 	pthread_mutex_init(&log_mutex, NULL);
 	pthread_mutex_init(&spin_mutex, NULL);
