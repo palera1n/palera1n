@@ -810,7 +810,6 @@ jobs:
           name: build-tag
 
       - name: Send Discord build message
-        if: github.ref == 'refs/heads/master'
         run: |
           echo "${{ github.event.repository.updated_at}}"
           COMMITMESSAGE=`git log --pretty=format:'- \`%h\` %s' -1 --reverse` &&
