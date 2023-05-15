@@ -353,7 +353,7 @@ jobs:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
           retention-days: 1
-
+      
   darwin-dist:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: macos-latest
@@ -783,3 +783,15 @@ jobs:
           dryRun: false
           localDir: 'ready/'
           remoteDir: '/palera1n/artifacts/c-rewrite'
+
+  discord-alert:
+    runs-on: ubuntu-latest
+    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    needs: [build-docs, build-darwin, darwin-dist, build-Linux]
+    steps:
+      - name: Send Discord build message
+        if: github.ref == 'refs/heads/master'
+        run: |
+          COMMITMESSAGE=`git log --pretty=format:'- \`%h\` %s' -5 --reverse` &&
+          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"Build $BUILD\",\"description\":\"**Branch:** $BRANCH_NAME\\n**Changes:**\\n$COMMITMESSAGE\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/$GITHUB_RUN_ID\",\"color\":1487872,\"fields\":[{\"name\":\"Artifacts:\",\"value\":\"- [palera1n-ios](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-ios)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-macos-universal)\n- [palera1n.1](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n.1.html)\"}],\"footer\":{\"text\":\"https://github.com/palera1n/palera1n\"},\"thumbnail\":{\"url\":\"https://github.com/palera1n.png\"}}],\"username\":\"Github Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
+    
