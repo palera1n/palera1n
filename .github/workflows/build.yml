@@ -786,7 +786,7 @@ jobs:
 
   discord-alert:
     runs-on: ubuntu-latest
-    if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
+    if: ${{ github.event_name != 'pull_request' }}
     needs: [build-docs, build-darwin, darwin-dist, build-Linux]
     steps:
       - name: Send Discord build message
