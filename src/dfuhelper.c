@@ -129,6 +129,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	info = NULL;
 	if (!cpid_is_arm64(cpid)) {
 		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
+		LOG(LOG_WARNING, "palera1n doesn't and never will work on A12+ (arm64e)");
 		return NULL;
 	}
 	sleep(1);
