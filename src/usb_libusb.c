@@ -181,6 +181,7 @@ static int LostDevice(libusb_context *ctx, libusb_device *dev, libusb_hotplug_ev
 int wait_for_pongo(void)
 {
     stuff_t stuff;
+    stuff.handle = NULL;
     libusb_hotplug_callback_handle hp[2];
     libusb_context* ctx = NULL;
 
