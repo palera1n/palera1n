@@ -5,7 +5,7 @@
 <h3 align="right">An iOS 15.0-16.4.1 work-in-progress, <br>semi-tethered checkm8 jailbreak</h3> 
 
 <p align="right" >
-  <strong><a href="https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.4/palera1n.1.html">Usage</a></strong>
+  <strong><a href="https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.6/palera1n.1.html">Usage</a></strong>
   •
   <strong><a href="https://github.com/palera1n/palera1n/graphs/contributors">Contributors</a></strong>
   •
@@ -18,11 +18,11 @@
 ## If you want a jailbreak, you should read the [guide](https://palera.in).
 
 ### You can obtain v2.0.0 beta [here](https://github.com/palera1n/palera1n/releases).
-If you need an older v2.0.0 beta, please get it [here](https://github.com/palera1n/palera1n-c/releases/tag/v2.0.0-beta.4).
+If you need an older v2.0.0 beta, please get it [here](https://github.com/palera1n/palera1n/releases/tag/v2.0.0-beta.5).
 
 # Warnings
 - This palera1n rewrite has noticeably different arguments compared to the shell version of palera1n.
-  - Highly recommended that you take a look at how to use palera1n-c [here](https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.1/palera1n.1.html).
+  - Highly recommended that you take a look at how to use palera1n-c [here](https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.6/palera1n.1.html).
 
 - This does **NOT** support tethered creation or booting. You must use the older [shell version of palera1n](https://github.com/palera1n/palera1n/tree/legacy) (clone with `-b legacy`).
 
