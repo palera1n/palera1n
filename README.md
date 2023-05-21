@@ -2,36 +2,20 @@
 	<source media="(prefers-color-scheme: light)" srcset="https://cdn.discordapp.com/attachments/1028398976640229380/1088049124441604136/IMG_0033.png">
 	<img align="left" height="120" src="https://cdn.discordapp.com/attachments/1017854329887129611/1073858292159352862/thing.png" alt="palera1n logo" style="float: left;"/>
 </picture>
-<h3 align="right">An iOS 15.0-16.5 work-in-progress, <br>semi-tethered checkm8 jailbreak</h3> 
 
-<p align="right" >
-  <strong><a href="https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.6/palera1n.1.html">Usage</a></strong>
-  •
-  <strong><a href="https://github.com/palera1n/palera1n/graphs/contributors">Contributors</a></strong>
-  •
-  <strong><a href="https://dsc.gg/palera1n">Discord</a></strong>
-  •
-  <strong><a href="https://twitter.com/palera1n">Twitter</a></strong>
-</p>
-<div class="clear"></div>
+<br clear="both"/>
 
-## If you want a jailbreak, you should read the [guide](https://palera.in).
+## Information
+- Guides to palera1n can be found [here](https://ios.cfw.guide/installing-palera1n).
+- Full documentation can be also found [here](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n.1.html).
 
-### You can obtain v2.0.0 beta [here](https://github.com/palera1n/palera1n/releases).
-If you need an older v2.0.0 beta, please get it [here](https://github.com/palera1n/palera1n/releases/tag/v2.0.0-beta.5).
-
-# Warnings
-- This palera1n rewrite has noticeably different arguments compared to the shell version of palera1n.
-  - Highly recommended that you take a look at how to use palera1n-c [here](https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.6/palera1n.1.html).
-
-- This does **NOT** support tethered creation or booting. You must use the older [shell version of palera1n](https://github.com/palera1n/palera1n/tree/legacy) (clone with `-b legacy`).
-
+## Warnings
 - We are **NOT** responsible for any data loss, or the result of a device being bricked. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself.
   - If your device is stuck in recovery, please run futurerestore `--exit-recovery`, or use `irecovery -n`.
 
 - palera1n will never work in VirtualBox, VMware or any virtual machine that doesn't support PCI passthrough.
 
-# Requirements
+## Requirements
 - A checkm8 vulnerable iOS device on iOS 15.x or 16.x (`A8` - `A11`)
 	-	If using rootful, you will need **5-10GB of space** for the fakefs. This means 16GB devices cannot use the full fakefs creation. However, you can change the arguments to `-Bf` to create a fakefs with bind mounts, so it uses a smaller size, at the expense having unwritable parts in rarely-written paths, and then boot it
 	- On `A11`, **you must disable your passcode while in the jailbroken state** (on iOS 16, you need to **reset your device** before proceeding with palera1n).
@@ -46,7 +30,7 @@ If you need an older v2.0.0 beta, please get it [here](https://github.com/palera
 	- USB-C port on Apple Silicon Macs may require manual unplugging and replugging of the lightning cable after checkm8 exploit.
 	- This problem may be solved by connecting via USBHub.
 
-# Need help?
+## Need help?
 
 Make sure you provide full details on your device, such as:
 - iDevice
@@ -54,19 +38,15 @@ Make sure you provide full details on your device, such as:
 - Passcode enabled?
 - Logs, if panicked then send latest `panic-full` log from your iDevice.
 
-Using `-V` and `-v` would help with debugging.
+Using `-VvL` would help with debugging.
 
 Join the [Support Discord](https://dsc.gg/palera1n), and create a thread in [#support](https://discord.com/channels/1028398973452570725/1028730487700738130) or ask in [#general](https://discord.com/channels/1028398973452570725/1028398976640229380).
 
-# Credits
-<details><summary>palera1n-c Contributors and Credits</summary>
+## Credits
+<details><summary>Credits</summary>
 <p>
 
-- [Nick Chan](https://github.com/asdfugil) for the rewrite
-- [Nebula](https://github.com/itsnebulalol) - palera1n owner and manager
-- [Mineek](https://github.com/mineek)
-- [Tom](https://github.com/plooshi) for updated ploosh kpf and universal loader
-- [Lakhan Lothiyi](https://github.com/llsc12) for palera1n loader app
+- [Lakhan Lothiyi](https://github.com/llsc12) for older palera1n loader app
 - [checkra1n](https://github.com/checkra1n) for the base of the kpf
 - [the Procursus Team](https://github.com/ProcursusTeam) for the amazing [bootstrap](https://github.com/ProcursusTeam/Procursus)
 - [Évelyne](https://github.com/evelyneee) for [ElleKit](https://github.com/evelyneee/ellekit), rootless tweak injection
