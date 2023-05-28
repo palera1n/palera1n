@@ -37,7 +37,7 @@ int dfuhelper_thr_running = false;
 void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond_arg) {
     for (int i = time2; i < time; i++) {
 		printf(
-			checkrain_options_enabled(host_flags, host_option_no_colors) 
+			(palerain_flags & palerain_option_no_colors) 
 			? "\r\033[K%s (%d)" 
 			: BCYN "\r\033[K%s (%d)" CRESET, text, time - i + time2
 		);
@@ -46,7 +46,7 @@ void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond
 		if (cond != NULL && cond(cond_arg)) pthread_exit(NULL);
     }
     printf(
-		checkrain_options_enabled(host_flags, host_option_no_colors)
+		(palerain_flags & palerain_option_no_colors)
 		? "\r%s (%d)" 
 		: CYN "\r%s (%d)" CRESET, text, time2
 	);
@@ -68,7 +68,7 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		return -1;
 	}
 	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
-		if (!checkrain_options_enabled(host_flags, host_option_device_info))
+		if (!(palerain_flags & palerain_option_device_info))
 			LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
 		unsigned char passcode_state = 0;
 		ret = passstat_cmd(&passcode_state, usbmuxd_device->udid);
@@ -79,14 +79,14 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		}
 		if (passcode_state) {
 			LOG(LOG_ERROR, "Passcode must be disabled on this device");
-			if (!checkrain_options_enabled(host_flags, host_option_device_info))
+			if (!(palerain_flags & palerain_option_device_info))
 				LOG(LOG_ERROR, "Additionally, passcode must never be set since a restore on iOS 16+");
 			devinfo_free(&dev);
 			return -1;
 		}
 	}
 
-	if (checkrain_options_enabled(host_flags, host_option_device_info)) {
+	if ((palerain_flags & palerain_option_device_info)) {
 		printf("Mode: normal\n");
 		printf("ProductType: %s\n", dev.productType);
 		printf("Architecture: %s\n", dev.CPUArchitecture);
@@ -101,7 +101,7 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
 	enter_recovery_cmd(usbmuxd_device->udid);
 	devinfo_free(&dev);
-	if (checkrain_options_enabled(host_flags, host_option_enter_recovery)) {
+	if ((palerain_flags & palerain_option_enter_recovery)) {
 		device_has_booted = true;
 		set_spin(0);
 		unsubscribe_cmd();
@@ -181,9 +181,9 @@ void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	switch (event->event) {
 	case UE_DEVICE_ADD:
 		LOG(LOG_VERBOSE, "Normal mode device connected");
-		if (checkrain_options_enabled(host_flags, host_option_exit_recovery)) {
+		if ((palerain_flags & palerain_option_exit_recovery)) {
 			break;
-		} else if (checkrain_options_enabled(host_flags, host_option_reboot_device)) {
+		} else if ((palerain_flags & palerain_option_reboot_device)) {
 			int ret = reboot_cmd(event->device.udid);
 			if (!ret) {
 				LOG(LOG_INFO, "Restarted device");
@@ -211,9 +211,9 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 				event->mode == IRECV_K_RECOVERY_MODE_2 || 
 				event->mode == IRECV_K_RECOVERY_MODE_3 || 
 				event->mode == IRECV_K_RECOVERY_MODE_4) {
-				if (!checkrain_options_enabled(host_flags, host_option_device_info))
+				if (!(palerain_flags & palerain_option_device_info))
 					LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
-				if (checkrain_options_enabled(host_flags, host_option_exit_recovery)) {
+				if ((palerain_flags & palerain_option_exit_recovery)) {
 					ret = exitrecv_cmd(event->device_info->ecid);
 					if (!ret) {
 						LOG(LOG_INFO, "Exited recovery mode");
@@ -228,7 +228,7 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 					break;
 				}
 
-				if (checkrain_options_enabled(host_flags, host_option_device_info)) {
+				if ((palerain_flags & palerain_option_device_info)) {
 					recvinfo_t info;
 					ret = recvinfo_cmd(&info, event->device_info->ecid);
 					if (ret) {
@@ -247,14 +247,14 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 					break;
 				}
 
-				if (checkrain_options_enabled(host_flags, host_option_enter_recovery) ||
-					checkrain_options_enabled(host_flags, host_option_reboot_device)) return;
+				if ((palerain_flags & palerain_option_enter_recovery) ||
+					(palerain_flags & palerain_option_reboot_device)) return;
 				pthread_create(&recovery_thread, NULL, (pthread_start_t)connected_recovery_mode, event->device_info);
 			} else if (event->mode == IRECV_K_DFU_MODE) {
-				if (!checkrain_options_enabled(host_flags, host_option_device_info))
+				if (!(palerain_flags & palerain_option_device_info))
 					LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
 
-				if (checkrain_options_enabled(host_flags, host_option_device_info)) {
+				if ((palerain_flags & palerain_option_device_info)) {
 					recvinfo_t info;
 					ret = recvinfo_cmd(&info, event->device_info->ecid);
 					if (ret) {
@@ -274,9 +274,9 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 				}
 
 				if (
-					checkrain_options_enabled(host_flags, host_option_exit_recovery) ||
-					checkrain_options_enabled(host_flags, host_option_enter_recovery) ||
-					checkrain_options_enabled(host_flags, host_option_reboot_device)) {
+					(palerain_flags & palerain_option_exit_recovery) ||
+					(palerain_flags & palerain_option_enter_recovery) ||
+					(palerain_flags & palerain_option_reboot_device)) {
 						break;
 				}
 				pthread_create(&dfu_thread, NULL, (pthread_start_t)connected_dfu_mode, event->device_info);

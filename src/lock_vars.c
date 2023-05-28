@@ -27,7 +27,7 @@
 #include <ANSI-color-codes.h>
 #include <palerain.h>
 #include <xxd-embedded.h>
-#include <kerninfo.h>
+#include <paleinfo.h>
 
 pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
 #ifdef TUI

@@ -6,7 +6,7 @@
 #endif
 
 #include "xxd-embedded.h"
-#include "kerninfo.h"
+#include "paleinfo.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -155,8 +155,8 @@ extern char* pongo_path;
 extern bool tui_started;
 #endif
 
-extern checkrain_option_t host_flags;
-extern checkrain_option_p host_flags_p;
+extern uint64_t palerain_flags;
+extern uint64_t* palerain_flags_p;
 
 extern pthread_t dfuhelper_thread, pongo_thread;
 extern int pongo_thr_running, dfuhelper_thr_running;
@@ -165,7 +165,7 @@ extern niarelap_file_t *kpf_to_upload_1, *ramdisk_to_upload_1, *overlay_to_uploa
 extern niarelap_file_t **kpf_to_upload, **ramdisk_to_upload, **overlay_to_upload;
 extern override_file_t override_ramdisk, override_kpf, override_overlay;
 
-extern uint32_t checkrain_flags, palerain_flags, kpf_flags;
+extern uint64_t palerain_flags;
 extern pthread_mutex_t log_mutex;
 
 extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
@@ -173,9 +173,7 @@ extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
 extern int pongo_thr_running, dfuhelper_thr_running;
 extern bool device_has_booted;
 extern char xargs_cmd[0x270];
-extern char checkrain_flags_cmd[0x20];
 extern char palerain_flags_cmd[0x20];
-extern char kpf_flags_cmd[0x20];
 extern char dtpatch_cmd[0x20];
 extern char rootfs_cmd[512];
 extern char* ext_checkra1n;

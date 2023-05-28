@@ -124,6 +124,13 @@ iOS15 branch or your own fork of it.
 Makes jbinit log to
 .Em /cores/jbinit.log
 This file may be viewed from sandboxed applications while jailbroken.
+.It Fl l , -rootless
+Proceed in rootless mode, this is the default when neither
+.Fl l , -rootless
+and
+.Fl f , -fakefs
+is specified.
+>>>>>>> a8e6075 (paleinfo v2)
 .It Fl n , -exit-recovery
 Exit recovery mode and exit.
 .It Fl o , -override-overlay Ar overlay file
@@ -226,6 +233,7 @@ The location of the temporary filesystem where jailbreak files are stash during 
 When
 .Fl L
 is used, the log file of jbinit.
+The log file of jbinit.
 .It Pa /var/jb/Library/LaunchDaemons
 The directory where jailbreak-specific
 .Xr launchd.plist 5

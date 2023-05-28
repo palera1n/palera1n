@@ -27,14 +27,14 @@
 #include <ANSI-color-codes.h>
 #include <palerain.h>
 #include <xxd-embedded.h>
-#include <kerninfo.h>
+#include <paleinfo.h>
 
 #define CMD_LEN_MAX 512
 #define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
-char xargs_cmd[0x270] = "xargs ", checkrain_flags_cmd[0x20] = "deadbeef", palerain_flags_cmd[0x20] = "deadbeef";
-char kpf_flags_cmd[0x20] = "deadbeef", dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
+char xargs_cmd[0x270] = "xargs ", palerain_flags_cmd[0x20] = "deadbeef";
+char dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
 extern char** environ;
 
 niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;
@@ -47,7 +47,7 @@ niarelap_file_t** overlay_to_upload = &overlay_to_upload_1;
 
 override_file_t override_ramdisk, override_kpf, override_overlay;
 
-uint32_t checkrain_flags = 0, palerain_flags = 0, kpf_flags = 0;
+uint64_t palerain_flags = 0;
 
 pthread_mutex_t log_mutex;
 pthread_t dfuhelper_thread, pongo_thread;
@@ -73,7 +73,7 @@ int build_checks(void) {
 		LOG(LOG_FATAL, "checkra1n too small");
 	}
 	if (boyermoore_horspool_memmem(&checkra1n[0], checkra1n_len, (const unsigned char *)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) {
-		host_flags |= palerain_option_checkrain_is_clone;
+		palerain_flags |= palerain_option_checkrain_is_clone;
 	}
 #endif
 #ifndef NO_KPF
@@ -111,9 +111,9 @@ int palera1n(int argc, char *argv[]) {
 	pthread_mutex_init(&ecid_dfu_wait_mutex, NULL);
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
-	if (!checkrain_options_enabled(host_flags, host_option_device_info) && checkrain_options_enabled(host_flags, host_option_palerain_version)) goto normal_exit;
+	if (!(palerain_flags & palerain_option_device_info) && (palerain_flags & palerain_option_palerain_version)) goto normal_exit;
 #ifdef TUI
-	if (checkrain_options_enabled(host_flags, host_option_tui)) {
+	if ((palerain_flags & palerain_option_tui)) {
 		ret = tui();
 		if (ret) goto cleanup;
 		else goto normal_exit;
@@ -133,7 +133,7 @@ int palera1n(int argc, char *argv[]) {
 	}
 #endif
 
-	if (!checkrain_options_enabled(host_flags, host_option_device_info))
+	if (!(palerain_flags & palerain_option_device_info))
 		LOG(LOG_INFO, "Waiting for devices");
 
 	if (access("/var/run/usbmuxd", F_OK) != 0) 
@@ -143,16 +143,16 @@ int palera1n(int argc, char *argv[]) {
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
 	set_spin(0);
-	if (checkrain_options_enabled(host_flags, host_option_dfuhelper_only | 
-											  host_option_reboot_device  | 
-											  host_option_exit_recovery  | 
-											  host_option_enter_recovery | 
-											  host_option_device_info
+	if ((palerain_flags & (palerain_option_dfuhelper_only | 
+											  palerain_option_reboot_device  | 
+											  palerain_option_exit_recovery  | 
+											  palerain_option_enter_recovery | 
+											  palerain_option_device_info)
 								 ) || device_has_booted)
 		goto normal_exit;
 	if (exec_checkra1n()) goto cleanup;
 
-	if (checkrain_options_enabled(host_flags, host_option_pongo_exit | host_option_demote))
+	if ((palerain_flags & (palerain_option_pongo_exit | palerain_option_demote)))
 		goto normal_exit;
 	set_spin(1);
 	sleep(2);

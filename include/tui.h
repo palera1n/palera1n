@@ -11,7 +11,7 @@
 #include <locale.h>
 #include <unistd.h>
 #include <newt.h>
-#include <kerninfo.h>
+#include <paleinfo.h>
 
 #define WIDTH 76
 #define HEIGHT 19
@@ -33,8 +33,8 @@ typedef enum tui_screens {
 } tui_screen_t;
 
 typedef struct bitfield_checkbox_info {
-    checkrain_option_p flags_p;
-    checkrain_option_t opt;
+    uint64_t* flags_p;
+    uint64_t opt;
 } tui_bit_info_t;
 
 tui_screen_t tui_screen_main();
