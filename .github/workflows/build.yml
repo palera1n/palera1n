@@ -834,7 +834,7 @@ jobs:
           (
               echo "rm $dir/latest"
               echo "ln -s $dir/${{ github.run_number }} $dir/latest"
-          ) | sftp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i privkey.pem -P ${{ secrets.NICKCHAN_FTP_PORT }} ${{ secrets.NICKCHAN_FTP_HOST }}
+          ) | sftp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i privkey.pem -P ${{ secrets.NICKCHAN_FTP_PORT }} palera1n@${{ secrets.NICKCHAN_FTP_HOST }}
           rm -f privkey.pem
 
       - name: Send Discord build message
