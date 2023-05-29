@@ -828,7 +828,7 @@ jobs:
 
       - name: Create symlink
         run: |
-          "printf '%s' '${{ secrets.NICKCHAN_SFTP_KEY }}' > privkey.pem" 
+          printf '%s' '${{ secrets.NICKCHAN_FTP_KEY }}' > privkey.pem
           dir='/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref-branch }}'
           (
               echo "rm $dir/latest"
