@@ -40,7 +40,8 @@ jobs:
           cp docs/*.html docs/mandoc.css docs/palera1n.1 ready
 
       - name: Get branch name
-        uses: nelonoel/branch-name@v1.0.1
+        id: branch-name
+        uses: tj-actions/branch-names@v7
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
@@ -53,7 +54,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
   build-darwin:
     strategy:
@@ -329,7 +330,8 @@ jobs:
           tar -zcf ready/dep_root-${{ matrix.os }}-${{ matrix.arch }}.tgz dep_root
 
       - name: Get branch name
-        uses: nelonoel/branch-name@v1.0.1
+        id: branch-name
+        uses: tj-actions/branch-names@v7
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
@@ -342,7 +344,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
         if: ${{ github.event_name != 'pull_request' }}
@@ -478,7 +480,8 @@ jobs:
           path: build-tag.txt
 
       - name: Get branch name
-        uses: nelonoel/branch-name@v1.0.1
+        id: branch-name
+        uses: tj-actions/branch-names@v7
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
@@ -491,7 +494,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
   build-Linux:
     strategy:
@@ -790,7 +793,8 @@ jobs:
           rm -rf stage
 
       - name: Get branch name
-        uses: nelonoel/branch-name@v1.0.1
+        id: branch-name
+        uses: tj-actions/branch-names@v7
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
@@ -803,7 +807,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
   discord-alert:
     runs-on: ubuntu-latest
