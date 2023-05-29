@@ -809,7 +809,7 @@ jobs:
           localDir: 'ready/'
           remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
-  discord-alert:
+  finish-build:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request' }}
     needs: [build-docs, build-darwin, darwin-dist, build-Linux]
@@ -818,15 +818,26 @@ jobs:
         uses: actions/checkout@v3
       
       - name: Get branch name
-        uses: nelonoel/branch-name@v1.0.1
+        id: branch-name
+        uses: tj-actions/branch-names@v7
 
       - name: Download build tag
         uses: actions/download-artifact@v3
         with:
           name: build-tag
 
+      - name: Create symlink
+        run: |
+          "printf '%s' '${{ secrets.NICKCHAN_SFTP_KEY }}' > privkey.pem" 
+          dir='/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref-branch }}'
+          (
+              echo "rm $dir/latest"
+              echo "ln -s $dir/${{ github.run_number }} $dir/latest"
+          ) | sftp -i privkey.pem -P ${{ secrets.NICKCHAN_FTP_PORT }} ${{ secrets.NICKCHAN_FTP_HOST }}
+          rm -f privkey.pem
+
       - name: Send Discord build message
         run: |
           COMMITMESSAGE=`git log --pretty=format:'- \`%h\` %s' -1 --reverse` &&
-          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${BRANCH_NAME}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Destination\",\"value\":\"- https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}\"},{\"name\":\"Documentation\",\"value\":\"- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n.1.html)\"},{\"name\":\"Main Artifacts\",\"value\":\"- [palera1n-ios](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-ios)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-macos-universal)\"}],\"footer\":{\"text\":\"${{ github.actor }}\", \"icon_url\": \"https://github.com/${{ github.actor }}.png\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
+          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${{ steps.branch-name.outputs.ref_branch }}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Destination\",\"value\":\"- https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}\"},{\"name\":\"Documentation\",\"value\":\"- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n.1.html)\"},{\"name\":\"Main Artifacts\",\"value\":\"- [palera1n-ios](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-ios)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/$${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-macos-universal)\"}],\"footer\":{\"text\":\"${{ github.actor }}\", \"icon_url\": \"https://github.com/${{ github.actor }}.png\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
     
