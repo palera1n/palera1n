@@ -826,17 +826,6 @@ jobs:
         with:
           name: build-tag
 
-      - name: Create symlink
-        run: |
-          printf '%s' '${{ secrets.NICKCHAN_FTP_KEY }}' > privkey.pem
-          chmod 600 privkey.pem
-          dir='/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref-branch }}'
-          (
-              echo "rm $dir/latest"
-              echo "ln -s $dir/${{ github.run_number }} $dir/latest"
-          ) | sftp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i privkey.pem -P ${{ secrets.NICKCHAN_FTP_PORT }} palera1n@${{ secrets.NICKCHAN_FTP_HOST }}
-          rm -f privkey.pem
-
       - name: Send Discord build message
         run: |
           COMMITMESSAGE=`git log --pretty=format:'- \`%h\` %s' -1 --reverse` &&
