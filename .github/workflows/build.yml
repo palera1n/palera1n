@@ -39,6 +39,10 @@ jobs:
           mkdir ready
           cp docs/*.html docs/mandoc.css docs/palera1n.1 ready
 
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
@@ -50,7 +54,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
   build-darwin:
     strategy:
@@ -325,6 +329,10 @@ jobs:
           mkdir -p ready
           tar -zcf ready/dep_root-${{ matrix.os }}-${{ matrix.arch }}.tgz dep_root
 
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
@@ -336,7 +344,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
         if: ${{ github.event_name != 'pull_request' }}
@@ -471,6 +479,10 @@ jobs:
           name: build-tag
           path: build-tag.txt
 
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
@@ -482,7 +494,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
   build-Linux:
     strategy:
@@ -780,6 +792,10 @@ jobs:
           mv palera1n*.deb ready/
           rm -rf stage
 
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
         uses: wangyucode/sftp-upload-action@v1.4.8
@@ -791,7 +807,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite'
+          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
 
   discord-alert:
     runs-on: ubuntu-latest
@@ -812,5 +828,5 @@ jobs:
       - name: Send Discord build message
         run: |
           COMMITMESSAGE=`git log --pretty=format:'- \`%h\` %s' -1 --reverse` &&
-          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${BRANCH_NAME}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Artifacts\",\"value\":\"- [palera1n-ios](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-ios)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n-macos-universal)\n- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n.1.html)\"}],\"footer\":{\"text\":\"https://github.com/palera1n/palera1n\", \"icon_url\": \"https://media.discordapp.net/attachments/1054239098006683688/1107471339176071288/palera1n_ios_copy.png?width=1208&height=1208\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
+          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${BRANCH_NAME}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Destination\",\"value\":\"- https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}\"},{\"name\":\"Documentation\",\"value\":\"- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n.1.html)\"},{\"name\":\"Main Artifacts\",\"value\":\"- [palera1n-ios](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-ios)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${BRANCH_NAME}/${{ github.run_number }}/palera1n-macos-universal)\"}],\"footer\":{\"text\":\"${{ github.actor }}\", \"icon_url\": \"https://github.com/${{ github.actor }}.png\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
     
