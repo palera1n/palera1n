@@ -173,7 +173,7 @@ extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
 extern int pongo_thr_running, dfuhelper_thr_running;
 extern bool device_has_booted;
 extern char xargs_cmd[0x270];
-extern char palerain_flags_cmd[0x20];
+extern char palerain_flags_cmd[0x30];
 extern char dtpatch_cmd[0x20];
 extern char rootfs_cmd[512];
 extern char* ext_checkra1n;

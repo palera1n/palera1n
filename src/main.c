@@ -33,7 +33,7 @@
 #define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
-char xargs_cmd[0x270] = "xargs ", palerain_flags_cmd[0x20] = "deadbeef";
+char xargs_cmd[0x270] = "xargs ", palerain_flags_cmd[0x30] = "deadbeef";
 char dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
 extern char** environ;
 

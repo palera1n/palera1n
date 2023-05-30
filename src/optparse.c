@@ -178,9 +178,11 @@ int optparse(int argc, char* argv[]) {
 			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
 			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
 			palerain_flags |= palerain_option_rootful;
+			palerain_flags &= ~palerain_option_rootless;
 			break;
 		case 'l':
 			palerain_flags &= ~palerain_option_rootful;
+			palerain_flags |= palerain_option_rootless;
 			break;
 		case 'L':
 			palerain_flags |= palerain_option_jbinit_log_to_file;
@@ -324,7 +326,7 @@ int optparse(int argc, char* argv[]) {
 		palerain_flags &= ~palerain_option_verbose_boot;
 	}
     
-	snprintf(palerain_flags_cmd, 0x20, "palera1n_flags 0x%" PRIx64, palerain_flags);
+	snprintf(palerain_flags_cmd, 0x30, "palera1n_flags 0x%" PRIx64, palerain_flags);
 	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
 		LOG(LOG_VERBOSE4, "kpf override length %u -> %u", override_kpf.orig_len, checkra1n_kpf_pongo_len);
