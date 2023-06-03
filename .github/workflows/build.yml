@@ -54,7 +54,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
+          remoteDir: "/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch || github.ref_name }}/${{ github.run_number }}"
 
   build-darwin:
     strategy:
@@ -344,7 +344,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
+          remoteDir: "/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch || github.ref }}/${{ github.run_number }}"
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
         if: ${{ github.event_name != 'pull_request' }}
@@ -494,7 +494,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
+          remoteDir: "/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch || github.ref }}/${{ github.run_number }}"
 
   build-Linux:
     strategy:
@@ -807,7 +807,7 @@ jobs:
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
-          remoteDir: '/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}'
+          remoteDir: "/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch || github.ref }}/${{ github.run_number }}"
 
   finish-build:
     runs-on: ubuntu-latest
