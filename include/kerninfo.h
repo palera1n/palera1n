@@ -61,6 +61,11 @@
 #define palerain_option_setup_partial_root   (1 << 4) /* fakefs creating should be partial */
 #define palerain_option_checkrain_is_clone   (1 << 5) /* supplied checkra1n is checkra1n clone */
 #define palerain_option_rootless_livefs      (1 << 6) /* mount root livefs on rootless */
+/* reserved values */
+// #define palerain_option_no_ssv               (1 << 7) /* no signed system volume */
+// #define palerain_option_force_fakefs         (1 << 8) /* force fakefs, even without SSV */
+// #define palerain_option_rootless             (1 << 9) /* rootless jailbreak */
+#define palerain_option_clean_fakefs        (1 << 10) /* clean fakefs, but does not delete it */
 
 #ifdef DEV_BUILD
 #define palerain_option_test1               (1 << 29)
@@ -122,18 +127,8 @@ struct kpfinfo {
         options = (checkrain_option_t)(options & ~option);  \
 } while (0);
 
-static inline bool checkrain_option_enabled(checkrain_option_t flags, checkrain_option_t opt)
+static inline bool checkrain_options_enabled(checkrain_option_t flags, checkrain_option_t opt)
 {
-    if(flags == checkrain_option_failure)
-    {
-        switch(opt)
-        {
-            case checkrain_option_safemode:
-                return true;
-            default:
-                return false;
-        }
-    }
     return (flags & opt) != 0;
 }
 

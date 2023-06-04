@@ -6,7 +6,7 @@
 .Dt palera1n 1
 .Sh NAME
 .Nm palera1n
-.Nd iOS 15.0-16.4 arm64 iOS/iPadOS jailbreaking tool
+.Nd iOS 15.0-16.5 arm64 iOS/iPadOS jailbreaking tool
 .Sh SYNOPSIS
 .Nm
 .Op Fl cCdDEfhIlLnpRsSvV
@@ -20,7 +20,7 @@
 .Op Fl -force-revert
 .Sh DESCRIPTION
 .Nm
-jailbreaks any iOS/iPadOS device with an arm64 (arm64e excluded) on iOS 15.0-16.4,
+jailbreaks any iOS/iPadOS device with an arm64 (arm64e excluded) on iOS 15.0-16.5,
 utilizing the
 .Em checkm8
 bootROM exploit.
@@ -52,7 +52,7 @@ In the remainder of this document, the term "iOS" and "iPadOS" will be used inte
 as the difference is negligible as far as the jailbreak is concerened.
 .Pp
 .Sh SUPPORTED DEVICES
-As described above, arm64 iOS 15.0-16.4 devices are supported, here is an explicit
+As described above, arm64 iOS 15.0-16.5 devices are supported, here is an explicit
 list of supported devicecs:
 
 .Bl -tag -compact
@@ -113,6 +113,18 @@ This option currently does not work on iOS 16.
 When used with
 .Fl f , -fakefs ,
 creates the new APFS volume required for rootful. Will fail if one already exists.
+.It Fl C , -clean-fakefs
+This reverts the fakefs to the 
+.Em orig-fs
+snapshot that is created when the fakefs
+is first created, then the device will continue to boot jailbroken. This option 
+allows resetting the rootful environment without deleting the entire fakefs. 
+Note that this option will not work if the fakefs is created in an older version
+of palera1n that does not create the
+.Em orig-fs
+snapshot on the fakefs. This option will also remove some jailbreak files inside
+of /var. The files in /var will not be deleted when a userspace reboot is done
+with this flag set.
 .It Fl d , -demote
 Set the effective production fuse to 0, so as to enable hardware debugging features.
 .It Fl D , -dfuhelper
@@ -143,7 +155,7 @@ Override the kernel patchfinder PongoOS module. The module is required to suppor
 root filesystem in paleinfo with
 .Em rootfs
 command. If in doubt, use
-.Sy https://github.com/guacaplushy/PongoOS
+.Sy https://github.com/palera1n/PongoOS
 iOS15 branch or your own fork of it.
 .It Fl l , -rootless
 Proceed in rootless mode, this is the default when neither
@@ -311,8 +323,7 @@ may crash if the machine it is running on:
 .Pp
 The exploit may also work less reliably on some hosts, like AMD desktops, or some MediaTek devices.
 .Pp
-.Fl B , -setup-fakefs-partial
-does not work on iOS 16.
+The device may randomly crash and reboot due to launchd exiting with code 7.
 .Sh NOTES
 .Nm
 injects a dylib into launchd to allow the

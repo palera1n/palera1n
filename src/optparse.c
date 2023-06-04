@@ -19,10 +19,9 @@ checkrain_option_p host_flags_p = &host_flags;
 static bool force_use_verbose_boot = false;
 
 static struct option longopts[] = {
-#ifdef ROOTFUL
 	{"setup-partial-fakefs", no_argument, NULL, 'B'},
 	{"setup-fakefs", no_argument, NULL, 'c'},
-#endif
+	{"clean-fakefs", no_argument, NULL, 'c'},
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
@@ -30,9 +29,7 @@ static struct option longopts[] = {
 	{"debug-logging", no_argument, NULL, 'v'},
 	{"verbose-boot", no_argument, NULL, 'V'},
 	{"boot-args", required_argument, NULL, 'e'},
-#ifdef ROOTFUL
 	{"fakefs", no_argument, NULL, 'f'},
-#endif
 	{"rootless", no_argument, NULL, 'l'},
 	{"jbinit-log-to-file", no_argument, NULL, 'L'},
 	{"demote", no_argument, NULL, 'd'},
@@ -68,14 +65,14 @@ static int usage(int e, char* prog_name)
 			"12"
 #endif
 #ifdef ROOTFUL
-			"cfB"
+			"cCfB"
 #endif
 #ifdef TUI
 			"t"
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
-			"iOS/iPadOS 15.0-16.4 arm64 jailbreaking tool\n\n"
+			"iOS/iPadOS 15.0-16.5 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
 #ifdef DEV_BUILD
@@ -85,6 +82,7 @@ static int usage(int e, char* prog_name)
 #ifdef ROOTFUL
 			"\t-B, --setup-partial-fakefs\t\tSetup partial fakefs\n"
 			"\t-c, --setup-fakefs\t\t\tSetup fakefs\n"
+			"\t-C, --clean-fakefs\t\t\tClean fakefs\n"
 #endif
 			"\t-d, --demote\t\t\t\tDemote\n"
 			"\t-D, --dfuhelper\t\t\t\tExit after entering DFU\n"
@@ -130,13 +128,10 @@ int optparse(int argc, char* argv[]) {
 #ifdef DEV_BUILD
 	"12"
 #endif
-#ifdef ROOTFUL
-	"fcB"
-#endif
+	"fCcB"
 	,longopts, NULL)) != -1)
 	{
 		switch (opt) {
-#ifdef ROOTFUL
 		case 'B':
 			palerain_flags |= palerain_option_setup_partial_root;
 			palerain_flags |= palerain_option_setup_rootful;
@@ -146,7 +141,9 @@ int optparse(int argc, char* argv[]) {
 			palerain_flags |= palerain_option_setup_rootful;
 			kpf_flags |= checkrain_option_verbose_boot;
 			break;
-#endif
+		case 'C':
+			palerain_flags |= palerain_option_clean_fakefs;
+			break;
 		case 'p':
 			host_flags |= host_option_pongo_exit;
 			break;
@@ -176,17 +173,13 @@ int optparse(int argc, char* argv[]) {
             }
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
 			break;
-#ifdef ROOTFUL
 		case 'f':
 			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
 			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
 			palerain_flags |= palerain_option_rootful;
 			break;
-#endif
 		case 'l':
-#ifdef ROOTFUL
 			palerain_flags &= ~palerain_option_rootful;
-#endif
 			break;
 		case 'L':
 			palerain_flags |= palerain_option_jbinit_log_to_file;
@@ -308,7 +301,7 @@ int optparse(int argc, char* argv[]) {
 			break;
 		}
 	}
-	if (checkrain_option_enabled(host_flags, host_option_palerain_version)) {
+	if (checkrain_options_enabled(host_flags, host_option_palerain_version)) {
 		printf(
 			"palera1n " PALERAIN_VERSION "\n"
 			BUILD_COMMIT " " BUILD_NUMBER " (" BUILD_BRANCH ")\n\n"
@@ -326,7 +319,7 @@ int optparse(int argc, char* argv[]) {
 		return 0;
 	}
 
-	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful)) {
+	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && checkrain_options_enabled(palerain_flags, palerain_option_setup_rootful)) {
 		kpf_flags &= ~checkrain_option_verbose_boot;
 	}
     
@@ -350,17 +343,17 @@ int optparse(int argc, char* argv[]) {
 		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
 	}
 
-	if (!checkrain_option_enabled(palerain_flags, palerain_option_rootful)) {
-		if (checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful) || checkrain_option_enabled(palerain_flags, palerain_option_setup_rootful_forced)) {
+	if (!checkrain_options_enabled(palerain_flags, palerain_option_rootful)) {
+		if (checkrain_options_enabled(palerain_flags, palerain_option_setup_rootful) || checkrain_options_enabled(palerain_flags, palerain_option_setup_rootful_forced)) {
 			LOG(LOG_FATAL, "Cannot setup rootful when rootless is requested. Use -f to enable rootful mode.");
 			return -1;
 		}
 	}
 	if (!(
-			checkrain_option_enabled(host_flags, host_option_dfuhelper_only) ||
-			checkrain_option_enabled(host_flags, host_option_enter_recovery) ||
-			checkrain_option_enabled(host_flags, host_option_exit_recovery) ||
-			checkrain_option_enabled(host_flags, host_option_reboot_device)))
+			checkrain_options_enabled(host_flags, host_option_dfuhelper_only) ||
+			checkrain_options_enabled(host_flags, host_option_enter_recovery) ||
+			checkrain_options_enabled(host_flags, host_option_exit_recovery) ||
+			checkrain_options_enabled(host_flags, host_option_reboot_device)))
 	{
 #ifdef NO_CHECKRAIN
 		if (checkra1n_len == 0 && ext_checkra1n == NULL)
@@ -368,7 +361,7 @@ int optparse(int argc, char* argv[]) {
 			LOG(LOG_FATAL, "checkra1n omitted in build but no override specified");
 			return -1;
 		}
-		if (!(checkrain_option_enabled(host_flags, host_option_pongo_exit) || checkrain_option_enabled(host_flags, host_option_pongo_exit)))
+		if (!(checkrain_options_enabled(host_flags, host_option_pongo_exit) || checkrain_options_enabled(host_flags, host_option_pongo_exit)))
 		{
 #ifdef NO_KPF
 			if (checkra1n_kpf_pongo_len == 0)

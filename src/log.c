@@ -12,7 +12,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 {
     if (verbose >= 5 
 #ifdef TUI
-	&& !checkrain_option_enabled(host_flags, host_option_tui)
+	&& !checkrain_options_enabled(host_flags, host_option_tui)
 #endif
 	) fprintf(stderr, "p1_log: loglevel %d from %s:%d:%s()\n", loglevel, fname, lineno, fxname);
 	int ret = 0;
@@ -57,12 +57,12 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		snprintf(colour_bold, 0x10, "%s", BWHT);
 		break;
 	}
-	if (checkrain_option_enabled(host_flags, host_option_no_colors)) {
+	if (checkrain_options_enabled(host_flags, host_option_no_colors)) {
 		colour[0] = '\0';
 		colour_bold[0] = '\0';
 	}
 #ifdef TUI
-	if (checkrain_option_enabled(host_flags, host_option_tui) && tui_started) {
+	if (checkrain_options_enabled(host_flags, host_option_tui) && tui_started) {
 		newtComponent co = get_tui_log();
 		if (co == NULL) {
 			return 0; /* 0 bytes printed */
@@ -79,26 +79,26 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		time_t curtime;
 		time(&curtime);
 		struct tm* timeinfo = localtime(&curtime);
-		if (!checkrain_option_enabled(host_flags, host_option_no_colors))
+		if (!checkrain_options_enabled(host_flags, host_option_no_colors))
 			snprintf(timestring, 0x80, "%s[%s%02d/%02d/%d %02d:%02d:%02d%s]", CRESET, HBLK, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_year - 100, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, CRESET);
 		else
 			snprintf(timestring, 0x80, "[%02d/%02d/%d %02d:%02d:%02d]", timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_year - 100, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-		if (verbose >= 2 && !checkrain_option_enabled(host_flags, host_option_no_colors)) {
+		if (verbose >= 2 && !checkrain_options_enabled(host_flags, host_option_no_colors)) {
 			printf("%s| - %s%s <%s> " CRESET "%s" HBLU "%s" CRESET ":" BLU "%d" CRESET ":" BMAG "%s()" CRESET ": \n%s| ----> ", colour_bold, timestring, colour_bold, type, WHT, fname, lineno, fxname, colour_bold);
-		} else if (!checkrain_option_enabled(host_flags, host_option_no_colors)) {
+		} else if (!checkrain_options_enabled(host_flags, host_option_no_colors)) {
 			printf(" - %s %s<%s>%s: ", timestring, colour_bold, type, CRESET);
-		} else if (verbose >= 2 && checkrain_option_enabled(host_flags, host_option_no_colors)) {
+		} else if (verbose >= 2 && checkrain_options_enabled(host_flags, host_option_no_colors)) {
 			printf("%s| - %s%s <%s> %s:%d:%s(): \n%s| ----> ", colour_bold, timestring, colour_bold, type, fname, lineno, fxname, colour_bold);
-		} else if (checkrain_option_enabled(host_flags, host_option_no_colors)) {
+		} else if (checkrain_options_enabled(host_flags, host_option_no_colors)) {
 			printf(" - %s %s<%s>: ", timestring, colour_bold, type);
 		}
 		printf("%s", colour);
 		ret = vprintf(format, args);
 		va_end(args);
 	
-		if (verbose < 2 && !checkrain_option_enabled(host_flags, host_option_no_colors))
+		if (verbose < 2 && !checkrain_options_enabled(host_flags, host_option_no_colors))
 			printf(CRESET "\n");
-		else if (!checkrain_option_enabled(host_flags, host_option_no_colors))
+		else if (!checkrain_options_enabled(host_flags, host_option_no_colors))
 			printf("\n%s-%s\n", colour, CRESET);
 		else if (verbose < 2) 
 			printf("\n");

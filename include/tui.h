@@ -20,7 +20,7 @@
 #define PI_STEP_CURRENT NEWT_COLORSET_CUSTOM(1)
 #define PI_STEP_OTHER NEWT_COLORSET_CUSTOM(2)
 
-#define CHECKBOX_STATE(flags, opt) checkrain_option_enabled(flags, opt) ? '*' : ' '
+#define CHECKBOX_STATE(flags, opt) checkrain_options_enabled(flags, opt) ? '*' : ' '
 
 typedef enum tui_screens {
     ERROR_SCREEN = -1,
