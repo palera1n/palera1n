@@ -21,7 +21,7 @@ void bitfield_check_cb(newtComponent box, void* data) {
 }
 
 
-tui_screen_t tui_screen_options() {
+tui_screen_t tui_screen_options(void) {
     tui_bit_info_t verbose_info = { &palerain_flags, palerain_option_verbose_boot };
     tui_bit_info_t rootful_info = { &palerain_flags, palerain_option_rootful };
     tui_bit_info_t setup_rootful_info = { &palerain_flags, palerain_option_setup_rootful };
@@ -30,7 +30,7 @@ tui_screen_t tui_screen_options() {
 
     static uint64_t palerain_flags = 0;
     tui_bit_info_t flower_chain_info = { &palerain_flags, palerain_option_flower_chain };
-    
+
     const char* bootargs_entered = NULL;
     int ret = MAIN_SCREEN;
 

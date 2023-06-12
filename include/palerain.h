@@ -228,7 +228,7 @@ void print_credits(void);
 
 #ifdef TUI
 #include <newt.h>
-newtComponent get_tui_log();
+newtComponent get_tui_log(void);
 newtComponent set_tui_log(newtComponent co);
 #endif
 #endif

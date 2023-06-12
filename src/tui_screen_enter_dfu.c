@@ -12,4 +12,4 @@
 #include <palerain.h>
 #include <tui.h>
 
-tui_screen_t tui_screen_enter_dfu() { return JAILBREAKING_SCREEN; }
+tui_screen_t tui_screen_enter_dfu(void) { return JAILBREAKING_SCREEN; }

@@ -12,15 +12,15 @@
 #include <palerain.h>
 #include <tui.h>
 
-int redraw_screen() {
+int redraw_screen(void) {
     return 0;
 }
 
-int destroy_window() {
+int destroy_window(void) {
     return 0;
 }
 
-int init_window() {
+int init_window(void) {
     setlocale(LC_ALL, NULL);
     setenv(
         "NEWT_COLORS",
@@ -61,7 +61,7 @@ int init_window() {
     return 0;
 }
 
-int tui() {
+int tui(void) {
     int ret = 0;
     if ((ret = init_window())) return ret;
     ret = MAIN_SCREEN;

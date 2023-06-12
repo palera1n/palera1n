@@ -12,4 +12,4 @@
 #include <palerain.h>
 #include <tui.h>
 
-tui_screen_t tui_screen_jailbreak() { return EXIT_SCREEN; }
+tui_screen_t tui_screen_jailbreak(void) { return EXIT_SCREEN; }

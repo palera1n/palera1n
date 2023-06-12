@@ -12,4 +12,4 @@
 #include <palerain.h>
 #include <tui.h>
 
-tui_screen_t tui_screen_enter_recovery() { return ENTER_DFU_SCREEN; }
+tui_screen_t tui_screen_enter_recovery(void) { return ENTER_DFU_SCREEN; }

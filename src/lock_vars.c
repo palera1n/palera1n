@@ -90,7 +90,7 @@ uint64_t set_ecid_wait_for_dfu(uint64_t ecid) {
 }
 
 #ifdef TUI
-newtComponent get_tui_log() {
+newtComponent get_tui_log(void) {
     pthread_mutex_lock(&tui_log_mutex);
     newtComponent ret = tui_log_output;
     pthread_mutex_unlock(&tui_log_mutex);

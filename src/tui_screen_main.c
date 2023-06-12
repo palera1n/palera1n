@@ -12,7 +12,7 @@
 #include <palerain.h>
 #include <tui.h>
 
-tui_screen_t tui_screen_main() {
+tui_screen_t tui_screen_main(void) {
     int ret = MAIN_SCREEN;
     bool can_start = false;
     newtCenteredWindow(WIDTH, HEIGHT, NULL);
