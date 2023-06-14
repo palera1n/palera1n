@@ -1,3 +1,15 @@
+if ! command -v curl &> /dev/null
+then
+  echo "curl could not be found, please install it"
+  echo "if you're using APT, you can install curl via this command:"
+  echo "sudo apt install curl"
+fi
+if ! command -v git &> /dev/null
+then
+  echo "git could not be found, please install it"
+  echo "if you're using APT, you can install git via this command:"
+  echo "sudo apt install git"
+fi
 curl -LOOOOOO \
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.3.0.tar.gz \
             https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 \
