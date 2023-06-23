@@ -1,4 +1,4 @@
-NAME = bakepale
+NAME = Dawn
 
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
