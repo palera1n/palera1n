@@ -1,4 +1,4 @@
-NAME = bakepale
+NAME = Ο άλφα είναι ρατσιστής
 
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
