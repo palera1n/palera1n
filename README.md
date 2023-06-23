@@ -7,7 +7,7 @@
 
 ## Information
 - Guides to palera1n can be found [here](https://ios.cfw.guide/installing-palera1n).
-- Full documentation can be also found [here](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/palera1n.1.html).
+- Documentation can be also found [here](https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.7/palera1n.1.html).
 
 ## Warnings
 - We are **NOT** responsible for any data loss, or the result of a device being bricked. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself.
