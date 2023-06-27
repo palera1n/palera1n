@@ -98,7 +98,13 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		unsubscribe_cmd();
 		return 0;
 	}
-	LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
+	if (verbose > 1) {
+		/* (LOG_VERBOSE - 3) or below*/
+		LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
+	} else {
+		/* At least (LOG_VERBOSE2 - 3) */
+		LOG(LOG_INFO, "Entering recovery mode");
+	}
 	enter_recovery_cmd(usbmuxd_device->udid);
 	devinfo_free(&dev);
 	if ((palerain_flags & palerain_option_enter_recovery)) {
