@@ -393,8 +393,7 @@ jobs:
           cp palera1n-macos ready/palera1n-macos-universal
           cp ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 ready/palera1n-macos-x86_64
           cp ./palera1n-macosx-arm64/palera1n-macosx-arm64 ready/palera1n-macos-arm64
-          cp ./palera1n-iphoneos-arm64/palera1n-iphoneos-arm64 ready/palera1n-ios
-          zip -r9 ready/palera1n-ios.dSYM.zip palera1n-iphoneos-arm64.dSYM
+          zip -r9 ready/palera1n-iphoneos-arm64.dSYM.zip palera1n-iphoneos-arm64.dSYM
           zip -r9 ready/palera1n-macos.dSYM.zip palera1n-macos.dSYM
 
       - name: Build debs
@@ -445,7 +444,7 @@ jobs:
           gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-ios stage/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n-iphoneos-arm64 stage/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
           chmod +x stage/usr/bin/palera1n
 
@@ -462,7 +461,7 @@ jobs:
           gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-ios stage/var/jb/usr/bin/palera1n
+          ginstall -Dm644 ready/palera1n-iphoneos-arm64 stage/var/jb/usr/bin/palera1n
           ginstall -Dm644 docs/palera1n.1 stage/var/jb/usr/share/man/man1/palera1n.1
           chmod +x stage/var/jb/usr/bin/palera1n
 
@@ -829,5 +828,5 @@ jobs:
       - name: Send Discord build message
         run: |
           COMMITMESSAGE=`git log --pretty=format:'- \`%h\` %s' -1 --reverse` &&
-          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${{ steps.branch-name.outputs.ref_branch }}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Destination\",\"value\":\"- https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}\"},{\"name\":\"Documentation\",\"value\":\"- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n.1.html)\"},{\"name\":\"Main Artifacts\",\"value\":\"- [palera1n-ios](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-ios)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/$${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-macos-universal)\"}],\"footer\":{\"text\":\"${{ github.actor }}\", \"icon_url\": \"https://github.com/${{ github.actor }}.png\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
+          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${{ steps.branch-name.outputs.ref_branch }}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Destination\",\"value\":\"- https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}\"},{\"name\":\"Documentation\",\"value\":\"- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n.1.html)\"},{\"name\":\"Main Artifacts\",\"value\":\"- [palera1n-iphoneos-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-iphoneos-arm64)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/$${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-macos-universal)\"}],\"footer\":{\"text\":\"${{ github.actor }}\", \"icon_url\": \"https://github.com/${{ github.actor }}.png\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
     
