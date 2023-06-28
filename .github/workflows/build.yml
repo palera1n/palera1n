@@ -45,7 +45,7 @@ jobs:
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
-        uses: wangyucode/sftp-upload-action@v1.4.8
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
@@ -335,7 +335,7 @@ jobs:
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
-        uses: wangyucode/sftp-upload-action@v1.4.8
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
@@ -484,7 +484,7 @@ jobs:
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
-        uses: wangyucode/sftp-upload-action@v1.4.8
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
@@ -797,7 +797,7 @@ jobs:
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
-        uses: wangyucode/sftp-upload-action@v1.4.8
+        uses: wangyucode/sftp-upload-action@v2.0.2
         with:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
