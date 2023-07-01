@@ -50,7 +50,7 @@ jobs:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
           username: palera1n
-          privateKey: ${{ secrets.NICKCHAN_FTP_KEY }}
+          password: ${{ secrets.NICKCHAN_FTP_PASS }}
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
@@ -340,7 +340,7 @@ jobs:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
           username: palera1n
-          privateKey: ${{ secrets.NICKCHAN_FTP_KEY }}
+          password: ${{ secrets.NICKCHAN_FTP_PASS }}
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
@@ -489,7 +489,7 @@ jobs:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
           username: palera1n
-          privateKey: ${{ secrets.NICKCHAN_FTP_KEY }}
+          password: ${{ secrets.NICKCHAN_FTP_PASS }}
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
@@ -802,7 +802,7 @@ jobs:
           host: ${{ secrets.NICKCHAN_FTP_HOST }}
           port: ${{ secrets.NICKCHAN_FTP_PORT }}
           username: palera1n
-          privateKey: ${{ secrets.NICKCHAN_FTP_KEY }}
+          password: ${{ secrets.NICKCHAN_FTP_PASS }}
           forceUpload: true
           dryRun: false
           localDir: 'ready/'
