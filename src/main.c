@@ -34,7 +34,6 @@
 
 unsigned int verbose = 0;
 char xargs_cmd[0x270] = "xargs ", palerain_flags_cmd[0x30] = "deadbeef";
-char dtpatch_cmd[0x20] = "deadbeef", rootfs_cmd[512] = "deadbeef";
 extern char** environ;
 
 niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;

@@ -175,8 +175,6 @@ int optparse(int argc, char* argv[]) {
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
 			break;
 		case 'f':
-			snprintf(rootfs_cmd, sizeof(rootfs_cmd), "rootfs %s", optarg);
-			snprintf(dtpatch_cmd, 0x20, "dtpatch %s", optarg);
 			palerain_flags |= palerain_option_rootful;
 			palerain_flags &= ~palerain_option_rootless;
 			break;
