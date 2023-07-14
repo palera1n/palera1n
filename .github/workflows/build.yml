@@ -393,6 +393,7 @@ jobs:
           cp palera1n-macos ready/palera1n-macos-universal
           cp ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 ready/palera1n-macos-x86_64
           cp ./palera1n-macosx-arm64/palera1n-macosx-arm64 ready/palera1n-macos-arm64
+          cp ./palera1n-iphoneos-arm64/palera1n-iphoneos-arm64 ready/palera1n-iphoneos-arm64
           zip -r9 ready/palera1n-iphoneos-arm64.dSYM.zip palera1n-iphoneos-arm64.dSYM
           zip -r9 ready/palera1n-macos.dSYM.zip palera1n-macos.dSYM
 
