@@ -14,6 +14,9 @@
 </p>
 <div class="clear"></div>
 
+### Warning
+palera1n.sh (also known as "legacy") is deprecated, don't expect it to work properly like it used to (such as, bootstrapping).
+
 # How does it work?
 
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi-tethered), installs the loader app, and patches your kernel. 
