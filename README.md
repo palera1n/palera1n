@@ -1,8 +1,3 @@
-**palera1n.sh (also known as "legacy") is now deprecated!**
-
-Things like bootstrapping are broken. We recommend using palera1n-c as much of legacy is broken.
-
-
 <img align="left" height="120" src="https://cdn.discordapp.com/attachments/1017854329887129611/1073858292159352862/thing.png" alt="palera1n logo" style="float: left;"/>
 <h3 align="right">An iOS 15.0-16.3.1 work-in-progress, <br>(semi-)tethered checkm8 jailbreak</h3> 
 
@@ -18,6 +13,9 @@ Things like bootstrapping are broken. We recommend using palera1n-c as much of l
   <strong><a  href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
 <div class="clear"></div>
+
+### Warning
+palera1n.sh (also known as "legacy") is deprecated, don't expect it to work properly like it used to (such as, bootstrapping).
 
 # How does it work?
 
