@@ -20,6 +20,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <inttypes.h>
 #else
 #include <CommonCrypto/CommonCrypto.h>
 #include <CoreFoundation/CoreFoundation.h>
