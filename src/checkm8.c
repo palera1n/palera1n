@@ -17,7 +17,6 @@
 #include <palerain.h>
 #ifdef HAVE_LIBUSB
 #include <libusb-1.0/libusb.h>
-#include <openssl/evp.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stddef.h>
