@@ -29,12 +29,6 @@
 #include <IOKit/usb/IOUSBLib.h>
 #endif
 
-#ifdef DEBUG
-#define log_debug(...) fprintf(stderr, __VA_ARGS__); fputc('\n', stderr)
-#else
-#define log_debug(...) do {} while (0)
-#endif
-
 #define DFU_DNLOAD (1)
 #define APPLE_VID (0x5AC)
 #define DFU_STATUS_OK (0)
@@ -872,69 +866,69 @@ checkm8_stage_patch(const usb_handle_t *handle) {
     p[5] = insecure_memory_base;
 	switch (cpid) {
 		case 0x8000:
-			log_debug("setting up stage 2 for s8000");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for s8000");
 			data = calloc(1, payloads_yolo_s8000_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_s8000_bin, payloads_yolo_s8000_bin_len);
 			data_sz += payloads_yolo_s8000_bin_len;
 			break;
 		case 0x8001:
-			log_debug("setting up stage 2 for s8001");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for s8001");
 			data = calloc(1, payloads_yolo_s8001_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_s8001_bin, payloads_yolo_s8001_bin_len);
 			data_sz += payloads_yolo_s8001_bin_len;
 			break;
 		case 0x8003:
-			log_debug("setting up stage 2 for s8003");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for s8003");
 			data = calloc(1, payloads_yolo_s8003_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_s8003_bin, payloads_yolo_s8003_bin_len);
 			data_sz += payloads_yolo_s8003_bin_len;
 			break;
 		case 0x7000:
-			log_debug("setting up stage 2 for t7000");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for t7000");
 			data = calloc(1, payloads_yolo_t7000_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_t7000_bin, payloads_yolo_t7000_bin_len);
 			data_sz += payloads_yolo_t7000_bin_len;
 			break;
 		case 0x7001:
-			log_debug("setting up stage 2 for t7001");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for t7001");
 			data = calloc(1, payloads_yolo_t7001_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_t7001_bin, payloads_yolo_t7001_bin_len);
 			data_sz += payloads_yolo_t7001_bin_len;
 			break;
 		case 0x8010:
-			log_debug("setting up stage 2 for t8010");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for t8010");
 			data = calloc(1, payloads_yolo_t8010_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_t8010_bin, payloads_yolo_t8010_bin_len);
 			data_sz += payloads_yolo_t8010_bin_len;
 			break;
 		case 0x8011:
-			log_debug("setting up stage 2 for t8011");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for t8011");
 			data = calloc(1, payloads_yolo_t8011_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_t8011_bin, payloads_yolo_t8011_bin_len);
 			data_sz += payloads_yolo_t8011_bin_len;
 			break;
 		case 0x8015:
-			log_debug("setting up stage 2 for t8015");
+			LOG(LOG_VERBOSE, "Setting up stage 2 for t8015");
 			data = calloc(1, payloads_yolo_t8015_bin_len);
 			data_sz = 0;
 			memcpy(data, payloads_yolo_t8015_bin, payloads_yolo_t8015_bin_len);
 			data_sz += payloads_yolo_t8015_bin_len;
 			break;
 		default:
-			LOG(LOG_ERROR, "unsupported cpid 0x%" PRIX32 "", cpid);
+			LOG(LOG_ERROR, "Unsupported cpid 0x%" PRIX32 "", cpid);
 			return false;
 	}
 	if(checkm8_usb_request_stall(handle) && checkm8_usb_request_leak(handle)) {
-		log_debug("successfully leaked data");
+		LOG(LOG_VERBOSE, "Successfully leaked data");
 	} else {
-		log_debug("failed to leak data");
+		LOG(LOG_VERBOSE, "Failed to leak data");
 		return false;
 	}
 	for(i = 0; i < 2; i++) {
@@ -964,14 +958,14 @@ static void compress_pongo(void *out, size_t *out_len) {
 static void checkm8_boot_pongo(usb_handle_t *handle) {
 	transfer_ret_t transfer_ret;
 	LOG(LOG_INFO, "Booting pongoOS");
-	log_debug("Compressing pongoOS");
-	log_debug("Appending shellcode to the top of pongoOS (512 bytes)");
+	LOG(LOG_VERBOSE, "Compressing pongoOS");
+	LOG(LOG_VERBOSE, "Appending shellcode to the top of pongoOS (512 bytes)");
 	void *shellcode = malloc(512);
 	memcpy(shellcode, payloads_shellcode_bin, payloads_shellcode_bin_len);
 	size_t out_len = payloads_Pongo_bin_len;
 	void *out = malloc(out_len);
 	compress_pongo(out, &out_len);
-	log_debug("Compressed pongoOS from %u to %zu bytes", payloads_Pongo_bin_len, out_len);
+	LOG(LOG_VERBOSE, "Compressed pongoOS from %u to %zu bytes", payloads_Pongo_bin_len, out_len);
 	void *tmp = malloc(out_len + 512);
 	memcpy(tmp, shellcode, 512);
 	memcpy(tmp + 512, out, out_len);
@@ -979,14 +973,14 @@ static void checkm8_boot_pongo(usb_handle_t *handle) {
 	out = tmp;
 	out_len += 512;
 	free(shellcode);
-	log_debug("Setting the compressed size into the shellcode");
+	LOG(LOG_VERBOSE, "Setting the compressed size into the shellcode");
 	uint32_t* size = (uint32_t*)(out + 0x1fc);
-	log_debug("size = 0x%" PRIX32 "", *size);
+	LOG(LOG_VERBOSE, "size = 0x%" PRIX32 "", *size);
 	*size = out_len - 512;
-	log_debug("size = 0x%" PRIX32 "", *size);
-	log_debug("Reconnecting to device");
+	LOG(LOG_VERBOSE, "size = 0x%" PRIX32 "", *size);
+	LOG(LOG_VERBOSE, "Reconnecting to device");
 	init_usb_handle(handle, APPLE_VID, DFU_MODE_PID);
-	log_debug("Waiting for device to be ready");
+	LOG(LOG_VERBOSE, "Waiting for device to be ready");
 	wait_usb_handle(handle, NULL, NULL);
 	{
         size_t len = 0;
@@ -998,16 +992,15 @@ static void checkm8_boot_pongo(usb_handle_t *handle) {
             send_usb_control_request(handle, 0x21, DFU_DNLOAD, 0, 0, (unsigned char*)&out[len], size, &transfer_ret);
             if(transfer_ret.sz != size || transfer_ret.ret != USB_TRANSFER_OK)
             {
-				log_debug("retrying at len = %zu", len);
+				LOG(LOG_VERBOSE, "retrying at len = %zu", len);
                 sleep_ms(100);
                 goto retry;
             }
             len += size;
-			log_debug("len = %zu", len);
         }
 	}
 	send_usb_control_request_no_data(handle, 0x21, 4, 0, 0, 0, NULL);
-	log_debug("pongoOS sent, should be booting");
+	LOG(LOG_VERBOSE, "pongoOS sent, should be booting");
 }
 
 static bool
@@ -1040,7 +1033,7 @@ gaster_checkm8(usb_handle_t *handle) {
 				stage = STAGE_RESET;
 			}
 			if(ret) {
-				log_debug("Stage %d succeeded", stage);
+				LOG(LOG_VERBOSE, "Stage %d succeeded", stage);
 			} else {
 				LOG(LOG_ERROR, "Stage %d failed", stage);
 				stage = STAGE_RESET;
