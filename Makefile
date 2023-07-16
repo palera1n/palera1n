@@ -92,7 +92,7 @@ Pongo.bin:
 	curl -Lo payloads/Pongo.bin https://cdn.nickchan.lol/palera1n/artifacts/kpf/Pongo.bin
 
 distclean: clean
-	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg payloads/Pongo.bin include/payloads/Pongo.bin.h
+	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg payloads/Pongo.bin include/payloads
 
 .PHONY: all palera1n clean docs distclean
 

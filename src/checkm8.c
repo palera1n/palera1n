@@ -94,17 +94,17 @@ extern unsigned payloads_yolo_s8000_bin_len, payloads_yolo_s8001_bin_len, payloa
 extern uint8_t payloads_Pongo_bin[], payloads_shellcode_bin[];
 extern unsigned payloads_Pongo_bin_len, payloads_shellcode_bin_len;
 
-#include <payloads/yolo_s8000.bin.h>
-#include <payloads/yolo_s8001.bin.h>
-#include <payloads/yolo_s8003.bin.h>
-#include <payloads/yolo_t7000.bin.h>
-#include <payloads/yolo_t7001.bin.h>
-#include <payloads/yolo_t8010.bin.h>
-#include <payloads/yolo_t8011.bin.h>
-#include <payloads/yolo_t8015.bin.h>
+#include "payloads/yolo_s8000.bin.h"
+#include "payloads/yolo_s8001.bin.h"
+#include "payloads/yolo_s8003.bin.h"
+#include "payloads/yolo_t7000.bin.h"
+#include "payloads/yolo_t7001.bin.h"
+#include "payloads/yolo_t8010.bin.h"
+#include "payloads/yolo_t8011.bin.h"
+#include "payloads/yolo_t8015.bin.h"
 
-#include <payloads/Pongo.bin.h>
-#include <payloads/shellcode.bin.h>
+#include "payloads/Pongo.bin.h"
+#include "payloads/shellcode.bin.h"
 
 static uint16_t cpid;
 static uint32_t payload_dest_armv7;
