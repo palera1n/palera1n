@@ -56,25 +56,6 @@ void thr_cleanup(void* ptr) {
 }
 
 int build_checks(void) {
-#ifndef NO_CHECKRAIN
-#if defined(__APPLE__)
-	struct mach_header_64* c1_header = (struct mach_header_64*)&checkra1n[0];
-	if (c1_header->magic != MH_MAGIC_64 && c1_header->magic != MH_CIGAM_64) {
-		LOG(LOG_FATAL, "Broken build: checkra1n is not a thin Mach-O");
-		return -1;
-	}
-	if (c1_header->cputype != _mh_execute_header.cputype) {
-		LOG(LOG_FATAL, "Broken build: checkra1n CPU type does not match palera1n CPU type");
-		return -1;
-	}
-#endif
-	if (checkra1n_len <= (UCHAR_MAX + 1)) {
-		LOG(LOG_FATAL, "checkra1n too small");
-	}
-	if (boyermoore_horspool_memmem(&checkra1n[0], checkra1n_len, (const unsigned char *)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) {
-		palerain_flags |= palerain_option_checkrain_is_clone;
-	}
-#endif
 #ifndef NO_KPF
 	struct mach_header_64 *kpf_hdr = (struct mach_header_64 *)checkra1n_kpf_pongo;
 	if (kpf_hdr->magic != MH_MAGIC_64 && kpf_hdr->magic != MH_CIGAM_64) {
@@ -149,7 +130,7 @@ int palera1n(int argc, char *argv[]) {
 											  palerain_option_device_info)
 								 ) || device_has_booted)
 		goto normal_exit;
-	if (exec_checkra1n()) goto cleanup;
+	if (exec_checkm8()) goto cleanup;
 
 	if ((palerain_flags & (palerain_option_pongo_exit | palerain_option_demote)))
 		goto normal_exit;
@@ -175,14 +156,12 @@ cleanup:
 		munmap(override_overlay.ptr, (size_t)override_overlay.len);
 		close(override_overlay.fd);
 	}
-	if (ext_checkra1n != NULL) free(ext_checkra1n);
 	pthread_mutex_destroy(&log_mutex);
 	pthread_mutex_destroy(&spin_mutex);
 	pthread_mutex_destroy(&found_pongo_mutex);
 	pthread_mutex_destroy(&ecid_dfu_wait_mutex);
 	return ret;
 }
-
 
 int main (int argc, char* argv[]) {
 	return palera1n(argc, argv);

@@ -150,7 +150,6 @@ typedef unsigned char niarelap_file_t[];
 
 extern unsigned int verbose;
 
-extern char* pongo_path;
 #ifdef TUI
 extern bool tui_started;
 #endif
@@ -174,7 +173,6 @@ extern int pongo_thr_running, dfuhelper_thr_running;
 extern bool device_has_booted;
 extern char xargs_cmd[0x270];
 extern char palerain_flags_cmd[0x30];
-extern char* ext_checkra1n;
 
 void thr_cleanup(void* ptr);
 void* dfuhelper(void* ptr);
@@ -193,7 +191,7 @@ int recvinfo_cmd(recvinfo_t* info, const uint64_t ecid);
 int autoboot_cmd(const uint64_t ecid);
 int exitrecv_cmd(const uint64_t ecid);
 
-int exec_checkra1n(void);
+int exec_checkm8(void);
 int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename);
 void* pongo_helper(void* ptr);
 const unsigned char *

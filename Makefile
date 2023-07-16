@@ -68,21 +68,31 @@ export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG B
 
 all: palera1n
 
-palera1n: download-deps
+xxd_payloads:
+	@mkdir -p include/payloads
+	for file in payloads/*; do \
+		xxd -i $$file > include/$$file.h; \
+	done
+
+palera1n: download-deps xxd_payloads
 	$(MAKE) -C src
 
 clean:
 	$(MAKE) -C src clean
 	$(MAKE) -C docs clean
 
-download-deps:
-	$(MAKE) -C src checkra1n-macos checkra1n-linux-arm64 checkra1n-linux-armel checkra1n-linux-x86 checkra1n-linux-x86_64 checkra1n-kpf-pongo ramdisk.dmg binpack.dmg Pongo.bin
+download-deps: Pongo.bin
+	$(MAKE) -C src checkra1n-kpf-pongo ramdisk.dmg binpack.dmg
 
 docs:
 	$(MAKE) -C docs
 
+Pongo.bin:
+	rm -f payloads/Pongo.bin
+	curl -Lo payloads/Pongo.bin https://cdn.nickchan.lol/palera1n/artifacts/kpf/Pongo.bin
+
 distclean: clean
-	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg src/Pongo.bin
+	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg payloads/Pongo.bin include/payloads/Pongo.bin.h
 
 .PHONY: all palera1n clean docs distclean
 

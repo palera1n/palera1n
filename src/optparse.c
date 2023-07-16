@@ -40,7 +40,6 @@ static struct option longopts[] = {
 	{"override-overlay", required_argument, NULL, 'o'},
 	{"override-ramdisk", required_argument, NULL, 'r'},
 	{"override-kpf", required_argument, NULL, 'K'},
-	{"override-checkra1n", required_argument, NULL, 'i'},
 	{"reboot-device", no_argument, NULL, 'R'},
 	{"exit-recovery", no_argument, NULL, 'n'},
 	{"enter-recovery", no_argument, NULL, 'E'},
@@ -69,7 +68,7 @@ static int usage(int e, char* prog_name)
 #ifdef TUI
 			"t"
 #endif
-			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
+			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
 			"iOS/iPadOS 15.0-16.5.1 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
@@ -91,7 +90,6 @@ static int usage(int e, char* prog_name)
 			"\t-f, --fakefs \t\t\t\tBoots fakefs\n"
 #endif
 			"\t-h, --help\t\t\t\tShow this help\n"
-			"\t-i, --override-checkra1n <file>\t\tOverride checkra1n\n"
 			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
 #ifdef ROOTFUL
@@ -194,14 +192,6 @@ int optparse(int argc, char* argv[]) {
 		case 's':
 			palerain_flags |= palerain_option_safemode;
 			break;
-		case 'k':
-			if (access(optarg, F_OK) != 0) {
-				LOG(LOG_FATAL, "Cannot access pongo file at %s: %d (%s)", optarg, errno, strerror(errno));
-				return -1;
-			}
-			pongo_path = malloc(strlen(optarg) + 1);
-			strcpy(pongo_path, optarg);
-			break;
 		case 'o':
 			if (override_file(&override_overlay, overlay_to_upload, &binpack_dmg_len, optarg))
 				return 1;
@@ -224,47 +214,6 @@ int optparse(int argc, char* argv[]) {
 				LOG(LOG_FATAL, "Invalid kernel patchfinder: CPU type is not arm64");
 				return -1;
 			}
-			break;
-		case 'i': {};
-			struct stat st;
-			if (stat(optarg, &st) != 0) {
-				LOG(LOG_FATAL, "cannot stat external checkra1n file: %d (%s)", errno, strerror(errno));
-				return -1;
-			} else if (!(st.st_mode & S_IXUSR) && !(st.st_mode & S_IXGRP) && !(st.st_mode & S_IXOTH)) {
-				LOG(LOG_FATAL, "%s is not executable", optarg);
-				return -1;
-			} else if (!S_ISREG(st.st_mode)) {
-				LOG(LOG_FATAL, "%s is not a regular file", optarg);
-				return -1;
-			}
-			if (st.st_size < (UCHAR_MAX+1)) {
-				LOG(LOG_FATAL, "%s too small", optarg);
-				return -1;
-			}
-			int checkra1n_fd = open(optarg, O_RDONLY);
-			if (checkra1n_fd == -1) {
-				LOG(LOG_FATAL, "Cannot open %s: %d (%s)", optarg, errno, strerror(errno));
-				return -1;
-			}
-			void* addr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, checkra1n_fd, 0);
-			if (addr == MAP_FAILED) {
-				LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", optarg, errno, strerror(errno));
-				return -1;
-			}
-			if (boyermoore_horspool_memmem(addr, st.st_size, (const unsigned char*)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) 
-				{
-					palerain_flags |= palerain_option_checkrain_is_clone;
-					LOG(LOG_VERBOSE3, "%s is checkra1n clone", optarg);
-				}
-			else
-			{
-				palerain_flags &= ~palerain_option_checkrain_is_clone;
-				LOG(LOG_VERBOSE3, "%s is checkra1n", optarg);
-			}
-			munmap(addr, st.st_size);
-			close(checkra1n_fd);
-			ext_checkra1n = calloc(1, strlen(optarg) + 1);
-			snprintf(ext_checkra1n, strlen(optarg) + 1, "%s", optarg);
 			break;
 		case 'R':
 			palerain_flags |= palerain_option_reboot_device;
@@ -351,12 +300,6 @@ int optparse(int argc, char* argv[]) {
 			(palerain_flags & palerain_option_exit_recovery) ||
 			(palerain_flags & palerain_option_reboot_device)))
 	{
-#ifdef NO_CHECKRAIN
-		if (checkra1n_len == 0 && ext_checkra1n == NULL)
-		{
-			LOG(LOG_FATAL, "checkra1n omitted in build but no override specified");
-			return -1;
-		}
 		if (!((palerain_flags & palerain_option_pongo_exit) || (palerain_flags & palerain_option_pongo_exit)))
 		{
 #ifdef NO_KPF
@@ -367,7 +310,6 @@ int optparse(int argc, char* argv[]) {
 			}
 #endif
 		}
-#endif
 	}
 
 	for (index = optind; index < argc; index++)
