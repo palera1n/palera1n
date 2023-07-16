@@ -1,4 +1,4 @@
-NAME = Ο άλφα είναι ρατσιστής
+NAME = Dusk
 
 SRC = $(shell pwd)
 DEP = $(SRC)/dep_root
