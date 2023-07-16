@@ -76,7 +76,7 @@ BUILD_OPTIONS = (none)
 endif
 
 LIBS += lz4/lz4.c lz4/lz4hc.c
-CFLAGS += -DBUILD_OPTIONS=\""$(BUILD_OPTIONS)"\" -Wno-pointer-sign -Wno-gnu-pointer-arith -Wno-pedantic
+CFLAGS += -DBUILD_OPTIONS=\""$(BUILD_OPTIONS)"\" -Wno-pointer-sign -Wno-pointer-arith -Wno-pedantic
 
 xxd-%.c: %
 	xxd -iC $< > $@
