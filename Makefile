@@ -68,13 +68,13 @@ export SRC DEP CC CFLAGS LDFLAGS LIBS TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG B
 
 all: palera1n
 
-xxd_payloads:
-	@mkdir -p include/payloads
+xxd-payloads: download-deps
+	mkdir -p include/payloads
 	for file in payloads/*; do \
 		xxd -i $$file > include/$$file.h; \
 	done
 
-palera1n: download-deps xxd_payloads
+palera1n: download-deps xxd-payloads
 	$(MAKE) -C src
 
 clean:
@@ -94,5 +94,5 @@ Pongo.bin:
 distclean: clean
 	rm -rf palera1n-* palera1n*.dSYM src/checkra1n-* src/checkra1n-kpf-pongo src/ramdisk.dmg src/binpack.dmg payloads/Pongo.bin include/payloads
 
-.PHONY: all palera1n clean docs distclean
+.PHONY: all xxd-payloads palera1n clean docs distclean
 
