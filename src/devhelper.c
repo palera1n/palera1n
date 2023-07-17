@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <ctype.h>
-#ifdef WIN32
-#include <windows.h>
+#ifdef WIN
 #include <winsock2.h>
+#include <windows.h>
 #else
 #include <sys/select.h>
 #include <sys/socket.h>

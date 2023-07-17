@@ -12,7 +12,9 @@
 #include <limits.h>
 #include <errno.h>
 #include <palerain.h>
+#ifndef WIN
 #include <sys/mman.h>
+#endif
 #include <inttypes.h>
 
 uint64_t* palerain_flags_p = &palerain_flags;
@@ -327,19 +329,27 @@ int optparse(int argc, char* argv[]) {
 			usage(1, argv[0]);
 		}
 	}
+	#ifndef WIN
 	if (verbose >= 2) setenv("LIBUSB_DEBUG", "1", 1);
+	#endif
 
 	if (verbose >= 3)
 	{
 		libusbmuxd_set_debug_level(verbose - 2);
 		irecv_set_debug_level(1);
+		#ifndef WIN
 		setenv("LIBUSB_DEBUG", "2", 1);
+		#endif
 	}
 	if (verbose >= 4) {
 		idevice_set_debug_level(1);
+		#ifndef WIN
 		setenv("LIBUSB_DEBUG", "3", 1);
+		#endif
 	}
+	#ifndef WIN
 	if (verbose >= 5)
 		setenv("LIBUSB_DEBUG", "4", 1);
+	#endif
     return 0;
 }

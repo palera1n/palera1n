@@ -11,7 +11,12 @@
 #include <ctype.h>
 #include <assert.h>
 #include <getopt.h>
+#ifndef WIN
 #include <sys/mman.h>
+#else
+#include <winsock2.h>
+#include <windows.h>
+#endif
 #include <errno.h>
 
 
@@ -31,11 +36,19 @@ int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *
 		return errno;
 	}
 	LOG(LOG_VERBOSE5, "override_file: fstat fd %d succeeded!", fd);	
+	#ifdef WIN
+	void *addr = VirtualAlloc(NULL, st.st_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (addr == NULL) {
+		LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", filename, errno, strerror(errno));
+		return errno;
+	}
+	#else
 	void *addr = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (addr == MAP_FAILED) {
 		LOG(LOG_ERROR, "Failed to map file %s: %d (%s)", filename, errno, strerror(errno));
 		return errno;
 	}
+	#endif
 	LOG(LOG_VERBOSE5, "override_file: Override file mapped successfully");
 	finfo->magic = OVERRIDE_MAGIC;
 	finfo->fd = fd;

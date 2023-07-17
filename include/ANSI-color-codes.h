@@ -78,7 +78,6 @@
 #define BHWHT "\033[1;97m"
 
 //Reset
-#define reset "\033[0m"
 #define CRESET "\033[0m"
 #define COLOR_RESET "\033[0m"
 

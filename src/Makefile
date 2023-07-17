@@ -63,7 +63,11 @@ endif
 ifeq ($(USE_LIBUSB),1)
 OBJECTS += usb_libusb.o
 CFLAGS += -DHAVE_LIBUSB -DUSE_LIBUSB=1
+ifeq ($(TARGET_OS),Windows)
+LIBS += -lusb-1.0
+else
 LIBS += $(DEP)/lib/libusb-1.0.a
+endif
 endif
 
 ifeq ($(ROOTFUL),1)

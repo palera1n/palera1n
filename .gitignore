@@ -8,6 +8,7 @@ contrib/
 checkra1n*
 payload.c
 src/palera1n
+src/palera1n.exe
 !xxd-embedded.h
 src/binpack.dmg
 src/ramdisk.dmg

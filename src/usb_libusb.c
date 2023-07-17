@@ -34,8 +34,10 @@
 #include <stdlib.h>             // exit, strtoull
 #include <string.h>             // strlen, strerror, memcpy, memmove
 #include <unistd.h>             // close
+#ifndef WIN
 #include <sys/mman.h>           // mmap, munmap
 #include <sys/stat.h>           // fstst
+#endif
 
 #include <palerain.h>
 #define ERR(...) LOG(LOG_ERROR, __VA_ARGS__)

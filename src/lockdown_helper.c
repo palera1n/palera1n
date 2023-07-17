@@ -1,7 +1,12 @@
 #ifndef HAVE_LIBIMOBILEDEVICE
 #include "lockdown_helper.h"
 #include <usbmuxd.h>
+#ifdef WIN
+#include <winsock2.h>
+#include <windows.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>

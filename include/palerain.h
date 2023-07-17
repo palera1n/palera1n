@@ -14,6 +14,7 @@
 #include <usbmuxd.h>
 #include <libirecovery.h>
 #include <libimobiledevice/libimobiledevice.h>
+#include <pthread.h>
 
 #define LOG(loglevel, ...) p1_log(loglevel, __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define CLEAR() printf("\33[2K\r");

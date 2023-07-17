@@ -10,16 +10,21 @@
 #include <limits.h>
 #include <assert.h>
 
+#ifdef WIN
+#include <winsock2.h>
+#include <windows.h>
+#else
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/ioctl.h>
+#include <spawn.h>
+#include <sys/mman.h>
 #include <signal.h>
+#endif
 #include <pthread.h>
 #include <inttypes.h>
 #include <errno.h>
-#include <spawn.h>
-#include <sys/mman.h>
 #include <time.h>
 
 #include <libimobiledevice/libimobiledevice.h>
@@ -145,15 +150,21 @@ int palera1n(int argc, char *argv[]) {
 normal_exit:
 cleanup:
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
+		#ifndef WIN
 		munmap(override_kpf.ptr, (size_t)override_kpf.len);
+		#endif
 		close(override_kpf.fd);
 	}
 	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
+		#ifndef WIN
 		munmap(override_ramdisk.ptr, (size_t)override_ramdisk.len);
+		#endif
 		close(override_ramdisk.fd);
 	}
 	if (override_overlay.magic == OVERRIDE_MAGIC) {
+		#ifndef WIN
 		munmap(override_overlay.ptr, (size_t)override_overlay.len);
+		#endif
 		close(override_overlay.fd);
 	}
 	pthread_mutex_destroy(&log_mutex);

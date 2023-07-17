@@ -7,10 +7,18 @@ CC ?= cc
 CFLAGS += -I$(DEP)/include -I$(SRC)/include -I$(SRC) -D_XOPEN_SOURCE=500
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -DPALERAIN_VERSION=\"2.0.0\"
 CFLAGS += -Wno-unused-variable -I$(SRC)/src -std=c99 -pedantic-errors -D_C99_SOURCE -D_POSIX_C_SOURCE=200112L
-LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a
-LIBS += $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread -lm
 ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)
+endif
+ifeq ($(findstring MINGW64,$(TARGET_OS)),MINGW64)
+TARGET_OS = Windows
+CFLAGS += -DWIN
+LIBS = -limobiledevice-1.0 -lirecovery-1.0 -lusbmuxd-2.0 -limobiledevice-glue-1.0 -lplist-2.0 -lssl -lcrypto -lusb-1.0 -lreadline -pthread -lm
+LIBS += -lws2_32 -liphlpapi -lsetupapi -lwinusb
+else
+LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a
+LIBS += $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread -lm
+LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
 endif
 ifeq ($(TARGET_OS),Darwin)
 CFLAGS += -Wno-nullability-extension
@@ -21,9 +29,11 @@ LDFLAGS += -Wl,-dead_strip
 LIBS += -framework CoreFoundation -framework IOKit
 else
 CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += -static -no-pie -Wl,--gc-sections
+LDFLAGS += -no-pie -Wl,--gc-sections
+ifneq ($(TARGET_OS),Windows)
+LDFLAGS += -static
 endif
-LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
+endif
 
 ifeq ($(TUI),1)
 LIBS += $(DEP)/lib/libnewt.a $(DEP)/lib/libpopt.a $(DEP)/lib/libslang.a
@@ -46,7 +56,7 @@ else
 CFLAGS += -Os -g
 BUILD_STYLE = RELEASE
 endif
-LIBS += -lc
+#LIBS += -lc
 
 ifneq ($(BAKERAIN_DEVELOPE_R),)
 CFLAGS += -DBAKERAIN_DEVELOPE_R="\"$(BAKERAIN_DEVELOPE_R)\""
