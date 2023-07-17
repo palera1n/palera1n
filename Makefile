@@ -56,7 +56,9 @@ else
 CFLAGS += -Os -g
 BUILD_STYLE = RELEASE
 endif
-#LIBS += -lc
+ifneq ($(TARGET_OS),Windows)
+LIBS += -lc
+endif
 
 ifneq ($(BAKERAIN_DEVELOPE_R),)
 CFLAGS += -DBAKERAIN_DEVELOPE_R="\"$(BAKERAIN_DEVELOPE_R)\""
