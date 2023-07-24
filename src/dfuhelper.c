@@ -56,6 +56,7 @@ void step(int time, int time2, char *text, bool (*cond)(uint64_t), uint64_t cond
 int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	devinfo_t dev;
 	int ret;
+    int version;
 	ret = devinfo_cmd(&dev, usbmuxd_device->udid);
 	if (ret != 0) {
 		LOG(LOG_ERROR, "Unable to get device information");
@@ -67,6 +68,19 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		LOG(LOG_WARNING, "palera1n doesn't and never will work on A12+ (arm64e)");
 		return -1;
 	}
+    
+    ret = sscanf(dev.productVersion, "%d.", &version);
+    if (ret != 1) {
+        LOG(LOG_ERROR, "Failed to get device version");
+        devinfo_free(&dev);
+        return -1;
+    }
+    if (version <= 14) {
+        LOG(LOG_ERROR, "palera1n doesn't support devices below iOS 15");
+        devinfo_free(&dev);
+        return -1;
+    }
+    
 	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
 		if (!(palerain_flags & palerain_option_device_info))
 			LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
@@ -79,8 +93,8 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		}
 		if (passcode_state) {
 			LOG(LOG_ERROR, "Passcode must be disabled on this device");
-			if (!(palerain_flags & palerain_option_device_info))
-				LOG(LOG_ERROR, "Additionally, passcode must never be set since a restore on iOS 16+");
+			if (!(palerain_flags & palerain_option_device_info) && (version == 16))
+				LOG(LOG_ERROR, "Additionally, passcode must never be set since a restore on iOS 16");
 			devinfo_free(&dev);
 			return -1;
 		}
