@@ -51,4 +51,4 @@ Make sure you provide full details on your device, such as:
 
 Using `-VvL` would help with debugging.
 
-Join the [Support Discord](https://dsc.gg/palera1n), and create a thread in [#support](https://discord.com/channels/1028398973452570725/1028730487700738130) or ask in [#general](https://discord.com/channels/1028398973452570725/1028398976640229380).
+Join the [Support Discord](https://dsc.gg/palera1n), and create a thread in [#support](https://discord.com/channels/1028398973452570725/1028730487700738130) or ask in [#jailbreak](https://discord.com/channels/1028398973452570725/1042131689981349890).
