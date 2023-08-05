@@ -1,4 +1,4 @@
-if ! command -v curl &> /dev/null
+if ! command -v curl > /dev/null
 then
   echo "curl could not be found, please install it"
   echo "if you're using APT, you can install curl via this command:"
