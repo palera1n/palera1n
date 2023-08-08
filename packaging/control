@@ -15,3 +15,8 @@ Description: iOS 15.0-16.5.1 semi-tethered checkm8 jailbreak
  palera1n is able to jailbreak the device in fakefs-rootful mode,
  where / is writable, as well as rootless mode, where / cannot be
  written to.
+ .
+ IMPORTANT: This does NOT make palera1n untethered or allow you to
+ jailbreak your current device without a computer. It just allows
+ you to jailbreak another iDevice using this device, given you have
+ an appropriate cable. Also, the success rate is likely to be bad.
