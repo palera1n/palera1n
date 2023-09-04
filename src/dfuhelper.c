@@ -105,7 +105,13 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		/* At least (LOG_VERBOSE2 - 3) */
 		LOG(LOG_INFO, "Entering recovery mode");
 	}
-	enter_recovery_cmd(usbmuxd_device->udid);
+	if (strncmp(dev.CPUArchitecture, "arm64", strlen("arm64"))) {
+		devinfo_free(&dev);
+		LOG(LOG_WARNING, "Ignoring non-arm64 device...");
+		LOG(LOG_WARNING, "palera1n doesn't and never will work on A12+ (arm64e)");
+		return -1;
+	} else {
+ enter_recovery_cmd(usbmuxd_device->udid);
 	devinfo_free(&dev);
 	if ((palerain_flags & palerain_option_enter_recovery)) {
 		device_has_booted = true;
