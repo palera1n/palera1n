@@ -2,11 +2,11 @@
 .\" Copyright (c) 2023 Nick Chan
 .\" SPDX-License-Identifier: MIT
 .\"
-.Dd "2 July 2023"
+.Dd "2 October 2023"
 .Dt palera1n 1
 .Sh NAME
 .Nm palera1n
-.Nd iOS 15.0-16.5.1 arm64 iOS/iPadOS jailbreaking tool
+.Nd iOS 15.0-17.0 arm64 iOS/iPadOS jailbreaking tool
 .Sh SYNOPSIS
 .Nm
 .Op Fl dDEhILnpRsSvV
@@ -124,13 +124,6 @@ iOS15 branch or your own fork of it.
 Makes jbinit log to
 .Em /cores/jbinit.log
 This file may be viewed from sandboxed applications while jailbroken.
-.It Fl l , -rootless
-Proceed in rootless mode, this is the default when neither
-.Fl l , -rootless
-and
-.Fl f , -fakefs
-is specified.
->>>>>>> a8e6075 (paleinfo v2)
 .It Fl n , -exit-recovery
 Exit recovery mode and exit.
 .It Fl o , -override-overlay Ar overlay file
@@ -274,4 +267,5 @@ December 13, 2022. Later, the first attempt to rewrite palera1n into C begins on
 01 2023. The
 .Nm
 utility described here is the second attempt, which first started on January 16, 2023,
-using checkra1n 1337 and the plush KPF.
+using checkra1n 1337 and a custom KPF.
+Something happened on Augest 15, 2023.
