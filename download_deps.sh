@@ -4,7 +4,7 @@ then
   echo "if you're using APT, you can install curl via this command:"
   echo "sudo apt install curl"
 fi
-if ! command -v git &> /dev/null
+if ! command -v git > /dev/null
 then
   echo "git could not be found, please install it"
   echo "if you're using APT, you can install git via this command:"
