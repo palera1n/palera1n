@@ -601,6 +601,7 @@ jobs:
           git clone --depth=1 https://github.com/libimobiledevice/libirecovery
           git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
+          git clone --depth=1 https://github.com/libimobiledevice/usbmuxd
 
       - name: Build Mbed TLS
         run: |
@@ -750,9 +751,25 @@ jobs:
           sudo rm /usr/local
           sudo mv /usr/local.bak /usr/local
 
+      - name: Build usbmuxd
+        run: |
+          cd usbmuxd
+          autoreconf -fiv
+          ./configure ${{ env.CONFIGURE_ARGS }} --without-systemd
+          ${{ matrix.triple }}-gcc ${{ env.CFLAGS }} -I${{ env.DESTDIR }}/${{ env.PREFIX }}/include/libusb-1.0 src/*.c \
+            -DHAVE_CONFIG_H -no-pie \
+            -I. -static ${{ env.LDFLAGS }}} -limobiledevice-1.0 -lusbmuxd-2.0 -limobiledevice-glue-1.0  \
+            -lplist-2.0 -lusb-1.0 -lmbedtls -lmbedcrypto -lmbedx509 -lpthread -o usbmuxd
+          mkdir -p ${{ env.DESTDIR }}/${{ env.PREFIX }}/sbin
+          ${{ matrix.triple }}-objcopy --only-keep-debug usbmuxd usbmuxd.debug
+          ${{ matrix.triple }}-strip --strip-debug --strip-unneeded usbmuxd
+          ${{ matrix.triple }}-objcopy --add-gnu-debuglink=usbmuxd.debug usbmuxd
+          install -m755 usbmuxd usbmuxd.debug ${{ env.DESTDIR }}/${{ env.PREFIX }}/sbin
+          cd ..
+
       - name: Build palera1n
         run: |
-          cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
+          cp -a ${{ env.DESTDIR }}/${{ env.PREFIX }}/{include,lib} dep_root
           find dep_root -name '*.so' -delete
           find dep_root -name '*.la' -delete
           CC="${{ matrix.triple }}-gcc" make -j$(nproc)
@@ -763,13 +780,15 @@ jobs:
           ${{ matrix.triple }}-strip --strip-debug --strip-unneeded src/palera1n
           ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug src/palera1n
           chmod -x palera1n.debug
-      
+
       - name: Prepare artifact
         run: |
-          mkdir ready
+          mkdir ready usbmuxd-static
           mv palera1n.debug ready/palera1n-${{ env.CHECKRA1N_NAME }}.debug
           mv src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
           tar -zcf ready/dep_root_${{ matrix.triple }}.tgz dep_root
+          install -m755 sysroot/${{ env.PREFIX }}/sbin/usbmuxd usbmuxd-static/usbmuxd-${{ env.CHECKRA1N_NAME }}
+          install -m755 sysroot/${{ env.PREFIX }}/sbin/usbmuxd.debug usbmuxd-static/usbmuxd-${{ env.CHECKRA1N_NAME }}.debug
 
       - name: Build debs
         run: |
@@ -808,6 +827,19 @@ jobs:
           dryRun: false
           localDir: 'ready/'
           remoteDir: "/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch || github.ref }}/${{ github.run_number }}"
+
+      - name: Upload usbmuxd artifact
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: wangyucode/sftp-upload-action@v1.4.8
+        with:
+          host: ${{ secrets.NICKCHAN_FTP_HOST }}
+          port: ${{ secrets.NICKCHAN_FTP_PORT }}
+          username: palera1n
+          password: ${{ secrets.NICKCHAN_FTP_PASS }}
+          forceUpload: true
+          dryRun: false
+          localDir: 'usbmuxd-static/'
+          remoteDir: "/palera1n/artifacts/usbmuxd-static"
 
   finish-build:
     runs-on: ubuntu-latest
