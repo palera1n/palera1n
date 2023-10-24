@@ -377,7 +377,7 @@ jobs:
         with:
           packages: sed coreutils
           cache: true
-          mirror: 'https://procursus.itsnebula.net/'
+          mirror: 'https://apt.procurs.us/'
 
       - name: Download all Darwin artifacts
         uses: actions/download-artifact@v3
