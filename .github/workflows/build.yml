@@ -74,7 +74,7 @@ jobs:
             minos: 7.0
     runs-on: macos-12
     env:
-      MBEDTLS_VERSION: 3.4.0
+      MBEDTLS_VERSION: 3.5.0
       READLINE_VERSION: 8.2
       SLANG_VERSION: 2.3.3
       NEWT_VERSION: 0.52.23
@@ -506,7 +506,7 @@ jobs:
         - aarch64-linux-musl
     runs-on: ubuntu-latest
     env:
-      MBEDTLS_VERSION: 3.4.0
+      MBEDTLS_VERSION: 3.5.0
       LIBUSB_VERSION: 1.0.26
       READLINE_VERSION: 8.2
       SLANG_VERSION: 2.3.3
@@ -608,6 +608,7 @@ jobs:
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
           cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
           mkdir build
+          if [ "${{ matrix.triple }}" = "i486-linux-musl" ]; then sed -i '/define MBEDTLS_AESNI_C/d' include/mbedtls/mbedtls_config.h; fi
           cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
