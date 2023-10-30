@@ -49,12 +49,16 @@ void *pongo_usb_callback(stuff_t *arg) {
 		issue_pongo_command(handle, "rootfs");
 	}
 #ifdef NO_RAMDISK
-	if (ramdisk_dmg_len != 0)
+	if (ramdisk_dmg_lzma_len != 0)
 #endif
 	{
 		strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
-		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_len);
-		issue_pongo_command(handle, "ramdisk");
+		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_lzma_len);
+		if (&(**ramdisk_to_upload) == &ramdisk_dmg_lzma)
+			issue_pongo_command(handle, "ramdisk " RAMDISK_UNCOMPRESSED_SIZE);
+		else {
+			issue_pongo_command(handle, "ramdisk");
+		}
 	}
 #ifdef NO_OVERLAY
 	if (binpack_dmg_len != 0)

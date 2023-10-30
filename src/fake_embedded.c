@@ -6,8 +6,8 @@ unsigned int checkra1n_kpf_pongo_len = 0;
 #endif
 
 #ifdef NO_RAMDISK
-unsigned char* ramdisk_dmg = NULL;
-unsigned int ramdisk_dmg_len = 0;
+unsigned char* ramdisk_dmg_lzma = NULL;
+unsigned int ramdisk_dmg_lzma_len = 0;
 #endif
 
 #ifdef NO_CHECKRAIN

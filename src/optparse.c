@@ -207,7 +207,7 @@ int optparse(int argc, char* argv[]) {
 				return 1;
 			break;
 		case 'r':
-			if (override_file(&override_ramdisk, ramdisk_to_upload, &ramdisk_dmg_len, optarg))
+			if (override_file(&override_ramdisk, ramdisk_to_upload, &ramdisk_dmg_lzma_len, optarg))
 				return 1;
 			break;
 		case 'K':
@@ -331,7 +331,7 @@ int optparse(int argc, char* argv[]) {
 		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p", override_kpf.orig_ptr, **kpf_to_upload);
 	}
 	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u", override_ramdisk.orig_len, ramdisk_dmg_len);
+		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u", override_ramdisk.orig_len, ramdisk_dmg_lzma_len);
 		LOG(LOG_VERBOSE4, "ramdisk override ptr %p -> %p", override_ramdisk.orig_ptr, **ramdisk_to_upload);
 	}
 	if (override_overlay.magic == OVERRIDE_MAGIC) {

@@ -18,9 +18,9 @@ BUILD_OPTIONS += FORCE_HELPER
 endif
 
 ifneq ($(NO_RAMDISK),1)
-OBJECTS += xxd-ramdisk.dmg.o
+OBJECTS += xxd-ramdisk.dmg.lzma.o
 else
-CFLAGS += -DNO_RAMDISK
+CFLAGS += -DNO_RAMDISK -DRAMDISK_COMPRESSED_SIZE=\"0\"
 BUILD_OPTIONS += NO_RAMDISK
 endif
 ifneq ($(NO_KPF),1)
@@ -122,6 +122,14 @@ endif
 xxd-%.c: %
 	xxd -iC $< > $@
 
+ifneq ($(NO_RAMDISK),1)
+pongo_helper.o: pongo_helper.c $(wildcard ../include/*.h) ramdisk.dmg
+	$(CC) -c $(CFLAGS) -DRAMDISK_UNCOMPRESSED_SIZE="\"$$(wc -c < ramdisk.dmg | tr -d ' ')\"" $<
+else
+pongo_helper.o: pongo_helper.c $(wildcard ../include/*.h)
+	$(CC) -c $(CFLAGS) $<
+endif
+
 %.o: %.c $(wildcard ../include/*.h)
 	$(CC) -c $(CFLAGS) $<
 
@@ -139,6 +147,9 @@ libcheckra1nhelper.dylib: chkstk.S
 checkra1n-kpf-pongo:
 	curl -LO https://cdn.nickchan.lol/palera1n/artifacts/kpf/iOS15/checkra1n-kpf-pongo
 
+ramdisk.dmg.lzma: ramdisk.dmg
+	xz --format=lzma -vf6ekT 0 ramdisk.dmg
+
 ramdisk.dmg:
 	curl -LO https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.dmg
 
@@ -149,6 +160,6 @@ Pongo.bin:
 	curl -LO https://cdn.nickchan.lol/palera1n/artifacts/kpf/iOS15/Pongo.bin
 
 clean:
-	rm -rf *.o palera1n checkra1n checkra1n.c palera1n.dSYM libcheckra1nhelper.dylib
+	rm -rf *.o palera1n checkra1n checkra1n.c palera1n.dSYM ramdisk.dmg.lzma libcheckra1nhelper.dylib
 
 .PHONY: all clean

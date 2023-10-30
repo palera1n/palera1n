@@ -37,7 +37,7 @@ char xargs_cmd[0x270] = "xargs ", palerain_flags_cmd[0x30] = "deadbeef";
 extern char** environ;
 
 niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;
-niarelap_file_t* ramdisk_to_upload_1 = &ramdisk_dmg;
+niarelap_file_t* ramdisk_to_upload_1 = &ramdisk_dmg_lzma;
 niarelap_file_t* overlay_to_upload_1 = &binpack_dmg;
 
 niarelap_file_t** kpf_to_upload = &kpf_to_upload_1;
