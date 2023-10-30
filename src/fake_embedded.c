@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
 #ifdef NO_KPF
-unsigned char* checkra1n_kpf_pongo = NULL;
-unsigned int checkra1n_kpf_pongo_len = 0;
+unsigned char* checkra1n_kpf_pongo_lzma = NULL;
+unsigned int checkra1n_kpf_pongo_lzma_len = 0;
 #endif
 
 #ifdef NO_RAMDISK

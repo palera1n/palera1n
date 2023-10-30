@@ -1,3 +1,4 @@
+#ifdef TUI
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,3 +14,8 @@
 #include <tui.h>
 
 tui_screen_t tui_screen_enter_recovery(void) { return ENTER_DFU_SCREEN; }
+
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
+#endif
