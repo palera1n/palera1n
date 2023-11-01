@@ -53,6 +53,9 @@ typedef uint64_t palerain_option_t;
 
 #define PALEINFO_MAGIC 'PLSH'
 
+#pragma clang diagnostic push
+#pragma clang diagnostic warning "-Wpadded"
+
 /* paleinfo version 2, appended to ramdisk */
 struct paleinfo {
     uint32_t magic; /* 'PLSH' */
@@ -61,6 +64,8 @@ struct paleinfo {
     uint64_t kslide; /* kernel slide */
     uint64_t flags; /* unified palera1n flags */
     char rootdev[0x10]; /* ex. disk0s1s8 */
-}__attribute__((packed));
+};
+
+#pragma clang diagnostic pop
 
 #endif
