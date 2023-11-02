@@ -36,7 +36,7 @@ unsigned int verbose = 0;
 char xargs_cmd[0x270] = "xargs ", palerain_flags_cmd[0x30] = "deadbeef";
 extern char** environ;
 
-niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo;
+niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo_lzma;
 niarelap_file_t* ramdisk_to_upload_1 = &ramdisk_dmg_lzma;
 niarelap_file_t* overlay_to_upload_1 = &binpack_dmg;
 
@@ -73,19 +73,6 @@ int build_checks(void) {
 	}
 	if (boyermoore_horspool_memmem(&checkra1n[0], checkra1n_len, (const unsigned char *)"[ra1npoc15-part] thanks to", strlen("[ra1npoc15-part] thanks to")) != NULL) {
 		palerain_flags |= palerain_option_checkrain_is_clone;
-	}
-#endif
-#ifndef NO_KPF
-	struct mach_header_64 *kpf_hdr = (struct mach_header_64 *)checkra1n_kpf_pongo;
-	if (kpf_hdr->magic != MH_MAGIC_64 && kpf_hdr->magic != MH_CIGAM_64) {
-		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not thin 64-bit Mach-O");
-		return -1;
-	} else if (kpf_hdr->filetype != MH_KEXT_BUNDLE) {
-		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: Not a kext bundle");
-		return -1;
-	} else if (kpf_hdr->cputype != CPU_TYPE_ARM64) {
-		LOG(LOG_FATAL, "Broken build: Invalid kernel patchfinder: CPU type is not arm64");
-		return -1;
 	}
 #endif
 	return 0;

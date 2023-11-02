@@ -8,8 +8,8 @@
 extern unsigned char checkra1n[];
 extern unsigned int checkra1n_len;
 
-extern unsigned char checkra1n_kpf_pongo[];
-extern unsigned int checkra1n_kpf_pongo_len;
+extern unsigned char checkra1n_kpf_pongo_lzma[];
+extern unsigned int checkra1n_kpf_pongo_lzma_len;
 
 extern unsigned char ramdisk_dmg_lzma[];
 extern unsigned int ramdisk_dmg_lzma_len;
