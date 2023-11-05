@@ -264,4 +264,7 @@ int wait_for_pongo(void)
         libusb_exit(ctx);
         return 0;
 }
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
 #endif

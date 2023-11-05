@@ -1,3 +1,4 @@
+#ifdef TUI
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -45,3 +46,8 @@ tui_screen_t tui_screen_main(void) {
     newtFormDestroy(form);
     return ret;
 }
+
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
+#endif

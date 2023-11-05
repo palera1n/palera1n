@@ -36,8 +36,8 @@ jobs:
       - name: Build Documentation
         run: |
           make -j$(nproc) docs
-          mkdir ready
-          cp docs/*.html docs/mandoc.css docs/palera1n.1 ready
+          mkdir -p ready/docs
+          cp docs/*.html docs/mandoc.css docs/palera1n.1 ready/docs
 
       - name: Get branch name
         id: branch-name
@@ -317,17 +317,25 @@ jobs:
           find dep_root -name '*.dylib' -delete
           find dep_root -name '*.la' -delete
           gmake -j$(sysctl -n hw.ncpu)
-          mkdir -p ready
-          mv src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
+          cp src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
           dsymutil palera1n-${{ matrix.os }}-${{ matrix.arch }}
           strip palera1n-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Build palera1n (Development)
+        run: |
+          CC="${{ matrix.triple }}-gcc" gmake -j$(sysctl -n hw.ncpu) clean
+          CC="${{ matrix.triple }}-gcc" gmake -j$(sysctl -n hw.ncpu) DEV_BUILD=1 TUI=1 ROOTFUL=1
+          cp src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p ready/build_depends
+          tar -zcf ready/build_depends/dep_root-${{ matrix.os }}-${{ matrix.arch }}.tgz dep_root
           if [ "${{ matrix.os }}" == "macosx" ]; then
-            ldid -S palera1n-${{ matrix.os }}-${{ matrix.arch }}
+            ldid -S palera1n-${{ matrix.os }}-${{ matrix.arch }}{,.development}
           else
-            ldid -Ssrc/usb.xml palera1n-${{ matrix.os }}-${{ matrix.arch }}
+            ldid -Ssrc/usb.xml palera1n-${{ matrix.os }}-${{ matrix.arch }}{,.development}
           fi
-          mkdir -p ready
-          tar -zcf ready/dep_root-${{ matrix.os }}-${{ matrix.arch }}.tgz dep_root
 
       - name: Get branch name
         id: branch-name
@@ -353,6 +361,15 @@ jobs:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}
           retention-days: 1
+
+      - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build (Development)
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
+          path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
+          retention-days: 1
+
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} debug symbols
         if: ${{ github.event_name != 'pull_request' }}
@@ -384,18 +401,24 @@ jobs:
 
       - name: Prepare artifact
         run: |
-          find .
           lipo -create -arch arm64 ./palera1n-macosx-arm64/palera1n-macosx-arm64 -arch x86_64 ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 -output palera1n-macos
+          lipo -create -arch arm64 ./palera1n-macosx-arm64.development/palera1n-macosx-arm64.development -arch x86_64 ./palera1n-macosx-x86_64.development/palera1n-macosx-x86_64.development -output palera1n-macos.development
           mkdir -p palera1n-macos.dSYM/Contents/Resources/DWARF
           cp ./palera1n-macosx-x86_64.dSYM/Contents/Info.plist palera1n-macos.dSYM/Contents
           lipo -create -arch arm64 palera1n-macosx-arm64.dSYM/Contents/Resources/DWARF/palera1n-macosx-arm64 -arch x86_64 palera1n-macosx-x86_64.dSYM/Contents/Resources/DWARF/palera1n-macosx-x86_64 -output palera1n-macos.dSYM/Contents/Resources/DWARF/palera1n-macos
-          mkdir ready
-          cp palera1n-macos ready/palera1n-macos-universal
-          cp ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 ready/palera1n-macos-x86_64
-          cp ./palera1n-macosx-arm64/palera1n-macosx-arm64 ready/palera1n-macos-arm64
-          cp ./palera1n-iphoneos-arm64/palera1n-iphoneos-arm64 ready/palera1n-iphoneos-arm64
-          zip -r9 ready/palera1n-iphoneos-arm64.dSYM.zip palera1n-iphoneos-arm64.dSYM
-          zip -r9 ready/palera1n-macos.dSYM.zip palera1n-macos.dSYM
+          mkdir -p ready/{debian,binaries,debug_symbols,binaries_development}
+          cp palera1n-macos.development ready/binaries_development/palera1n-macos-universal.development
+          cp palera1n-macos ready/binaries/palera1n-macos-universal
+          cp ./palera1n-macosx-x86_64/palera1n-macosx-x86_64 ready/binaries/palera1n-macos-x86_64
+          cp ./palera1n-macosx-arm64/palera1n-macosx-arm64 ready/binaries/palera1n-macos-arm64
+          cp ./palera1n-iphoneos-arm64/palera1n-iphoneos-arm64 ready/binaries/palera1n-iphoneos-arm64
+          cp ./palera1n-macosx-x86_64.development/palera1n-macosx-x86_64.development ready/binaries_development/palera1n-macos-x86_64.development
+          cp ./palera1n-macosx-arm64.development/palera1n-macosx-arm64.development ready/binaries_development/palera1n-macos-arm64.development
+          cp ./palera1n-iphoneos-arm64.development/palera1n-iphoneos-arm64.development ready/binaries_development/palera1n-iphoneos-arm64.development
+          zip -r9 ready/debug_symbols/palera1n-iphoneos-arm64.dSYM.zip palera1n-iphoneos-arm64.dSYM
+          zip -r9 ready/debug_symbols/palera1n-macosx-arm64.dSYM.zip palera1n-macosx-arm64.dSYM
+          zip -r9 ready/debug_symbols/palera1n-macosx-x86_64.dSYM.zip palera1n-macosx-x86_64.dSYM
+          zip -r9 ready/debug_symbols/palera1n-macos.dSYM.zip palera1n-macos.dSYM
 
       - name: Build debs
         run: |
@@ -411,12 +434,12 @@ jobs:
           gsed 's|@DEB_ARCH@|darwin-amd64|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-macos-x86_64 stage/opt/procursus/bin/palera1n
-          ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
-          chmod +x stage/opt/procursus/bin/palera1n
+          ginstall -Dm644 ready/binaries/palera1n-macos-x86_64 stage/opt/procursus/bin/palera1n
+          zstd -c19 docs/palera1n.1 > stage/opt/procursus/usr/share/man/man1/palera1n.1.zst
+          chmod 644 stage/opt/procursus/usr/share/man/man1/palera1n.1.zst
+          chmod 755 stage/opt/procursus/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_darwin-amd64.deb
-          mv palera1n*.deb ready/
+          dpkg-deb --root-owner-group -Zzstd -b stage palera1n_darwin-amd64.deb
           rm -rf stage
 
           # Darwin arm64
@@ -428,12 +451,12 @@ jobs:
           gsed 's|@DEB_ARCH@|darwin-arm64|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-macos-arm64 stage/opt/procursus/bin/palera1n
-          ginstall -Dm644 docs/palera1n.1 stage/opt/procursus/usr/share/man/man1/palera1n.1
-          chmod +x stage/opt/procursus/bin/palera1n
+          ginstall -Dm644 ready/binaries/palera1n-macos-arm64 stage/opt/procursus/bin/palera1n
+          zstd -c19 docs/palera1n.1 > stage/opt/procursus/usr/share/man/man1/palera1n.1.zst
+          chmod 644 stage/opt/procursus/usr/share/man/man1/palera1n.1.zst
+          chmod 755 stage/opt/procursus/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_darwin-arm64.deb
-          mv palera1n*.deb ready/
+          dpkg-deb --root-owner-group -Zzstd -b stage palera1n_darwin-arm64.deb
           rm -rf stage
 
           # iPhoneOS
@@ -445,12 +468,12 @@ jobs:
           gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-iphoneos-arm64 stage/usr/bin/palera1n
-          ginstall -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
-          chmod +x stage/usr/bin/palera1n
+          ginstall -Dm644 ready/binaries/palera1n-iphoneos-arm64 stage/usr/bin/palera1n
+          zstd -c19 docs/palera1n.1 > stage/usr/share/man/man1/palera1n.1.zst
+          chmod 644 stage/usr/share/man/man1/palera1n.1.zst
+          chmod 755 stage/usr/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_iphoneos-arm.deb
-          mv palera1n*.deb ready/
+          dpkg-deb --root-owner-group -Zzstd -b stage palera1n_iphoneos-arm.deb
           rm -rf stage
 
           # iPhoneOS (rootless)
@@ -462,13 +485,15 @@ jobs:
           gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i stage/DEBIAN/control
           gsed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          ginstall -Dm644 ready/palera1n-iphoneos-arm64 stage/var/jb/usr/bin/palera1n
-          ginstall -Dm644 docs/palera1n.1 stage/var/jb/usr/share/man/man1/palera1n.1
-          chmod +x stage/var/jb/usr/bin/palera1n
+          ginstall -Dm644 ready/binaries/palera1n-iphoneos-arm64 stage/var/jb/usr/bin/palera1n
+          zstd -c19 docs/palera1n.1 > stage/var/jb/usr/share/man/man1/palera1n.1.zst
+          chmod 644 stage/var/jb/usr/share/man/man1/palera1n.1.zst
+          chmod 755 stage/var/jb/usr/bin/palera1n
 
-          dpkg-deb -Zzstd -b stage palera1n_iphoneos-arm64.deb
-          mv palera1n*.deb ready/
+          dpkg-deb --root-owner-group -Zzstd -b stage palera1n_iphoneos-arm64.deb
           rm -rf stage
+
+          mv palera1n*.deb ready/debian
       
       - name: Save build tag
         run: echo "$(git describe --dirty --tags --abbrev=7 | sed 's|-dirty||')" > build-tag.txt
@@ -774,20 +799,28 @@ jobs:
           find dep_root -name '*.so' -delete
           find dep_root -name '*.la' -delete
           CC="${{ matrix.triple }}-gcc" make -j$(nproc)
+          cp src/palera1n palera1n.release
 
       - name: Seperate debug symbols
         run: |
-          ${{ matrix.triple }}-objcopy --only-keep-debug src/palera1n palera1n.debug
-          ${{ matrix.triple }}-strip --strip-debug --strip-unneeded src/palera1n
-          ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug src/palera1n
+          ${{ matrix.triple }}-objcopy --only-keep-debug palera1n.release palera1n.debug
+          ${{ matrix.triple }}-strip --strip-debug --strip-unneeded palera1n.release
+          ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug palera1n.release
           chmod -x palera1n.debug
+      
+      - name: Build palera1n (Development)
+        run: |
+          CC="${{ matrix.triple }}-gcc" make -j$(nproc) clean
+          CC="${{ matrix.triple }}-gcc" make -j$(nproc) DEV_BUILD=1 TUI=1 ROOTFUL=1
+          cp src/palera1n palera1n.development
 
       - name: Prepare artifact
         run: |
-          mkdir ready usbmuxd-static
-          mv palera1n.debug ready/palera1n-${{ env.CHECKRA1N_NAME }}.debug
-          mv src/palera1n ready/palera1n-${{ env.CHECKRA1N_NAME }}
-          tar -zcf ready/dep_root_${{ matrix.triple }}.tgz dep_root
+          mkdir -p ready/{binaries,debian,binaries_development,build_depends,debug_symbols} usbmuxd-static
+          mv palera1n.debug ready/debug_symbols/palera1n-${{ env.CHECKRA1N_NAME }}.debug
+          mv palera1n.release ready/binaries/palera1n-${{ env.CHECKRA1N_NAME }}
+          mv palera1n.development ready/binaries_development/palera1n-${{ env.CHECKRA1N_NAME }}.development
+          tar -zcf ready/build_depends/dep_root_${{ matrix.triple }}.tgz dep_root
           install -m755 sysroot/${{ env.PREFIX }}/sbin/usbmuxd usbmuxd-static/usbmuxd-${{ env.CHECKRA1N_NAME }}
           install -m755 sysroot/${{ env.PREFIX }}/sbin/usbmuxd.debug usbmuxd-static/usbmuxd-${{ env.CHECKRA1N_NAME }}.debug
 
@@ -804,12 +837,13 @@ jobs:
           sed 's|@DEB_ARCH@|${{ env.ARCH_NAME }}|g' -i stage/DEBIAN/control
           sed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
           
-          install -Dm644 ready/palera1n-${{ env.CHECKRA1N_NAME }} stage/usr/bin/palera1n
-          install -Dm644 docs/palera1n.1 stage/usr/share/man/man1/palera1n.1
-          chmod +x stage/usr/bin/palera1n
+          install -Dm644 ready/binaries/palera1n-${{ env.CHECKRA1N_NAME }} stage/usr/bin/palera1n
+          gzip -c9 docs/palera1n.1 > stage/usr/share/man/man1/palera1n.1.gz
+          chmod 755 stage/usr/bin/palera1n
+          chmod 644 stage/usr/share/man/man1/palera1n.1.gz
 
-          dpkg-deb -b stage palera1n_${{ env.ARCH_NAME }}.deb
-          mv palera1n*.deb ready/
+          dpkg-deb --root-owner-group -b stage palera1n_${{ env.ARCH_NAME }}.deb
+          mv palera1n*.deb ready/debian
           rm -rf stage
 
       - name: Get branch name
@@ -859,8 +893,13 @@ jobs:
         with:
           name: build-tag
 
+      - uses: geekyeggo/delete-artifact@v2
+        with:
+          name: '*'
+          failOnError: false
+
       - name: Send Discord build message
         run: |
           COMMITMESSAGE=`git log --pretty=format:'- \`%h\` %s' -1 --reverse` &&
-          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${{ steps.branch-name.outputs.ref_branch }}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Destination\",\"value\":\"- https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}\"},{\"name\":\"Documentation\",\"value\":\"- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n.1.html)\"},{\"name\":\"Main Artifacts\",\"value\":\"- [palera1n-iphoneos-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-iphoneos-arm64)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/$${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/palera1n-macos-universal)\"}],\"footer\":{\"text\":\"${{ github.actor }}\", \"icon_url\": \"https://github.com/${{ github.actor }}.png\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
+          (curl "${{ secrets.DISCORD_WEBHOOK }}" -sS -H "Content-Type:application/json" -X POST -d "{\"content\":null,\"embeds\":[{\"title\":\"[palera1n:${{ steps.branch-name.outputs.ref_branch }}] Nightly Build ${{ github.run_number }}\",\"url\":\"https://github.com/palera1n/palera1n/actions/runs/${GITHUB_RUN_ID}\",\"color\":2829617,\"fields\":[{\"name\":\"Build tag\",\"value\":\"- \`$(cat build-tag.txt | sed 's|\n||')\`\"},{\"name\":\"Destination\",\"value\":\"- https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}\"},{\"name\":\"Documentation\",\"value\":\"- [palera1n.1.html](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/docs/palera1n.1.html)\"},{\"name\":\"Main Artifacts\",\"value\":\"- [palera1n-iphoneos-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/binaries/palera1n-iphoneos-arm64)\n- [palera1n-linux-arm64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/binaries/palera1n-linux-arm64)\n- [palera1n-linux-armel](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/binaries/palera1n-linux-armel)\n- [palera1n-linux-x86](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/binaries/palera1n-linux-x86)\n- [palera1n-linux-x86_64](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/binaries/palera1n-linux-x86_64)\n- [palera1n-macos-universal](https://cdn.nickchan.lol/palera1n/artifacts/c-rewrite/${{ steps.branch-name.outputs.ref_branch }}/${{ github.run_number }}/binaries/palera1n-macos-universal)\"}],\"footer\":{\"text\":\"${{ github.actor }}\", \"icon_url\": \"https://github.com/${{ github.actor }}.png\",\"timestamp\":\"$(date -u +"%FT%TZ")\"}}],\"username\":\"GitHub Actions\",\"avatar_url\":\"https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png\"}")
     

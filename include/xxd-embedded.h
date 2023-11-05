@@ -20,7 +20,7 @@ extern unsigned int binpack_dmg_len;
 extern unsigned char Pongo_bin[];
 extern unsigned int Pongo_bin_len;
 
-#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD))
+#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD) || defined(FORCE_HELPER))
 extern unsigned char libcheckra1nhelper_dylib[];
 extern unsigned int libcheckra1nhelper_dylib_len;
 #endif
