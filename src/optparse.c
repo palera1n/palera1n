@@ -327,15 +327,15 @@ int optparse(int argc, char* argv[]) {
 	snprintf(palerain_flags_cmd, 0x30, "palera1n_flags 0x%" PRIx64, palerain_flags);
 	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "kpf override length %u -> %u", override_kpf.orig_len, checkra1n_kpf_pongo_lzma_len);
+		LOG(LOG_VERBOSE4, "kpf override length %" PRIu32 " -> %" PRIu32, override_kpf.orig_len, checkra1n_kpf_pongo_lzma_len);
 		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p", override_kpf.orig_ptr, **kpf_to_upload);
 	}
 	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u", override_ramdisk.orig_len, ramdisk_dmg_lzma_len);
+		LOG(LOG_VERBOSE4, "ramdisk override length %" PRIu32 " -> %" PRIu32, override_ramdisk.orig_len, ramdisk_dmg_lzma_len);
 		LOG(LOG_VERBOSE4, "ramdisk override ptr %p -> %p", override_ramdisk.orig_ptr, **ramdisk_to_upload);
 	}
 	if (override_overlay.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "overlay override length %u -> %u", override_overlay.orig_len, binpack_dmg_len);
+		LOG(LOG_VERBOSE4, "overlay override length %" PRIu32 " -> %" PRIu32, override_overlay.orig_len, binpack_dmg_len);
 		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
 	}
 

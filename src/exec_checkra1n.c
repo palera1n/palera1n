@@ -51,7 +51,7 @@ int exec_checkra1n(void) {
 		}
 		ssize_t didWrite_Pongo_bin = write(fd_pongo, Pongo_bin, Pongo_bin_len);
 		if (didWrite_Pongo_bin != (ssize_t)Pongo_bin_len) {
-			LOG(LOG_FATAL, "Size written to %s does not match expected: %lld != %d: %d (%s)", pongo_path, didWrite_Pongo_bin, Pongo_bin_len, errno, strerror(errno));
+			LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %u: %d (%s)", pongo_path, didWrite_Pongo_bin, Pongo_bin_len, errno, strerror(errno));
 			close(fd_pongo);
 			unlink(pongo_path);
 			free(pongo_path);
@@ -71,7 +71,7 @@ int exec_checkra1n(void) {
 	}
 	ssize_t didWrite_checkra1n = write(fd_checkra1n, checkra1n, checkra1n_len);
 	if (didWrite_checkra1n != (ssize_t)checkra1n_len) {
-		LOG(LOG_FATAL, "Size written to %s does not match expected: %lld != %d: %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
+		LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %d: %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
 		close(fd_checkra1n);
 		unlink(checkra1n_path);
 		free(checkra1n_path);
@@ -106,7 +106,7 @@ int exec_checkra1n(void) {
 			}
 			ssize_t didWrite_libcheckra1nhelper = write(helper_fd, libcheckra1nhelper_dylib, libcheckra1nhelper_dylib_len);
 			if ((unsigned int)didWrite_libcheckra1nhelper != libcheckra1nhelper_dylib_len) {
-				LOG(LOG_FATAL, "Size written does not match expected: %lld != %d: %d (%s)", didWrite_libcheckra1nhelper, libcheckra1nhelper_dylib_len, errno, strerror(errno));
+				LOG(LOG_FATAL, "Size written does not match expected: %zd != %d: %d (%s)", didWrite_libcheckra1nhelper, libcheckra1nhelper_dylib_len, errno, strerror(errno));
 				close(helper_fd);
 				unlink(libcheckra1nhelper_dylib_path);
 				return -1;
