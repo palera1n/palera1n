@@ -9,6 +9,9 @@ LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/l
 LIBS += $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread -lm
 ifeq ($(TARGET_OS),)
 TARGET_OS = $(shell uname -s)
+UNAME = $(TARGET_OS)
+else
+UNAME = $(shell uname -s)
 endif
 ifeq ($(TARGET_OS),Darwin)
 CFLAGS += -Wno-nullability-extension
@@ -19,7 +22,7 @@ LDFLAGS += -Wl,-dead_strip
 LIBS += -framework CoreFoundation -framework IOKit
 else
 CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += -static -no-pie -Wl,--gc-sections
+LDFLAGS += -Wl,--gc-sections
 endif
 LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
 
@@ -45,6 +48,9 @@ CFLAGS += -Os -g
 BUILD_STYLE = RELEASE
 endif
 LIBS += -lc
+ifneq ($(shell echo '$(BUILD_STYLE)' | grep -q '[A-Z]\+SAN' && echo 1),1)
+LDFLAGS += -static -no-pie
+endif
 
 ifneq ($(BAKERAIN_DEVELOPE_R),)
 CFLAGS += -DBAKERAIN_DEVELOPE_R="\"$(BAKERAIN_DEVELOPE_R)\""
@@ -62,7 +68,7 @@ CFLAGS += -DBUILD_WHOAMI="\"$(BUILD_WHOAMI)\"" -DBUILD_TAG="\"$(BUILD_TAG)\""
 CFLAGS += -DBUILD_NUMBER="\"$(BUILD_NUMBER)\"" -DBUILD_BRANCH="\"$(BUILD_BRANCH)\""
 CFLAGS += -DBUILD_COMMIT="\"$(BUILD_COMMIT)\""
 
-export SRC DEP CC CFLAGS LDFLAGS LIBS SHELL TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG BUILD_WHOAMI BUILD_STYLE BUILD_NUMBER BUILD_BRANCH
+export SRC DEP UNAME CC CFLAGS LDFLAGS LIBS SHELL TARGET_OS DEV_BUILD BUILD_DATE BUILD_TAG BUILD_WHOAMI BUILD_STYLE BUILD_NUMBER BUILD_BRANCH
 
 all: palera1n
 

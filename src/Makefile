@@ -89,6 +89,22 @@ endif
 
 CFLAGS += -DBUILD_OPTIONS=\""$(BUILD_OPTIONS)"\"
 
+ifeq ($(TARGET_OS),Linux)
+ifeq ($(UNAME),Linux)
+ifeq ($(CHECKRA1N_NAME),)
+ifeq ($(shell arch),x86_64)
+CHECKRA1N_NAME := linux-x86_64
+else ifeq ($(shell arch | grep -q 'i[3-7]86' && echo 1),1)
+CHECKRA1N_NAME := linux-x86
+else ifeq ($(shell arch | grep -v '\(arm\|aarch\)[a-z]\?\+64' | grep -q arm && echo 1),1)
+CHECKRA1N_NAME := linux-armel
+else ifeq  ($(shell arch | grep -q '\(arm\|aarch\)[a-z]\?\+64' && echo 1),1)
+CHECKRA1N_NAME := linux-arm64
+endif
+endif
+endif
+endif
+
 $(RESOURCES_DIR)/checkra1n-%:
 	curl -Lfo $@ https://assets.checkra.in/downloads/preview/$(CHECKRA1N_VERSION)/$$(echo $@ | cut -d/ -f2)
 	chmod 755 $@
