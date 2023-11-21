@@ -48,8 +48,11 @@ CFLAGS += -Os -g
 BUILD_STYLE = RELEASE
 endif
 LIBS += -lc
+
+ifeq ($(TARGET_OS),Linux)
 ifneq ($(shell echo '$(BUILD_STYLE)' | grep -q '[A-Z]\+SAN' && echo 1),1)
 LDFLAGS += -static -no-pie
+endif
 endif
 
 ifneq ($(BAKERAIN_DEVELOPE_R),)
