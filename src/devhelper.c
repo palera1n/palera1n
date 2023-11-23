@@ -28,8 +28,6 @@
 #include <libimobiledevice/diagnostics_relay.h>
 #include <plist/plist.h>
 
-#include "lockdown_helper.h"
-
 #ifdef HAVE_LIB_TV_CONTROL
 #include <libtvcontrol.h>
 #endif
