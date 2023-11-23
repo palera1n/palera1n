@@ -134,7 +134,9 @@ else
 endif
 
 $(GENDIR)/gen-%.c: $(RESOURCES_DIR)/%
-	cd $(RESOURCES_DIR) && xxd -iC $$(echo $< | cut -d/ -f2) > ../$@
+	echo '#include <stdint.h>' > $(RESOURCES_DIR)/../$@
+	cd $(RESOURCES_DIR) && xxd -iC $$(echo $< | cut -d/ -f2) | sed -e 's/unsigned int/uint32_t/' -e 's/unsigned char/uint8_t/' >> ../$@
+
 
 $(OBJDIR)/pongo_helper.c.o: pongo_helper.c $(wildcard ../include/*.h) $(RESOURCES_DIR)/ramdisk.dmg $(RESOURCES_DIR)/checkra1n-kpf-pongo
 	$(CC) -c -o $@ $(CFLAGS) -DRAMDISK_UNCOMPRESSED_SIZE="\"$$(wc -c < $(RESOURCES_DIR)/ramdisk.dmg | tr -d ' ')\"" -DKPF_UNCOMPRESSED_SIZE="\"$$(wc -c < $(RESOURCES_DIR)/checkra1n-kpf-pongo | tr -d ' ')\"" $<
