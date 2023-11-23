@@ -80,6 +80,10 @@ static char* _send_request_and_get_reply(int fd, const char* request, uint32_t l
 
 	uint32_t resp_size = ntohl(besize);
 	char* resp = (char*)malloc(resp_size+1);
+	if (resp == NULL) {
+		log_error("memory allocation failed");
+		return -1;
+	}
 
 	recv_bytes = 0;
 	usbmuxd_recv(fd, resp, resp_size, &recv_bytes);
@@ -196,6 +200,11 @@ int lockdown_get_string_value(int fd, const char* domain, const char* key, char*
 	}
 	size_t str_len = p - str_start;
 	*value = (char*)malloc(str_len + 1);
+	if (*value == NULL) {
+		log_error("memory allocation failed");
+		free(resp);
+		return -1;
+	}
 	snprintf(*value, str_len, "%s", str_start);
 	(*value)[str_len] = '\0';
 	free(resp);
@@ -241,5 +250,8 @@ int lockdown_enter_recovery(int fd) {
 	free(resp);
 	return result;
 }
+
+#else
+extern char** environ; /* ISO C requires a translation unit to contain at least one declaration */
 
 #endif

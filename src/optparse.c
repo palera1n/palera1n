@@ -200,7 +200,11 @@ int optparse(int argc, char* argv[]) {
 				return -1;
 			}
 			pongo_path = malloc(strlen(optarg) + 1);
-			strcpy(pongo_path, optarg);
+			if (pongo_path == NULL) {
+				LOG(LOG_FATAL, "memory allocation failed");
+				return -1;
+			}
+			snprintf(pongo_path, strlen(optarg) + 1, "%s", optarg);
 			break;
 		case 'o':
 			if (override_file(&override_overlay, overlay_to_upload, &binpack_dmg_len, optarg))

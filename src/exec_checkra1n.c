@@ -43,6 +43,10 @@ int exec_checkra1n(void) {
 #ifndef NO_CUSTOM_PONGO
 	if (pongo_path == NULL) {
 		pongo_path = malloc(strlen(tmpdir) + 20);
+		if (pongo_path == NULL) {
+			LOG(LOG_FATAL, "memory allocation failed\n");
+			return -1;
+		}
 		snprintf(pongo_path, strlen(tmpdir) + 20, "%s/Pongo.bin.XXXXXX", tmpdir);
 		fd_pongo = mkstemp(pongo_path);
 		if (fd_pongo == -1) {
@@ -62,6 +66,10 @@ int exec_checkra1n(void) {
 	} else external_pongo = true;
 #endif
 	checkra1n_path = malloc(strlen(tmpdir) + 20);
+	if (checkra1n_path == NULL) {
+		LOG(LOG_FATAL, "memory allocation failed\n");
+		return -1;
+	}
 	snprintf(checkra1n_path, strlen(tmpdir) + 20, "%s/checkra1n.XXXXXX", tmpdir);
 	fd_checkra1n = mkstemp(checkra1n_path);
 	if (fd_checkra1n == -1) {
@@ -99,6 +107,10 @@ int exec_checkra1n(void) {
 		if (darwinMajor < 20) {
 #endif
 			libcheckra1nhelper_dylib_path = malloc(strlen(tmpdir) + 40);
+			if (libcheckra1nhelper_dylib_path == NULL) {
+				LOG(LOG_FATAL, "memory allocation failed\n");
+				return -1;
+			}
 			snprintf(libcheckra1nhelper_dylib_path, strlen(tmpdir) + 40, "%s/libcheckra1nhelper.dylib.XXXXXX", tmpdir);
 			int helper_fd = mkstemp(libcheckra1nhelper_dylib_path);
 			if (helper_fd == -1) {
