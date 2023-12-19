@@ -327,6 +327,11 @@ int optparse(int argc, char* argv[]) {
 	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && (palerain_flags & palerain_option_setup_rootful)) {
 		palerain_flags &= ~palerain_option_verbose_boot;
 	}
+
+	if ((palerain_flags & (palerain_option_rootless | palerain_option_rootful)) == 0) {
+		LOG(LOG_FATAL, "must specify -l option");
+		return -1;
+	}
     
 	snprintf(palerain_flags_cmd, 0x30, "palera1n_flags 0x%" PRIx64, palerain_flags);
 	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);

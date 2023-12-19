@@ -102,6 +102,7 @@ int unsubscribe_cmd(void)
 
 int devinfo_cmd(devinfo_t *dev, const char *udid)
 {
+	int ret;
 	uint64_t this_ecid = 0;
 	char *productType = NULL;
 	char *productVersion = NULL;
@@ -110,67 +111,67 @@ int devinfo_cmd(devinfo_t *dev, const char *udid)
 	char *CPUArchitecture = NULL;
 	idevice_t device = NULL;
 	lockdownd_client_t lockdown = NULL;
-	if (idevice_new(&device, udid) != IDEVICE_E_SUCCESS)
+	if ((ret = idevice_new_with_options(&device, udid, IDEVICE_LOOKUP_USBMUX)) != IDEVICE_E_SUCCESS)
 	{
-		LOG(LOG_ERROR, "Error connecting to device.");
+		LOG(LOG_ERROR, "Error connecting to device: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
-	if (lockdownd_client_new(device, &lockdown, "palera1n") != LOCKDOWN_E_SUCCESS)
+	if ((ret = lockdownd_client_new_with_handshake(device, &lockdown, "palera1n")) != LOCKDOWN_E_SUCCESS)
 	{
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Device is not in normal mode.");
+		LOG(LOG_ERROR, "Device is not in normal mode: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_t node = NULL;
-	if (lockdownd_get_value(lockdown, NULL, "UniqueChipID", &node) != LOCKDOWN_E_SUCCESS)
+	if ((ret = lockdownd_get_value(lockdown, NULL, "UniqueChipID", &node)) != LOCKDOWN_E_SUCCESS)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting ECID");
+		LOG(LOG_ERROR, "Error getting ECID: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_uint_val(node, &this_ecid);
 	plist_free(node);
 
 	node = NULL;
-	if (lockdownd_get_value(lockdown, NULL, "ProductType", &node) != LOCKDOWN_E_SUCCESS)
+	if ((ret = lockdownd_get_value(lockdown, NULL, "ProductType", &node)) != LOCKDOWN_E_SUCCESS)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting product type");
+		LOG(LOG_ERROR, "Error getting product type: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &productType);
 	plist_free(node);
 
 	node = NULL;
-	if (lockdownd_get_value(lockdown, NULL, "CPUArchitecture", &node) != LOCKDOWN_E_SUCCESS)
+	if ((ret = lockdownd_get_value(lockdown, NULL, "CPUArchitecture", &node)) != LOCKDOWN_E_SUCCESS)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting CPU type");
+		LOG(LOG_ERROR, "Error getting CPU type: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &CPUArchitecture);
 	plist_free(node);
 
 	node = NULL;
-	if (lockdownd_get_value(lockdown, NULL, "ProductVersion", &node) != LOCKDOWN_E_SUCCESS)
+	if ((ret = lockdownd_get_value(lockdown, NULL, "ProductVersion", &node)) != LOCKDOWN_E_SUCCESS)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting product version");
+		LOG(LOG_ERROR, "Error getting product version: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &productVersion);
 	plist_free(node);
 
 	node = NULL;
-	if (lockdownd_get_value(lockdown, NULL, "BuildVersion", &node) != LOCKDOWN_E_SUCCESS)
+	if ((ret = lockdownd_get_value(lockdown, NULL, "BuildVersion", &node)) != LOCKDOWN_E_SUCCESS)
 	{
 		(void)lockdownd_client_free(lockdown);
 		(void)idevice_free(device);
-		LOG(LOG_ERROR, "Error getting build version");
+		LOG(LOG_ERROR, "Error getting build version: %d (%s)", ret, lockdownd_strerror(ret));
 		return -1;
 	}
 	plist_get_string_val(node, &buildVersion);

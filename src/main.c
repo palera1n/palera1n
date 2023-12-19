@@ -33,7 +33,9 @@
 #define OVERRIDE_MAGIC 0xd803b376
 
 unsigned int verbose = 0;
-char xargs_cmd[0x270] = "xargs ", palerain_flags_cmd[0x30] = "deadbeef";
+/* we want to write to them so don't use string literals */
+char xargs_cmd[0x270] = { 'x', 'a', 'r', 'g', 's', '\0' }, 
+	palerain_flags_cmd[0x30] = { 'd', 'e', 'a', 'd', 'b', 'e', 'e', 'f', '\0' };
 extern char** environ;
 
 niarelap_file_t* kpf_to_upload_1 = &checkra1n_kpf_pongo_lzma;
