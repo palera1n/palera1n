@@ -137,8 +137,10 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		LOG(LOG_ERROR, "Cannot set auto-boot back to true");
 		return NULL;
 	}
+#if !defined(DFUHELPER_AUTO_ONLY)
 	LOG(LOG_INFO, "Press Enter when ready for DFU mode");
 	getchar();
+#endif
 	step(3, 0, "Get ready", NULL, 0);
 	if (NOHOME) 
 		step(4, 2, "Hold volume down + side button", NULL, 0);

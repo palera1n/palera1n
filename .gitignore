@@ -24,3 +24,5 @@ src/*.dmg.c
 src/stage2/
 src/libcheckra1nhelper.dylib*
 src/Pongo.bin
+sysroot
+compile.sh

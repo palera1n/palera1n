@@ -9,12 +9,24 @@ OBJS = $(patsubst %,$(OBJDIR)/%,$(C_SRC:.c=.c.o))
 
 ifeq (,$(findstring macosx, $(CFLAGS)))
 ifneq (,$(findstring version-min=, $(CFLAGS)))
+ifneq ($(NO_EMBED_HELPER),1)
 C_SRC += $(GENDIR)/gen-libcheckra1nhelper.dylib.c
+endif
 endif
 endif
 
+ifeq ($(NO_EMBED_HELPER),1)
+CFLAGS += -DNO_EMBED_HELPER
+endif
+
+ifeq ($(DFUHELPER_AUTO_ONLY),1)
+CFLAGS += -DDFUHELPER_AUTO_ONLY
+endif
+
 ifeq ($(FORCE_HELPER),1)
+ifneq ($(NO_EMBED_HELPER),1)
 C_SRC += $(GENDIR)/gen-libcheckra1nhelper.dylib.c
+endif
 CFLAGS += -DFORCE_HELPER
 BUILD_OPTIONS += FORCE_HELPER
 endif

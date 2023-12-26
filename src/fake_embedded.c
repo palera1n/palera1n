@@ -24,3 +24,8 @@ unsigned int binpack_dmg_len = 0;
 unsigned char* Pongo_bin = NULL;
 unsigned int Pongo_bin_len = 0;
 #endif
+
+#ifdef NO_EMBED_HELPER
+unsigned char* libcheckra1nhelper_dylib = NULL;
+unsigned int libcheckra1nhelper_dylib_len = 0;
+#endif

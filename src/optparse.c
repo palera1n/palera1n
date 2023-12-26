@@ -17,6 +17,7 @@
 
 uint64_t* palerain_flags_p = &palerain_flags;
 static bool force_use_verbose_boot = false;
+char* gOverrideLibcheckra1nHelper = NULL;
 
 static struct option longopts[] = {
 	{"setup-partial-fakefs", no_argument, NULL, 'B'},
@@ -36,6 +37,7 @@ static struct option longopts[] = {
 	{"no-colors", no_argument, NULL, 'S'},
 	{"safe-mode", no_argument, NULL, 's'},
 	{"version", no_argument, NULL, palerain_option_case_version},
+	{"override-libcheckra1nhelper", required_argument, NULL, palerain_option_case_libcheckra1nhelper_path},
 	{"override-pongo", required_argument, NULL, 'k'},
 	{"override-overlay", required_argument, NULL, 'o'},
 	{"override-ramdisk", required_argument, NULL, 'r'},
@@ -301,6 +303,14 @@ int optparse(int argc, char* argv[]) {
 		case palerain_option_case_version:
 			palerain_flags |= palerain_option_palerain_version;
 			break;
+		case palerain_option_case_libcheckra1nhelper_path:
+			printf("meow\n");
+			gOverrideLibcheckra1nHelper = calloc(1, strlen(optarg) + 1);
+			if (!gOverrideLibcheckra1nHelper) {
+				return -1;
+			}
+			snprintf(gOverrideLibcheckra1nHelper, strlen(optarg) + 1, "%s", optarg);
+			break;
 		default:
 			usage(1, argv[0]);
 			break;
@@ -376,6 +386,13 @@ int optparse(int argc, char* argv[]) {
 			}
 #endif
 		}
+#endif
+
+#ifdef NO_EMBED_HELPER
+	if (libcheckra1nhelper_dylib_len == 0 && gOverrideLibcheckra1nHelper == NULL) {
+			LOG(LOG_FATAL, "checkra1n helper omitted in build but no override specified");
+			return -1;
+	}
 #endif
 	}
 

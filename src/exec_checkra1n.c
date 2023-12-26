@@ -23,6 +23,7 @@
 #endif
 
 extern char **environ;
+extern char* gOverrideLibcheckra1nHelper;
 
 #include <palerain.h>
 #include <xxd-embedded.h>
@@ -106,6 +107,10 @@ int exec_checkra1n(void) {
 #if !defined(FORCE_HELPER)
 		if (darwinMajor < 20) {
 #endif
+		if (gOverrideLibcheckra1nHelper) {
+			libcheckra1nhelper_dylib_path = gOverrideLibcheckra1nHelper;
+			goto setenv_ra1n;
+		}
 			libcheckra1nhelper_dylib_path = malloc(strlen(tmpdir) + 40);
 			if (libcheckra1nhelper_dylib_path == NULL) {
 				LOG(LOG_FATAL, "memory allocation failed\n");
@@ -131,6 +136,7 @@ int exec_checkra1n(void) {
 				unlink(libcheckra1nhelper_dylib_path);
 				return -1;
 			}
+setenv_ra1n:
 			setenv("DYLD_INSERT_LIBRARIES", libcheckra1nhelper_dylib_path, 1);
 #if !defined(FORCE_HELPER)
 		}
@@ -185,10 +191,10 @@ checkra1n_exec: {};
 	pongo_path = NULL;
 #if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
 	if (libcheckra1nhelper_dylib_path != NULL) {
-		unlink(libcheckra1nhelper_dylib_path);
+		if (!gOverrideLibcheckra1nHelper) unlink(libcheckra1nhelper_dylib_path);
 		unsetenv("DYLD_INSERT_LIBRARIES");
 		unsetenv("DYLD_FORCE_FLAT_NAMESPACE");
-		free(libcheckra1nhelper_dylib_path);
+		if (!gOverrideLibcheckra1nHelper) free(libcheckra1nhelper_dylib_path);
 		libcheckra1nhelper_dylib_path = NULL;
 	}
 #endif
