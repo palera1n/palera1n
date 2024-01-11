@@ -12,8 +12,8 @@
 #define B stderr
 #define L ,
 #define E "# == palera1n-c == \n#\n"
-#define M "# Made by: Nick Chan, " THE_PLUSH ", Samara, Nebula, staturnz, " BAKERAIN_DEVELOPE_R " \n#\n"
-#define A "# Thanks to: pythonplayer123, llsc12, Mineek, tihmstar, nikias\n"
+#define M "# Made by: Nick Chan, " THE_PLUSH ", Samara, Mineek, staturnz, " BAKERAIN_DEVELOPE_R " \n#\n"
+#define A "# Thanks to: pythonplayer123, llsc12, Nebula, tihmstar, nikias\n"
 #define K "# (libimobiledevice), checkra1n team (Siguza, axi0mx, littlelailo\n"
 #define I "# et al.), Procursus Team (Hayden Seay, Cameron Katri, Keto et.al)\n\n"
 #define N )
