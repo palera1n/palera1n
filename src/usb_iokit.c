@@ -24,6 +24,7 @@
  * SOFTWARE.
  *
  */
+#ifndef USE_LIBUSB
 #include <errno.h>
 #include <fcntl.h>              // open
 #include <pthread.h>
@@ -250,3 +251,7 @@ int wait_for_pongo(void) {
     CFRelease(cfdict);
     return 0;
 }
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
+#endif

@@ -1,3 +1,4 @@
+#ifdef TUI
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -99,3 +100,7 @@ out:
     tui_started = false;
     return 0;
 }
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
+#endif

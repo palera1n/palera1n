@@ -137,8 +137,10 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		LOG(LOG_ERROR, "Cannot set auto-boot back to true");
 		return NULL;
 	}
+#if !defined(DFUHELPER_AUTO_ONLY)
 	LOG(LOG_INFO, "Press Enter when ready for DFU mode");
 	getchar();
+#endif
 	step(3, 0, "Get ready", NULL, 0);
 	if (NOHOME) 
 		step(4, 2, "Hold volume down + side button", NULL, 0);
@@ -218,7 +220,7 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 				event->mode == IRECV_K_RECOVERY_MODE_3 || 
 				event->mode == IRECV_K_RECOVERY_MODE_4) {
 				if (!(palerain_flags & palerain_option_device_info))
-					LOG(LOG_VERBOSE, "Recovery mode device %ld connected", event->device_info->ecid);
+					LOG(LOG_VERBOSE, "Recovery mode device %" PRIu64 " connected", event->device_info->ecid);
 				if ((palerain_flags & palerain_option_exit_recovery)) {
 					ret = exitrecv_cmd(event->device_info->ecid);
 					if (!ret) {
@@ -258,7 +260,7 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 				pthread_create(&recovery_thread, NULL, (pthread_start_t)connected_recovery_mode, event->device_info);
 			} else if (event->mode == IRECV_K_DFU_MODE) {
 				if (!(palerain_flags & palerain_option_device_info))
-					LOG(LOG_VERBOSE, "DFU mode device %ld connected", event->device_info->ecid);
+					LOG(LOG_VERBOSE, "DFU mode device %" PRIu64 " connected", event->device_info->ecid);
 
 				if ((palerain_flags & palerain_option_device_info)) {
 					recvinfo_t info;

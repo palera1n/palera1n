@@ -17,6 +17,7 @@
 
 uint64_t* palerain_flags_p = &palerain_flags;
 static bool force_use_verbose_boot = false;
+char* gOverrideLibcheckra1nHelper = NULL;
 
 static struct option longopts[] = {
 	{"setup-partial-fakefs", no_argument, NULL, 'B'},
@@ -36,6 +37,7 @@ static struct option longopts[] = {
 	{"no-colors", no_argument, NULL, 'S'},
 	{"safe-mode", no_argument, NULL, 's'},
 	{"version", no_argument, NULL, palerain_option_case_version},
+	{"override-libcheckra1nhelper", required_argument, NULL, palerain_option_case_libcheckra1nhelper_path},
 	{"override-pongo", required_argument, NULL, 'k'},
 	{"override-overlay", required_argument, NULL, 'o'},
 	{"override-ramdisk", required_argument, NULL, 'r'},
@@ -200,7 +202,11 @@ int optparse(int argc, char* argv[]) {
 				return -1;
 			}
 			pongo_path = malloc(strlen(optarg) + 1);
-			strcpy(pongo_path, optarg);
+			if (pongo_path == NULL) {
+				LOG(LOG_FATAL, "memory allocation failed");
+				return -1;
+			}
+			snprintf(pongo_path, strlen(optarg) + 1, "%s", optarg);
 			break;
 		case 'o':
 			if (override_file(&override_overlay, overlay_to_upload, &binpack_dmg_len, optarg))
@@ -211,7 +217,7 @@ int optparse(int argc, char* argv[]) {
 				return 1;
 			break;
 		case 'K':
-			if (override_file(&override_kpf, kpf_to_upload, &checkra1n_kpf_pongo_len, optarg))
+			if (override_file(&override_kpf, kpf_to_upload, &checkra1n_kpf_pongo_lzma_len, optarg))
 				return 1;
 			struct mach_header_64* hdr = (struct mach_header_64*)override_kpf.ptr;
 			if (hdr->magic != MH_MAGIC_64 && hdr->magic != MH_CIGAM_64) {
@@ -297,6 +303,14 @@ int optparse(int argc, char* argv[]) {
 		case palerain_option_case_version:
 			palerain_flags |= palerain_option_palerain_version;
 			break;
+		case palerain_option_case_libcheckra1nhelper_path:
+			printf("meow\n");
+			gOverrideLibcheckra1nHelper = calloc(1, strlen(optarg) + 1);
+			if (!gOverrideLibcheckra1nHelper) {
+				return -1;
+			}
+			snprintf(gOverrideLibcheckra1nHelper, strlen(optarg) + 1, "%s", optarg);
+			break;
 		default:
 			usage(1, argv[0]);
 			break;
@@ -323,19 +337,24 @@ int optparse(int argc, char* argv[]) {
 	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && (palerain_flags & palerain_option_setup_rootful)) {
 		palerain_flags &= ~palerain_option_verbose_boot;
 	}
+
+	if ((palerain_flags & (palerain_option_rootless | palerain_option_rootful)) == 0) {
+		LOG(LOG_FATAL, "must specify -l option");
+		return -1;
+	}
     
 	snprintf(palerain_flags_cmd, 0x30, "palera1n_flags 0x%" PRIx64, palerain_flags);
 	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "kpf override length %u -> %u", override_kpf.orig_len, checkra1n_kpf_pongo_len);
+		LOG(LOG_VERBOSE4, "kpf override length %" PRIu32 " -> %" PRIu32, override_kpf.orig_len, checkra1n_kpf_pongo_lzma_len);
 		LOG(LOG_VERBOSE4, "kpf override ptr %p -> %p", override_kpf.orig_ptr, **kpf_to_upload);
 	}
 	if (override_ramdisk.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "ramdisk override length %u -> %u", override_ramdisk.orig_len, ramdisk_dmg_lzma_len);
+		LOG(LOG_VERBOSE4, "ramdisk override length %" PRIu32 " -> %" PRIu32, override_ramdisk.orig_len, ramdisk_dmg_lzma_len);
 		LOG(LOG_VERBOSE4, "ramdisk override ptr %p -> %p", override_ramdisk.orig_ptr, **ramdisk_to_upload);
 	}
 	if (override_overlay.magic == OVERRIDE_MAGIC) {
-		LOG(LOG_VERBOSE4, "overlay override length %u -> %u", override_overlay.orig_len, binpack_dmg_len);
+		LOG(LOG_VERBOSE4, "overlay override length %" PRIu32 " -> %" PRIu32, override_overlay.orig_len, binpack_dmg_len);
 		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
 	}
 
@@ -360,13 +379,20 @@ int optparse(int argc, char* argv[]) {
 		if (!((palerain_flags & palerain_option_pongo_exit) || (palerain_flags & palerain_option_pongo_exit)))
 		{
 #ifdef NO_KPF
-			if (checkra1n_kpf_pongo_len == 0)
+			if (checkra1n_kpf_pongo_lzma_len == 0)
 			{
 				LOG(LOG_FATAL, "kernel patchfinder omitted in build but no override specified");
 				return -1;
 			}
 #endif
 		}
+#endif
+
+#ifdef NO_EMBED_HELPER
+	if (libcheckra1nhelper_dylib_len == 0 && gOverrideLibcheckra1nHelper == NULL) {
+			LOG(LOG_FATAL, "checkra1n helper omitted in build but no override specified");
+			return -1;
+	}
 #endif
 	}
 

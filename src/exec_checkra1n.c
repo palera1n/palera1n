@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 #include <sys/utsname.h>
 
 #if defined(__APPLE__)
@@ -22,6 +23,7 @@
 #endif
 
 extern char **environ;
+extern char* gOverrideLibcheckra1nHelper;
 
 #include <palerain.h>
 #include <xxd-embedded.h>
@@ -42,6 +44,10 @@ int exec_checkra1n(void) {
 #ifndef NO_CUSTOM_PONGO
 	if (pongo_path == NULL) {
 		pongo_path = malloc(strlen(tmpdir) + 20);
+		if (pongo_path == NULL) {
+			LOG(LOG_FATAL, "memory allocation failed\n");
+			return -1;
+		}
 		snprintf(pongo_path, strlen(tmpdir) + 20, "%s/Pongo.bin.XXXXXX", tmpdir);
 		fd_pongo = mkstemp(pongo_path);
 		if (fd_pongo == -1) {
@@ -51,7 +57,7 @@ int exec_checkra1n(void) {
 		}
 		ssize_t didWrite_Pongo_bin = write(fd_pongo, Pongo_bin, Pongo_bin_len);
 		if (didWrite_Pongo_bin != (ssize_t)Pongo_bin_len) {
-			LOG(LOG_FATAL, "Size written to %s does not match expected: %lld != %d: %d (%s)", pongo_path, didWrite_Pongo_bin, Pongo_bin_len, errno, strerror(errno));
+			LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %" PRIu32 ": %d (%s)", pongo_path, didWrite_Pongo_bin, Pongo_bin_len, errno, strerror(errno));
 			close(fd_pongo);
 			unlink(pongo_path);
 			free(pongo_path);
@@ -61,6 +67,10 @@ int exec_checkra1n(void) {
 	} else external_pongo = true;
 #endif
 	checkra1n_path = malloc(strlen(tmpdir) + 20);
+	if (checkra1n_path == NULL) {
+		LOG(LOG_FATAL, "memory allocation failed\n");
+		return -1;
+	}
 	snprintf(checkra1n_path, strlen(tmpdir) + 20, "%s/checkra1n.XXXXXX", tmpdir);
 	fd_checkra1n = mkstemp(checkra1n_path);
 	if (fd_checkra1n == -1) {
@@ -71,7 +81,7 @@ int exec_checkra1n(void) {
 	}
 	ssize_t didWrite_checkra1n = write(fd_checkra1n, checkra1n, checkra1n_len);
 	if (didWrite_checkra1n != (ssize_t)checkra1n_len) {
-		LOG(LOG_FATAL, "Size written to %s does not match expected: %lld != %d: %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
+		LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %" PRIu32 ": %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
 		close(fd_checkra1n);
 		unlink(checkra1n_path);
 		free(checkra1n_path);
@@ -97,7 +107,15 @@ int exec_checkra1n(void) {
 #if !defined(FORCE_HELPER)
 		if (darwinMajor < 20) {
 #endif
+		if (gOverrideLibcheckra1nHelper) {
+			libcheckra1nhelper_dylib_path = gOverrideLibcheckra1nHelper;
+			goto setenv_ra1n;
+		}
 			libcheckra1nhelper_dylib_path = malloc(strlen(tmpdir) + 40);
+			if (libcheckra1nhelper_dylib_path == NULL) {
+				LOG(LOG_FATAL, "memory allocation failed\n");
+				return -1;
+			}
 			snprintf(libcheckra1nhelper_dylib_path, strlen(tmpdir) + 40, "%s/libcheckra1nhelper.dylib.XXXXXX", tmpdir);
 			int helper_fd = mkstemp(libcheckra1nhelper_dylib_path);
 			if (helper_fd == -1) {
@@ -106,7 +124,7 @@ int exec_checkra1n(void) {
 			}
 			ssize_t didWrite_libcheckra1nhelper = write(helper_fd, libcheckra1nhelper_dylib, libcheckra1nhelper_dylib_len);
 			if ((unsigned int)didWrite_libcheckra1nhelper != libcheckra1nhelper_dylib_len) {
-				LOG(LOG_FATAL, "Size written does not match expected: %lld != %d: %d (%s)", didWrite_libcheckra1nhelper, libcheckra1nhelper_dylib_len, errno, strerror(errno));
+				LOG(LOG_FATAL, "Size written does not match expected: %zd != %" PRIu32 ": %d (%s)", didWrite_libcheckra1nhelper, libcheckra1nhelper_dylib_len, errno, strerror(errno));
 				close(helper_fd);
 				unlink(libcheckra1nhelper_dylib_path);
 				return -1;
@@ -118,6 +136,7 @@ int exec_checkra1n(void) {
 				unlink(libcheckra1nhelper_dylib_path);
 				return -1;
 			}
+setenv_ra1n:
 			setenv("DYLD_INSERT_LIBRARIES", libcheckra1nhelper_dylib_path, 1);
 #if !defined(FORCE_HELPER)
 		}
@@ -172,10 +191,10 @@ checkra1n_exec: {};
 	pongo_path = NULL;
 #if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
 	if (libcheckra1nhelper_dylib_path != NULL) {
-		unlink(libcheckra1nhelper_dylib_path);
+		if (!gOverrideLibcheckra1nHelper) unlink(libcheckra1nhelper_dylib_path);
 		unsetenv("DYLD_INSERT_LIBRARIES");
 		unsetenv("DYLD_FORCE_FLAT_NAMESPACE");
-		free(libcheckra1nhelper_dylib_path);
+		if (!gOverrideLibcheckra1nHelper) free(libcheckra1nhelper_dylib_path);
 		libcheckra1nhelper_dylib_path = NULL;
 	}
 #endif

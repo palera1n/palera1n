@@ -5,24 +5,26 @@
 #include <TargetConditionals.h>
 #endif
 
-extern unsigned char checkra1n[];
-extern unsigned int checkra1n_len;
+#include <stdint.h>
 
-extern unsigned char checkra1n_kpf_pongo[];
-extern unsigned int checkra1n_kpf_pongo_len;
+extern uint8_t checkra1n[];
+extern uint32_t checkra1n_len;
 
-extern unsigned char ramdisk_dmg_lzma[];
-extern unsigned int ramdisk_dmg_lzma_len;
+extern uint8_t checkra1n_kpf_pongo_lzma[];
+extern uint32_t checkra1n_kpf_pongo_lzma_len;
 
-extern unsigned char binpack_dmg[];
-extern unsigned int binpack_dmg_len;
+extern uint8_t ramdisk_dmg_lzma[];
+extern uint32_t ramdisk_dmg_lzma_len;
 
-extern unsigned char Pongo_bin[];
-extern unsigned int Pongo_bin_len;
+extern uint8_t binpack_dmg[];
+extern uint32_t binpack_dmg_len;
 
-#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD))
-extern unsigned char libcheckra1nhelper_dylib[];
-extern unsigned int libcheckra1nhelper_dylib_len;
+extern uint8_t Pongo_bin[];
+extern uint32_t Pongo_bin_len;
+
+#if defined(__APPLE__) && (TARGET_OS_IPHONE || defined(DEV_BUILD) || defined(FORCE_HELPER))
+extern uint8_t libcheckra1nhelper_dylib[];
+extern uint32_t libcheckra1nhelper_dylib_len;
 #endif
 
 #endif

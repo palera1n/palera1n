@@ -41,20 +41,20 @@ void *pongo_usb_callback(stuff_t *arg) {
 	issue_pongo_command(handle, NULL);	
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
-	upload_pongo_file(handle, **kpf_to_upload, checkra1n_kpf_pongo_len);
-	issue_pongo_command(handle, "modload");
-	issue_pongo_command(handle, palerain_flags_cmd);
-	if ((palerain_flags & palerain_option_rootful))
-	{
-		issue_pongo_command(handle, "rootfs");
+	upload_pongo_file(handle, **kpf_to_upload, checkra1n_kpf_pongo_lzma_len);
+	if (*kpf_to_upload == &checkra1n_kpf_pongo_lzma) {
+		issue_pongo_command(handle, "modload " KPF_UNCOMPRESSED_SIZE);
+	} else {
+		issue_pongo_command(handle, "modload");
 	}
+	issue_pongo_command(handle, palerain_flags_cmd);
 #ifdef NO_RAMDISK
 	if (ramdisk_dmg_lzma_len != 0)
 #endif
 	{
-		strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
+		// strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
 		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_lzma_len);
-		if (&(**ramdisk_to_upload) == &ramdisk_dmg_lzma)
+		if ((*ramdisk_to_upload) == &ramdisk_dmg_lzma)
 			issue_pongo_command(handle, "ramdisk " RAMDISK_UNCOMPRESSED_SIZE);
 		else {
 			issue_pongo_command(handle, "ramdisk");
