@@ -6,7 +6,7 @@
     <a href="https://cdn.nickchan.lol/palera1n/c-rewrite/releases/v2.0.0-beta.7/palera1n.1.html">Documentation</a> •
 	<a href="https://ios.cfw.guide/installing-palera1n">Installation Guide</a> •
 	<a href="#requirements">Requirements</a> •
-	<a href="https://discord.gg/palera1n">Support Discord</a> •
+	<a href="https://dsc.gg/palera1n">Support Discord</a> •
 	<a href="https://palera.in">Website</a>
 </p>
 
