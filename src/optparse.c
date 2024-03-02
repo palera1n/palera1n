@@ -21,7 +21,7 @@ static bool force_use_verbose_boot = false;
 static struct option longopts[] = {
 	{"setup-partial-fakefs", no_argument, NULL, 'B'},
 	{"setup-fakefs", no_argument, NULL, 'c'},
-	{"clean-fakefs", no_argument, NULL, 'c'},
+	{"clean-fakefs", no_argument, NULL, 'C'},
 	{"dfuhelper", no_argument, NULL, 'D'},
 	{"help", no_argument, NULL, 'h'},
 	{"pongo-shell", no_argument, NULL, 'p'},
