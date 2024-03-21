@@ -1,4 +1,9 @@
 # palera1n
+[![GitHub Release](https://img.shields.io/github/v/release/palera1n/palera1n?include_prereleases)](https://github.com/palera1n/palera1n/releases)
+[![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/palera1n/palera1n/total)](https://github.com/palera1n/palera1n/releases)
+[![GitHub License](https://img.shields.io/github/license/palera1n/palera1n?color=%23C96FAD)](https://github.com/palera1n/palera1n/blob/main/LICENSE)
+
+
 This is the official repo for the palera1n jailbreak, a jailbreak for A8 through A11 devices, on iOS 15.0 and higher.
 
 ## Warnings
