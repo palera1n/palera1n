@@ -155,7 +155,7 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 				return NULL;
 			}
 			printf("\r\033[K");
-			step(8, 0, "Hold menu + play button", NULL, 0);
+			step(8, 0, "Hold menu + play button", conditional, ecid);
 		} else {
 			ret = autoboot_cmd(ecid);
 			if (ret) {
