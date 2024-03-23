@@ -30,7 +30,10 @@
 #define FORMAT_KEY_VALUE 1
 #define FORMAT_XML 2
 
-#define NOHOME (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e)))
+#define NO_PHYSICAL_HOME_BUTTON (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e)))
+#define IS_APPLE_TV_HD (cpid == 0x7000 && bdid == 0x34)
+#define IS_APPLE_TV_4K (cpid == 0x8011 && bdid == 0x02)
+#define IS_APPLETV (IS_APPLE_TV_4K || IS_APPLE_TV_HD)
 
 int dfuhelper_thr_running = false;
 
@@ -141,25 +144,52 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	LOG(LOG_INFO, "Press Enter when ready for DFU mode");
 	getchar();
 #endif
-	step(3, 0, "Get ready", NULL, 0);
-	if (NOHOME) 
-		step(4, 2, "Hold volume down + side button", NULL, 0);
-	else
-		step(4, 2, "Hold home + power button", NULL, 0);
-	set_ecid_wait_for_dfu(ecid);
-	ret = exitrecv_cmd(ecid);
-	if (ret) {
-		LOG(LOG_ERROR, "Cannot exit recovery mode");
-		set_ecid_wait_for_dfu(0);
-		return NULL;
-	}
-	printf("\r\033[K");
-	if (NOHOME) {
-		step(2, 0, "Hold volume down + side button", NULL, 0);
-		step(10, 0, "Hold volume down button", conditional, ecid);
+	if (IS_APPLETV) {
+		if (IS_APPLE_TV_HD) {
+			step(10, 8, "Hold menu + play button", NULL, 0);
+			set_ecid_wait_for_dfu(ecid);
+			ret = exitrecv_cmd(ecid);
+			if (ret) {
+				LOG(LOG_ERROR, "Cannot exit recovery mode");
+				set_ecid_wait_for_dfu(0);
+				return NULL;
+			}
+			printf("\r\033[K");
+			step(8, 0, "Hold menu + play button", NULL, 0);
+		} else {
+			ret = autoboot_cmd(ecid);
+			if (ret) {
+				LOG(LOG_ERROR, "Cannot set auto-boot back to true");
+				return NULL;
+			}
+			LOG(LOG_INFO, "1. Disconnect the device from the power source");
+			LOG(LOG_INFO, "2. Connect the DCSD cable to the computer's USB port. ");
+			LOG(LOG_INFO, "3. Connect the GoldenEye adapter to the DCSD cable (using Lightning)");
+			LOG(LOG_INFO, "4. Connect the GoldenEye cable to the Apple TV 4K");
+			LOG(LOG_INFO, "5. Connect the Apple TV 4K to the power source.");
+			set_ecid_wait_for_dfu(ecid);
+			return NULL;
+		}
 	} else {
-		step(2, 0, "Hold home + power button", NULL, 0);
-		step(10, 0, "Hold home button", conditional, ecid);
+		if (NO_PHYSICAL_HOME_BUTTON) 
+			step(4, 2, "Hold volume down + side button", NULL, 0);
+		else
+			step(4, 2, "Hold home + power button", NULL, 0);
+		set_ecid_wait_for_dfu(ecid);
+		ret = exitrecv_cmd(ecid);
+		if (ret) {
+			LOG(LOG_ERROR, "Cannot exit recovery mode");
+			set_ecid_wait_for_dfu(0);
+			return NULL;
+		}
+		printf("\r\033[K");
+		if (NO_PHYSICAL_HOME_BUTTON) {
+			step(2, 0, "Hold volume down + side button", NULL, 0);
+			step(10, 0, "Hold volume down button", conditional, ecid);
+		} else {
+			step(2, 0, "Hold home + power button", NULL, 0);
+			step(10, 0, "Hold home button", conditional, ecid);
+		}
 	}
 	if (get_ecid_wait_for_dfu() == ecid) {
 		LOG(LOG_WARNING, "Whoops, device did not enter DFU mode");
