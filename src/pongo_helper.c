@@ -14,6 +14,7 @@
 #include <ANSI-color-codes.h>
 
 bool device_has_booted = 0;
+bool force_usbdevice = 0;
 int pongo_thr_running = 0;
 
 #define ERR(...) LOG(LOG_VERBOSE, __VA_ARGS__)
@@ -52,7 +53,7 @@ void *pongo_usb_callback(stuff_t *arg) {
 	if (ramdisk_dmg_lzma_len != 0)
 #endif
 	{
-		// strncat(xargs_cmd, " rootdev=md0", 0x270 - strlen(xargs_cmd) - 1);
+		if (force_usbdevice) strncat(xargs_cmd, " AppleEmbeddedUSBArbitrator-force-usbdevice=1", 0x270 - strlen(xargs_cmd) - 1);
 		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_lzma_len);
 		if ((*ramdisk_to_upload) == &ramdisk_dmg_lzma)
 			issue_pongo_command(handle, "ramdisk " RAMDISK_UNCOMPRESSED_SIZE);

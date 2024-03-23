@@ -202,12 +202,16 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
+extern bool force_usbdevice;
 void* connected_dfu_mode(struct irecv_device_info* info) {
 	if (get_ecid_wait_for_dfu() == info->ecid) {
 		set_ecid_wait_for_dfu(0);
 		puts("");
 		LOG(LOG_INFO, "Device entered DFU mode successfully");
 	}
+	unsigned int bdid = info->bdid;
+	unsigned int cpid = info->cpid;
+	if (IS_APPLE_TV_4K) force_usbdevice = true;
 	set_spin(0);
 	unsubscribe_cmd();
 	pthread_exit(NULL);
