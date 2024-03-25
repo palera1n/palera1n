@@ -61,19 +61,19 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 	"Usage: %s [-"
-	"DEhpvVdsSLRnPI"
+	"DEhpvVldsSLRnPI"
 #ifdef DEV_BUILD
 			"12"
 #endif
 #ifdef ROOTFUL
-			"cCfBl"
+			"cCfB"
 #endif
 #ifdef TUI
 			"t"
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
-			"iOS/iPadOS 15.0-16.5.1 arm64 jailbreaking tool\n\n"
+			"iOS/iPadOS 15.0-17.4.1 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
 #ifdef DEV_BUILD
@@ -96,9 +96,7 @@ static int usage(int e, char* prog_name)
 			"\t-i, --override-checkra1n <file>\t\tOverride checkra1n\n"
 			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
-#ifdef ROOTFUL
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
-#endif
 			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
 			"\t-n, --exit-recovery\t\t\tExit recovery mode\n"
 			"\t-I, --device-info\t\t\tPrint info about the connected device\n"

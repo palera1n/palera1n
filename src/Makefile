@@ -90,7 +90,7 @@ CFLAGS += -DUSE_LIBUSB=1
 LIBS += $(DEP)/lib/libusb-1.0.a
 endif
 
-ifeq ($(ROOTFUL),1)
+ifneq ($(ROOTFUL),0)
 CFLAGS += -DROOTFUL=1
 BUILD_OPTIONS += ROOTFUL
 endif
