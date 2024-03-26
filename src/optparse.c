@@ -358,14 +358,23 @@ int optparse(int argc, char* argv[]) {
 		palerain_flags &= ~palerain_option_verbose_boot;
 	}
 
-	if ((palerain_flags & (palerain_option_rootless | palerain_option_rootful)) == 0) {
-		LOG(LOG_FATAL, "must specify -l option");
-		return -1;
-	}
-
 	if ((palerain_flags & (palerain_option_tui)) && (palerain_flags & (palerain_option_cli))) {
 		LOG(LOG_FATAL, "cannot specify both --tui and --cli");
 		return -1;
+	}
+
+	if ((palerain_flags & (palerain_option_exit_recovery | palerain_option_enter_recovery | palerain_option_reboot_device | palerain_option_device_info | palerain_option_dfuhelper_only | palerain_option_pongo_exit | palerain_option_pongo_full)) > 0) {
+		palerain_flags &= ~palerain_option_tui;
+		palerain_flags |= palerain_option_cli;
+	} else {
+#ifdef ROOTFUL
+		if ((palerain_flags & (palerain_option_rootless | palerain_option_rootful)) == 0) {
+			LOG(LOG_FATAL, "must specify -l option");
+			return -1;
+		}
+#else
+		palerain_flags |= palerain_option_rootless;
+#endif
 	}
     
 	snprintf(palerain_flags_cmd, 0x30, "palera1n_flags 0x%" PRIx64, palerain_flags);
