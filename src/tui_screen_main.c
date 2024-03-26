@@ -115,7 +115,7 @@ void tui_screen_main_redraw(void) {
 
     SETCOLOR(FG_YELLOW, BG_BLACK);
     if (tui_connected_devices == NULL) {
-        PRINTATT(3, 5, "Connect your iPhone, iPod touch, or iPad");
+        PRINTATT(3, 5, "Connect your iPhone, iPad, iPod Touch, or Apple TV");
         PRINTATT(3, 6, "to begin.");
         tui_can_start = false;
     } else if (tui_connected_devices->next != NULL) {
