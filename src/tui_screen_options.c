@@ -214,7 +214,7 @@ tui_screen_t tui_screen_options(void) {
                     break;
                 case 5:
                     tui_options_is_editing_boot_args = !tui_options_is_editing_boot_args;
-                    tui_options_boot_args_cursor = strlen(tui_options_boot_args);
+                    tui_options_boot_args_cursor = tui_options_is_editing_boot_args ? strlen(tui_options_boot_args) : 0;
                     break;
                 case 6:
                     tui_options_flower_chain = !tui_options_flower_chain;
@@ -276,7 +276,7 @@ tui_screen_t tui_screen_options(void) {
                     tui_mouse_x <= tui_x_offset + 6 + 34 &&         \
                     tui_options_nav_mouse_select == val) {          \
                     tui_options_##option = !tui_options_##option;   \
-                    e;                                              \
+                    e                                               \
                     tui_screen_options_nav();                       \
                     tui_screen_options_options();                   \
                     fflush(stdout);                                 \
@@ -290,8 +290,11 @@ tui_screen_t tui_screen_options(void) {
                     MOUSEUP_HANDLER(16, 6, flower_chain, );
                 }
 
-                MOUSEUP_HANDLER(14, 5, is_editing_boot_args, tui_options_boot_args_cursor = strlen(tui_options_boot_args));
-                MOUSEUP_HANDLER(15, 5, is_editing_boot_args, tui_options_boot_args_cursor = strlen(tui_options_boot_args));
+                #define BOOTARGS_HANDLER                                                                                \
+                tui_options_boot_args_cursor = tui_options_is_editing_boot_args ? strlen(tui_options_boot_args) : 0;
+
+                MOUSEUP_HANDLER(14, 5, is_editing_boot_args, BOOTARGS_HANDLER);
+                MOUSEUP_HANDLER(15, 5, is_editing_boot_args, BOOTARGS_HANDLER);
 #undef MOUSEUP_HANDLER
                 tui_options_nav_mouse_select = -1;
                 break;
