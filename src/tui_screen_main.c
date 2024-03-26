@@ -35,9 +35,9 @@ char palera1n_logo[17][16] = {
 };
 
 char random_quotes[][150] = {
-    "nekoJB eta now",
-    "Manticore will release on Feburary 31st, 2021",
-    "Checkra1n will open source in 2020",
+    "panic(cpu 1 caller 0xfffffff0232bd958): SEP Panic",
+    "Now with Apple TV support!",
+    "checkra1n will open source in 2020",
     "Try running palera1n on a Intel 80486!",
     "\"iOS 15 with SSV is unhackable\" - literally       everyone when iOS 15 was released",
     "initproc exited -- exit reason namespace 1 subcode0x7 description: none",
@@ -118,7 +118,7 @@ void tui_screen_main_redraw(void) {
 
     SETCOLOR(FG_YELLOW, BG_BLACK);
     if (tui_connected_devices == NULL) {
-        PRINTATT(3, 5, "Connect your iPhone, iPod touch, or iPad");
+        PRINTATT(3, 5, "Connect your iPhone, iPad, iPod Touch, or Apple TV");
         PRINTATT(3, 6, "to begin.");
         tui_can_start = false;
     } else if (tui_connected_devices->next != NULL) {
