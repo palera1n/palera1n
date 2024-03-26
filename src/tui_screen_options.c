@@ -26,13 +26,14 @@ bool tui_options_is_editing_boot_args = false;
 
 char tui_options_boot_args[0x1e0 + 1] = {0};
 
-unsigned tui_options_boot_args_cursor = 0;
+int tui_options_boot_args_cursor = 0;
+int tui_options_boot_args_offset = 0;
 
 void tui_screen_options_nav(void) {
     SETCOLOR(FG_WHITE, BG_BLACK);
     MOVETOT(80 - 11, 23);
     printf("%s[  Back  ]" COLOR(FG_WHITE, BG_BLACK),
-        tui_options_nav_selection == 0 ? "\033[30;107m" : (
+        tui_options_nav_selection == 0 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 12 && tui_mouse_x <= tui_x_offset + 80 - 12 + 10
             ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
@@ -107,33 +108,43 @@ void tui_screen_options_options(void) {
             ) && (tui_mouse_y == tui_y_offset + 16) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ), easter_egg ? "Neko Chain  " : "Flower Chain");
 
-    SETCOLOR(FG_WHITE, BG_BLACK);
-    if (strlen(tui_options_boot_args) > 68) {
-        MOVETOT(75, 16);
-        printf(">>");
-    }
-
     MOVETOT(7, 16);
     if (supports_bright_colors) {
         SETCOLOR(tui_options_is_editing_boot_args ? FG_YELLOW : FG_WHITE, BG_BRIGHT_BLACK);
     } else {
         SETCOLOR(tui_options_is_editing_boot_args ? FG_YELLOW : FG_WHITE, BG_BLUE);
     }
-    unsigned boot_args_len = strlen(tui_options_boot_args);
+    int boot_args_len = strlen(tui_options_boot_args);
 
-    for (unsigned i = 0; i < 68; i++) {
-        putchar(i < boot_args_len ? tui_options_boot_args[i] : ' ');
+    if ((tui_options_boot_args_cursor - tui_options_boot_args_offset) > (68 - 1)) {
+        tui_options_boot_args_offset += (tui_options_boot_args_cursor - tui_options_boot_args_offset) - (68 - 1);
+    }
+    if ((tui_options_boot_args_cursor - tui_options_boot_args_offset) < 0) {
+        tui_options_boot_args_offset = tui_options_boot_args_cursor;
+    }
+    if ((tui_options_boot_args_offset + 68 - 1) > boot_args_len && boot_args_len >= 68 - 1) {
+        tui_options_boot_args_offset = boot_args_len - 68 + 1;
+    }
+
+    for (int i = 0; i < 68; i++) {
+        putchar(((i + tui_options_boot_args_offset) < boot_args_len) ? tui_options_boot_args[i + tui_options_boot_args_offset] : ' ');
     }
 
     if (tui_options_is_editing_boot_args) {
-        MOVETOT((int)(7 + tui_options_boot_args_cursor), 16);
+        MOVETOT((int)(7 + tui_options_boot_args_cursor - tui_options_boot_args_offset), 16);
         if (supports_bright_colors) {
             SETCOLOR(FG_BRIGHT_BLACK, BG_YELLOW);
         } else {
-            SETCOLOR(FG_BLACK, BG_YELLOW);
+            SETCOLOR(FG_BLUE, BG_YELLOW);
         }
         putchar(tui_options_boot_args_cursor < boot_args_len ? tui_options_boot_args[tui_options_boot_args_cursor] : ' ');
     }
+
+    SETCOLOR(FG_WHITE, BG_BLACK);
+    MOVETOT(5, 16);
+    printf(tui_options_boot_args_offset > 0 ? "<<" : "  ");
+    MOVETOT(75, 16);
+    printf((strlen(tui_options_boot_args) - tui_options_boot_args_offset) > 68 ? ">>" : "  ");
 }
 
 void tui_screen_options_redraw(void) {
@@ -315,7 +326,7 @@ tui_screen_t tui_screen_options(void) {
                 break;
             case TUI_INPUT_RIGHT:
                 if (tui_options_is_editing_boot_args) {
-                    if (tui_options_boot_args_cursor < strlen(tui_options_boot_args)) {
+                    if (tui_options_boot_args_cursor < (int)strlen(tui_options_boot_args)) {
                         tui_options_boot_args_cursor++;
                         tui_screen_options_options();
                         fflush(stdout);
