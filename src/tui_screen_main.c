@@ -233,6 +233,7 @@ tui_screen_t tui_screen_main(void) {
                     case TUI_INPUT_SELECT:
                         switch(tui_main_nav_selection) {
                         case 0:
+                            quick_mode_enabled = !quick_mode_enabled;
                             tui_screen_main_nav();
                             fflush(stdout);
                             break;
