@@ -17,7 +17,11 @@ bool tui_is_jailbreaking = false;
 
 void tui_screen_jailbreak_nav(void) {
     if (tui_is_jailbreaking) {
-        SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+        if (supports_bright_colors) {
+            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+        } else {
+            SETCOLOR(FG_BLUE, BG_BLACK);
+        }
     } else {
         SETCOLOR(FG_BLACK, BG_BRIGHT_WHITE);
     }

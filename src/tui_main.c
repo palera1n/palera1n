@@ -32,6 +32,8 @@ int tui_state = 0;
 int tui_x_offset = 0;
 int tui_y_offset = 0;
 
+bool supports_bright_colors = true;
+
 struct termios saved_termios;
 
 int redraw_screen(void) {
@@ -154,6 +156,9 @@ void resize_handler(int sig) {
 }
 
 int tui(void) {
+    if (strncmp(getenv("TERM"), "xterm", 5) != 0) {
+        supports_bright_colors = false;
+    }
     srand(time(NULL));
     int ret = 0;
     if ((ret = init_window())) return ret;

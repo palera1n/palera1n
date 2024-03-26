@@ -31,11 +31,11 @@ unsigned tui_options_boot_args_cursor = 0;
 void tui_screen_options_nav(void) {
     SETCOLOR(FG_WHITE, BG_BLACK);
     MOVETOT(80 - 11, 23);
-    printf("%s[  Back  ]\033[37;40m",
+    printf("%s[  Back  ]" COLOR(FG_WHITE, BG_BLACK),
         tui_options_nav_selection == 0 ? "\033[30;107m" : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 12 && tui_mouse_x <= tui_x_offset + 80 - 12 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         )
     );
 #ifdef DEV_BUILD
@@ -48,59 +48,63 @@ extern bool easter_egg;
 void tui_screen_options_options(void) {
     SETCOLOR(FG_WHITE, BG_BLACK);
     MOVETOT(3, 8);
-    printf("[%c] %sAllow untested iOS/iPadOS versions\x1b[37;40m",
+    printf("[%c] %sAllow untested iOS/iPadOS versions" COLOR(FG_WHITE, BG_BLACK),
         tui_options_allow_untested ? 'x' : ' ',
-        tui_options_nav_selection == 1 ? "\x1b[30;107m" : (
+        tui_options_nav_selection == 1 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
-            ) && (tui_mouse_y == tui_y_offset + 7) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 7) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
     MOVETOT(3, 9);
-    printf("[%c] %sSafe Mode                         \x1b[37;40m",
+    printf("[%c] %sSafe Mode                         " COLOR(FG_WHITE, BG_BLACK),
         tui_options_safe_mode ? 'x' : ' ',
-        tui_options_nav_selection == 2 ? "\x1b[30;107m" : (
+        tui_options_nav_selection == 2 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
-            ) && (tui_mouse_y == tui_y_offset + 8) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 8) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
     MOVETOT(3, 10);
-    printf("[%c] %sVerbose Boot                      \x1b[37;40m",
+    printf("[%c] %sVerbose Boot                      " COLOR(FG_WHITE, BG_BLACK),
         tui_options_verbose_boot ? 'x' : ' ',
-        tui_options_nav_selection == 3 ? "\x1b[30;107m" : (
+        tui_options_nav_selection == 3 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
-            ) && (tui_mouse_y == tui_y_offset + 9) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 9) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
     MOVETOT(3, 11);
-    printf("[%c] %sForce Revert                      \x1b[37;40m",
+    printf("[%c] %sForce Revert                      " COLOR(FG_WHITE, BG_BLACK),
         tui_options_force_revert ? 'x' : ' ',
-        tui_options_nav_selection == 4 ? "\x1b[30;107m" : (
+        tui_options_nav_selection == 4 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
-            ) && (tui_mouse_y == tui_y_offset + 10) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 10) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
-    SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+    if (supports_bright_colors) {
+        SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+    } else {
+        SETCOLOR(FG_BLUE, BG_BLACK);
+    }
     DRAWLINET(3, 13, 76);
     SETCOLOR(FG_WHITE, BG_BLACK);
     MOVETOT(7, 15);
-    printf("%sBoot Arguments:                   \x1b[37;40m",
-        tui_options_nav_selection == 5 ? "\x1b[30;107m" : (
+    printf("%sBoot Arguments:                   " COLOR(FG_WHITE, BG_BLACK),
+        tui_options_nav_selection == 5 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
             ) && (
                 tui_mouse_y == tui_y_offset + 14 || tui_mouse_y == tui_y_offset + 15
-            ) ? "\x1b[30;47m" : ""
+            ) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
     const char* boot_args_hint = tui_options_is_editing_boot_args ? "(press ENTER when done)" : "  (press ENTER to edit)";
     MOVETOT((int)(80 - 5 - strlen(boot_args_hint)), 15);
     printf("%s", boot_args_hint);
     MOVETOT(3, 17);
-    printf("[%c] %s%s                      \x1b[37;40m",
+    printf("[%c] %s%s                      " COLOR(FG_WHITE, BG_BLACK),
         tui_options_flower_chain ? 'x' : ' ',
-        tui_options_nav_selection == 6 ? "\x1b[30;107m" : (
+        tui_options_nav_selection == 6 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
-            ) && (tui_mouse_y == tui_y_offset + 16) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 16) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ), easter_egg ? "Neko Chain  " : "Flower Chain");
 
     SETCOLOR(FG_WHITE, BG_BLACK);
@@ -110,8 +114,11 @@ void tui_screen_options_options(void) {
     }
 
     MOVETOT(7, 16);
-    SETCOLOR(tui_options_is_editing_boot_args ? FG_YELLOW : FG_WHITE, BG_BRIGHT_BLACK);
-
+    if (supports_bright_colors) {
+        SETCOLOR(tui_options_is_editing_boot_args ? FG_YELLOW : FG_WHITE, BG_BRIGHT_BLACK);
+    } else {
+        SETCOLOR(tui_options_is_editing_boot_args ? FG_YELLOW : FG_WHITE, BG_BLUE);
+    }
     unsigned boot_args_len = strlen(tui_options_boot_args);
 
     for (unsigned i = 0; i < 68; i++) {
@@ -120,7 +127,11 @@ void tui_screen_options_options(void) {
 
     if (tui_options_is_editing_boot_args) {
         MOVETOT((int)(7 + tui_options_boot_args_cursor), 16);
-        SETCOLOR(FG_BRIGHT_BLACK, BG_YELLOW);
+        if (supports_bright_colors) {
+            SETCOLOR(FG_BRIGHT_BLACK, BG_YELLOW);
+        } else {
+            SETCOLOR(FG_BLACK, BG_YELLOW);
+        }
         putchar(tui_options_boot_args_cursor < boot_args_len ? tui_options_boot_args[tui_options_boot_args_cursor] : ' ');
     }
 }
@@ -129,7 +140,11 @@ void tui_screen_options_redraw(void) {
     SETCOLOR(FG_WHITE, BG_BLACK);
     PRINTATT(3, 3, "You may set the following options. If you don't know what they mean you'll");
     PRINTATT(3, 4, "probably have no reason to set them.");
-    SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+    if (supports_bright_colors) {
+        SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+    } else {
+        SETCOLOR(FG_BLUE, BG_BLACK);
+    }
     DRAWLINET(3, 6, 76);
     tui_screen_options_nav();
     tui_screen_options_options();
@@ -163,7 +178,10 @@ tui_screen_t tui_screen_options(void) {
                 break;
             case TUI_INPUT_SELECT:
                 if (tui_options_is_editing_boot_args && tui_last_key == ' ' && tui_options_boot_args[strlen(tui_options_boot_args)] == '\x00') {
-                    tui_options_boot_args[strlen(tui_options_boot_args)] = ' ';
+                    int len = strlen(tui_options_boot_args);
+                    tui_options_boot_args[len] = ' ';
+                    tui_options_boot_args[len + 1] = '\x00';
+                    tui_options_boot_args_cursor++;
                     tui_screen_options_options();
                     fflush(stdout);
                     break;
@@ -191,8 +209,12 @@ tui_screen_t tui_screen_options(void) {
                     tui_options_flower_chain = !tui_options_flower_chain;
                     break;
                 }
+                tui_screen_options_nav();
+                tui_screen_options_options();
+                fflush(stdout);
+                break;
             case TUI_INPUT_MOUSE_MOVE:
-            tui_screen_options_nav();
+                tui_screen_options_nav();
                 tui_screen_options_options();
                 fflush(stdout);
                 break;

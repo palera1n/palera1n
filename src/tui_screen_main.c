@@ -57,26 +57,26 @@ bool easter_egg = false;
 
 void tui_screen_main_nav(void) {
     MOVETOT(80 - 52, 23);
-    printf("[%c] %sQuick Mode \x1b[37;40m %s[ Options ]\x1b[37;40m %s[  Start  ]\x1b[37;40m %s[  Quit   ]\x1b[37;40m", quick_mode_enabled ? 'x' : ' ',
-        tui_main_nav_selection == 0 ? "\x1b[30;107m" : (
+    printf("[%c] %sQuick Mode " COLOR(FG_WHITE, BG_BLACK) " %s[ Options ]" COLOR(FG_WHITE, BG_BLACK) " %s[  Start  ]" COLOR(FG_WHITE, BG_BLACK) " %s[  Quit   ]" COLOR(FG_WHITE, BG_BLACK), quick_mode_enabled ? 'x' : ' ',
+        tui_main_nav_selection == 0 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 49 && tui_mouse_x <= tui_x_offset + 80 - 49 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ),
-        tui_main_nav_selection == 1 ? "\x1b[30;107m" : (
+        tui_main_nav_selection == 1 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 37 && tui_mouse_x <= tui_x_offset + 80 - 37 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ),
-        tui_main_nav_selection == 2 ? "\x1b[30;107m" : !tui_can_start ? "\x1b[90;40m" : (
+        tui_main_nav_selection == 2 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : !tui_can_start ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 25 && tui_mouse_x <= tui_x_offset + 80 - 25 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ),
-        tui_main_nav_selection == 3 ? "\x1b[30;107m" : (
+        tui_main_nav_selection == 3 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 13 && tui_mouse_x <= tui_x_offset + 80 - 13 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         )
     );
 }
@@ -86,15 +86,14 @@ void tui_screen_main_redraw(void) {
 
     SETCOLOR(FG_WHITE, BG_BLACK);
     PRINTATT(3, 9, "Made by: Nick Chan, Ploosh, Samara, Mineek");
-    PRINTATT(3, 10, "staturnz, kok3shidoll");
-    PRINTATT(3, 12, "Thanks to: ");
-    if ((tui_mouse_y == tui_y_offset + 11 && tui_mouse_x >= tui_x_offset + 13 && tui_mouse_x <= tui_x_offset + 13 + 8) || easter_egg) {
+    PRINTATT(3, 10, "staturnz, kok3shidoll, ");
+    if ((tui_mouse_y == tui_y_offset + 9 && tui_mouse_x >= tui_x_offset + 25 && tui_mouse_x <= tui_x_offset + 25 + 8) || easter_egg) {
         SETCOLORA(FG_BRIGHT_WHITE, BG_BLACK, BOLD);
     }
     printf("HAHALOSAH");
     RESETFONT;
     SETCOLOR(FG_WHITE, BG_BLACK);
-    printf(", llsc12, nebula,");
+    PRINTATT(3, 12, "Thanks to: llsc12, nebula,");
     PRINTATT(3, 13, "nikias (libimobiledevice), checkra1n");
     PRINTATT(3, 14, "(Siguza, axi0mx, littlelailo et al.), Procursus");
     PRINTATT(3, 15, "Team (Hayden Seay, Cameron Katri, Keto et.al),");
@@ -105,7 +104,11 @@ void tui_screen_main_redraw(void) {
     DRAWLINET(2, 22, 78);
     DRAWLINET(2, 3, 50);
 
-    SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+    if (supports_bright_colors) {
+        SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+    } else {
+        SETCOLOR(FG_BLUE, BG_BLACK);
+    }
     DRAWLINET(2, 11, 50);
     DRAWLINET(2, 16, 50);
 
@@ -250,6 +253,7 @@ tui_screen_t tui_screen_main(void) {
                                     return JAILBREAK_SCREEN;
                                 }
                             }
+                            break;
                         case 3:
                             return EXIT_SCREEN;
                         }
@@ -258,7 +262,7 @@ tui_screen_t tui_screen_main(void) {
                         tui_screen_main_redraw();
                         break;
                     case TUI_INPUT_MOUSE_DOWN:
-                        if (tui_mouse_y == tui_y_offset + 11 && tui_mouse_x >= tui_x_offset + 13 && tui_mouse_x <= tui_x_offset + 13 + 8) {
+                        if ((tui_mouse_y == tui_y_offset + 9 && tui_mouse_x >= tui_x_offset + 25 && tui_mouse_x <= tui_x_offset + 25 + 8)) {
                             easter_egg = true;
                             break;
                         }

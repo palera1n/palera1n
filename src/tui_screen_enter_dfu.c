@@ -74,16 +74,16 @@ int tui_enter_dfu_loading_progress = 1;
 
 void tui_screen_enter_dfu_nav(void) {
     MOVETOT(80 - 22, 23);
-    printf("%s[ Cancel ]\033[37;40m %s[  %s ]\033[37;40m",
-        tui_device_is_entering_dfu || tui_enter_dfu_status == 1 ? "\033[90;40m" : tui_enter_dfu_nav_selection == 0 ? "\033[30;107m" : (
+    printf("%s[ Cancel ]" COLOR(FG_WHITE, BG_BLACK) " %s[  %s ]" COLOR(FG_WHITE, BG_BLACK),
+        tui_device_is_entering_dfu || tui_enter_dfu_status == 1 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : tui_enter_dfu_nav_selection == 0 ? "\033[30;107m" : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 23 && tui_mouse_x <= tui_x_offset + 80 - 23 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ),
-        tui_device_is_entering_dfu || tui_enter_dfu_status == 1 ? "\033[90;40m" : tui_enter_dfu_nav_selection == 1 ? "\033[30;107m" : (
+        tui_device_is_entering_dfu || tui_enter_dfu_status == 1 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : tui_enter_dfu_nav_selection == 1 ? "\033[30;107m" : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 12 && tui_mouse_x <= tui_x_offset + 80 - 12 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ),
         tui_enter_dfu_status == 2 ? "Retry" : "Start"
     );
@@ -110,7 +110,11 @@ void tui_screen_enter_dfu_redraw(void) {
     case DEVICE_TYPE_IPHONE_SE:
     case DEVICE_TYPE_IPAD:
         if (tui_enter_dfu_loading_progress > 0 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 6, "1. Click Start");
         if (tui_enter_dfu_loading_progress > 0) {
@@ -118,7 +122,11 @@ void tui_screen_enter_dfu_redraw(void) {
         }
 
         if (!tui_device_is_entering_dfu || tui_enter_dfu_loading_progress > 4 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 7, "2. Press and hold the Top and");
         MOVETOT(54, 8);
@@ -128,7 +136,11 @@ void tui_screen_enter_dfu_redraw(void) {
         }
 
         if (tui_enter_dfu_loading_progress < 5 || tui_enter_dfu_loading_progress > 14 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 9, "3. Release the Top button BUT");
         PRINTATT(54, 10, "KEEP HOLDING the Home");
@@ -140,7 +152,11 @@ void tui_screen_enter_dfu_redraw(void) {
         break;
     case DEVICE_TYPE_IPHONE_6S:
         if (tui_enter_dfu_loading_progress > 0 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 6, "1. Click Start");
         if (tui_enter_dfu_loading_progress > 0) {
@@ -148,7 +164,11 @@ void tui_screen_enter_dfu_redraw(void) {
         }
 
         if (!tui_device_is_entering_dfu || tui_enter_dfu_loading_progress > 4 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 7, "2. Press and hold the Side");
         PRINTATT(54, 8, "and Home buttons together");
@@ -159,7 +179,11 @@ void tui_screen_enter_dfu_redraw(void) {
         }
 
         if (tui_enter_dfu_loading_progress < 5 || tui_enter_dfu_loading_progress > 14 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 10, "3. Release the Side button");
         PRINTATT(54, 11, "BUT KEEP HOLDING the Home");
@@ -174,18 +198,22 @@ void tui_screen_enter_dfu_redraw(void) {
         tui_draw_rectangle(17, 5, 33, 21);
         PRINTATT(17, 10, "|");
         MOVETOT(5, 11);
-        printf("%sVolume down-", tui_enter_dfu_loading_progress > 14 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("%sVolume down-", tui_enter_dfu_loading_progress > 14 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
         putchar('|');
         DSGON;
         MOVETOT(35, 10);
         putchar(0x78);
         DSGOFF;
-        printf("%s-Side button", tui_enter_dfu_loading_progress > 4 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("%s-Side button", tui_enter_dfu_loading_progress > 4 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
 
         if (tui_enter_dfu_loading_progress > 0 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 6, "1. Click Start");
         if (tui_enter_dfu_loading_progress > 0) {
@@ -193,7 +221,11 @@ void tui_screen_enter_dfu_redraw(void) {
         }
 
         if (!tui_device_is_entering_dfu || tui_enter_dfu_loading_progress > 4 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 7, "2. Press and hold the Side");
         PRINTATT(54, 8, "and Volume down buttons");
@@ -204,7 +236,11 @@ void tui_screen_enter_dfu_redraw(void) {
         }
 
         if (tui_enter_dfu_loading_progress < 5 || tui_enter_dfu_loading_progress > 14 || tui_enter_dfu_status == 2) {
-            SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            if (supports_bright_colors) {
+                SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
+            } else {
+                SETCOLOR(FG_BLUE, BG_BLACK);
+            }
         }
         PRINTATT(51, 10, "3. Release the Side button");
         PRINTATT(54, 11, "BUT KEEP HOLDING the");
@@ -229,10 +265,10 @@ void tui_screen_enter_dfu_redraw(void) {
         PRINTATT(18, 11, "|");
         PRINTATT(18, 12, "|");
         MOVETOT(30, 6);
-        printf("__ %s-Top button", tui_enter_dfu_loading_progress > 4 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("__ %s-Top button", tui_enter_dfu_loading_progress > 4 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
         MOVETOT(31, 20);
-        printf("%s-Home button", tui_enter_dfu_loading_progress > 14 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("%s-Home button", tui_enter_dfu_loading_progress > 14 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
 
         break;
@@ -248,10 +284,10 @@ void tui_screen_enter_dfu_redraw(void) {
         PRINTATT(17, 10, "|");
         PRINTATT(17, 11, "|");
         MOVETOT(35, 10);
-        printf("|%s-Side button", tui_enter_dfu_loading_progress > 4 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("|%s-Side button", tui_enter_dfu_loading_progress > 4 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
         MOVETOT(30, 20);
-        printf("%s-Home button", tui_enter_dfu_loading_progress > 14 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("%s-Home button", tui_enter_dfu_loading_progress > 14 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
         break;
     case DEVICE_TYPE_IPHONE_7_8:
@@ -295,10 +331,10 @@ void tui_screen_enter_dfu_redraw(void) {
         PRINTATT(14, 11, "|");
         PRINTATT(14, 12, "|");
         MOVETOT(33, 6);
-        printf("__  %s-Top button", tui_enter_dfu_loading_progress > 4 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("__  %s-Top button", tui_enter_dfu_loading_progress > 4 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
         MOVETOT(29, 21);
-        printf("%s-Home button", tui_enter_dfu_loading_progress > 14 ? "\x1b[90;40m" : "\x1b[33;40m");
+        printf("%s-Home button", tui_enter_dfu_loading_progress > 14 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : COLOR(FG_YELLOW, BG_BLACK));
         SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
 
         break;

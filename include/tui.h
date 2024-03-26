@@ -32,14 +32,18 @@
 #define MOVETOT(x, y) MOVETO(tui_x_offset + x, tui_y_offset + y)
 #define SETCOLOR(fg, bg) printf("\x1b[%d;%dm", fg, bg)
 #define SETCOLORA(fg, bg, a) printf("\x1b[" STR(fg) ";" STR(bg) ";" STR(a) "m")
+#define COLOR(fg, bg) "\x1b[" STR(fg) ";" STR(bg) "m"
 #define FG_BLACK 30
 #define FG_YELLOW 33
+#define FG_BLUE 34
 #define FG_WHITE 37
 #define BG_BLACK 40
 #define BG_YELLOW 43
+#define BG_BLUE 44
 #define BG_WHITE 47
 #define NONE 0
 #define BOLD 1
+extern bool supports_bright_colors;
 #define FG_BRIGHT_BLACK 90
 #define FG_BRIGHT_WHITE 97
 #define BG_BRIGHT_BLACK 100
@@ -119,7 +123,8 @@ enum {
     TUI_INPUT_SELECT,
     TUI_INPUT_TAB,
     TUI_INPUT_TAB_BACK,
-    TUI_INPUT_BACKSPACE
+    TUI_INPUT_BACKSPACE,
+    TUI_INPUT_ESCAPE,
 };
 
 enum {

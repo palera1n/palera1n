@@ -2,6 +2,10 @@
 
 #include <tui.h>
 
+#ifdef __linux__
+#include <gpm.h>
+#endif
+
 int tui_mouse_x = 0;
 int tui_mouse_y = 0;
 int tui_mouse_button = -1;
@@ -10,6 +14,10 @@ int tui_last_event = -1;
 int tui_last_input = -1;
 sem_t *tui_event_semaphore;
 char tui_last_key = 0;
+
+#ifdef __linux__
+bool using_gpm = false;
+#endif
 
 int tui_get_input(void) {
     char c = getc(stdin);
@@ -71,10 +79,61 @@ int tui_get_input(void) {
         return TUI_INPUT_BACKSPACE;
     }
 
+    if (c == '\x1b') {
+        return TUI_INPUT_ESCAPE;
+    }
+
     return TUI_INPUT_NONE;
 }
 
+#ifdef __linux__
+void *tui_gpm_thread(void *arg) {
+    Gpm_Event event;
+    while (1) {
+        if (Gpm_GetEvent(&event) == -1) {
+            exit(1);
+        }
+        tui_mouse_x = event.x - 1;
+        tui_mouse_y = event.y - 1;
+        if (event.type & GPM_MOVE) {
+            tui_last_event = TUI_EVENT_INPUT;
+            tui_last_input = TUI_INPUT_MOUSE_MOVE;
+            sem_post(tui_event_semaphore);
+        }
+        if (event.buttons & 4) {
+            if (event.type & GPM_DOWN) {
+                tui_mouse_button = 1;
+                tui_last_event = TUI_EVENT_INPUT;
+                tui_last_input = TUI_INPUT_MOUSE_DOWN;
+                sem_post(tui_event_semaphore);
+            } else if (event.type & GPM_UP) {
+                tui_mouse_button = 0;
+                tui_last_event = TUI_EVENT_INPUT;
+                tui_last_input = TUI_INPUT_MOUSE_UP;
+                sem_post(tui_event_semaphore);
+            }
+            continue;
+        }
+    }
+}
+#endif
+
 void *tui_input_thread(void *arg) {
+#ifdef __linux__
+    if (strncmp(getenv("TERM"), "linux", 5) == 0) {
+        Gpm_Connect conn;
+        Gpm_Event event;
+        conn.eventMask = GPM_UP | GPM_DOWN;
+        conn.defaultMask = ~0;
+        conn.minMod = 0;
+        conn.maxMod = 0xffff;
+        if (Gpm_Open(&conn, 0) != -1) {
+            using_gpm = true;
+            pthread_t gpm_thread;
+            pthread_create(&gpm_thread, NULL, tui_gpm_thread, NULL);
+        }
+    }
+#endif
     while (1) {
         int input = tui_get_input();
         tui_last_event = TUI_EVENT_INPUT;

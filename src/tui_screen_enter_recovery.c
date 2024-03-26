@@ -20,16 +20,16 @@ bool tui_enter_recovery_mode_failed = false;
 
 void tui_screen_enter_recovery_nav(void) {
     MOVETOT(80 - 22, 23);
-    printf("%s[  Back  ]\033[37;40m %s[  Next  ]\033[37;40m",
-        tui_device_is_entering_recovery ? "\033[90;40m" : tui_enter_recovery_nav_selection == 0 ? "\033[30;107m" : (
+    printf("%s[  Back  ]" COLOR(FG_WHITE, BG_BLACK) " %s[  Next  ]" COLOR(FG_WHITE, BG_BLACK),
+        tui_device_is_entering_recovery ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : tui_enter_recovery_nav_selection == 0 ? "\033[30;107m" : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 23 && tui_mouse_x <= tui_x_offset + 80 - 23 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ),
-        tui_device_is_entering_recovery ? "\033[90;40m" : tui_enter_recovery_nav_selection == 1 ? "\033[30;107m" : (
+        tui_device_is_entering_recovery ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : tui_enter_recovery_nav_selection == 1 ? "\033[30;107m" : (
             (
                 tui_mouse_x >= tui_x_offset + 80 - 12 && tui_mouse_x <= tui_x_offset + 80 - 12 + 10
-            ) && (tui_mouse_y == tui_y_offset + 22) ? "\x1b[30;47m" : ""
+            ) && (tui_mouse_y == tui_y_offset + 22) ? COLOR(FG_BLACK, BG_WHITE) : ""
         )
     );
 }
@@ -163,6 +163,7 @@ tui_screen_t tui_screen_enter_recovery(void) {
                             redraw_screen();
                             return tui_enter_recovery();
                         }
+                        break;
                     case TUI_INPUT_MOUSE_MOVE:
                         tui_screen_enter_recovery_nav();
                         fflush(stdout);
