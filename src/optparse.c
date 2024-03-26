@@ -14,6 +14,9 @@
 #include <palerain.h>
 #include <sys/mman.h>
 #include <inttypes.h>
+#ifdef TUI
+#include <tui.h>
+#endif
 
 uint64_t* palerain_flags_p = &palerain_flags;
 static bool force_use_verbose_boot = false;
@@ -96,7 +99,9 @@ static int usage(int e, char* prog_name)
 			"\t-i, --override-checkra1n <file>\t\tOverride checkra1n\n"
 			"\t-k, --override-pongo <file>\t\tOverride Pongo image\n"
 			"\t-K, --override-kpf <file>\t\tOverride kernel patchfinder\n"
+#ifdef ROOTFUL
 			"\t-l, --rootless\t\t\t\tBoots rootless. This is the default\n"
+#endif
 			"\t-L, --jbinit-log-to-file\t\tMake jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)\n"
 			"\t-n, --exit-recovery\t\t\tExit recovery mode\n"
 			"\t-I, --device-info\t\t\tPrint info about the connected device\n"
@@ -163,6 +168,9 @@ int optparse(int argc, char* argv[]) {
 		case 'V':
 			palerain_flags |= palerain_option_verbose_boot;
 			force_use_verbose_boot = true;
+#ifdef TUI
+			tui_options_verbose_boot = true;
+#endif
 			break;
 		case 'e':
 			if (strstr(optarg, "rootdev=") != NULL) {
@@ -173,6 +181,9 @@ int optparse(int argc, char* argv[]) {
                 return -1;
             }
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
+#ifdef TUI
+			snprintf(tui_options_boot_args, sizeof(tui_options_boot_args), "%s", optarg);
+#endif
 			break;
 		case 'f':
 			palerain_flags |= palerain_option_rootful;
@@ -193,6 +204,9 @@ int optparse(int argc, char* argv[]) {
 			break;
 		case 's':
 			palerain_flags |= palerain_option_safemode;
+#ifdef TUI
+			tui_options_safe_mode = true;
+#endif
 			break;
 		case 'k':
 			if (access(optarg, F_OK) != 0) {
@@ -297,6 +311,9 @@ int optparse(int argc, char* argv[]) {
 #endif
 		case palerain_option_case_force_revert:
 			palerain_flags |= palerain_option_force_revert;
+#ifdef TUI
+			tui_options_force_revert = true;
+#endif
 			break;
 		case palerain_option_case_version:
 			palerain_flags |= palerain_option_palerain_version;

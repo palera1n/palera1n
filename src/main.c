@@ -90,7 +90,17 @@ void log_cb(libusb_context *ctx, enum libusb_log_level level, const char *str) {
 }
 #endif
 
-int palera1n(int argc, char *argv[]) {
+// save argc, argv, and envp for restarting
+
+int saved_argc;
+char** saved_argv;
+char** saved_envp;
+
+int palera1n(int argc, char *argv[], char *envp[]) {
+	saved_argc = argc;
+	saved_argv = argv;
+	saved_envp = envp;
+	
 	print_credits();
 	int ret = 0;
 	pthread_mutex_init(&log_mutex, NULL);
@@ -173,6 +183,6 @@ cleanup:
 }
 
 
-int main (int argc, char* argv[]) {
-	return palera1n(argc, argv);
+int main (int argc, char* argv[], char* envp[]) {
+	return palera1n(argc, argv, envp);
 }

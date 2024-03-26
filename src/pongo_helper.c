@@ -11,6 +11,9 @@
 #include <sys/stat.h>           // fstst
 
 #include <palerain.h>
+#ifdef TUI
+#include <tui.h>
+#endif
 #include <ANSI-color-codes.h>
 
 bool device_has_booted = 0;
@@ -39,9 +42,23 @@ void *pongo_usb_callback(stuff_t *arg) {
 	}
 	LOG(LOG_INFO, "Found PongoOS USB Device");
 	usb_device_handle_t handle = arg->handle;
+#ifdef TUI
+	if (tui_is_jailbreaking) {
+		tui_jailbreak_stage = 4;
+    	tui_jailbreak_status = "Sending PongoOS commands";
+    	tui_jailbreak_status_changed();
+	}
+#endif
 	issue_pongo_command(handle, NULL);	
 	issue_pongo_command(handle, "fuse lock");
 	issue_pongo_command(handle, "sep auto");
+#ifdef TUI
+	if (tui_is_jailbreaking) {
+		tui_jailbreak_stage = 5;
+    	tui_jailbreak_status = "Sending KPF";
+    	tui_jailbreak_status_changed();
+	}
+#endif
 	upload_pongo_file(handle, **kpf_to_upload, checkra1n_kpf_pongo_lzma_len);
 	if (*kpf_to_upload == &checkra1n_kpf_pongo_lzma) {
 		issue_pongo_command(handle, "modload " KPF_UNCOMPRESSED_SIZE);
@@ -54,6 +71,13 @@ void *pongo_usb_callback(stuff_t *arg) {
 #endif
 	{
 		if (force_usbdevice) strncat(xargs_cmd, " AppleEmbeddedUSBArbitrator-force-usbdevice=1", 0x270 - strlen(xargs_cmd) - 1);
+#ifdef TUI
+		if (tui_is_jailbreaking) {
+			tui_jailbreak_stage = 6;
+			tui_jailbreak_status = "Sending ramdisk";
+			tui_jailbreak_status_changed();
+		}
+#endif
 		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_lzma_len);
 		if ((*ramdisk_to_upload) == &ramdisk_dmg_lzma)
 			issue_pongo_command(handle, "ramdisk " RAMDISK_UNCOMPRESSED_SIZE);
@@ -65,11 +89,26 @@ void *pongo_usb_callback(stuff_t *arg) {
 	if (binpack_dmg_len != 0)
 #endif
 	{
+#ifdef TUI
+		if (tui_is_jailbreaking) {
+			tui_jailbreak_stage = 7;
+			tui_jailbreak_status = "Sending binpack";
+			tui_jailbreak_status_changed();
+		}
+#endif
 		upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
 		issue_pongo_command(handle, "overlay");
 	}
 	issue_pongo_command(handle, xargs_cmd);
 	if ((palerain_flags & palerain_option_pongo_full)) goto done;
+
+#ifdef TUI
+	if (tui_is_jailbreaking) {
+		tui_jailbreak_stage = 8;
+		tui_jailbreak_status = "Booting";
+		tui_jailbreak_status_changed();
+	}
+#endif
 	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
 	if ((palerain_flags & palerain_option_setup_partial_root)) {
@@ -85,6 +124,15 @@ void *pongo_usb_callback(stuff_t *arg) {
 	}
 done:
 	device_has_booted = true;
+
+#ifdef TUI
+	if (tui_is_jailbreaking) {
+		tui_jailbreak_stage = 9;
+		tui_jailbreak_status = "All Done";
+		tui_is_jailbreaking = false;
+		tui_jailbreak_status_changed();
+	}
+#endif
 #ifdef USE_LIBUSB
 	libusb_unref_device(arg->dev);
 #endif
