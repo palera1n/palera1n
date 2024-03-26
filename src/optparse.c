@@ -56,6 +56,7 @@ static struct option longopts[] = {
 #endif
 #ifdef TUI
 	{"tui", no_argument, NULL, 't'},
+	{"cli", no_argument, NULL, palerain_option_case_cli},
 #endif
 	{NULL, 0, NULL, 0}
 };
@@ -117,7 +118,8 @@ static int usage(int e, char* prog_name)
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
 
 #ifdef TUI
-			"\t-t, --tui\t\t\t\tTerminal user interface\n"
+			"\t-t, --tui\t\t\t\tForce interactive TUI\n"
+			"\t--cli\t\t\t\tForce cli mode\n"
 #endif
 		"\nEnvironmental variables:\n"
 		"\tTMPDIR\t\ttemporary diretory (path the built-in checkra1n will be extracted to)\n"
@@ -300,6 +302,9 @@ int optparse(int argc, char* argv[]) {
 		case 't':
 			palerain_flags |= palerain_option_tui;
 			break;
+		case palerain_option_case_cli:
+			palerain_flags |= palerain_option_cli;
+			break;
 #endif
 #ifdef DEV_BUILD
 		case '1':
@@ -355,6 +360,11 @@ int optparse(int argc, char* argv[]) {
 
 	if ((palerain_flags & (palerain_option_rootless | palerain_option_rootful)) == 0) {
 		LOG(LOG_FATAL, "must specify -l option");
+		return -1;
+	}
+
+	if ((palerain_flags & (palerain_option_tui)) && (palerain_flags & (palerain_option_cli))) {
+		LOG(LOG_FATAL, "cannot specify both --tui and --cli");
 		return -1;
 	}
     

@@ -46,6 +46,7 @@ typedef uint64_t palerain_option_t;
 // #define palerain_option_sf_launchdaemons  (UINT64_C(1) << 28) /* safe mode with launchdaemons */
 // #define palerain_option_emerg_mode        (UINT64_C(1) << 29) /* emergency mode (early boot usb shell) */
 #define palerain_option_jbinit_log_to_file   (UINT64_C(1) << 30) /* deprecated (kept for compatibility) */
+#define palerain_option_cli                  (UINT64_C(1) << 31) /* CLI mode */
 
 #define palerain_option_flower_chain         (UINT64_C(1) << 61) /* Flower chain */
 #define palerain_option_test1                (UINT64_C(1) << 62) /* Developer test option 1 */

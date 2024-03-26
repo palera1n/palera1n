@@ -316,7 +316,7 @@ jobs:
           cp -a sysroot/${{ env.PREFIX }}/{include,lib} dep_root
           find dep_root -name '*.dylib' -delete
           find dep_root -name '*.la' -delete
-          gmake -j$(sysctl -n hw.ncpu)
+          gmake -j$(sysctl -n hw.ncpu) TUI=1
           cp src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}
           dsymutil palera1n-${{ matrix.os }}-${{ matrix.arch }}
           strip palera1n-${{ matrix.os }}-${{ matrix.arch }}
@@ -798,7 +798,7 @@ jobs:
           cp -a ${{ env.DESTDIR }}/${{ env.PREFIX }}/{include,lib} dep_root
           find dep_root -name '*.so' -delete
           find dep_root -name '*.la' -delete
-          CC="${{ matrix.triple }}-gcc" make -j$(nproc)
+          CC="${{ matrix.triple }}-gcc" make -j$(nproc) TUI=1
           cp src/palera1n palera1n.release
 
       - name: Seperate debug symbols

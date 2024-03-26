@@ -111,7 +111,7 @@ int palera1n(int argc, char *argv[], char *envp[]) {
 	if ((ret = optparse(argc, argv))) goto cleanup;
 	if (!(palerain_flags & palerain_option_device_info) && (palerain_flags & palerain_option_palerain_version)) goto normal_exit;
 #ifdef TUI
-	if ((palerain_flags & palerain_option_tui)) {
+	if ((palerain_flags & palerain_option_tui) || (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO) && !(palerain_flags & palerain_option_cli))) {
 		ret = tui();
 		if (ret) goto cleanup;
 		else goto normal_exit;
