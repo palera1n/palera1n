@@ -214,4 +214,7 @@ void tui_devhelper(void) {
     subscribe_cmd(tui_device_event_cb, tui_irecv_device_event_cb);
 }
 
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
 #endif

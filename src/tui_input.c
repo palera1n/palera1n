@@ -101,4 +101,7 @@ int tui_try_get_event(void) {
     return -1;
 }
 
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
 #endif

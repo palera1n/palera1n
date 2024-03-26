@@ -244,4 +244,7 @@ void tui_draw_rectangle(int x1, int y1, int x2, int y2) {
     fflush(stdout);
 }
 
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
 #endif

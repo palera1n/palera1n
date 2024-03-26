@@ -431,4 +431,7 @@ tui_screen_t tui_screen_enter_dfu(void) {
     }
     return MAIN_SCREEN;
 }
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
 #endif

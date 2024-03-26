@@ -202,4 +202,7 @@ tui_screen_t tui_screen_enter_recovery(void) {
     tui_enter_recovery_mode_failed = false;
     return MAIN_SCREEN;
 }
+#else
+/* ISO C forbids an empty translation unit */
+extern char** environ;
 #endif
