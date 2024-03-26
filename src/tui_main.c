@@ -24,7 +24,7 @@
 #include <tui.h>
 
 #ifdef __APPLE__
-#include <libproc.h>
+int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 char random_sem_name[sizeof("palera1n.tui_event_semaphore") + 16 + 1];
 #endif
 
@@ -134,7 +134,7 @@ void tui_terminate(int sig) {
 #ifdef __APPLE__
     sem_close(tui_event_semaphore);
     sem_unlink(random_sem_name);
-    char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
+    char pathbuf[4096];
     if (proc_pidpath(getpid(), pathbuf, sizeof(pathbuf)) <= 0) {
         LOG(LOG_FATAL, "Failed to get path of running executable");
         exit(1);
