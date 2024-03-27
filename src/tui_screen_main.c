@@ -15,23 +15,23 @@
 
 bool showing_ecid = false;
 
-char palera1n_logo[17][16] = {
-"       ++       ",
-"      #@@#      ",
-"     +@@@@+     ",
-"    :@@@@@@:    ",
-"    #@@@@@@#    ",
-"   +@@@@@@@@+   ",
-"  :#*@@@@@@*#:  ",
-"  %###@@@@###%  ",
-" .####%@@%####. ",
-" @############@ ",
-"=@@*########*@@=",
-"+@@@@%####%@@@@+",
-":@@@@%%**%%@@@@:",
-" +@@%%*@@*%%@@+ ",        
-"   ++%@@@@%++   ",
-"      :++:      "
+char palera1n_logo[16][17] = {
+"       ++  ",
+"      #@@# ",
+"     +@@@@+",
+"    :@@@@@@",
+"    #@@@@@@",
+"   +@@@@@@@",
+"  :#*@@@@@@",
+"  %###@@@@#",
+" .####%@@%#",
+" @#########",
+"=@@*#######",
+"+@@@@%####%",
+":@@@@%%**%%",
+" +@@%%*@@*%",        
+"   ++%@@@@%",
+"      :++: "
 };
 
 char random_quotes[][150] = {
@@ -39,10 +39,11 @@ char random_quotes[][150] = {
     "Now with Apple TV support!",
     "checkra1n will open source in 2020",
     "Try running palera1n on a Intel 80486!",
-    "\"iOS 15 with SSV is unhackable\" - literally       everyone when iOS 15 was released",
+    "\"iOS 15 with SSV is unhackable\", but here we are.",
     "initproc exited -- exit reason namespace 1 subcode0x7 description: none",
     "totally not checkra1n",
     "Because the command line wasn't easy enough",
+    "Checkra1n wrapper?",
     ""
 };
 
@@ -113,13 +114,13 @@ void tui_screen_main_redraw(void) {
     DRAWLINET(2, 16, 50);
 
     for (int y = 0; y < 16; y++) {
-        PRINTATLENT(80 - 22, y + 4, palera1n_logo[y], 16);
+        PRINTATLENT(80 - 12, y + 4, palera1n_logo[y], 16);
     }
 
     SETCOLOR(FG_YELLOW, BG_BLACK);
     if (tui_connected_devices == NULL) {
-        PRINTATT(3, 5, "Connect your iPhone, iPad, iPod Touch, or Apple TV");
-        PRINTATT(3, 6, "to begin.");
+        PRINTATT(3, 5, "Connect your iPhone, iPad, iPod Touch, or Apple");
+        PRINTATT(3, 6, "TV to begin.");
         tui_can_start = false;
     } else if (tui_connected_devices->next != NULL) {
         PRINTATT(3, 5, "Please attach only one device.");
