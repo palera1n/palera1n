@@ -30,11 +30,6 @@
 #include <paleinfo.h>
 
 pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
-#ifdef TUI
-#include <newt.h>
-pthread_mutex_t tui_log_mutex;
-newtComponent tui_log_output = NULL;
-#endif
 
 bool spin, found_pongo = 0;
 uint64_t ecid_wait_for_dfu = 0;
@@ -88,19 +83,3 @@ uint64_t set_ecid_wait_for_dfu(uint64_t ecid) {
     pthread_mutex_unlock(&ecid_dfu_wait_mutex);
     return ecid;
 }
-
-#ifdef TUI
-newtComponent get_tui_log(void) {
-    pthread_mutex_lock(&tui_log_mutex);
-    newtComponent ret = tui_log_output;
-    pthread_mutex_unlock(&tui_log_mutex);
-    return ret;
-}
-
-newtComponent set_tui_log(newtComponent co) {
-    pthread_mutex_lock(&tui_log_mutex);
-    tui_log_output = co;
-    pthread_mutex_unlock(&tui_log_mutex);
-    return co;
-}
-#endif

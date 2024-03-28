@@ -90,7 +90,17 @@ void log_cb(libusb_context *ctx, enum libusb_log_level level, const char *str) {
 }
 #endif
 
-int palera1n(int argc, char *argv[]) {
+// save argc, argv, and envp for restarting
+
+int saved_argc;
+char** saved_argv;
+char** saved_envp;
+
+int palera1n(int argc, char *argv[], char *envp[]) {
+	saved_argc = argc;
+	saved_argv = argv;
+	saved_envp = envp;
+	
 	print_credits();
 	int ret = 0;
 	pthread_mutex_init(&log_mutex, NULL);
@@ -101,7 +111,7 @@ int palera1n(int argc, char *argv[]) {
 	if ((ret = optparse(argc, argv))) goto cleanup;
 	if (!(palerain_flags & palerain_option_device_info) && (palerain_flags & palerain_option_palerain_version)) goto normal_exit;
 #ifdef TUI
-	if ((palerain_flags & palerain_option_tui)) {
+	if ((palerain_flags & palerain_option_tui) || (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO) && !(palerain_flags & palerain_option_cli))) {
 		ret = tui();
 		if (ret) goto cleanup;
 		else goto normal_exit;
@@ -173,6 +183,6 @@ cleanup:
 }
 
 
-int main (int argc, char* argv[]) {
-	return palera1n(argc, argv);
+int main (int argc, char* argv[], char* envp[]) {
+	return palera1n(argc, argv, envp);
 }

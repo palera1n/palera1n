@@ -26,6 +26,9 @@ extern char **environ;
 extern char* gOverrideLibcheckra1nHelper;
 
 #include <palerain.h>
+#ifdef TUI
+#include <tui.h>
+#endif
 #include <xxd-embedded.h>
 char* pongo_path = NULL;
 bool external_pongo = false;
@@ -156,8 +159,17 @@ checkra1n_exec: {};
 	LOG(LOG_VERBOSE5, args);
 	if (pongo_path != NULL) LOG(LOG_VERBOSE5, pongo_path);
 	pid_t pid;
+	posix_spawn_file_actions_t action;
+    posix_spawn_file_actions_init(&action);
+#ifdef TUI
+	if (tui_is_jailbreaking) {
+		// silence checkra1n
+		posix_spawn_file_actions_addopen(&action, 1, "/dev/null", O_WRONLY, 0);
+		posix_spawn_file_actions_addopen(&action, 2, "/dev/null", O_WRONLY, 0);
+	}
+#endif
 	if (pongo_path != NULL) {
-		ret = posix_spawn(&pid, checkra1n_path, NULL, NULL, (char* []){
+		ret = posix_spawn(&pid, checkra1n_path, &action, NULL, (char* []){
 			checkra1n_path,
 			args,
 			"-k",
@@ -165,12 +177,13 @@ checkra1n_exec: {};
 			NULL
 		}, environ);
 	} else {
-		ret = posix_spawn(&pid, checkra1n_path, NULL, NULL, (char* []){
+		ret = posix_spawn(&pid, checkra1n_path, &action, NULL, (char* []){
 			checkra1n_path,
 			args,
 			NULL
 		}, environ);
 	}
+	posix_spawn_file_actions_destroy(&action);
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
 		if (ext_checkra1n != NULL) unlink(checkra1n_path);

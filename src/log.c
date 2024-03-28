@@ -8,8 +8,15 @@
 #include <ANSI-color-codes.h>
 #include <palerain.h>
 
+#ifdef TUI
+#include <tui.h>
+#endif
+
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, const char *__restrict format, ...)
 {
+#ifdef TUI
+	if (tui_started) return 0;
+#endif
     if (verbose >= 5 
 #ifdef TUI
 	&& !(palerain_flags & palerain_option_tui)
@@ -61,18 +68,6 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		colour[0] = '\0';
 		colour_bold[0] = '\0';
 	}
-#ifdef TUI
-	if ((palerain_flags & palerain_option_tui) && tui_started) {
-		newtComponent co = get_tui_log();
-		if (co == NULL) {
-			return 0; /* 0 bytes printed */
-		}
-		char printbuf[0x200];
-		ret = vsnprintf(printbuf, 0x200, format, args);
-	    pthread_mutex_lock(&log_mutex);
-		newtTextboxSetText(co, printbuf);
-	} else
-#endif
 	{
 		pthread_mutex_lock(&log_mutex);
 		char timestring[0x80];
