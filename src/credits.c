@@ -15,9 +15,9 @@
 #define L "# ========  Made by  =======\n"
 #define E "# Made by: Nick Chan, " THE_PLUSH ", Samara, Mineek, staturnz, " BAKERAIN_DEVELOPE_R ", " NEKO_DEVELOPE_R " \n"
 #define M "# ======== Thanks to =======\n"
-#define A "# Thanks to: llsc12, Nebula, tihmstar, nikias\n"
-#define K "# (libimobiledevice), checkra1n team (Siguza, axi0mx, littlelailo\n"
-#define I "# et al.), Procursus Team (Hayden Seay, Cameron Katri, Keto et.al)\n"
+#define A "# Thanks to: llsc12, Nebula, Lrdsnow, nikias (libimobiledevice),\n"
+#define K "# checkra1n team (Siguza, axi0mx, littlelailo et al.),\n"
+#define I "# Procursus Team (Hayden Seay, Cameron Katri, Keto et.al)\n"
 #define N "# ==========================\n\n"
 #define G );
 #define S }
