@@ -33,7 +33,10 @@
 #define NO_PHYSICAL_HOME_BUTTON (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e)))
 #define IS_APPLE_TV_HD (cpid == 0x7000 && bdid == 0x34)
 #define IS_APPLE_TV_4K (cpid == 0x8011 && bdid == 0x02)
-#define IS_APPLETV (IS_APPLE_TV_4K || IS_APPLE_TV_HD)
+#define IS_APPLE_HOME1 (cpid == 0x7000 && bdid == 0x38)
+#define IS_APPLE_HOME2 (cpid == 0x7000 && bdid == 0x1a)
+#define IS_APPLE_HOME  (IS_APPLE_HOME1 || IS_APPLE_HOME1)
+#define IS_APPLETV (IS_APPLE_TV_4K || IS_APPLE_TV_HD || IS_APPLE_HOME)
 
 int dfuhelper_thr_running = false;
 
@@ -141,6 +144,9 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 		return NULL;
 	}
 #if !defined(DFUHELPER_AUTO_ONLY)
+	if (IS_APPLE_TV_4K) {
+		LOG(LOG_INFO, "Depending on your connection method, you might need to press a button on your cable/board during reboot");
+	}
 	LOG(LOG_INFO, "Press Enter when ready for DFU mode");
 	getchar();
 #endif
@@ -156,22 +162,29 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 			}
 			printf("\r\033[K");
 			step(8, 0, "Hold menu + play button", conditional, ecid);
-		} else {
-			ret = autoboot_cmd(ecid);
+		} else if (IS_APPLE_TV_4K) {
+			step(2, 0, "About to reboot device", NULL, 0);
+			set_ecid_wait_for_dfu(ecid);
+			ret = exitrecv_cmd(ecid);
 			if (ret) {
-				LOG(LOG_ERROR, "Cannot set auto-boot back to true");
+				LOG(LOG_ERROR, "Cannot exit recovery mode");
+				set_ecid_wait_for_dfu(0);
 				return NULL;
 			}
-			LOG(LOG_INFO, "1. Disconnect the device from the power source");
-			LOG(LOG_INFO, "2. Connect the DCSD cable to the computer's USB port. ");
-			LOG(LOG_INFO, "3. Connect the GoldenEye adapter to the DCSD cable (using Lightning)");
-			LOG(LOG_INFO, "4. Connect the GoldenEye cable to the Apple TV 4K");
-			LOG(LOG_INFO, "5. Connect the Apple TV 4K to the power source.");
+			step(4, 0, "Waiting for device to reconnect in DFU mode", conditional, ecid);
+		} else if (IS_APPLE_HOME) {
+			step(6, 4, "Put device in upside down orientation", NULL, 0);
 			set_ecid_wait_for_dfu(ecid);
-			return NULL;
+			ret = exitrecv_cmd(ecid);
+			if (ret) {
+				LOG(LOG_ERROR, "Cannot exit recovery mode");
+				set_ecid_wait_for_dfu(0);
+				return NULL;
+			}
+			step(4, 0, "Put device upside down orientation", conditional, ecid);
 		}
-	} else {
-		if (NO_PHYSICAL_HOME_BUTTON) 
+	} else if (cpid != 0x8012) {
+		if (NO_PHYSICAL_HOME_BUTTON)
 			step(4, 2, "Hold volume down + side button", NULL, 0);
 		else
 			step(4, 2, "Hold home + power button", NULL, 0);
@@ -202,7 +215,6 @@ void* connected_recovery_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
-extern bool force_usbdevice;
 void* connected_dfu_mode(struct irecv_device_info* info) {
 	if (get_ecid_wait_for_dfu() == info->ecid) {
 		set_ecid_wait_for_dfu(0);
@@ -211,7 +223,9 @@ void* connected_dfu_mode(struct irecv_device_info* info) {
 	}
 	unsigned int bdid = info->bdid;
 	unsigned int cpid = info->cpid;
-	if (IS_APPLE_TV_4K) force_usbdevice = true;
+	if (IS_APPLE_HOME) {
+		step(2, 0, "Put device in upright orientation", NULL, 0);
+	}
 	set_spin(0);
 	unsubscribe_cmd();
 	pthread_exit(NULL);
