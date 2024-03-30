@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/palera1n/palera1n?color=%23C96FAD)](https://github.com/palera1n/palera1n/blob/main/LICENSE)
 
 
-This is the official repo for the palera1n jailbreak, a jailbreak for A8 through A11 devices, on iOS 15.0 and higher.
+This is the official repo for the palera1n jailbreak, a jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 6.0 and higher.
 
 ## Warnings
 We are **NOT** responsible for any data loss, or the result of a device being bricked. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself.
@@ -24,7 +24,7 @@ We are **NOT** responsible for any data loss, or the result of a device being br
 - A Linux or macOS computer
 	- AMD CPUs (not AMD Mobile) have an issue [with (likely) their USB controllers] that causes them to have a very low success rate with checkm8. It is not recommended that you use them with palera1n.
 		- If your device does not successfully jailbreak, try a computer with an Intel or other CPU
-    
+
 - Apple Silicon Macs with USB-C
 	- USB-C port on Apple Silicon Macs may require manual unplugging and replugging of the lightning cable after checkm8 exploit.
 	- This problem may be solved by connecting via USB hub, though extensions can vary.
