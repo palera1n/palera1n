@@ -369,7 +369,7 @@ int optparse(int argc, char* argv[]) {
 	} else {
 #ifdef ROOTFUL
 		if ((palerain_flags & (palerain_option_rootless | palerain_option_rootful)) == 0) {
-			LOG(LOG_FATAL, "must specify -l option");
+			LOG(LOG_FATAL, "Please specify rootful (-f) or rootless (-l)");
 			return -1;
 		}
 #else
