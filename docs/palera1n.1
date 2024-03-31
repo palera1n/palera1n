@@ -317,7 +317,7 @@ This will also bootstrap your device.
 A built-in SSH server runs on port 44 on all interfaces.
 .Sh POST INSTALLATION (bridgeOS)
 .Pp
-A built-in SSH server runs on port 22 on all interfaces.
+A built-in SSH server runs on port 44 on all interfaces.
 .Pp
 Bootstrapping is currently not supported on this device.
 .Sh FILES
@@ -359,6 +359,9 @@ The device may randomly crash and reboot due to launchd using too much memory.
 The built-in SSH server might be not accessible with password after bootstrapping rootful,
 since the bootstrap uses a custom crypt() function that is not supported
 by the built-in SSH server.
+.Pp
+There are no DFU instructions for iBridge T2 as there are no known ways to connect to the T2's USB
+interface when macOS has been booted.
 .Sh DEPRECATED AND REMOVED FUNCTIONALITY
 There was an option in
 .Nm
@@ -377,6 +380,7 @@ has been removed, since it leaks memory in launchd.
 .Xr launchd 8
 .Xr launchd.plist 5
 .Xr ldid 1
+.Xr p1ctl 8
 .Sh HISTORY
 The
 .Nm
