@@ -324,8 +324,6 @@ jobs:
       - name: Build palera1n (Development)
         run: |
           CC="${{ matrix.triple }}-gcc" gmake -j$(sysctl -n hw.ncpu) clean
-          rm -f src/ramdisk.dmg src/binpack.dmg
-          curl -LOO src/ramdisk.dmg src/binpack.dmg https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.development.dmg https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.development.dmg
           CC="${{ matrix.triple }}-gcc" gmake -j$(sysctl -n hw.ncpu) DEV_BUILD=1 TUI=1 ROOTFUL=1
           cp src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
 
@@ -809,12 +807,10 @@ jobs:
           ${{ matrix.triple }}-strip --strip-debug --strip-unneeded palera1n.release
           ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug palera1n.release
           chmod -x palera1n.debug
-
+      
       - name: Build palera1n (Development)
         run: |
           CC="${{ matrix.triple }}-gcc" make -j$(nproc) clean
-          rm -f src/ramdisk.dmg src/binpack.dmg
-          curl -LOO src/ramdisk.dmg src/binpack.dmg https://cdn.nickchan.lol/palera1n/c-rewrite/deps/ramdisk.development.dmg https://cdn.nickchan.lol/palera1n/c-rewrite/deps/binpack.development.dmg
           CC="${{ matrix.triple }}-gcc" make -j$(nproc) DEV_BUILD=1 TUI=1 ROOTFUL=1
           cp src/palera1n palera1n.development
 
