@@ -36,9 +36,11 @@ void *pongo_usb_callback(stuff_t *arg) {
 	if (get_found_pongo())
 		return NULL;
 	set_found_pongo(1);
+#ifdef ROOTFUL
 	if ((palerain_flags & palerain_option_setup_rootful)) {
 		strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);	
 	}
+#endif
 	LOG(LOG_INFO, "Found PongoOS USB Device");
 	usb_device_handle_t handle = arg->handle;
 #ifdef TUI
@@ -109,6 +111,7 @@ void *pongo_usb_callback(stuff_t *arg) {
 #endif
 	issue_pongo_command(handle, "bootx");
 	LOG(LOG_INFO, "Booting Kernel...");
+#ifdef ROOTFUL
 	if ((palerain_flags & palerain_option_setup_partial_root)) {
 		LOG(LOG_INFO, "Please wait up to 5 minutes for the bindfs to be created.");
 		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -B (Create BindFS) option to jailbreak.");
@@ -116,6 +119,7 @@ void *pongo_usb_callback(stuff_t *arg) {
 		LOG(LOG_INFO, "Please wait up to 10 minutes for the fakefs to be created.");
 		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -c (Create FakeFS) option to jailbreak.");
 	}
+#endif
 	if (dfuhelper_thr_running) {
 		pthread_cancel(dfuhelper_thread);
 		dfuhelper_thr_running = false;

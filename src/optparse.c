@@ -119,7 +119,7 @@ static int usage(int e, char* prog_name)
 
 #ifdef TUI
 			"\t-t, --tui\t\t\t\tForce interactive TUI\n"
-			"\t--cli\t\t\t\tForce cli mode\n"
+			"\t--cli\t\t\t\t\tForce cli mode\n"
 #endif
 		"\nEnvironmental variables:\n"
 		"\tTMPDIR\t\ttemporary diretory (path the built-in checkra1n will be extracted to)\n"
@@ -136,10 +136,13 @@ int optparse(int argc, char* argv[]) {
 #ifdef DEV_BUILD
 	"12"
 #endif
+#ifdef ROOTFUL
 	"fCcB"
+#endif
 	,longopts, NULL)) != -1)
 	{
 		switch (opt) {
+#ifdef ROOTFUL
 		case 'B':
 			palerain_flags |= palerain_option_setup_partial_root;
 			palerain_flags |= palerain_option_setup_rootful;
@@ -152,6 +155,7 @@ int optparse(int argc, char* argv[]) {
 		case 'C':
 			palerain_flags |= palerain_option_clean_fakefs;
 			break;
+#endif
 		case 'p':
 			palerain_flags |= palerain_option_pongo_exit;
 			break;
@@ -187,10 +191,12 @@ int optparse(int argc, char* argv[]) {
 			snprintf(tui_options_boot_args, sizeof(tui_options_boot_args), "%s", optarg);
 #endif
 			break;
+#ifdef ROOTFUL
 		case 'f':
 			palerain_flags |= palerain_option_rootful;
 			palerain_flags &= ~palerain_option_rootless;
 			break;
+#endif
 		case 'l':
 			palerain_flags &= ~palerain_option_rootful;
 			palerain_flags |= palerain_option_rootless;
@@ -391,13 +397,14 @@ int optparse(int argc, char* argv[]) {
 		LOG(LOG_VERBOSE4, "overlay override length %" PRIu32 " -> %" PRIu32, override_overlay.orig_len, binpack_dmg_len);
 		LOG(LOG_VERBOSE4, "overlay override ptr %p -> %p", override_overlay.orig_ptr, **overlay_to_upload);
 	}
-
+#ifdef ROOTFUL
 	if (!(palerain_flags & palerain_option_rootful)) {
 		if ((palerain_flags & palerain_option_setup_rootful)) {
 			LOG(LOG_FATAL, "Cannot setup rootful when rootless is requested. Use -f to enable rootful mode.");
 			return -1;
 		}
 	}
+#endif
 	if (!(
 			(palerain_flags & palerain_option_dfuhelper_only) ||
 			(palerain_flags & palerain_option_enter_recovery) ||
