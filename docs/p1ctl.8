@@ -1,0 +1,104 @@
+.\"-
+.\" Copyright (c.Xc 2024 Nick Chan
+.\" SPDX-License-Identifier: MIT
+.\"
+.Dd "6 April 2024"
+.Dt p1ctl 8
+.Sh NAME
+.Nm p1ctl
+.Nd command-line access to palera1n loader
+.Sh SYNOPSIS
+.Nm
+.Ar subcommand
+.Op subcommand options
+.Op subcommand arguments
+.Sh DESCRIPTION
+.Nm
+provide a command-line interface to the graphical palera1n loader.
+.Pp
+.Nm
+interfaces with the palera1n daemon as well as palera1n's launchd hook.
+
+.Sh SUBCOMMANDS
+.Bl -tag -width -indent
+.It Xo Ar bootstrap Op Fl s
+.Op Fl S Ar password
+.Ar bootstrap-file
+.Xc
+Deploy a bootstrap from a zstd compressed tarball. With no additional options specified,
+a new password for the mobile user will be prompted for. The bootstrap you are deploying
+must match the jailbreak type (rootful or rootless) you are using.
+.Bl -tag -width -indent
+.It Fl s
+Do not prompt for the password and do not set the mobile password.
+.It Fl S Ar password
+Do not prompt and set the mobile password to the password specified.
+.El
+.Pp
+.Em NOTE:
+Unlike the graphical palera1n loader, this command only deploys the bootstrap itself,
+it does not add additional repositories nor install additional packages.
+.It Xo Ar exitsafe
+.Xc
+Exit
+.Nm palera1n
+safe mode, and trigger a userspace reboot. This command will succeed
+even if the device is not currently in safe mode. In this case, a userspace reboot
+is still triggered.
+.Pp
+.Em NOTE:
+Many tweak injection packages also provide their own safe mode, p1ctl does not
+recognize and cannot control those safe modes.
+.It Xo Ar kbase
+.Xc
+Print a hexadecimal representation of the kernel base.
+.It Xo Ar kslide
+.Xc
+Print a hexadecimal representation of the kernel slide.
+.It Xo Ar palera1n_flags
+.Xc
+Print a representation of the palera1n flags, which corresponds to the options passed
+to
+.Xr palera1n 1
+as well as hints to the palera1n userspace stack set by
+.Nm PongoOS
+\[char46]
+By default, a hexadecimal representation of the flags will be printed.
+.Bl -tag -width -indent
+.It Fl d
+Read the flags from the ramdisk block device instead of getting them by interfacing with palera1n daemon.
+.It Fl s
+Print a string representation of the flags. Each line will contain one flag, and the strings always start
+with palerain_option_, and unknown flags are represented as palerain_option_undefined.
+.El
+.It Xo Ar reboot-userspace
+.Xc
+Unmount /Developer if mounted and then reboot the userspace.
+This command exists because the /Developer mount will be broken
+after a plain userspace reboot, which breaks debugging in Xcode.
+.Nm palera1n
+also hooks the
+.Xr reboot3 3
+call so that rebooting userspace using
+.Xr launchctl 1
+does not break the /Developer mount.
+.It Xo Ar reload
+.Xc
+Causes the
+.Nm palera1n
+launchd hook to re-probe the environment and update its internal state.
+This will affect the internal environmental variables passed onto new processes,
+and is typically used after bootstrapping or reverting installs.
+.It Xo Ar revert-install
+.Xc
+Remove jailbreak files from the device. This command is not supported on rootful with fakefs. On rootful with realfs, the device will reboot after issuing this command.
+.Pp
+To remove jailbreak files on rootful with fakefs, use
+.Xr palera1n 1
+on your computer with the
+.Fl -force-revert
+.Fl f
+options instead.
+.El
+.Sh SEE ALSO
+.Xr palera1n 1

@@ -1,9 +1,9 @@
-PAGES = palera1n.1.html
+PAGES = palera1n.1.html p1ctl.8.html
 
 all: $(PAGES)
 
-%.1.html: %.1
-	mandoc -T html -O style=mandoc.css palera1n.1 > palera1n.1.html
+%.html: %
+	mandoc -T html -O style=mandoc.css $< > $@
 
 clean:
 	rm -f $(PAGES)
