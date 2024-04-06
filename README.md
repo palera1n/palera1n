@@ -4,7 +4,7 @@
 [![GitHub License](https://img.shields.io/github/license/palera1n/palera1n?color=%23C96FAD)](https://github.com/palera1n/palera1n/blob/main/LICENSE)
 
 
-Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 6.0 and higher.
+Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 and higher.
 
 
 
