@@ -76,8 +76,8 @@ static int usage(int e, char* prog_name)
 			"t"
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
-			"Copyright (C) 2023, palera1n team, All Rights Reserved.\n\n"
-			"iOS/iPadOS 15.0-17.5 arm64 jailbreaking tool\n\n"
+			"Copyright (C) 2024, palera1n team, All Rights Reserved.\n\n"
+			"iOS/iPadOS/tvOS 15.0-17.5, bridgeOS 5.0-8.3 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
 #ifdef DEV_BUILD
