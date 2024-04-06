@@ -72,7 +72,7 @@ usb_ret_t USBBulkUpload(usb_device_handle_t handle, void *data, uint32_t len);
 #endif
 
 #ifndef PALERAIN_VERSION
-#define PALERAIN_VERSION "2.0.0"
+#define PALERAIN_VERSION "2.0"
 #endif
 
 #if defined(__APPLE__)
