@@ -93,4 +93,4 @@ Make sure you're following the guides provided [here](https://palera.in), also w
 - Verbose from palera1n (specifying `-Vv` within palera1n)
 - Panic logs, if panicked then send latest `panic-full` log from your device.
 
-Then join the [Support Discord](https://dsc.gg/palera1n)
+Create an issue here: https://github.com/palera1n/palera1n/issues/new/choose
