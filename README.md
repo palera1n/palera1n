@@ -14,6 +14,10 @@ Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 
 | A screenshot of palera1n being used in a Terminal | 
 
 ## Device Support
+
+> [!NOTE]  
+> Apple TV & iBridge support are not currently in the beta releases of palera1n, ETA s0n
+
 <!--- Mobile --->
 
 | iPhone(s)                 | iPad(s)                        		| iPod(s)   					| Apple TV(s) 					|
