@@ -1,0 +1,12 @@
+name: No Template
+description: Create a standard issue, no template involved.
+labels: [palera1n]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description:
+      placeholder: Anyone else has issues with ...? If so, I found a solution.
+    validations:
+      required: true

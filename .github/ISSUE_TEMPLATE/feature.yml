@@ -1,0 +1,21 @@
+name: Feature Request
+description: Request a feature in palera1n!
+labels: [enhancement, palera1n]
+body:
+  - type: textarea
+    id: feature-request
+    attributes:
+      label: Feature Description
+      description:
+      placeholder: I want ... to be added to palera1n, because ...
+    validations:
+      required: true
+  - type: textarea
+    id: detailed-description
+    attributes:
+      label: Start going into detail..
+      description:
+      placeholder: I think it should also include ..., because of convenience.
+    validations:
+      required: false
+      
