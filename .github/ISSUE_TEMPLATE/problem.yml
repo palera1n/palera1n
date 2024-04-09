@@ -24,8 +24,8 @@ body:
       label: Passcode?
       description: Is your passcode enabled? 
       options:
-        - label: 
-          required: true
+        - label: Passcode is enabled.
+          required: false
   - type: textarea
     id: detailed-description
     attributes:
@@ -34,14 +34,13 @@ body:
       placeholder: My device couldn't boot jailbroken. I have checked ... using ..., none of the solutions I've been given are working for me. I don't know what to do.
     validations:
       required: true
-
   - type: checkboxes
     id: familiarity
     attributes:
       label: Familiarity
       description: Are you familiar with palera1n and how to use it?
       options:
-        - label: 
+        - label: I am familiar with palera1n and how to use it!
           required: false
   - type: checkboxes
     id: familiarity-command-line
@@ -49,5 +48,5 @@ body:
       label: 
       description: Are you familiar with the command-line in anyway? (i.e. Terminal.app, Konsole)
       options:
-        - label: 
+        - label: I am familiar with the command-line!
           required: false
