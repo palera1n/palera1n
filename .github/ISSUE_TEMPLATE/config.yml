@@ -3,7 +3,6 @@ contact_links:
   - name: Mention us on X (formerly know as Twitter)!
     url: https://twitter.com/palera1n
     about: Mention us about your issue if you're not comfortable with using Github issues.
-
   - name: Support Server
     url: https://dsc.gg/palera1n
     about: If none of these options are available, you can also join the support Discord. Though please bare in mind that we prefer using Github issues and may not be able to see what you have sent in the Discord.
