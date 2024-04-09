@@ -1,4 +1,4 @@
-name: palera1n Issue
+name: Create Issue
 description: Ask help for palera1n regarding support or generally how it works! 
 labels: [palera1n]
 body:
@@ -37,7 +37,7 @@ body:
   - type: checkboxes
     id: familiarity
     attributes:
-      label: Familiarity
+      label: Familiarity with palera1n
       description: Are you familiar with palera1n and how to use it?
       options:
         - label: I am familiar with palera1n and how to use it!
@@ -45,7 +45,7 @@ body:
   - type: checkboxes
     id: familiarity-command-line
     attributes:
-      label: 
+      label: Familiarity with CLI
       description: Are you familiar with the command-line in anyway? (i.e. Terminal.app, Konsole)
       options:
         - label: I am familiar with the command-line!
