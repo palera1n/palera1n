@@ -39,6 +39,7 @@ static struct option longopts[] = {
 	{"force-revert", no_argument, NULL, palerain_option_case_force_revert},
 	{"no-colors", no_argument, NULL, 'S'},
 	{"safe-mode", no_argument, NULL, 's'},
+	{"telnetd", no_argument, NULL, 'T'},
 	{"version", no_argument, NULL, palerain_option_case_version},
 	{"override-libcheckra1nhelper", required_argument, NULL, palerain_option_case_libcheckra1nhelper_path},
 	{"override-pongo", required_argument, NULL, 'k'},
@@ -65,7 +66,7 @@ static int usage(int e, char* prog_name)
 {
 	fprintf(stderr,
 	"Usage: %s [-"
-	"DEhpvVldsSLRnPI"
+	"DEhpvVldsSTLRnPI"
 #ifdef DEV_BUILD
 			"12"
 #endif
@@ -113,6 +114,7 @@ static int usage(int e, char* prog_name)
 			"\t-R, --reboot-device\t\t\tReboot connected device in normal mode\n"
 			"\t-s, --safe-mode\t\t\t\tEnter safe mode\n"
 			"\t-S, --no-colors\t\t\t\tDisable colors on the command line\n"
+			"\t-T, --telnetd\t\t\t\tEnable TELNET daemon on port 46 (insecure)\n"
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
@@ -132,7 +134,7 @@ int optparse(int argc, char* argv[]) {
 	int opt;
 	int index;
 	while ((opt = getopt_long(argc, argv,
-	"DEhpvVlLdsStRnPIe:o:r:K:k:i:"
+	"DEhpvVlLdsSTtRnPIe:o:r:K:k:i:"
 #ifdef DEV_BUILD
 	"12"
 #endif
@@ -215,6 +217,9 @@ int optparse(int argc, char* argv[]) {
 #ifdef TUI
 			tui_options_safe_mode = true;
 #endif
+			break;
+		case 'T':
+			palerain_flags |= palerain_option_telnetd;
 			break;
 		case 'k':
 			if (access(optarg, F_OK) != 0) {
@@ -358,6 +363,10 @@ int optparse(int argc, char* argv[]) {
 			"Build options: " BUILD_OPTIONS "\n"
 		);
 		return 0;
+	}
+
+	if (palerain_flags & palerain_option_telnetd) {
+		LOG(LOG_WARNING, "telnetd is enabled");
 	}
 
 	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && (palerain_flags & palerain_option_setup_rootful)) {

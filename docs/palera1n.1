@@ -9,7 +9,7 @@
 .Nd arm64 iOS/iPadOS/tvOS 15.0-17.5, bridgeOS 5.0-8.3 jailbreaking tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl cCdDEfhIlLnpRsSvV
+.Op Fl cCdDEfhIlLnpRsSTvV
 .Op Fl e Ar Boot arguments
 .Op Fl k Ar Pongo image
 .Op Fl o Ar overlay file
@@ -221,6 +221,8 @@ section below) will be executed. The loader app and the built in SSH server can 
 as well as any jailbreak-specific apps you have installed.
 .It Fl S , -no-colors
 Disable colors on the command line. External programs like checkra1n clones may still output colors.
+.It Fl T , -telnetd
+Enable the TELNET daemon on port 46, all interfaces. Please note that there is no authentication and is therefore insecure.
 .It Fl v , -debug-logging
 Enable debug logging. The option may be repeated for extra verbosity.
 .It Fl V , -verbose-boot
