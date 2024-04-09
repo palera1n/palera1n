@@ -1,6 +1,8 @@
 name: Create Issue
+title: "[Issue]: "
 description: Ask help for palera1n regarding support or generally how it works! 
 labels: [palera1n]
+assignees: [ssalggnikool, asdfugil]
 body:
   - type: input
     id: device
