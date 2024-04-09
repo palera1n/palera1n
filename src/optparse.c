@@ -366,7 +366,7 @@ int optparse(int argc, char* argv[]) {
 	}
 
 	if (palerain_flags & palerain_option_telnetd) {
-		LOG(LOG_WARNING, "telnetd is enabled");
+		LOG(LOG_WARNING, "telnetd is enabled, this is a security hole");
 	}
 
 	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && (palerain_flags & palerain_option_setup_rootful)) {
