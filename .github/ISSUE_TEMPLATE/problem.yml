@@ -1,0 +1,69 @@
+name: palera1n Issue
+description: Ask help for palera1n regarding support or generally how it works! 
+labels: [up for grabs]
+body:
+
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: What is the device that you're using with palera1n? (iPhone, iPad, iPod Touch, appleTV, iBridge (T2))
+      placeholder: iPhone X
+    validations:
+      required: true
+
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What is version you're running? (i.e. iOS, iPadOS, tvOS, bridgeOS
+      placeholder: iOS 15.6
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What is version you're running? (i.e. iOS, iPadOS, tvOS, bridgeOS
+      placeholder: iOS 15.6
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: passcode-enabled
+    attributes:
+      label: Passcode?
+      description: Is your passcode enabled? 
+      options:
+        - label: 
+          required: true
+
+  - type: textarea
+    id: detailed-description
+    attributes:
+      label: Start going into detail..
+      description:
+      placeholder: My device couldn't boot jailbroken. I have checked ... using ..., none of the solutions I've been given are working for me. I don't know what to do.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: familiarity
+    attributes:
+      label: Familiarity
+      description: Are you familiar with palera1n and how to use it?
+      options:
+        - label: 
+          required: false
+
+
+  - type: checkboxes
+    id: familiarity-command-line
+    attributes:
+      label: 
+      description: Are you familiar with the command-line in anyway? (i.e. Terminal.app, Konsole)
+      options:
+        - label: 
+          required: false
