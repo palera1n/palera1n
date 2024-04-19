@@ -14,9 +14,6 @@
 #include <palerain.h>
 #include <sys/mman.h>
 #include <inttypes.h>
-#ifdef TUI
-#include <tui.h>
-#endif
 
 uint64_t* palerain_flags_p = &palerain_flags;
 static bool force_use_verbose_boot = false;
@@ -55,10 +52,6 @@ static struct option longopts[] = {
 	{"test1", no_argument, NULL, '1'},
 	{"test2", no_argument, NULL, '2'},
 #endif
-#ifdef TUI
-	{"tui", no_argument, NULL, 't'},
-	{"cli", no_argument, NULL, palerain_option_case_cli},
-#endif
 	{NULL, 0, NULL, 0}
 };
 
@@ -72,9 +65,6 @@ static int usage(int e, char* prog_name)
 #endif
 #ifdef ROOTFUL
 			"cCfB"
-#endif
-#ifdef TUI
-			"t"
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2024, palera1n team, All Rights Reserved.\n\n"
@@ -118,11 +108,6 @@ static int usage(int e, char* prog_name)
 			"\t-v, --debug-logging\t\t\tEnable debug logging\n"
 			"\t\tThis option can be repeated for extra verbosity.\n"
 			"\t-V, --verbose-boot\t\t\tVerbose boot\n"
-
-#ifdef TUI
-			"\t-t, --tui\t\t\t\tForce interactive TUI\n"
-			"\t--cli\t\t\t\t\tForce cli mode\n"
-#endif
 		"\nEnvironmental variables:\n"
 		"\tTMPDIR\t\ttemporary diretory (path the built-in checkra1n will be extracted to)\n"
 			,
@@ -176,9 +161,6 @@ int optparse(int argc, char* argv[]) {
 		case 'V':
 			palerain_flags |= palerain_option_verbose_boot;
 			force_use_verbose_boot = true;
-#ifdef TUI
-			tui_options_verbose_boot = true;
-#endif
 			break;
 		case 'e':
 			if (strstr(optarg, "rootdev=") != NULL) {
@@ -189,9 +171,6 @@ int optparse(int argc, char* argv[]) {
                 return -1;
             }
 			snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", optarg);
-#ifdef TUI
-			snprintf(tui_options_boot_args, sizeof(tui_options_boot_args), "%s", optarg);
-#endif
 			break;
 #ifdef ROOTFUL
 		case 'f':
@@ -214,9 +193,6 @@ int optparse(int argc, char* argv[]) {
 			break;
 		case 's':
 			palerain_flags |= palerain_option_safemode;
-#ifdef TUI
-			tui_options_safe_mode = true;
-#endif
 			break;
 		case 'T':
 			palerain_flags |= palerain_option_telnetd;
@@ -309,14 +285,6 @@ int optparse(int argc, char* argv[]) {
 		case 'S':
 			palerain_flags |= palerain_option_no_colors;
 			break;
-#ifdef TUI
-		case 't':
-			palerain_flags |= palerain_option_tui;
-			break;
-		case palerain_option_case_cli:
-			palerain_flags |= palerain_option_cli;
-			break;
-#endif
 #ifdef DEV_BUILD
 		case '1':
 			palerain_flags |= palerain_option_test1;
@@ -327,9 +295,6 @@ int optparse(int argc, char* argv[]) {
 #endif
 		case palerain_option_case_force_revert:
 			palerain_flags |= palerain_option_force_revert;
-#ifdef TUI
-			tui_options_force_revert = true;
-#endif
 			break;
 		case palerain_option_case_version:
 			palerain_flags |= palerain_option_palerain_version;
@@ -373,14 +338,7 @@ int optparse(int argc, char* argv[]) {
 		palerain_flags &= ~palerain_option_verbose_boot;
 	}
 
-	if ((palerain_flags & (palerain_option_tui)) && (palerain_flags & (palerain_option_cli))) {
-		LOG(LOG_FATAL, "cannot specify both --tui and --cli");
-		return -1;
-	}
-
 	if ((palerain_flags & (palerain_option_exit_recovery | palerain_option_enter_recovery | palerain_option_reboot_device | palerain_option_device_info | palerain_option_dfuhelper_only | palerain_option_pongo_exit | palerain_option_pongo_full)) > 0) {
-		palerain_flags &= ~palerain_option_tui;
-		palerain_flags |= palerain_option_cli;
 	} else {
 #ifdef ROOTFUL
 		if ((palerain_flags & (palerain_option_rootless | palerain_option_rootful)) == 0) {
@@ -391,7 +349,7 @@ int optparse(int argc, char* argv[]) {
 		palerain_flags |= palerain_option_rootless;
 #endif
 	}
-    
+
 	snprintf(palerain_flags_cmd, 0x30, "palera1n_flags 0x%" PRIx64, palerain_flags);
 	LOG(LOG_VERBOSE3, "palerain_flags: %s", palerain_flags_cmd);
 	if (override_kpf.magic == OVERRIDE_MAGIC) {

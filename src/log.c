@@ -8,20 +8,9 @@
 #include <ANSI-color-codes.h>
 #include <palerain.h>
 
-#ifdef TUI
-#include <tui.h>
-#endif
-
 int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxname, const char *__restrict format, ...)
 {
-#ifdef TUI
-	if (tui_started) return 0;
-#endif
-    if (verbose >= 5 
-#ifdef TUI
-	&& !(palerain_flags & palerain_option_tui)
-#endif
-	) fprintf(stderr, "p1_log: loglevel %d from %s:%d:%s()\n", loglevel, fname, lineno, fxname);
+    if (verbose >= 5) fprintf(stderr, "p1_log: loglevel %d from %s:%d:%s()\n", loglevel, fname, lineno, fxname);
 	int ret = 0;
 	char type[0x10];
 	char colour[0x10];
@@ -30,9 +19,6 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 	va_start(args, format);
 	if (verbose < (loglevel - 3) && loglevel > LOG_INFO) {
         if (verbose >= 5
-#ifdef TUI
-		&& !tui_started
-#endif
 ) fprintf(stderr, "p1_log: hid log with high log level (%d < %d)\n", verbose, loglevel - 3);
         return 0;
     }

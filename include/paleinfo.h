@@ -25,7 +25,6 @@ typedef uint64_t palerain_option_t;
 #define palerain_option_ssv                  (UINT64_C(1) << 7) /* has signed system volume */
 // (UINT64_C(1) << 8) /* reserved */
 #define palerain_option_clean_fakefs         (UINT64_C(1) << 9) /* clean fakefs, but does not delete it */
-#define palerain_option_tui                  (UINT64_C(1) << 10) /* terminal user interface */
 // #define palerain_option_gui               (UINT64_C(1) << 11) /* graphical user interface*/
 #define palerain_option_dfuhelper_only       (UINT64_C(1) << 12) /* dfuhelper only */
 #define palerain_option_pongo_exit           (UINT64_C(1) << 13) /* boot to clean pongo shell */
@@ -46,7 +45,6 @@ typedef uint64_t palerain_option_t;
 // #define palerain_option_sf_launchdaemons  (UINT64_C(1) << 28) /* safe mode with launchdaemons */
 // #define palerain_option_emerg_mode        (UINT64_C(1) << 29) /* emergency mode (early boot usb shell) */
 #define palerain_option_jbinit_log_to_file   (UINT64_C(1) << 30) /* deprecated (kept for compatibility) */
-#define palerain_option_cli                  (UINT64_C(1) << 31) /* CLI mode */
 #define palerain_option_telnetd              (UINT64_C(1) << 32) /* Enable TELNET daemon */
 
 #define palerain_option_flower_chain         (UINT64_C(1) << 61) /* Flower chain */

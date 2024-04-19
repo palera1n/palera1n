@@ -80,9 +80,6 @@ int build_checks(void) {
 	return 0;
 }
 
-#ifdef TUI
-bool tui_started = false;
-#endif
 
 #ifdef USE_LIBUSB
 void log_cb(libusb_context *ctx, enum libusb_log_level level, const char *str) {
@@ -110,13 +107,6 @@ int palera1n(int argc, char *argv[], char *envp[]) {
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
 	if (!(palerain_flags & palerain_option_device_info) && (palerain_flags & palerain_option_palerain_version)) goto normal_exit;
-#ifdef TUI
-	if ((palerain_flags & palerain_option_tui) || (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO) && !(palerain_flags & palerain_option_cli))) {
-		ret = tui();
-		if (ret) goto cleanup;
-		else goto normal_exit;
-	}
-#endif
 #ifdef USE_LIBUSB
 	{
 		libusb_set_log_cb(NULL, log_cb, LIBUSB_LOG_CB_GLOBAL);
