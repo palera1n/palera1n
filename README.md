@@ -87,7 +87,7 @@ We are **NOT** responsible for any data loss, or the result of a device being br
 
 ## Troubleshooting
 Make sure you're following the guides provided [here](https://palera.in), also when asking for support make sure you provide full details on your device, such as:
-- iPhone/iPad/iPod
+- iPhone/iPad/iPod/Apple TV
 - iOS Version
 - Passcode enabled?
 - Verbose from palera1n (specifying `-Vv` within palera1n)
