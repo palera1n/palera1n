@@ -132,9 +132,9 @@ jobs:
           echo "CC=$(xcrun --find cc)" >> $GITHUB_ENV
           echo "CXX=$(xcrun --find c++)" >> $GITHUB_ENV
           echo "CPP=$(xcrun --find cc) -E" >> $GITHUB_ENV
-          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os -g -flto=full -Wl,-object_path_lto,lto.o" >> $GITHUB_ENV
-          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
-          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os" >> $GITHUB_ENV
+          echo "CFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Os -g -flto=full -Wl,-object_path_lto,lto.o -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
+          echo "CPPFLAGS=-g -Os -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isysroot ${{ env.SDK }} -isystem $(pwd)/sysroot/usr/local/include -Wno-error-implicit-function-declaration -Os -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++ -g -Os -isysroot ${{ env.SDK }} -arch ${{ matrix.arch }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -isystem $(pwd)/sysroot/usr/local/include -Os -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,-dead_strip -arch ${{ matrix.arch }} -isysroot ${{ env.SDK }} -m${{ matrix.os }}-version-min=${{ matrix.minos }} -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "CFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Os" >> $GITHUB_ENV
           echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Os" >> $GITHUB_ENV
@@ -592,8 +592,8 @@ jobs:
               ;;
           esac
           echo "PKG_CONFIG_PATH=$(pwd)/sysroot/usr/local/lib/pkgconfig" >> $GITHUB_ENV
-          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
-          echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
+          echo "CXXFLAGS=-g -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64" >> $GITHUB_ENV
           echo "LDFLAGS=-g -Wl,--gc-sections -fdata-sections -ffunction-sections -I$(pwd)/sysroot/usr/local/include -L$(pwd)/sysroot/usr/local/lib" >> $GITHUB_ENV
           echo "INSTALL=$(command -v install) --strip-program=${{ matrix.triple }}-strip" >> $GITHUB_ENV
           echo "DESTDIR=$(pwd)/sysroot" >> $GITHUB_ENV
@@ -807,7 +807,7 @@ jobs:
           ${{ matrix.triple }}-strip --strip-debug --strip-unneeded palera1n.release
           ${{ matrix.triple }}-objcopy --add-gnu-debuglink=palera1n.debug palera1n.release
           chmod -x palera1n.debug
-      
+
       - name: Build palera1n (Development)
         run: |
           CC="${{ matrix.triple }}-gcc" make -j$(nproc) clean
@@ -836,7 +836,7 @@ jobs:
 
           sed 's|@DEB_ARCH@|${{ env.ARCH_NAME }}|g' -i stage/DEBIAN/control
           sed "s|@DEB_VERSION@|$version|g" -i stage/DEBIAN/control
-          
+
           install -Dm644 ready/binaries/palera1n-${{ env.CHECKRA1N_NAME }} stage/usr/bin/palera1n
           gzip -c9 docs/palera1n.1 > stage/usr/share/man/man1/palera1n.1.gz
           chmod 755 stage/usr/bin/palera1n
