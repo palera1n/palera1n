@@ -40,10 +40,6 @@ int exec_checkra1n(void) {
 	LOG(LOG_INFO, "About to execute checkra1n");
 	int fd_checkra1n, fd_pongo, ret;
 	char* checkra1n_path = NULL;
-	if (ext_checkra1n != NULL) {
-		checkra1n_path = ext_checkra1n;
-		goto checkra1n_exec;
-	}
 #ifndef NO_CUSTOM_PONGO
 	if (pongo_path == NULL) {
 		pongo_path = malloc(strlen(tmpdir) + 20);
@@ -69,36 +65,40 @@ int exec_checkra1n(void) {
 		}
 	} else external_pongo = true;
 #endif
-	checkra1n_path = malloc(strlen(tmpdir) + 20);
-	if (checkra1n_path == NULL) {
-		LOG(LOG_FATAL, "memory allocation failed\n");
-		return -1;
-	}
-	snprintf(checkra1n_path, strlen(tmpdir) + 20, "%s/checkra1n.XXXXXX", tmpdir);
-	fd_checkra1n = mkstemp(checkra1n_path);
-	if (fd_checkra1n == -1) {
-		LOG(LOG_FATAL, "Cannot open temporary file %s: %d (%s)", checkra1n_path, errno, strerror(errno));
-		free(checkra1n_path);
-		checkra1n_path = NULL;
-		return -1;
-	}
-	ssize_t didWrite_checkra1n = write(fd_checkra1n, checkra1n, checkra1n_len);
-	if (didWrite_checkra1n != (ssize_t)checkra1n_len) {
-		LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %" PRIu32 ": %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
+	if (ext_checkra1n != NULL) {
+		checkra1n_path = ext_checkra1n;
+	} else {
+		checkra1n_path = malloc(strlen(tmpdir) + 20);
+		if (checkra1n_path == NULL) {
+			LOG(LOG_FATAL, "memory allocation failed\n");
+			return -1;
+		}
+		snprintf(checkra1n_path, strlen(tmpdir) + 20, "%s/checkra1n.XXXXXX", tmpdir);
+		fd_checkra1n = mkstemp(checkra1n_path);
+		if (fd_checkra1n == -1) {
+			LOG(LOG_FATAL, "Cannot open temporary file %s: %d (%s)", checkra1n_path, errno, strerror(errno));
+			free(checkra1n_path);
+			checkra1n_path = NULL;
+			return -1;
+		}
+		ssize_t didWrite_checkra1n = write(fd_checkra1n, checkra1n, checkra1n_len);
+		if (didWrite_checkra1n != (ssize_t)checkra1n_len) {
+			LOG(LOG_FATAL, "Size written to %s does not match expected: %zd != %" PRIu32 ": %d (%s)", checkra1n_path, didWrite_checkra1n, checkra1n_len, errno, strerror(errno));
+			close(fd_checkra1n);
+			unlink(checkra1n_path);
+			free(checkra1n_path);
+			checkra1n_path = NULL;
+			return -1;
+		}
 		close(fd_checkra1n);
-		unlink(checkra1n_path);
-		free(checkra1n_path);
-		checkra1n_path = NULL;
-		return -1;
-	}
-	close(fd_checkra1n);
-	ret = chmod(checkra1n_path, 0700);
-	if (ret) {
-		LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", checkra1n_path, errno, strerror(errno));
-		unlink(checkra1n_path);
-		free(checkra1n_path);
-		checkra1n_path = NULL;
-		return -1;
+		ret = chmod(checkra1n_path, 0700);
+		if (ret) {
+			LOG(LOG_FATAL, "Cannot chmod %s: %d (%s)", checkra1n_path, errno, strerror(errno));
+			unlink(checkra1n_path);
+			free(checkra1n_path);
+			checkra1n_path = NULL;
+			return -1;
+		}
 	}
 #if defined(__APPLE__) && defined(__arm64__) && (TARGET_OS_IPHONE || defined(FORCE_HELPER))
 	char* libcheckra1nhelper_dylib_path = NULL;
@@ -146,7 +146,6 @@ setenv_ra1n:
 #endif
 	}
 #endif
-checkra1n_exec: {};
 	char args[0x10] = "-E";
 	if ((palerain_flags & palerain_option_demote)) strncat(args, "d", 0xf);
 	if (!(palerain_flags & palerain_option_checkrain_is_clone)) {
@@ -168,21 +167,13 @@ checkra1n_exec: {};
 		posix_spawn_file_actions_addopen(&action, 2, "/dev/null", O_WRONLY, 0);
 	}
 #endif
-	if (pongo_path != NULL) {
-		ret = posix_spawn(&pid, checkra1n_path, &action, NULL, (char* []){
-			checkra1n_path,
-			args,
-			"-k",
-			pongo_path,
-			NULL
-		}, environ);
-	} else {
-		ret = posix_spawn(&pid, checkra1n_path, &action, NULL, (char* []){
-			checkra1n_path,
-			args,
-			NULL
-		}, environ);
-	}
+	ret = posix_spawn(&pid, checkra1n_path, &action, NULL, (char* []){
+		checkra1n_path,
+		args,
+		"-k",
+		pongo_path,
+		NULL
+	}, environ);
 	posix_spawn_file_actions_destroy(&action);
 	if (ret) {
 		LOG(LOG_FATAL, "Cannot posix spawn %s: %d (%s)", checkra1n_path, errno, strerror(errno));
