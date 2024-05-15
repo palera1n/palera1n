@@ -136,11 +136,19 @@ void tui_screen_main_redraw(void) {
                 printf("Sorry, %s (iOS %s) is not supported.", tui_connected_devices->display_name, tui_connected_devices->version);
                 ecid_y = 6;
                 tui_can_start = false;
-            } else if (tui_compare_versions(tui_connected_devices->version, "15.0") < 0 || tui_compare_versions(tui_connected_devices->version, "17.3.1") > 0) {
+            } else if (tui_compare_versions(tui_connected_devices->version, "15.0") < 0) {
                 printf("Sorry, %s is supported, but iOS", tui_connected_devices->display_name);
                 MOVETOT(3, 6);
                 printf("%s is not.", tui_connected_devices->version);
-                PRINTATT(3, 7, "Supported versions are 15.0 - 17.3.1.");
+                PRINTATT(3, 7, "Supported versions are 15.0+");
+                ecid_y = 8;
+                tui_can_start = false;
+             } else if (tui_connected_devices->requires_passcode_disabled) {
+                printf("Sorry, this devices passcode must be disabled on %s.", tui_connected_devices->version);
+                MOVETOT(3, 6);
+                printf("On 16.0+, you must reset the phone to factory settings");
+                MOVETOT(3, 7);
+                printf("and not have a passcode enabled ever since last restore.");
                 ecid_y = 8;
                 tui_can_start = false;
             } else {
@@ -163,7 +171,7 @@ void tui_screen_main_redraw(void) {
             } else {
                 PRINTATT(3, 6, "Press (E) to show ECID.");
             }
-            PRINTATT(3, 7, "NOTE: Ensure installed iOS is in range 15.0 - 17.3.1!");
+            PRINTATT(3, 7, "NOTE: Ensure installed iOS is in range 15.0+");
             tui_can_start = true;
         } else if (tui_connected_devices->mode == TUI_DEVICE_MODE_DFU) {
             MOVETOT(3, 5);
