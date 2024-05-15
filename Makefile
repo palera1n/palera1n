@@ -26,6 +26,12 @@ LDFLAGS += -Wl,--gc-sections
 endif
 LIBS += $(DEP)/lib/libmbedtls.a $(DEP)/lib/libmbedcrypto.a $(DEP)/lib/libmbedx509.a $(DEP)/lib/libreadline.a
 
+ifeq ($(TUI),1)
+ifeq ($(TARGET_OS),Linux)
+LIBS += $(DEP)/lib/libgpm.a
+endif
+endif
+
 ifeq ($(DEV_BUILD),1)
 CFLAGS += -O0 -g -DDEV_BUILD -fno-omit-frame-pointer
 ifeq ($(ASAN),1)
