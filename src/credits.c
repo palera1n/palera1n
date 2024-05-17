@@ -13,7 +13,7 @@
 #define U stderr,
 #define B "#\n# palera1n: " BUILD_TAG " \n#\n"
 #define L "# ========  Made by  =======\n"
-#define E "# Made by: Nick Chan, " THE_PLUSH ", Samara, Mineek, staturnz, " BAKERAIN_DEVELOPE_R ", " NEKO_DEVELOPE_R " \n"
+#define E "# Made by: Nick Chan, " THE_PLUSH ", Khcrysalis, Mineek, staturnz, " BAKERAIN_DEVELOPE_R ", " NEKO_DEVELOPE_R " \n"
 #define M "# ======== Thanks to =======\n"
 #define A "# Thanks to: llsc12, Nebula, Lrdsnow, nikias (libimobiledevice),\n"
 #define K "# checkra1n team (Siguza, axi0mx, littlelailo et al.),\n"
