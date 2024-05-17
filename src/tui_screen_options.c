@@ -47,37 +47,34 @@ void tui_screen_options_nav(void) {
 extern bool easter_egg;
 
 void tui_screen_options_options(void) {
-    SETCOLOR(FG_WHITE, BG_BLACK);
-    // MOVETOT(3, 8);
-    // printf("[%c] %sAllow untested iOS/iPadOS versions" COLOR(FG_WHITE, BG_BLACK),
-    //     tui_options_allow_untested ? 'x' : ' ',
-    //     tui_options_nav_selection == 1 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
-    //         (
-    //             tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
-    //         ) && (tui_mouse_y == tui_y_offset + 7) ? COLOR(FG_BLACK, BG_WHITE) : ""
-    //     ));
+    SETCOLOR( FG_BRIGHT_BLACK, BG_BLACK);
     MOVETOT(3, 8);
+    printf("[%c] %sAllow untested iOS/iPadOS versions" COLOR(FG_WHITE, BG_BLACK),
+        tui_options_allow_untested ? ' ' : ' ',
+        COLOR(FG_BLACK, FG_BRIGHT_BLACK));
+    SETCOLOR(FG_WHITE, BG_BLACK);
+    MOVETOT(3, 9);
     printf("[%c] %sSafe Mode                         " COLOR(FG_WHITE, BG_BLACK),
         tui_options_safe_mode ? 'x' : ' ',
-        tui_options_nav_selection == 2 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
+        tui_options_nav_selection == 1 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
-                tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
+                tui_mouse_x >= tui_x_offset + 5 && tui_mouse_x <= tui_x_offset + 5 + 34
             ) && (tui_mouse_y == tui_y_offset + 8) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
-    MOVETOT(3, 9);
+    MOVETOT(3, 10);
     printf("[%c] %sVerbose Boot                      " COLOR(FG_WHITE, BG_BLACK),
         tui_options_verbose_boot ? 'x' : ' ',
-        tui_options_nav_selection == 3 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
+        tui_options_nav_selection == 2 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
-                tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
+                tui_mouse_x >= tui_x_offset + 5 && tui_mouse_x <= tui_x_offset + 5 + 34
             ) && (tui_mouse_y == tui_y_offset + 9) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
-    MOVETOT(3, 10);
+    MOVETOT(3, 11);
     printf("[%c] %sForce Revert                      " COLOR(FG_WHITE, BG_BLACK),
         tui_options_force_revert ? 'x' : ' ',
-        tui_options_nav_selection == 4 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
+        tui_options_nav_selection == 3 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
-                tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
+                tui_mouse_x >= tui_x_offset + 5 && tui_mouse_x <= tui_x_offset + 5 + 34
             ) && (tui_mouse_y == tui_y_offset + 10) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ));
     if (supports_bright_colors) {
@@ -85,13 +82,13 @@ void tui_screen_options_options(void) {
     } else {
         SETCOLOR(FG_BLUE, BG_BLACK);
     }
-    DRAWLINET(3, 12, 76);
+    DRAWLINET(3, 13, 76);
     SETCOLOR(FG_WHITE, BG_BLACK);
-    MOVETOT(7, 14);
+    MOVETOT(7, 15);
     printf("%sBoot Arguments:                   " COLOR(FG_WHITE, BG_BLACK),
-        tui_options_nav_selection == 5 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
+        tui_options_nav_selection == 4 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
-                tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
+                tui_mouse_x >= tui_x_offset + 5 && tui_mouse_x <= tui_x_offset + 5 + 34
             ) && (
                 tui_mouse_y == tui_y_offset + 14 || tui_mouse_y == tui_y_offset + 15
             ) ? COLOR(FG_BLACK, BG_WHITE) : ""
@@ -99,16 +96,16 @@ void tui_screen_options_options(void) {
     const char* boot_args_hint = tui_options_is_editing_boot_args ? "(press ENTER when done)" : "  (press ENTER to edit)";
     MOVETOT((int)(80 - 5 - strlen(boot_args_hint)), 15);
     printf("%s", boot_args_hint);
-    MOVETOT(3, 16);
+    MOVETOT(3, 17);
     printf("[%c] %s%s                      " COLOR(FG_WHITE, BG_BLACK),
         tui_options_flower_chain ? 'x' : ' ',
-        tui_options_nav_selection == 6 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
+        tui_options_nav_selection == 5 ? COLOR(FG_BLACK, BG_BRIGHT_WHITE) : (
             (
-                tui_mouse_x >= tui_x_offset + 6 && tui_mouse_x <= tui_x_offset + 6 + 34
+                tui_mouse_x >= tui_x_offset + 5 && tui_mouse_x <= tui_x_offset + 5 + 34
             ) && (tui_mouse_y == tui_y_offset + 16) ? COLOR(FG_BLACK, BG_WHITE) : ""
         ), easter_egg ? "Neko Chain  " : "Flower Chain");
 
-    MOVETOT(7, 15);
+    MOVETOT(7, 16);
     if (supports_bright_colors) {
         SETCOLOR(tui_options_is_editing_boot_args ? FG_YELLOW : FG_WHITE, BG_BRIGHT_BLACK);
     } else {
@@ -131,7 +128,7 @@ void tui_screen_options_options(void) {
     }
 
     if (tui_options_is_editing_boot_args) {
-        MOVETOT((int)(7 + tui_options_boot_args_cursor - tui_options_boot_args_offset), 15);
+        MOVETOT((int)(7 + tui_options_boot_args_cursor - tui_options_boot_args_offset), 16);
         if (supports_bright_colors) {
             SETCOLOR(FG_BRIGHT_BLACK, BG_YELLOW);
         } else {
@@ -141,9 +138,9 @@ void tui_screen_options_options(void) {
     }
 
     SETCOLOR(FG_WHITE, BG_BLACK);
-    MOVETOT(5, 15);
+    MOVETOT(5, 16);
     printf(tui_options_boot_args_offset > 0 ? "<<" : "  ");
-    MOVETOT(75, 15);
+    MOVETOT(75, 16);
     printf((strlen(tui_options_boot_args) - tui_options_boot_args_offset) > 68 ? ">>" : "  ");
 }
 
@@ -156,7 +153,7 @@ void tui_screen_options_redraw(void) {
     } else {
         SETCOLOR(FG_BLUE, BG_BLACK);
     }
-    DRAWLINET(3, 6, 75);
+    DRAWLINET(3, 6, 76);
     tui_screen_options_nav();
     tui_screen_options_options();
     fflush(stdout);
@@ -174,7 +171,7 @@ tui_screen_t tui_screen_options(void) {
             case TUI_INPUT_DOWN:
             case TUI_INPUT_TAB:
                 if (tui_options_is_editing_boot_args) break;
-                if (++tui_options_nav_selection > 6) tui_options_nav_selection = 0;
+                if (++tui_options_nav_selection > 5) tui_options_nav_selection = 0;
                 tui_screen_options_nav();
                 tui_screen_options_options();
                 fflush(stdout);
@@ -182,7 +179,7 @@ tui_screen_t tui_screen_options(void) {
             case TUI_INPUT_UP:
             case TUI_INPUT_TAB_BACK:
                 if (tui_options_is_editing_boot_args) break;
-                if (--tui_options_nav_selection < 0) tui_options_nav_selection = 6;
+                if (--tui_options_nav_selection < 0) tui_options_nav_selection = 5;
                 tui_screen_options_nav();
                 tui_screen_options_options();
                 fflush(stdout);
@@ -200,23 +197,23 @@ tui_screen_t tui_screen_options(void) {
                 switch(tui_options_nav_selection) {
                 case 0:
                     return MAIN_SCREEN;
+                // case 1:
+                //     tui_options_allow_untested = !tui_options_allow_untested;
+                //     break;
                 case 1:
-                    tui_options_allow_untested = !tui_options_allow_untested;
-                    break;
-                case 2:
                     tui_options_safe_mode = !tui_options_safe_mode;
                     break;
-                case 3:
+                case 2:
                     tui_options_verbose_boot = !tui_options_verbose_boot;
                     break;
-                case 4:
+                case 3:
                     tui_options_force_revert = !tui_options_force_revert;
                     break;
-                case 5:
+                case 4:
                     tui_options_is_editing_boot_args = !tui_options_is_editing_boot_args;
                     tui_options_boot_args_cursor = tui_options_is_editing_boot_args ? strlen(tui_options_boot_args) : 0;
                     break;
-                case 6:
+                case 5:
                     tui_options_flower_chain = !tui_options_flower_chain;
                     break;
                 }
@@ -240,8 +237,8 @@ tui_screen_t tui_screen_options(void) {
 
 #define MOUSEDOWN_HANDLER(y, val)                               \
                 if (tui_mouse_y == tui_y_offset + y &&          \
-                    tui_mouse_x >= tui_x_offset + 6 - 4 &&      \
-                    tui_mouse_x <= tui_x_offset + 6 + 34) {     \
+                    tui_mouse_x >= tui_x_offset + 5 - 4 &&      \
+                    tui_mouse_x <= tui_x_offset + 5 + 34) {     \
                     tui_options_nav_selection = val;            \
                     tui_options_nav_mouse_select = val;         \
                     tui_screen_options_nav();                   \
@@ -250,15 +247,14 @@ tui_screen_t tui_screen_options(void) {
                 }
 
                 if (!tui_options_is_editing_boot_args) {
-                    MOUSEDOWN_HANDLER(7, 1);
-                    MOUSEDOWN_HANDLER(8, 2);
-                    MOUSEDOWN_HANDLER(9, 3);
-                    MOUSEDOWN_HANDLER(10, 4);
-                    MOUSEDOWN_HANDLER(16, 6);
+                    MOUSEDOWN_HANDLER(8, 1);
+                    MOUSEDOWN_HANDLER(9, 2);
+                    MOUSEDOWN_HANDLER(10, 3);
+                    MOUSEDOWN_HANDLER(16, 5);
                 }
                 
-                MOUSEDOWN_HANDLER(14, 5);
-                MOUSEDOWN_HANDLER(15, 5);
+                MOUSEDOWN_HANDLER(14, 4);
+                MOUSEDOWN_HANDLER(15, 4);
 
 #undef MOUSEDOWN_HANDLER
                 break;
@@ -272,8 +268,8 @@ tui_screen_t tui_screen_options(void) {
 
 #define MOUSEUP_HANDLER(y, val, option, e)                          \
                 if (tui_mouse_y == tui_y_offset + y &&              \
-                    tui_mouse_x >= tui_x_offset + 6 - 4 &&          \
-                    tui_mouse_x <= tui_x_offset + 6 + 34 &&         \
+                    tui_mouse_x >= tui_x_offset + 5 - 4 &&          \
+                    tui_mouse_x <= tui_x_offset + 5 + 34 &&         \
                     tui_options_nav_mouse_select == val) {          \
                     tui_options_##option = !tui_options_##option;   \
                     e                                               \
@@ -283,18 +279,17 @@ tui_screen_t tui_screen_options(void) {
                 }
 
                 if (!tui_options_is_editing_boot_args) {
-                    MOUSEUP_HANDLER(7, 1, allow_untested, );
-                    MOUSEUP_HANDLER(8, 2, safe_mode, );
-                    MOUSEUP_HANDLER(9, 3, verbose_boot, );
-                    MOUSEUP_HANDLER(10, 4, force_revert, );
-                    MOUSEUP_HANDLER(16, 6, flower_chain, );
+                    MOUSEUP_HANDLER(8, 1, safe_mode, );
+                    MOUSEUP_HANDLER(9, 2, verbose_boot, );
+                    MOUSEUP_HANDLER(10, 3, force_revert, );
+                    MOUSEUP_HANDLER(16, 5, flower_chain, );
                 }
 
                 #define BOOTARGS_HANDLER                                                                                \
                 tui_options_boot_args_cursor = tui_options_is_editing_boot_args ? strlen(tui_options_boot_args) : 0;
 
-                MOUSEUP_HANDLER(14, 5, is_editing_boot_args, BOOTARGS_HANDLER);
-                MOUSEUP_HANDLER(15, 5, is_editing_boot_args, BOOTARGS_HANDLER);
+                MOUSEUP_HANDLER(14, 4, is_editing_boot_args, BOOTARGS_HANDLER);
+                MOUSEUP_HANDLER(15, 4, is_editing_boot_args, BOOTARGS_HANDLER);
 #undef MOUSEUP_HANDLER
                 tui_options_nav_mouse_select = -1;
                 break;
