@@ -98,10 +98,10 @@ jobs:
       - name: Download dependencies (source code)
         run: |
           curl -LOOOOOO \
-            https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
+            https://github.com/Mbed-TLS/mbedtls/releases/download/v${{ env.MBEDTLS_VERSION }}/mbedtls-${{ env.MBEDTLS_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz
 
-          tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
+          tar -xjf mbedtls-v${{ env.MBEDTLS_VERSION }}.tar.bz2
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
           git clone --depth=1 https://github.com/libimobiledevice/libplist
           git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
@@ -549,12 +549,12 @@ jobs:
       - name: Download dependencies (source code)
         run: |
           curl -LOOOOOOO \
-            https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
+            https://github.com/Mbed-TLS/mbedtls/releases/download/v${{ env.MBEDTLS_VERSION }}/mbedtls-${{ env.MBEDTLS_VERSION }}.tar.bz2 \
             https://github.com/libusb/libusb/releases/download/v${{ env.LIBUSB_VERSION }}/libusb-${{ env.LIBUSB_VERSION }}.tar.bz2 \
             https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz \
             https://github.com/telmich/gpm/archive/refs/tags/${{ env.GPM_VERSION }}.tar.gz
 
-          tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
+          tar -xjf mbedtls-v${{ env.MBEDTLS_VERSION }}.tar.bz2
           tar -xjf libusb-${{ env.LIBUSB_VERSION }}.tar.bz2
           tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
           tar -xf ${{ env.GPM_VERSION }}.tar.gz
