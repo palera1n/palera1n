@@ -478,7 +478,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MBEDTLS_VERSION: 3.5.2
-      LIBUSB_VERSION: 1.0.26
+      LIBUSB_VERSION: 1.0.27
       READLINE_VERSION: 8.2
       GPM_VERSION: 1.20.7
 
