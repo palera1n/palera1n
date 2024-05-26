@@ -5,6 +5,7 @@ assignees:
   - khcrysalis
   - asdfugil
   - elliessurviving
+  - hg13bs
 body:
   - type: input
     id: device
