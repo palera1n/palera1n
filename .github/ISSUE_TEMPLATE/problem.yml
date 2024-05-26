@@ -4,6 +4,7 @@ labels: [palera1n]
 assignees:
   - khcrysalis
   - asdfugil
+  - elliessurviving
 body:
   - type: input
     id: device
