@@ -74,7 +74,7 @@ jobs:
             minos: 7.0
     runs-on: macos-12
     env:
-      MBEDTLS_VERSION: 3.5.2
+      MBEDTLS_VERSION: 3.6.0
       READLINE_VERSION: 8.2
 
     steps:
@@ -176,7 +176,6 @@ jobs:
       - name: Build Mbed TLS
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
-          cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
           mkdir build
           cd build
           SDKROOT="${{ env.SDK }}" cmake .. \
@@ -250,6 +249,7 @@ jobs:
       - name: Build libimobiledevice
         run: |
           cd libimobiledevice
+          cat ../patches/libimobiledevice/*.patch | patch -sN -d . -p1
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls --enable-debug
           echo -e 'all:\ninstall:' > tools/Makefile
@@ -477,7 +477,7 @@ jobs:
         - aarch64-linux-musl
     runs-on: ubuntu-latest
     env:
-      MBEDTLS_VERSION: 3.5.2
+      MBEDTLS_VERSION: 3.6.0
       LIBUSB_VERSION: 1.0.27
       READLINE_VERSION: 8.2
       GPM_VERSION: 1.20.7
@@ -568,7 +568,6 @@ jobs:
       - name: Build Mbed TLS
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
-          cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
           mkdir build
           if [ "${{ matrix.triple }}" = "i486-linux-musl" ]; then sed -i '/define MBEDTLS_AESNI_C/d' include/mbedtls/mbedtls_config.h; fi
           cd build
@@ -659,6 +658,7 @@ jobs:
       - name: Build libimobiledevice
         run: |
           cd libimobiledevice
+          cat ../patches/libimobiledevice/*.patch | patch -sN -d . -p1
           autoreconf -fiv
           ./configure ${{ env.CONFIGURE_ARGS }} --with-mbedtls --enable-debug
           echo -e 'all:\ninstall:' > tools/Makefile

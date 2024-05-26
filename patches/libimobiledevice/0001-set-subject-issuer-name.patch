@@ -1,0 +1,36 @@
+diff -urN a/common/userpref.c b/common/userpref.c
+--- a/common/userpref.c	2024-05-26 14:30:03
++++ b/common/userpref.c	2024-05-26 14:34:24
+@@ -870,6 +870,10 @@
+ 	/* set key validity */
+ 	mbedtls_x509write_crt_set_validity(&cert, notbefore, notafter);
+ 
++	/* set subject and issuer name */
++	mbedtls_x509write_crt_set_subject_name(&cert, (const char *)"CN=in.palera.cli.subject,O=palera1n CLI Subject,C=TW");
++	mbedtls_x509write_crt_set_issuer_name(&cert, (const char *)"CN=in.palera.cli.issuer,O=palera1n CLI Issuer,C=TW");
++
+ 	/* sign root cert with root private key */
+ 	mbedtls_x509write_crt_set_issuer_key(&cert, &root_pkey);
+ 	mbedtls_x509write_crt_set_md_alg(&cert, MBEDTLS_MD_SHA1);
+@@ -929,6 +933,10 @@
+ 	/* set key validity */
+ 	mbedtls_x509write_crt_set_validity(&cert, notbefore, notafter);
+ 
++	/* set subject and issuer name */
++	mbedtls_x509write_crt_set_subject_name(&cert, (const char *)"CN=in.palera.cli.subject,O=palera1n CLI Subject,C=TW");
++	mbedtls_x509write_crt_set_issuer_name(&cert, (const char *)"CN=in.palera.cli.issuer,O=palera1n CLI Issuer,C=TW");
++
+ 	/* sign host cert with root private key */
+ 	mbedtls_x509write_crt_set_issuer_key(&cert, &root_pkey);
+ 	mbedtls_x509write_crt_set_md_alg(&cert, MBEDTLS_MD_SHA1);
+@@ -988,6 +996,10 @@
+ 
+ 	/* set key validity */
+ 	mbedtls_x509write_crt_set_validity(&cert, notbefore, notafter);
++
++	/* set subject and issuer name */
++	mbedtls_x509write_crt_set_subject_name(&cert, (const char *)"CN=in.palera.cli.subject,O=palera1n CLI Subject,C=TW");
++	mbedtls_x509write_crt_set_issuer_name(&cert, (const char *)"CN=in.palera.cli.issuer,O=palera1n CLI Issuer,C=TW");
+ 
+ 	/* sign device certificate with root private key */
+ 	mbedtls_x509write_crt_set_issuer_key(&cert, &root_pkey);
