@@ -86,7 +86,7 @@ void tui_screen_main_redraw(void) {
     PRINTATT(3, 2, "Welcome to palera1n!");
 
     SETCOLOR(FG_WHITE, BG_BLACK);
-    PRINTATT(3, 9, "Made by: Nick Chan, Ploosh, Samara, Mineek");
+    PRINTATT(3, 9, "Made by: Nick Chan, Ploosh, Khcrysalis, Mineek");
     PRINTATT(3, 10, "staturnz, kok3shidoll, ");
     if ((tui_mouse_y == tui_y_offset + 9 && tui_mouse_x >= tui_x_offset + 25 && tui_mouse_x <= tui_x_offset + 25 + 8) || easter_egg) {
         SETCOLORA(FG_BRIGHT_WHITE, BG_BLACK, BOLD);
