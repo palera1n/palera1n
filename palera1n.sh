@@ -414,7 +414,7 @@ if [ ! -e "$dir"/gaster ]; then
     echo '[-] gaster not installed. Press any key to install it, or press ctrl + c to cancel'
     read -n 1 -s
     _check_network_connection
-    curl -sLO https://static.palera.in/deps/gaster-"$os".zip
+    curl -sLO https://static.palera.in/legacy/deps/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
     rm -rf gaster gaster-"$os".zip
@@ -436,7 +436,7 @@ fi
 if [ "$china" != "1" ]; then
     git submodule update --init --recursive
 elif ! [ -f ramdisk/sshrd.sh ]; then
-    curl -LO https://static.palera.in/deps/ramdisk.tgz
+    curl -LO https://static.palera.in/legacy/deps/ramdisk.tgz
     tar xf ramdisk.tgz
 fi
 
@@ -876,7 +876,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
         echo "[*] Downloading jbinit files"
-        curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
+        curl -L https://static.palera.in/legacy/deps/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip
