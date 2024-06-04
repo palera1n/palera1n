@@ -4,6 +4,7 @@ dep_root/**
 !contrib/.keep
 contrib/
 *.o
+dep_root*.tgz
 .vscode
 checkra1n*
 payload.c

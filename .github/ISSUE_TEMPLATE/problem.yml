@@ -6,6 +6,7 @@ assignees:
   - asdfugil
   - elliessurviving
   - hg13bs
+  - afastaudir8
 body:
   - type: input
     id: device
