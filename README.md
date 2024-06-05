@@ -81,7 +81,7 @@ Visit https://palera.in
 
 ## Disclaimers
 We are **NOT** responsible for any data loss, or the result of a device being bricked. When using palera1n, the user should accept responsibility if anything happens to their device during the process.
-- If your device is stuck in recovery, please run futurerestore `--exit-recovery`, or use `irecovery -n`.
+- If your device is stuck in recovery, please run futurerestore `--exit-recovery`, or use `irecovery -n`, or `palera1n -n`.
 - If you're unable to get out of recovery via these methods please restore with iTunes or Finder.
 - palera1n **will not work** in VirtualBox, VMware or any virtual machine that doesn't support PCI passthrough.
 
