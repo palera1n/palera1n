@@ -96,3 +96,9 @@ Make sure you're following the guides provided [here](https://palera.in), also w
 - Panic logs, if panicked then send latest `panic-full` log from your device.
 
 Create an issue here: https://github.com/palera1n/palera1n/issues/new/choose
+
+## Credits
+
+[All credits for palera1n can be found here](https://palera.in/)
+
+If proper credit isn't shown please message us or create an issue.
