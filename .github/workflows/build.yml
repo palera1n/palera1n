@@ -604,7 +604,7 @@ jobs:
 
       - name: Check dependencies cache
         run: |
-          echo "target: ${{ matrix.gnu_triple }}" > cache.txt
+          echo "target: ${{ matrix.triple }}" > cache.txt
           echo "mbedtls ${{ env.MBEDTLS_VERSION }}" >> cache.txt
           echo "readline: ${{ env.READLINE_VERSION }}" >> cache.txt
           echo "libimobiledevice: ${{ env.LIBIMOBILEDEVICE_COMMIT }}" >> cache.txt
