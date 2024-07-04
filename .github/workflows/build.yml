@@ -620,8 +620,8 @@ jobs:
         id: sysroot_cache
         uses: actions/cache@v3
         with:
-          path: dep_root-${{ env.CACHE_TXT_CHECKSUM }}.txz
-          key: dep_root-${{ env.CACHE_TXT_CHECKSUM }}
+          path: sysroot-${{ env.CACHE_TXT_CHECKSUM }}.txz
+          key: sysroot-${{ env.CACHE_TXT_CHECKSUM }}
 
       - name: Extract cached sysroot
         if: steps.sysroot_cache.outputs.cache-hit == 'true'
