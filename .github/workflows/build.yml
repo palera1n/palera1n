@@ -79,7 +79,6 @@ jobs:
       LIBIMOBILEDEVICE_COMMIT: ed0d66d0341562731bb19928dfe48155509fa7a7
       LIBIRECOVERY_COMMIT: 7ce02c347b7c26e59498e6af31c9da51018d0fa1
       LIBIMOBILEDEVICE_GLUE_COMMIT: 362f7848ac89b74d9dd113b38b51ecb601f76094
-      USBMUXD_COMMIT: bc0b91ca856811f4393318dc83db6dc3c1ac326d
       LIBPLIST_COMMIT: 2117b8fdb6b4096455bd2041a63e59a028120136
       LIBUSBMUXD_COMMIT: a7f0543fb1ecb20ac7121c0fd77297200e0e43fc
 
@@ -100,25 +99,6 @@ jobs:
       - name: Download dependencies (embedded binaries)
         run: |
           echo "SDK=$(xcrun -sdk ${{ matrix.os }} --show-sdk-path)" >> $GITHUB_ENV
-
-      - name: Download dependencies (source code)
-        run: |
-          curl -LOOOOOO \
-            https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
-            https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz
-
-          tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
-          tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
-          git clone --depth=1 https://github.com/libimobiledevice/libplist
-          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
-          git clone --depth=1 https://github.com/libimobiledevice/libirecovery
-          git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
-          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
-          cd libplist && git fetch origin ${{ env.LIBPLIST_COMMIT }} && git reset --hard ${{ env.LIBPLIST_COMMIT }} && cd ..
-          cd libirecovery && git fetch origin ${{ env.LIBIRECOVERY_COMMIT }} && git reset --hard ${{ env.LIBIRECOVERY_COMMIT }} && cd ..
-          cd libimobiledevice-glue && git fetch origin ${{ env.LIBIMOBILEDEVICE_GLUE_COMMIT }} && git reset --hard ${{ env.LIBIMOBILEDEVICE_GLUE_COMMIT }} && cd ..
-          cd libimobiledevice && git fetch origin ${{ env.LIBIMOBILEDEVICE_COMMIT }} && git reset --hard ${{ env.LIBIMOBILEDEVICE_COMMIT }} && cd ..
-          cd libusbmuxd && git fetch origin ${{ env.LIBUSBMUXD_COMMIT }} && git reset --hard ${{ env.LIBUSBMUXD_COMMIT }} && cd ..
 
       - name: Select correct Xcode
         run: |
@@ -142,8 +122,6 @@ jobs:
           echo "CXXFLAGS_FOR_BUILD=-stdlib=libc++ -arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Os" >> $GITHUB_ENV
           echo "CPPFLAGS_FOR_BUILD=-arch $(uname -m) -isysroot $(xcrun -sdk macosx --show-sdk-path) -Wno-error-implicit-function-declaration -Os" >> $GITHUB_ENV
           echo "LDFLAGS_FOR_BUILD=-Wl,-dead_strip" >> $GITHUB_ENV
-          mkdir -p $(pwd)/sysroot/usr/local/lib
-          ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
       - name: Prepare iPhoneOS environment
         if: matrix.os == 'iphoneos'
@@ -184,7 +162,59 @@ jobs:
           gsed -E /'__API_UNAVAILABLE'/d < ${TARGET_SYSROOT}/usr/include/pthread.h > sysroot/usr/local/include/pthread.h
           gsed -i -E s/'__API_UNAVAILABLE\(.*\)'// sysroot/usr/local/include/IOKit/IOKitLib.h
 
+      - name: Check dependencies cache
+        run: |
+          echo "target: ${{ matrix.gnu_triple }}" > cache.txt
+          echo "mbedtls ${{ env.MBEDTLS_VERSION }}" >> cache.txt
+          echo "readline: ${{ env.READLINE_VERSION }}" >> cache.txt
+          echo "libimobiledevice: ${{ env.LIBIMOBILEDEVICE_COMMIT }}" >> cache.txt
+          echo "libirecovery: ${{ env.LIBIRECOVERY_COMMIT }}" >> cache.txt
+          echo "libimobiledevice-glue: ${{ env.LIBIMOBILEDEVICE_GLUE_COMMIT }}" >> cache.txt
+          echo "libplist: ${{ env.LIBPLIST_COMMIT }}" >> cache.txt
+          echo "libusbmuxd: ${{ env.LIBUSBMUXD_COMMIT }}" >> cache.txt
+          echo "cc: $($(xcrun --find cc) --version)" >> cache.txt
+          echo "CACHE_TXT_CHECKSUM=sysroot-$(shasum -a 512 cache.txt | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Download cached sysroot
+        id: sysroot_cache
+        uses: actions/cache@v3
+        with:
+          path: sysroot-${{ env.CACHE_TXT_CHECKSUM }}.txz
+          key: sysroot-${{ env.CACHE_TXT_CHECKSUM }}
+
+      - name: Extract cached sysroot
+        if: steps.sysroot_cache.outputs.cache-hit == 'true'
+        run: |
+          xz -dcT0 sysroot-${{ env.CACHE_TXT_CHECKSUM }}.txz | tar -x
+
+      - name: Setup sysroot
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p $(pwd)/sysroot/usr/local/lib
+          ln -sf $(pwd)/sysroot/usr/local/lib{,64}
+
+      - name: Download dependencies (source code)
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
+        run: |
+          curl -LOOOOOO \
+            https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
+            https://mirror-hk.koddos.net/gnu/readline/readline-${{ env.READLINE_VERSION }}.tar.gz
+
+          tar -xf v${{ env.MBEDTLS_VERSION }}.tar.gz
+          tar -xf readline-${{ env.READLINE_VERSION }}.tar.gz
+          git clone --depth=1 https://github.com/libimobiledevice/libplist
+          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice-glue
+          git clone --depth=1 https://github.com/libimobiledevice/libirecovery
+          git clone --depth=1 https://github.com/libimobiledevice/libusbmuxd
+          git clone --depth=1 https://github.com/libimobiledevice/libimobiledevice
+          cd libplist && git fetch origin ${{ env.LIBPLIST_COMMIT }} && git reset --hard ${{ env.LIBPLIST_COMMIT }} && cd ..
+          cd libirecovery && git fetch origin ${{ env.LIBIRECOVERY_COMMIT }} && git reset --hard ${{ env.LIBIRECOVERY_COMMIT }} && cd ..
+          cd libimobiledevice-glue && git fetch origin ${{ env.LIBIMOBILEDEVICE_GLUE_COMMIT }} && git reset --hard ${{ env.LIBIMOBILEDEVICE_GLUE_COMMIT }} && cd ..
+          cd libimobiledevice && git fetch origin ${{ env.LIBIMOBILEDEVICE_COMMIT }} && git reset --hard ${{ env.LIBIMOBILEDEVICE_COMMIT }} && cd ..
+          cd libusbmuxd && git fetch origin ${{ env.LIBUSBMUXD_COMMIT }} && git reset --hard ${{ env.LIBUSBMUXD_COMMIT }} && cd ..
+
       - name: Build Mbed TLS
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
           cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
@@ -209,6 +239,7 @@ jobs:
           cd ..
 
       - name: Build readline
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd readline-${{ env.READLINE_VERSION }}
           CC=clang CXX=clang++ ./configure ${{ env.CONFIGURE_ARGS }} ac_cv_type_sig_atomic_t=no
@@ -217,6 +248,7 @@ jobs:
           cd ..
 
       - name: Build libplist
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libplist
           autoreconf -fiv
@@ -226,6 +258,7 @@ jobs:
           cd ..
 
       - name: Build libimobiledevice-glue
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libimobiledevice-glue
           autoreconf -fiv
@@ -235,6 +268,7 @@ jobs:
           cd ..
 
       - name: Build libirecovery
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           sudo cp -a sysroot/usr/local/* /usr/local
           cd libirecovery
@@ -250,6 +284,7 @@ jobs:
           cd ..
 
       - name: Build libusbmuxd
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libusbmuxd
           autoreconf -fiv
@@ -259,6 +294,7 @@ jobs:
           cd ..
 
       - name: Build libimobiledevice
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libimobiledevice
           autoreconf -fiv
@@ -280,8 +316,8 @@ jobs:
 
       - name: Build palera1n (Development)
         run: |
-          CC="${{ matrix.triple }}-gcc" gmake -j$(sysctl -n hw.ncpu) clean
-          CC="${{ matrix.triple }}-gcc" gmake -j$(sysctl -n hw.ncpu) DEV_BUILD=1 TUI=1 ROOTFUL=1
+          gmake -j$(sysctl -n hw.ncpu) clean
+          gmake -j$(sysctl -n hw.ncpu) DEV_BUILD=1 TUI=1 ROOTFUL=1
           cp src/palera1n palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
 
       - name: Prepare artifact
@@ -335,7 +371,12 @@ jobs:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
           retention-days: 1
-      
+
+      - name: Generate cached sysroot archive
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
+        run: |
+          tar -c sysroot | xz -zce9T 0 > sysroot-${{ env.CACHE_TXT_CHECKSUM }}.txz
+
   darwin-dist:
     if: ${{ github.event_name != 'pull_request' }}
     runs-on: macos-latest
@@ -560,10 +601,41 @@ jobs:
           echo "PREFIX=/usr/local" >> $GITHUB_ENV
           echo "CONFIGURE_ARGS=--build=x86_64-linux-gnu --host=${{ matrix.triple }} --prefix=/usr/local --disable-shared --enable-static" >> $GITHUB_ENV
           echo "CROSS_COMPILE=${{ matrix.triple }}-" >> $GITHUB_ENV
+
+      - name: Check dependencies cache
+        run: |
+          echo "target: ${{ matrix.gnu_triple }}" > cache.txt
+          echo "mbedtls ${{ env.MBEDTLS_VERSION }}" >> cache.txt
+          echo "readline: ${{ env.READLINE_VERSION }}" >> cache.txt
+          echo "libimobiledevice: ${{ env.LIBIMOBILEDEVICE_COMMIT }}" >> cache.txt
+          echo "libirecovery: ${{ env.LIBIRECOVERY_COMMIT }}" >> cache.txt
+          echo "libimobiledevice-glue: ${{ env.LIBIMOBILEDEVICE_GLUE_COMMIT }}" >> cache.txt
+          echo "libplist: ${{ env.LIBPLIST_COMMIT }}" >> cache.txt
+          echo "libusbmuxd: ${{ env.LIBUSBMUXD_COMMIT }}" >> cache.txt
+          echo "usbmuxd: ${{ env.USBMUXD_COMMIT }}" >> cache.txt
+          echo "cc: $(${{ env.CC }} --version)" >> cache.txt
+          echo "CACHE_TXT_CHECKSUM=sysroot-$(sha512sum cache.txt | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Download cached sysroot
+        id: sysroot_cache
+        uses: actions/cache@v3
+        with:
+          path: dep_root-${{ env.CACHE_TXT_CHECKSUM }}.txz
+          key: dep_root-${{ env.CACHE_TXT_CHECKSUM }}
+
+      - name: Extract cached sysroot
+        if: steps.sysroot_cache.outputs.cache-hit == 'true'
+        run: |
+          xz -dcT0 sysroot-${{ env.CACHE_TXT_CHECKSUM }}.txz | tar -x
+
+      - name: Setup sysroot
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
+        run: |
           mkdir -p $(pwd)/sysroot/usr/local/lib
           ln -sf $(pwd)/sysroot/usr/local/lib{,64}
 
       - name: Download dependencies (source code)
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           curl -LOOOOOOO \
             https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${{ env.MBEDTLS_VERSION }}.tar.gz \
@@ -589,6 +661,7 @@ jobs:
           cd libusbmuxd && git fetch origin ${{ env.LIBUSBMUXD_COMMIT }} && git reset --hard ${{ env.LIBUSBMUXD_COMMIT }} && cd ..
 
       - name: Build Mbed TLS
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd mbedtls-${{ env.MBEDTLS_VERSION }}
           cat ../patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch | patch -sN -d . -p1
@@ -613,6 +686,7 @@ jobs:
           cd ..
 
       - name: Build libusb
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libusb-${{ env.LIBUSB_VERSION }}
           ./configure ${{ env.CONFIGURE_ARGS }} --disable-udev
@@ -621,6 +695,7 @@ jobs:
           cd ..
 
       - name: Build readline
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd readline-${{ env.READLINE_VERSION }}
           ./configure ${{ env.CONFIGURE_ARGS }}
@@ -629,6 +704,7 @@ jobs:
           cd ..
 
       - name: Build GPM
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd gpm-${{ env.GPM_VERSION }}
           cat ../patches/gpm/*.patch | patch -sN -d . -p1
@@ -640,6 +716,7 @@ jobs:
           cd ..
 
       - name: Build libplist
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libplist
           autoreconf -fiv
@@ -649,6 +726,7 @@ jobs:
           cd ..
 
       - name: Build libimobiledevice-glue
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libimobiledevice-glue
           autoreconf -fiv
@@ -658,6 +736,7 @@ jobs:
           cd ..
 
       - name: Build libirecovery (sorta)
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           sudo mv /usr/local /usr/local.bak
           sudo ln -s ${{ env.DESTDIR }}${{ env.PREFIX }} /usr/local
@@ -671,6 +750,7 @@ jobs:
           cd ..
 
       - name: Build libusbmuxd
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libusbmuxd
           autoreconf -fiv
@@ -680,6 +760,7 @@ jobs:
           cd ..
 
       - name: Build libimobiledevice
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd libimobiledevice
           autoreconf -fiv
@@ -692,6 +773,7 @@ jobs:
           sudo mv /usr/local.bak /usr/local
 
       - name: Build usbmuxd
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
         run: |
           cd usbmuxd
           autoreconf -fiv
@@ -789,6 +871,11 @@ jobs:
           dryRun: false
           localDir: 'usbmuxd-static/'
           remoteDir: "/palera1n/artifacts/usbmuxd-static"
+
+      - name: Generate cached sysroot archive
+        if: steps.sysroot_cache.outputs.cache-hit != 'true'
+        run: |
+          tar -c sysroot | xz -zce9T 0 > sysroot-${{ env.CACHE_TXT_CHECKSUM }}.txz
 
   finish-build:
     runs-on: ubuntu-latest
