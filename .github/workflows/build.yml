@@ -613,7 +613,7 @@ jobs:
           echo "libplist: ${{ env.LIBPLIST_COMMIT }}" >> cache.txt
           echo "libusbmuxd: ${{ env.LIBUSBMUXD_COMMIT }}" >> cache.txt
           echo "usbmuxd: ${{ env.USBMUXD_COMMIT }}" >> cache.txt
-          echo "cc: $(${{ env.CC }} --version)" >> cache.txt
+          echo "cc: $(${{ env.CROSS_COMPILE }}gcc --version)" >> cache.txt
           echo "CACHE_TXT_CHECKSUM=sysroot-$(sha512sum cache.txt | cut -d' ' -f1)" >> $GITHUB_ENV
 
       - name: Download cached sysroot
