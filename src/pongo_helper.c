@@ -114,10 +114,10 @@ void *pongo_usb_callback(stuff_t *arg) {
 #ifdef ROOTFUL
 	if ((palerain_flags & palerain_option_setup_partial_root)) {
 		LOG(LOG_INFO, "Please wait up to 5 minutes for the bindfs to be created.");
-		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -B (Create BindFS) option to jailbreak.");
+		LOG(LOG_INFO, "Once the device reboots into recovery mode, run again without the -B (Create BindFS) option to jailbreak.");
 	} else if ((palerain_flags & palerain_option_setup_rootful)) {
 		LOG(LOG_INFO, "Please wait up to 10 minutes for the fakefs to be created.");
-		LOG(LOG_INFO, "Once the device boots up to iOS, run again without the -c (Create FakeFS) option to jailbreak.");
+		LOG(LOG_INFO, "Once the device reboots into recovery mode, run again without the -c (Create FakeFS) option to jailbreak.");
 	}
 #endif
 	if (dfuhelper_thr_running) {
