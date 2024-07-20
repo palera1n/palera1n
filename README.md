@@ -78,6 +78,38 @@ Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 
 
 > USB-C port on Apple Silicon Macs *may* require manual unplugging and replugging of the lightning cable after checkm8 exploit. This problem may be solved by connecting via USB hub, though extensions can vary.
 
+## Usage 
+```
+Usage: palera1n [-DEhpvVdsSLRnPI] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]
+
+	--version				            Print version
+	--force-revert				        Remove jailbreak
+	-d, --demote				        Demote
+	-D, --dfuhelper				        Exit after entering DFU
+	-e, --boot-args <boot arguments>	XNU boot arguments
+	-E, --enter-recovery			    Enter recovery mode
+	-h, --help				            Show this help
+	-i, --override-checkra1n <file>		Override checkra1n
+	-k, --override-pongo <file>		    Override Pongo image
+	-K, --override-kpf <file>		    Override kernel patchfinder
+	-L, --jbinit-log-to-file		    Make jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)
+	-n, --exit-recovery			        Exit recovery mode
+	-I, --device-info			        Print info about the connected device
+	-o, --override-overlay <file>		Override overlay
+	-p, --pongo-shell			        Boots to PongoOS shell
+	-P, --pongo-full			        Boots to a PongoOS shell with default images already uploaded
+	-r, --override-ramdisk <file>		Override ramdisk
+	-R, --reboot-device			        Reboot connected device in normal mode
+	-s, --safe-mode				        Enter safe mode
+	-S, --no-colors				        Disable colors on the command line
+	-v, --debug-logging			        Enable debug logging
+		    This option can be repeated for extra verbosity.
+	-V, --verbose-boot			        Verbose boot
+
+Environmental variables:
+	TMPDIR		temporary diretory (path the built-in checkra1n will be extracted to)
+```
+
 ## Installing
 Visit https://palera.in
 
