@@ -57,8 +57,8 @@ static struct option longopts[] = {
 #endif
 #ifdef TUI
 	{"tui", no_argument, NULL, 't'},
-	{"cli", no_argument, NULL, palerain_option_case_cli},
 #endif
+	{"cli", no_argument, NULL, palerain_option_case_cli},
 	{NULL, 0, NULL, 0}
 };
 
@@ -313,10 +313,10 @@ int optparse(int argc, char* argv[]) {
 		case 't':
 			palerain_flags |= palerain_option_tui;
 			break;
+#endif
 		case palerain_option_case_cli:
 			palerain_flags |= palerain_option_cli;
 			break;
-#endif
 #ifdef DEV_BUILD
 		case '1':
 			palerain_flags |= palerain_option_test1;
