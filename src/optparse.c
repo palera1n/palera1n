@@ -78,7 +78,7 @@ static int usage(int e, char* prog_name)
 #endif
 			"] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]\n"
 			"Copyright (C) 2024, palera1n team, All Rights Reserved.\n\n"
-			"iOS/iPadOS/tvOS 15.0-17.5, bridgeOS 5.0-8.3 arm64 jailbreaking tool\n\n"
+			"iOS/iPadOS/tvOS 15.0-18.0, bridgeOS 5.0-9.0 arm64 jailbreaking tool\n\n"
 			"\t--version\t\t\t\tPrint version\n"
 			"\t--force-revert\t\t\t\tRemove jailbreak\n"
 #ifdef DEV_BUILD
@@ -181,10 +181,7 @@ int optparse(int argc, char* argv[]) {
 #endif
 			break;
 		case 'e':
-			if (strstr(optarg, "rootdev=") != NULL) {
-				LOG(LOG_FATAL, "The boot arg rootdev= is already used by palera1n and cannot be overriden");
-				return -1;
-			} else if (strlen(optarg) > (sizeof(xargs_cmd) - 0x20)) {
+			if (strlen(optarg) > (sizeof(xargs_cmd) - 0x20)) {
                 LOG(LOG_FATAL, "Boot arguments too long");
                 return -1;
             }
