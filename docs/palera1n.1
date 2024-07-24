@@ -2,7 +2,7 @@
 .\" Copyright (c) 2024 Nick Chan
 .\" SPDX-License-Identifier: MIT
 .\"
-.Dd "30 March 2024"
+.Dd "24 July 2024"
 .Dt palera1n 1
 .Sh NAME
 .Nm palera1n
@@ -155,17 +155,13 @@ Set the effective production fuse to 0, so as to enable hardware debugging featu
 Execute the DFU helper to guide the user into putting the device into DFU mode
 then exit.
 .It Fl e , -boot-args Ar boot arguments
-Specify custom XNU kernel command line. The
-.Em rootdev=md0
-argument is used by
-.Nm
-and cannot be overriden. Additionally, the
+Specify custom XNU kernel command line. Additionally, the
 .Em wdt=-1
 argument is used during fakefs setup.
 .It Fl E , -enter-recovery
 Exit after entering recovery mode.
 .It Fl f , -fakefs
-Proceed in rootful mode. This applies to both full, partial fakefs, as well as realfs.
+Proceed in rootful mode. Despite its name, this applies to both full, partial fakefs, as well as realfs, and it still applies even when trying to force revert.
 .It Fl h , -help
 Prints help text.
 .It Fl i , -checkra1n-file Ar checkra1n file
@@ -183,10 +179,6 @@ command. If in doubt, use
 iOS15 branch or your own fork of it.
 .It Fl l , -rootless
 Proceed in rootless mode. This option is only supported on iOS/iPadOS.
-.It Fl L , -jbinit-log-to-file
-This option is not currently supported and is a no-operation in this version of
-.Nm
-\[char46]
 .It Fl n , -exit-recovery
 Exit recovery mode and exit.
 .It Fl o , -override-overlay Ar overlay file
@@ -241,13 +233,13 @@ is extracted and executed here. When not set, /tmp is used.
 .Sh EXAMPLES
 To (re-)jailbreak in rootless mode:
 .Pp
-.Dl "palera1n"
+.Dl "palera1n -l"
 .Pp
 To setup fakefs for rootful mode:
 .Pp
 .Dl "palera1n -fc"
 .Pp
-After the device has rebooted, follow the following example.
+After the device has rebooted into recovery mode, follow the following example.
 .Pp
 To re-jailbreak in rootful mode:
 .Pp
@@ -304,7 +296,7 @@ option might cause some versions for tvOS to crash and not boot.
 Offical Apple USB-C cables as well as some other USB-C cables cannot be used to enter DFU mode.
 USB-A cable with male USB-C to female USB-A adapter works fine.
 .Sh POST INSTALLATION (iOS/iPadOS)
-The palera1n loader app will take up to 30 seconds to appear on the homescreen after the
+The palera1n loader app will take up to 1 minute to appear on the homescreen after the
 device has booted. If it does not appear, you can try using the shortcut:
 .Pp
 .Lk https://www.icloud.com/shortcuts/8cd5f489c8854ee0ab9ee38f2e62f87d
@@ -332,7 +324,7 @@ loader app to install additional jailbreak files.
 
 .Bl -tag -width "/var/jb/Library/LaunchDaemons"
 .It Pa /cores
-The location of the temporary filesystem where jailbreak files are stash during boot.
+The location of the temporary filesystem where jailbreak files are stashed during boot.
 .It Pa /Library/LaunchDaemons
 The directory where jailbreak-specific
 .Xr launchd.plist 5
@@ -357,8 +349,6 @@ may crash if the machine it is running on:
 .Dl "- Has non-compliant USB devices plugged in"
 .Pp
 The exploit may also work less reliably on some hosts, like AMD desktops, or some MediaTek devices.
-.Pp
-The device may randomly crash and reboot due to launchd using too much memory.
 .Pp
 The built-in SSH server might be not accessible with password after bootstrapping rootful,
 since the bootstrap uses a custom crypt() function that is not supported
