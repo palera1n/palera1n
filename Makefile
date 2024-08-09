@@ -3,7 +3,7 @@ DEP = $(SRC)/dep_root
 STRIP = strip
 CC ?= cc
 CFLAGS += -isystem $(DEP)/include -I$(SRC)/include -I$(SRC) -D_XOPEN_SOURCE=500
-CFLAGS += -Wall -Wextra -Wno-unused-parameter -DPALERAIN_VERSION=\"2.0\" -DHAVE_LIBIMOBILEDEVICE
+CFLAGS += -Wall -Wextra -Wno-unused-parameter -DPALERAIN_VERSION=\"2.0.1\" -DHAVE_LIBIMOBILEDEVICE
 CFLAGS += -Wno-unused-variable -I$(SRC)/src -std=c99 -pedantic-errors -D_C99_SOURCE -D_POSIX_C_SOURCE=200112L
 LIBS += $(DEP)/lib/libimobiledevice-1.0.a $(DEP)/lib/libirecovery-1.0.a $(DEP)/lib/libusbmuxd-2.0.a
 LIBS += $(DEP)/lib/libimobiledevice-glue-1.0.a $(DEP)/lib/libplist-2.0.a -pthread -lm
@@ -59,15 +59,12 @@ ifneq ($(BAKERAIN_DEVELOPE_R),)
 CFLAGS += -DBAKERAIN_DEVELOPE_R="\"$(BAKERAIN_DEVELOPE_R)\""
 endif
 
-BUILD_DATE := $(shell LANG=C date)
 BUILD_NUMBER := $(shell git rev-list --count HEAD)
 BUILD_TAG := $(shell git describe --dirty --tags --abbrev=7)
-BUILD_WHOAMI := $(shell whoami)
 BUILD_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 BUILD_COMMIT := $(shell git rev-parse HEAD)
 
-CFLAGS += -DBUILD_STYLE="\"$(BUILD_STYLE)\"" -DBUILD_DATE="\"$(BUILD_DATE)\""
-CFLAGS += -DBUILD_WHOAMI="\"$(BUILD_WHOAMI)\"" -DBUILD_TAG="\"$(BUILD_TAG)\""
+CFLAGS += -DBUILD_STYLE="\"$(BUILD_STYLE)\"" -DBUILD_TAG="\"$(BUILD_TAG)\""
 CFLAGS += -DBUILD_NUMBER="\"$(BUILD_NUMBER)\"" -DBUILD_BRANCH="\"$(BUILD_BRANCH)\""
 CFLAGS += -DBUILD_COMMIT="\"$(BUILD_COMMIT)\""
 
