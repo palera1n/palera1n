@@ -348,10 +348,8 @@ int optparse(int argc, char* argv[]) {
 		printf(
 			"palera1n " PALERAIN_VERSION "\n"
 			BUILD_COMMIT " " BUILD_NUMBER " (" BUILD_BRANCH ")\n\n"
-			"Build date: " BUILD_DATE "\n"
 			"Build style: " BUILD_STYLE "\n"
 			"Build tag: " BUILD_TAG "\n"
-			"Built by: " BUILD_WHOAMI "\n"
 #ifdef USE_LIBUSB
 			"USB backend: libusb\n"
 #else
