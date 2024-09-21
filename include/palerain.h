@@ -174,7 +174,6 @@ extern uint64_t palerain_flags;
 extern pthread_mutex_t log_mutex;
 
 extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
-pthread_cond_t spin;
 
 extern int pongo_thr_running, dfuhelper_thr_running;
 extern bool device_has_booted;
