@@ -42,6 +42,9 @@ void *pongo_usb_callback(stuff_t *arg) {
 	}
 #endif
 	LOG(LOG_INFO, "Found PongoOS USB Device");
+	if (palerain_flags & palerain_option_pongo_exit)
+		goto done;
+
 	usb_device_handle_t handle = arg->handle;
 #ifdef TUI
 	if (tui_is_jailbreaking) {

@@ -148,6 +148,8 @@ int palera1n(int argc, char *argv[], char *envp[]) {
 											  palerain_option_device_info)
 								 ) || device_has_booted)
 		goto normal_exit;
+	pthread_cancel(pongo_thread);
+	pthread_join(pongo_thread, NULL);
 	if (exec_checkra1n()) goto cleanup;
 
 	if ((palerain_flags & (palerain_option_pongo_exit | palerain_option_demote)))
