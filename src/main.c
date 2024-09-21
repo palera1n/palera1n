@@ -107,6 +107,7 @@ int palera1n(int argc, char *argv[], char *envp[]) {
 	pthread_mutex_init(&spin_mutex, NULL);
 	pthread_mutex_init(&found_pongo_mutex, NULL);
 	pthread_mutex_init(&ecid_dfu_wait_mutex, NULL);
+	pthread_cond_init(&spin, NULL);
 	if ((ret = build_checks())) return ret;
 	if ((ret = optparse(argc, argv))) goto cleanup;
 	if (!(palerain_flags & palerain_option_device_info) && (palerain_flags & palerain_option_palerain_version)) goto normal_exit;
@@ -140,7 +141,7 @@ int palera1n(int argc, char *argv[], char *envp[]) {
 	pthread_create(&pongo_thread, NULL, pongo_helper, NULL);
 	pthread_create(&dfuhelper_thread, NULL, dfuhelper, NULL);
 	pthread_join(dfuhelper_thread, NULL);
-	set_spin(0);
+	palerain_unblock();
 	if ((palerain_flags & (palerain_option_dfuhelper_only | 
 											  palerain_option_reboot_device  | 
 											  palerain_option_exit_recovery  | 
@@ -154,14 +155,10 @@ int palera1n(int argc, char *argv[], char *envp[]) {
 
 	if ((palerain_flags & (palerain_option_pongo_exit | palerain_option_demote)))
 		goto normal_exit;
-	set_spin(1);
 	sleep(2);
 	pthread_create(&pongo_thread, NULL, pongo_helper, NULL);
 	pthread_join(pongo_thread, NULL);
-	while (get_spin())
-	{
-		sleep(1);
-	}
+	palerain_block();
 normal_exit:
 cleanup:
 	if (override_kpf.magic == OVERRIDE_MAGIC) {
@@ -181,6 +178,7 @@ cleanup:
 	pthread_mutex_destroy(&spin_mutex);
 	pthread_mutex_destroy(&found_pongo_mutex);
 	pthread_mutex_destroy(&ecid_dfu_wait_mutex);
+	pthread_cond_destroy(&spin);
 	return ret;
 }
 

@@ -25,9 +25,7 @@ void* pongo_helper(void* ptr) {
 	pongo_thr_running = 1;
 	pthread_cleanup_push(thr_cleanup, &pongo_thr_running);
 	wait_for_pongo();
-	while (get_spin()) {
-		sleep(1);
-	}
+	palerain_block();
 	pthread_cleanup_pop(1);
 	return NULL;
 }
@@ -141,7 +139,7 @@ done:
 #ifdef USE_LIBUSB
 	libusb_unref_device(arg->dev);
 #endif
-	set_spin(0);
+	palerain_unblock();
 	return NULL;
 }
 
@@ -236,7 +234,7 @@ void io_start(stuff_t *stuff)
     if(r != 0)
     {
         ERR("pthread_create: %s", strerror(r));
-        set_spin(0);
+        palerain_unblock();
 		return;
     }
     pthread_join(stuff->th, NULL);
@@ -248,14 +246,14 @@ void io_stop(stuff_t *stuff)
     if(r != 0)
     {
         ERR("pthread_cancel: %s", strerror(r));
-        set_spin(0);
+        palerain_unblock();
 		return;
     }
     r = pthread_join(stuff->th, NULL);
     if(r != 0)
     {
         ERR("pthread_join: %s", strerror(r));
-        set_spin(0);
+        palerain_unblock();
 		return;
     }
 #ifdef USE_LIBUSB
