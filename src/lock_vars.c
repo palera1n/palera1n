@@ -30,9 +30,8 @@
 #include <paleinfo.h>
 
 pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
-pthread_cond_t spin;
 
-bool found_pongo = 0;
+bool spin, found_pongo = 0;
 uint64_t ecid_wait_for_dfu = 0;
 
 static bool get_locked_bool(bool* val, pthread_mutex_t* mutex) {
@@ -51,14 +50,12 @@ static bool set_locked_bool(bool* val, bool newval, pthread_mutex_t* mutex) {
     return newval;
 }
 
-bool palerain_block(void) {
-    pthread_mutex_lock(&spin_mutex);
-    pthread_cond_wait(&spin, &spin_mutex);
-    pthread_mutex_unlock(&spin_mutex);
+bool get_spin(void) {
+    return get_locked_bool(&spin, &spin_mutex);
 }
 
-bool palerain_unblock(void) {
-    pthread_cond_broadcast(&spin);
+bool set_spin(bool newval) {
+    return set_locked_bool(&spin, newval, &spin_mutex);
 }
 
 bool get_found_pongo(void) {

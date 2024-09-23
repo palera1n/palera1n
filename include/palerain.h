@@ -153,8 +153,6 @@ typedef unsigned char niarelap_file_t[];
 
 extern unsigned int verbose;
 
-pthread_cond_t spin;
-
 extern char* pongo_path;
 #ifdef TUI
 extern bool tui_started;
@@ -174,7 +172,6 @@ extern uint64_t palerain_flags;
 extern pthread_mutex_t log_mutex;
 
 extern pthread_mutex_t spin_mutex, found_pongo_mutex, ecid_dfu_wait_mutex;
-pthread_cond_t spin;
 
 extern int pongo_thr_running, dfuhelper_thr_running;
 extern bool device_has_booted;
@@ -216,8 +213,8 @@ int issue_pongo_command(usb_device_handle_t, char*);
 int tui(void);
 int optparse(int argc, char* argv[]);
 
-bool palerain_unblock(void);
-bool palerain_block(void);
+bool get_spin(void);
+bool set_spin(bool val);
 bool get_found_pongo(void);
 void* pongo_helper(void* _);
 bool set_found_pongo(bool val);
@@ -229,6 +226,5 @@ void io_start(stuff_t *stuff);
 void io_stop(stuff_t *stuff);
 
 void print_credits(void);
-
 
 #endif

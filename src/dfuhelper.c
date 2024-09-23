@@ -100,7 +100,7 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		printf("DisplayName: %s\n", dev.displayName);
 
 		device_has_booted = true;
-		palerain_unblock();
+		set_spin(0);
 		unsubscribe_cmd();
 		return 0;
 	}
@@ -115,7 +115,7 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	devinfo_free(&dev);
 	if ((palerain_flags & palerain_option_enter_recovery)) {
 		device_has_booted = true;
-		palerain_unblock();
+		set_spin(0);
 		unsubscribe_cmd();
 	}
 	return 0;
@@ -226,7 +226,7 @@ void* connected_dfu_mode(struct irecv_device_info* info) {
 	if (IS_APPLE_HOME) {
 		step(2, 0, "Put device in upright orientation", NULL, 0);
 	}
-	palerain_unblock();
+	set_spin(0);
 	unsubscribe_cmd();
 	pthread_exit(NULL);
 	return NULL;
@@ -243,7 +243,7 @@ void device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 			int ret = reboot_cmd(event->device.udid);
 			if (!ret) {
 				LOG(LOG_INFO, "Restarted device");
-				palerain_unblock();
+				set_spin(0);
 				unsubscribe_cmd();
 			}
 			pthread_exit(NULL);
@@ -274,7 +274,7 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 					if (!ret) {
 						LOG(LOG_INFO, "Exited recovery mode");
 						device_has_booted = true;
-						palerain_unblock();
+						set_spin(0);
 						unsubscribe_cmd();
 					} else {
 						LOG(LOG_WARNING, "Could not exit recovery mode");
@@ -295,7 +295,7 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 						printf("DisplayName: %s\n", info.display_name);
 
 						device_has_booted = true;
-						palerain_unblock();
+						set_spin(0);
 						unsubscribe_cmd();
 					}
 					if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
@@ -321,7 +321,7 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 						printf("DisplayName: %s\n", info.display_name);
 
 						device_has_booted = true;
-						palerain_unblock();
+						set_spin(0);
 						unsubscribe_cmd();
 					}
 					if (dfuhelper_thr_running) pthread_cancel(dfuhelper_thread);
@@ -346,8 +346,11 @@ void irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 
 void *dfuhelper(void* ptr) {
 	dfuhelper_thr_running = true;
+	set_spin(1);
 	subscribe_cmd(device_event_cb, irecv_device_event_cb);
-	palerain_block();
+	while (get_spin()) {
+		sleep(1);
+	};
 	dfuhelper_thr_running = false;
 	return 0;
 }

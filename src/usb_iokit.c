@@ -245,7 +245,9 @@ int wait_for_pongo(void) {
     }
     LostDevice(&stuff, lost);
     // CFRunLoopRun();
-    palerain_block();
+    while (get_spin()) {
+        sleep(1);
+    }
     CFRelease(cfdict);
     return 0;
 }
