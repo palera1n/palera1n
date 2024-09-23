@@ -153,7 +153,7 @@ typedef unsigned char niarelap_file_t[];
 
 extern unsigned int verbose;
 
-extern pthread_cond_t spin;
+pthread_cond_t spin;
 
 extern char* pongo_path;
 #ifdef TUI
