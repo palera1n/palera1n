@@ -73,7 +73,24 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 		LOG(LOG_WARNING, "palera1n doesn't and never will work on A12+ (arm64e)");
 		return -1;
 	}
-	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
+
+	if ((palerain_flags & palerain_option_device_info)) {
+		printf("Mode: normal\n");
+		printf("ProductType: %s\n", dev.productType);
+		printf("Architecture: %s\n", dev.CPUArchitecture);
+		printf("Version: %s\n", dev.productVersion);
+		printf("DisplayName: %s\n", dev.displayName);
+
+		device_has_booted = true;
+		set_spin(0);
+		unsubscribe_cmd();
+		return 0;
+	}
+
+	/* For Booting Linux etc */
+	if (!getenv("PALERA1N_BYPASS_PASSCODE_CHECK") &&
+		!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,")
+		)) {
 		if (!(palerain_flags & palerain_option_device_info))
 			LOG(LOG_VERBOSE2, "Product %s requires passcode to be disabled", dev.productType);
 		unsigned char passcode_state = 0;
@@ -91,19 +108,10 @@ int connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 			return -1;
 		}
 	}
+	
+	if (getenv("PALERA1N_BYPASS_PASSCODE_CHECK"))
+		LOG(LOG_WARNING, "Bypassed passcode check");	
 
-	if ((palerain_flags & palerain_option_device_info)) {
-		printf("Mode: normal\n");
-		printf("ProductType: %s\n", dev.productType);
-		printf("Architecture: %s\n", dev.CPUArchitecture);
-		printf("Version: %s\n", dev.productVersion);
-		printf("DisplayName: %s\n", dev.displayName);
-
-		device_has_booted = true;
-		set_spin(0);
-		unsubscribe_cmd();
-		return 0;
-	}
 	if (verbose > 1) {
 		/* (LOG_VERBOSE - 3) or below*/
 		LOG(LOG_INFO, "Telling device with udid %s to enter recovery mode immediately", usbmuxd_device->udid);
