@@ -1,6 +1,6 @@
 name: Feature Request
 description: Request a feature in palera1n!
-labels: [enhancement, palera1n]
+labels: [enhancement]
 body:
   - type: textarea
     id: feature-request

@@ -1,6 +1,6 @@
 name: No Template
 description: Create a standard issue, no template involved.
-labels: [palera1n]
+labels: [palera1n help]
 body:
   - type: textarea
     id: description

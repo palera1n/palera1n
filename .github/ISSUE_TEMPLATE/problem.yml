@@ -1,7 +1,6 @@
 name: Create Issue
 description: Ask help for palera1n regarding support or generally how it works! 
-labels: [palera1n]
-assignees:
+labels: [palera1n help]
 body:
   - type: input
     id: device
