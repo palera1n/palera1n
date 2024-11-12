@@ -2,10 +2,6 @@ name: Create Issue
 description: Ask help for palera1n regarding support or generally how it works! 
 labels: [palera1n]
 assignees:
-  - khcrysalis
-  - elliessurviving
-  - hg13bs
-  - afastaudir8
 body:
   - type: input
     id: device
