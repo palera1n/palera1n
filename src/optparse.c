@@ -19,7 +19,6 @@
 #endif
 
 uint64_t* palerain_flags_p = &palerain_flags;
-static bool force_use_verbose_boot = false;
 char* gOverrideLibcheckra1nHelper = NULL;
 
 static struct option longopts[] = {
@@ -148,11 +147,9 @@ int optparse(int argc, char* argv[]) {
 		case 'B':
 			palerain_flags |= palerain_option_setup_partial_root;
 			palerain_flags |= palerain_option_setup_rootful;
-			palerain_flags |= palerain_option_verbose_boot;
 			break;
 		case 'c':
 			palerain_flags |= palerain_option_setup_rootful;
-			palerain_flags |= palerain_option_verbose_boot;
 			break;
 		case 'C':
 			palerain_flags |= palerain_option_clean_fakefs;
@@ -175,7 +172,6 @@ int optparse(int argc, char* argv[]) {
 			break;
 		case 'V':
 			palerain_flags |= palerain_option_verbose_boot;
-			force_use_verbose_boot = true;
 #ifdef TUI
 			tui_options_verbose_boot = true;
 #endif
@@ -362,10 +358,6 @@ int optparse(int argc, char* argv[]) {
 
 	if (palerain_flags & palerain_option_telnetd) {
 		LOG(LOG_WARNING, "telnetd is enabled, this is a security hole");
-	}
-
-	if ((strstr(xargs_cmd, "serial=") != NULL) && !force_use_verbose_boot && (palerain_flags & palerain_option_setup_rootful)) {
-		palerain_flags &= ~palerain_option_verbose_boot;
 	}
 
 	if ((palerain_flags & (palerain_option_tui)) && (palerain_flags & (palerain_option_cli))) {
