@@ -72,7 +72,7 @@ jobs:
             gnu_triple: aarch64-apple-darwin
             os: iphoneos
             minos: 7.0
-    runs-on: macos-15-arm64
+    runs-on: macos-15
     env:
       MBEDTLS_VERSION: 3.5.2
       READLINE_VERSION: 8.2
