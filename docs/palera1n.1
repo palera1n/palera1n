@@ -2,11 +2,11 @@
 .\" Copyright (c) 2024 Nick Chan
 .\" SPDX-License-Identifier: MIT
 .\"
-.Dd "24 July 2024"
+.Dd "23 December 2024"
 .Dt palera1n 1
 .Sh NAME
 .Nm palera1n
-.Nd arm64 iOS/iPadOS/tvOS 15.0-18.2, bridgeOS 5.0-9.2 jailbreaking tool
+.Nd arm64 iOS/iPadOS/tvOS 15.0-18.3, bridgeOS 5.0-9.3 jailbreaking tool
 .Sh SYNOPSIS
 .Nm
 .Op Fl cCdDEfhIlLnpRsSTvV
@@ -32,7 +32,9 @@ On iOS/iPadOS 15.0 and later and on tvOS 18.2 or later,
 is able to jailbreak the device in fakefs-rootful mode, where /
 is writable, as well as rootless mode, where / cannot be written to.
 On tvOS and bridgeOS,
-only rootful is supported, and it uses the actual filesystem instead of a fakefs.
+only rootful is supported. On versions where fakefs-rootful is not
+applicable, palera1n modifies the actual root filesystem instead
+of making a fakefs
 .Pp
 Due to the nature of the
 .Em checkm8
@@ -101,9 +103,7 @@ list of supported devicecs:
 .It Apple T2 MacBookPro15,3
 .It Apple T2 MacBookAir8,1
 .It Apple T2 MacBookPro15,4
-.It iBridge2,11 (Unknown Mac)
 .It Apple T2 MacBookAir8,2
-.It iBridge2,13 (Unknown Mac)
 .It Apple T2 MacBookPro16,1
 .It Apple T2 MacBookAir9,1
 .It Apple T2 MacBookPro16,2
@@ -346,9 +346,14 @@ has been mounted.
 .El
 .Sh BUGS
 .Nm
-may crash if the machine it is running on:
+may crash if the machine it is running on has non-compliant USB devices plugged in.
 .Pp
-.Dl "- Has non-compliant USB devices plugged in"
+.Nm
+will fail to initialize on Linux when there are no USB devices plugged in.
+Usually this is not a problem on PCs since the built-in root hubs are also
+USB devices. However, on platforms such as Apple Silicon Macs in Linux, since
+there are no built-in USB hubs, at least one USB device needs to be manually
+plugged in for palera1n to be initialized.
 .Pp
 The exploit may also work less reliably on some hosts, like AMD desktops, or some MediaTek devices.
 .Pp
