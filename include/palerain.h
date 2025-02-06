@@ -204,12 +204,9 @@ boyermoore_horspool_memmem(const unsigned char* haystack, size_t hlen,
                            const unsigned char* needle,   size_t nlen);
 
 
-extern void* pongo_usb_callback(stuff_t* arg);
 usb_ret_t USBControlTransfer(usb_device_handle_t handle, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint32_t wLength, void *data, uint32_t *wLenDone);
 const char *usb_strerror(usb_ret_t err);
 int wait_for_pongo(void);
-int upload_pongo_file(usb_device_handle_t, unsigned char*, unsigned int);
-int issue_pongo_command(usb_device_handle_t, char*);
 int tui(void);
 int optparse(int argc, char* argv[]);
 
@@ -221,7 +218,6 @@ bool set_found_pongo(bool val);
 uint64_t get_ecid_wait_for_dfu(void);
 uint64_t set_ecid_wait_for_dfu(uint64_t ecid);
 
-void write_stdout(char *buf, uint32_t len);
 void io_start(stuff_t *stuff);
 void io_stop(stuff_t *stuff);
 

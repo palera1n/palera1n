@@ -28,9 +28,9 @@
 #include <palerain.h>
 #include <tui.h>
 
-int tui_enter_dfu_nav_selection = 1;
-bool tui_device_is_entering_dfu = false;
-int tui_enter_dfu_status = 0;
+static int tui_enter_dfu_nav_selection = 1;
+static bool tui_device_is_entering_dfu = false;
+static int tui_enter_dfu_status = 0;
 
 enum {
     DEVICE_TYPE_IPHONE_SE,
@@ -41,7 +41,7 @@ enum {
     DEVICE_TYPE_IPOD_TOUCH
 } device_type;
 
-int tui_product_type_to_device_type(char *product_type) {
+static int tui_product_type_to_device_type(char *product_type) {
     if (strcmp(product_type, "iPhone8,1") == 0 || strcmp(product_type, "iPhone8,2") == 0) {
         return DEVICE_TYPE_IPHONE_6S;
     }
@@ -68,11 +68,11 @@ int tui_product_type_to_device_type(char *product_type) {
     return DEVICE_TYPE_IPHONE_SE;
 }
 
-int tui_enter_dfu_device_type = DEVICE_TYPE_IPHONE_SE;
+static int tui_enter_dfu_device_type = DEVICE_TYPE_IPHONE_SE;
 
-int tui_enter_dfu_loading_progress = 1;
+static int tui_enter_dfu_loading_progress = 1;
 
-void tui_screen_enter_dfu_nav(void) {
+static void tui_screen_enter_dfu_nav(void) {
     MOVETOT(80 - 22, 23);
     printf("%s[ Cancel ]" COLOR(FG_WHITE, BG_BLACK) " %s[  %s ]" COLOR(FG_WHITE, BG_BLACK),
         tui_device_is_entering_dfu || tui_enter_dfu_status == 1 ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : tui_enter_dfu_nav_selection == 0 ? "\033[30;107m" : (
@@ -343,9 +343,9 @@ void tui_screen_enter_dfu_redraw(void) {
 }
 
 // TODO: IMPLEMENT REAL ENTER RECOVERY
-int dfu_time = 0;
+static int dfu_time = 0;
 
-tui_screen_t tui_enter_dfu(void) {
+static tui_screen_t tui_enter_dfu(void) {
     if (tui_connected_devices && !tui_connected_devices->next) {
         if (tui_connected_devices->mode == TUI_DEVICE_MODE_NORMAL) {
             tui_enter_dfu_status = 0;
@@ -391,7 +391,7 @@ tui_screen_t tui_enter_dfu(void) {
     return JAILBREAK_SCREEN;
 }
 
-int tui_enter_dfu_nav_mouse_select = -1;
+static int tui_enter_dfu_nav_mouse_select = -1;
 
 tui_screen_t tui_screen_enter_dfu(void) {
     if (tui_connected_devices && !tui_connected_devices->next) {

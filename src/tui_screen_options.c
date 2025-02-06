@@ -13,10 +13,10 @@
 #include <palerain.h>
 #include <tui.h>
 
-int tui_options_nav_selection = 0;
-int tui_options_nav_mouse_select = 0;
+static int tui_options_nav_selection = 0;
+static int tui_options_nav_mouse_select = 0;
 
-bool tui_options_allow_untested = false;
+static bool tui_options_allow_untested = false;
 bool tui_options_safe_mode = false;
 bool tui_options_verbose_boot = false;
 bool tui_options_force_revert = false;

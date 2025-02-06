@@ -18,7 +18,7 @@ int tui_enter_recovery_nav_selection = 1;
 bool tui_device_is_entering_recovery = false;
 bool tui_enter_recovery_mode_failed = false;
 
-void tui_screen_enter_recovery_nav(void) {
+static void tui_screen_enter_recovery_nav(void) {
     MOVETOT(80 - 22, 23);
     printf("%s[  Back  ]" COLOR(FG_WHITE, BG_BLACK) " %s[  Next  ]" COLOR(FG_WHITE, BG_BLACK),
         tui_device_is_entering_recovery ? (supports_bright_colors ? COLOR(FG_BRIGHT_BLACK, BG_BLACK) : COLOR(FG_BLUE, BG_BLACK)) : tui_enter_recovery_nav_selection == 0 ? "\033[30;107m" : (
@@ -34,7 +34,7 @@ void tui_screen_enter_recovery_nav(void) {
     );
 }
 
-char enter_recovery_loading[9][8] = {
+static char enter_recovery_loading[9][8] = {
     "........",
     "|.......",
     ".|......",
@@ -46,7 +46,7 @@ char enter_recovery_loading[9][8] = {
     ".......|"
 };
 
-char enter_recovery_loading_troll[9][8] = {
+static char enter_recovery_loading_troll[9][8] = {
     ".......",
     "t......",
     ".r.....",
@@ -57,10 +57,10 @@ char enter_recovery_loading_troll[9][8] = {
     "......d",
 };
 
-bool is_troll;
-int tui_enter_recovery_loading_progress = 0;
+static bool is_troll;
+static int tui_enter_recovery_loading_progress = 0;
 
-void tui_screen_enter_recovery_loading(void) {
+static void tui_screen_enter_recovery_loading(void) {
     SETCOLOR(FG_YELLOW, BG_BLACK);
     PRINTATT(3, 8, "Entering recovery mode ");
     printf("%.8s", is_troll ? enter_recovery_loading_troll[tui_enter_recovery_loading_progress] : enter_recovery_loading[tui_enter_recovery_loading_progress]);
@@ -88,9 +88,9 @@ void tui_screen_enter_recovery_redraw(void) {
     fflush(stdout);
 }
 
-int recovery_time = 0;
+static int recovery_time = 0;
 
-tui_screen_t tui_enter_recovery(void) {
+static tui_screen_t tui_enter_recovery(void) {
     enter_recovery_cmd(tui_connected_devices->udid);
     is_troll = false;
     if (rand() % 1000 == 0) {
@@ -128,7 +128,7 @@ tui_screen_t tui_enter_recovery(void) {
     }
 }
 
-int tui_enter_recovery_nav_mouse_select = -1;
+static int tui_enter_recovery_nav_mouse_select = -1;
 
 tui_screen_t tui_screen_enter_recovery(void) {
     tui_device_is_entering_recovery = false;

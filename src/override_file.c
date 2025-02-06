@@ -14,7 +14,6 @@
 #include <sys/mman.h>
 #include <errno.h>
 
-
 int override_file(override_file_t *finfo, niarelap_file_t** orig, unsigned int *orig_len, char *filename) {
 	int ret = 0;
 	int fd = open(filename, O_RDONLY);

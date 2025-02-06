@@ -15,7 +15,7 @@
 
 bool tui_is_jailbreaking = false;
 
-void tui_screen_jailbreak_nav(void) {
+static void tui_screen_jailbreak_nav(void) {
     if (tui_is_jailbreaking) {
         if (supports_bright_colors) {
             SETCOLOR(FG_BRIGHT_BLACK, BG_BLACK);
@@ -29,7 +29,8 @@ void tui_screen_jailbreak_nav(void) {
     SETCOLOR(FG_WHITE, BG_BLACK);
 }
 
-pthread_t tui_jailbreak_thread_id;
+static pthread_t tui_jailbreak_thread_id;
+
 int tui_jailbreak_stage = 0;
 char *tui_jailbreak_status = NULL;
 
@@ -38,7 +39,7 @@ void tui_jailbreak_status_changed(void) {
     sem_post(tui_event_semaphore);
 }
 
-void *tui_jailbreak_thread(void *arg) {
+static void *tui_jailbreak_thread(void *arg) {
     tui_jailbreak_stage = 1;
     tui_jailbreak_status = "About to execute checkra1n";
 
@@ -121,7 +122,7 @@ void tui_screen_jailbreak_redraw(void) {
     tui_screen_jailbreak_nav();
 }
 
-int tui_jailbreak_nav_mouse_select = -1;
+static int tui_jailbreak_nav_mouse_select = -1;
 
 tui_screen_t tui_screen_jailbreak(void) {
     redraw_screen();

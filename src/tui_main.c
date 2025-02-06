@@ -28,13 +28,14 @@ int proc_pidpath(int pid, void * buffer, uint32_t buffersize);
 char random_sem_name[sizeof("palera1n.tui_event_semaphore") + 16 + 1];
 #endif
 
-int tui_state = 0;
+static int tui_state = 0;
+
 int tui_x_offset = 0;
 int tui_y_offset = 0;
 
 bool supports_bright_colors = true;
 
-struct termios saved_termios;
+static struct termios saved_termios;
 
 int redraw_screen(void) {
     SETCOLOR(FG_BRIGHT_WHITE, BG_BLACK);
@@ -83,7 +84,7 @@ int redraw_screen(void) {
     return 0;
 }
 
-int destroy_window(void) {
+static int destroy_window(void) {
     if (!tui_started) return 0;
     tui_started = false;
     tcsetattr(STDIN_FILENO, 0, &saved_termios);
@@ -97,7 +98,7 @@ int destroy_window(void) {
     return 0;
 }
 
-int init_window(void) {
+static int init_window(void) {
     setlocale(LC_ALL, NULL);
 
     tui_started = true;
@@ -151,7 +152,7 @@ void tui_terminate(int sig) {
     }
 }
 
-void resize_handler(int sig) {
+static void resize_handler(int sig) {
     redraw_screen();
 }
 

@@ -57,7 +57,7 @@ void thr_cleanup(void* ptr) {
 	*(int*)ptr = 0;
 }
 
-int build_checks(void) {
+static int build_checks(void) {
 #ifndef NO_CHECKRAIN
 #if defined(__APPLE__)
 	struct mach_header_64* c1_header = (struct mach_header_64*)&checkra1n[0];
@@ -96,7 +96,7 @@ int saved_argc;
 char** saved_argv;
 char** saved_envp;
 
-int palera1n(int argc, char *argv[], char *envp[]) {
+static int palera1n(int argc, char *argv[], char *envp[]) {
 	saved_argc = argc;
 	saved_argv = argv;
 	saved_envp = envp;

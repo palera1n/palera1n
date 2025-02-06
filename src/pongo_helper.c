@@ -21,6 +21,10 @@ int pongo_thr_running = 0;
 
 #define ERR(...) LOG(LOG_VERBOSE, __VA_ARGS__)
 
+static int issue_pongo_command(usb_device_handle_t, char*);
+static int upload_pongo_file(usb_device_handle_t, unsigned char*, unsigned int);
+static void write_stdout(char *buf, uint32_t len);
+
 void* pongo_helper(void* ptr) {
 	pongo_thr_running = 1;
 	pthread_cleanup_push(thr_cleanup, &pongo_thr_running);
@@ -32,7 +36,7 @@ void* pongo_helper(void* ptr) {
 	return NULL;
 }
 
-void *pongo_usb_callback(stuff_t *arg) {
+static void *pongo_usb_callback(stuff_t *arg) {
 	if (get_found_pongo())
 		return NULL;
 	set_found_pongo(1);
@@ -145,7 +149,7 @@ done:
 	return NULL;
 }
 
-int issue_pongo_command(usb_device_handle_t handle, char *command)
+static int issue_pongo_command(usb_device_handle_t handle, char *command)
 {
 	uint32_t outpos = 0;
 	uint32_t outlen = 0;
@@ -207,7 +211,7 @@ bad:
 		return ret;
 }
 
-int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned int buf_len)
+static int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned int buf_len)
 {
 	int ret = 0;
 	ret = USBControlTransfer(handle, 0x21, 1, 0, 0, 4, &buf_len, NULL);
@@ -263,7 +267,7 @@ void io_stop(stuff_t *stuff)
 #endif
 }
 
-void write_stdout(char *buf, uint32_t len)
+static void write_stdout(char *buf, uint32_t len)
 {
     while(len > 0) {
         if (verbose >= 3) {

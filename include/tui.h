@@ -102,11 +102,8 @@ void tui_draw_rectangle(int x1, int y1, int x2, int y2);
 #define TUI_VERSION "Unknown Version"
 #endif
 
-extern int tui_state;
 extern int tui_x_offset;
 extern int tui_y_offset;
-
-extern bool tui_can_start;
 
 extern int tui_mouse_x;
 extern int tui_mouse_y;
@@ -167,8 +164,6 @@ struct tui_connected_device {
 
 extern struct tui_connected_device *tui_connected_devices;
 
-int tui_compare_versions(const char *firstVersion, const char *secondVersion);
-
 void tui_jailbreak(void);
 extern bool tui_is_jailbreaking;
 extern int tui_jailbreak_stage;
@@ -179,7 +174,6 @@ void tui_jailbreak_status_changed(void);
 extern bool tui_is_restarting;
 void tui_terminate(int sig);
 
-extern bool tui_options_allow_untested;
 extern bool tui_options_safe_mode;
 extern bool tui_options_verbose_boot;
 extern bool tui_options_force_revert;

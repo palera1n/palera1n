@@ -13,9 +13,11 @@
 #include <palerain.h>
 #include <tui.h>
 
-bool showing_ecid = false;
+static int tui_compare_versions(const char *firstVersion, const char *secondVersion);
 
-char palera1n_logo[17][16] = {
+static bool showing_ecid = false;
+
+static char palera1n_logo[17][16] = {
 "       ++       ",
 "      #@@#      ",
 "     +@@@@+     ",
@@ -34,7 +36,7 @@ char palera1n_logo[17][16] = {
 "      :++:      "
 };
 
-char random_quotes[][150] = {
+static char random_quotes[][150] = {
     "panic(cpu 1 caller 0xfffffff0232bd958): SEP Panic",
     "Now with Apple TV support!",
     "checkra1n will open source in 2020",
@@ -49,10 +51,10 @@ char random_quotes[][150] = {
 
 #define PALERA1N_URL "https://palera.in"
 
-int tui_main_nav_selection = 1;
-bool quick_mode_enabled = false;
-bool tui_can_start = false;
-int random_quote;
+static int tui_main_nav_selection = 1;
+static bool quick_mode_enabled = false;
+static bool tui_can_start = false;
+static int random_quote;
 
 bool easter_egg = false;
 
@@ -206,7 +208,7 @@ void tui_screen_main_redraw(void) {
     fflush(stdout);
 }
 
-int tui_main_nav_mouse_select = -1;
+static int tui_main_nav_mouse_select = -1;
 
 tui_screen_t tui_screen_main(void) {
     random_quote = ((unsigned int)((rand()+rand())/2)) % 8;
@@ -329,7 +331,7 @@ tui_screen_t tui_screen_main(void) {
     return MAIN_SCREEN;
 }
 
-int tui_version_extract_component(const char *version, int index) {
+static int tui_version_extract_component(const char *version, int index) {
     int component = 0;
     int componentIndex = 0;
     for (int i = 0; version[i] != '\0'; i++) {
@@ -348,7 +350,7 @@ int tui_version_extract_component(const char *version, int index) {
     return component;
 }
 
-int tui_compare_versions(const char *firstVersion, const char *secondVersion) {
+static int tui_compare_versions(const char *firstVersion, const char *secondVersion) {
     if (strcmp(firstVersion, secondVersion) == 0) {
         return 0;
     }

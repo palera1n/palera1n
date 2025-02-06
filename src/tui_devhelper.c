@@ -3,7 +3,7 @@
 #include <palerain.h>
 #include <tui.h>
 
-irecv_device_t tui_get_recovery_device(uint64_t ecid) {
+static irecv_device_t tui_get_recovery_device(uint64_t ecid) {
     irecv_client_t client = NULL;
 	for (int i = 0; i <= 5; i++) {
 		irecv_error_t err = irecv_open_with_ecid(&client, ecid);
@@ -28,7 +28,7 @@ irecv_device_t tui_get_recovery_device(uint64_t ecid) {
 
 struct tui_connected_device *tui_connected_devices = NULL;
 
-void* tui_connected_recovery_mode(struct irecv_device_info* info) {
+static void* tui_connected_recovery_mode(struct irecv_device_info* info) {
     //printf("Recovery mode device %" PRIu64 " connected\n", info->ecid);
     tui_last_event = TUI_EVENT_CONNECTED_DEVICES_CHANGED;
     sem_post(tui_event_semaphore);
@@ -36,7 +36,7 @@ void* tui_connected_recovery_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
-void* tui_disconnected_recovery_mode(struct irecv_device_info* info) {
+static void* tui_disconnected_recovery_mode(struct irecv_device_info* info) {
     //printf("Recovery mode device %" PRIu64 " disconnected\n", info->ecid);
     tui_last_event = TUI_EVENT_CONNECTED_DEVICES_CHANGED;
     sem_post(tui_event_semaphore);
@@ -44,7 +44,7 @@ void* tui_disconnected_recovery_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
-void* tui_connected_dfu_mode(struct irecv_device_info* info) {
+static void* tui_connected_dfu_mode(struct irecv_device_info* info) {
     //printf("DFU mode device %" PRIu64 " connected\n", info->ecid);
     tui_last_event = TUI_EVENT_CONNECTED_DEVICES_CHANGED;
     sem_post(tui_event_semaphore);
@@ -52,7 +52,7 @@ void* tui_connected_dfu_mode(struct irecv_device_info* info) {
 	return NULL;
 }
 
-void* tui_disconnected_dfu_mode(struct irecv_device_info* info) {
+static void* tui_disconnected_dfu_mode(struct irecv_device_info* info) {
     //printf("DFU mode device %" PRIu64 " disconnected\n", info->ecid);
     tui_last_event = TUI_EVENT_CONNECTED_DEVICES_CHANGED;
     sem_post(tui_event_semaphore);
@@ -60,7 +60,7 @@ void* tui_disconnected_dfu_mode(struct irecv_device_info* info) {
     return NULL;
 }
 
-int tui_connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
+static int tui_connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
     struct tui_connected_device *tui_dev = malloc(sizeof(struct tui_connected_device));
     strcpy(tui_dev->udid, usbmuxd_device->udid);
     tui_dev->next = tui_connected_devices;
@@ -105,7 +105,7 @@ int tui_connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
 	return 0;
 }
 
-void tui_disconnected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
+static void tui_disconnected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
     struct tui_connected_device *cur = tui_connected_devices;
     struct tui_connected_device *prev = NULL;
     while (cur) {
@@ -126,7 +126,7 @@ void tui_disconnected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
     sem_post(tui_event_semaphore);
 }
 
-void tui_device_event_cb(const usbmuxd_event_t *event, void* userdata) {
+static void tui_device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	if (event->device.conn_type != CONNECTION_TYPE_USB) return;
 	switch (event->event) {
 	case UE_DEVICE_ADD:
@@ -140,7 +140,7 @@ void tui_device_event_cb(const usbmuxd_event_t *event, void* userdata) {
 	}
 }
 
-void tui_irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
+static void tui_irecv_device_event_cb(const irecv_device_event_t *event, void* userdata) {
 	pthread_t recovery_thread, dfu_thread;
 	int ret;
 	
