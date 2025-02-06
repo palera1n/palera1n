@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies (packages)
         run: |
@@ -84,7 +84,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -349,7 +349,7 @@ jobs:
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}
@@ -357,7 +357,7 @@ jobs:
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} build (Development)
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.development
@@ -366,7 +366,7 @@ jobs:
 
       - name: Upload ${{ matrix.os }} thin ${{ matrix.arch }} debug symbols
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
           path: palera1n-${{ matrix.os }}-${{ matrix.arch }}.dSYM
@@ -383,7 +383,7 @@ jobs:
     needs: build-darwin
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -395,7 +395,7 @@ jobs:
           mirror: 'https://apt.procurs.us/'
 
       - name: Download all Darwin artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Prepare artifact
         run: |
@@ -497,7 +497,7 @@ jobs:
         run: echo "$(git describe --dirty --tags --abbrev=7 | sed 's|-dirty||')" > build-tag.txt
       
       - name: Upload build tag
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-tag
           path: build-tag.txt
@@ -542,7 +542,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -883,14 +883,14 @@ jobs:
     needs: [build-docs, build-darwin, darwin-dist, build-Linux]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v7
 
       - name: Download build tag
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-tag
 
