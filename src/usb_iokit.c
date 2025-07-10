@@ -208,7 +208,7 @@ static const int pongo_usb_product = PONGO_USB_PRODUCT;
 
 int wait_for_pongo(void) {
     kern_return_t ret;
-    stuff_t stuff;
+    stuff_t stuff = {0};
     io_iterator_t found, lost;
 
     void* cfdict_keys[3];
