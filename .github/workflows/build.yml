@@ -554,7 +554,7 @@ jobs:
 
       - name: Download toolchain checksum
         run: |
-          curl -LO https://musl.cc/SHA512SUMS
+          curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/SHA512SUMS
           echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}-cross.tgz SHA512SUMS | cut -d' ' -f1) >> $GITHUB_ENV
 
       - name: Download toolchain (cached)
@@ -567,7 +567,7 @@ jobs:
       - name: Download toolchain
         if: steps.toolchain_cache.outputs.cache-hit != 'true'
         run: |
-          curl -LO https://musl.cc/${{ matrix.triple }}-cross.tgz
+          curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/${{ matrix.triple }}-cross.tgz
 
       - name: Setup environment
         run: |
