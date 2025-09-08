@@ -6,7 +6,7 @@
 .Dt palera1n 1
 .Sh NAME
 .Nm palera1n
-.Nd arm64 iOS/iPadOS/tvOS 15.0-18.3, bridgeOS 5.0-9.3 jailbreaking tool
+.Nd arm64 iOS/iPadOS/tvOS 15.0-26.0, bridgeOS 5.0-10.0 jailbreaking tool
 .Sh SYNOPSIS
 .Nm
 .Op Fl cCdDEfhIlLnpRsSTvV
@@ -20,14 +20,14 @@
 .Op Fl -force-revert
 .Sh DESCRIPTION
 .Nm
-jailbreaks an arm64 (arm64e excluded) iOS/iPadOS/tvOS 15.0-18.3, bridgeOS 5.0-9.2 device,
+jailbreaks an arm64 (arm64e excluded) iOS/iPadOS/tvOS 15.0-26.0, bridgeOS 5.0-10.0 device,
 utilizing the
 .Em checkm8
 bootROM exploit.
 .Pp
 .Nm
 provides rootful and rootless jailbreak modes.
-On iOS/iPadOS 15.0 and later and on tvOS 18.3 or later,
+On iOS/iPadOS 15.0 and later and on tvOS 18.2 or later,
 .Nm
 is able to jailbreak the device in fakefs-rootful mode, where /
 is writable, as well as rootless mode, where / cannot be written to.
@@ -139,13 +139,13 @@ Like
 but the size of the created fakefs is smaller at the expense of having unwritable
 parts in rarely-written paths. When jailbreaking 16 GB devices, this option must be used
 when setting up fakefs for rootful, as they do not have enough storage for full fakefs.
-This flag is supported on iOS/iPadOS 15.0 or later and tvOS 18.3 or later, as they
+This flag is supported on iOS/iPadOS 15.0 or later and tvOS 18.2 or later, as they
 require fakefs for rootful.
 .It Fl c , -setup-fakefs
 When used with
 .Fl f , -fakefs ,
 creates the new APFS volume required for rootful. Will fail if one already exists.
-This flag is supported on iOS/iPadOS 15.0 or later and tvOS 18.3 or later, as they
+This flag is supported on iOS/iPadOS 15.0 or later and tvOS 18.2 or later, as they
 require fakefs for rootful.
 .It Fl C , -clean-fakefs
 This option is not currently supported and is a no-operation in this version of
