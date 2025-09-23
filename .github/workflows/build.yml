@@ -504,7 +504,7 @@ jobs:
 
       - name: Get branch name
         id: branch-name
-        uses: tj-actions/branch-names@v7
+        uses: tj-actions/branch-names@v9
 
       - name: Upload artifact
         if: ${{ github.event_name != 'pull_request' }}
