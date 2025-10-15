@@ -224,7 +224,7 @@ static int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, uns
 				LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
     		} else {
 				if ((palerain_flags & palerain_option_no_colors))
-				    printf("/send mem:%p:%p\nUploaded %llu bytes]\n", (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
+				    printf("/send mem:%p:%p\n[Uploaded %llu bytes]\n", (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
 				else
         			printf("/send mem:%p:%p\n" BCYN "[Uploaded %llu bytes]\n" CRESET, (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
     		}
