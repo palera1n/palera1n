@@ -14,7 +14,7 @@ body:
     id: version
     attributes:
       label: Version
-      description: What is version you're running? (i.e. iOS, iPadOS, tvOS, bridgeOS
+      description: What is version you're running? (i.e. iOS, iPadOS, tvOS, bridgeOS)
       placeholder: iOS 15.6
     validations:
       required: true
