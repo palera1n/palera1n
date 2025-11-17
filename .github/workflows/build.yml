@@ -555,23 +555,23 @@ jobs:
       - name: Download toolchain checksum
         run: |
           curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/SHA512SUMS
-          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}-cross.tgz SHA512SUMS | cut -d' ' -f1) >> $GITHUB_ENV
+          echo "TOOLCHAIN_CHECKSUM="$(grep ${{ matrix.triple }}-cross.tar.zst SHA512SUMS | cut -d' ' -f1) >> $GITHUB_ENV
 
       - name: Download toolchain (cached)
         id: toolchain_cache
         uses: actions/cache@v3
         with:
-          path: ${{ matrix.triple }}-cross.tgz
+          path: ${{ matrix.triple }}-cross.tar.zst
           key: ${{ matrix.triple }}-${{ env.TOOLCHAIN_CHECKSUM }}-toolchain
 
       - name: Download toolchain
         if: steps.toolchain_cache.outputs.cache-hit != 'true'
         run: |
-          curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/${{ matrix.triple }}-cross.tgz
+          curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/${{ matrix.triple }}-cross.tar.zst
 
       - name: Setup environment
         run: |
-          tar -xf ${{ matrix.triple }}-cross.tgz
+          tar --zstd -xf ${{ matrix.triple }}-cross.tar.zst
           mkdir sysroot
           echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
           case ${{ matrix.triple }} in
@@ -884,7 +884,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v9
