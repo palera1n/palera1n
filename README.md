@@ -131,3 +131,4 @@ Create an issue here: https://github.com/palera1n/palera1n/issues/new/choose
 [All credits for palera1n can be found here](https://palera.in/)
 
 If proper credit isn't shown please message us or create an issue.
+Hello World!
