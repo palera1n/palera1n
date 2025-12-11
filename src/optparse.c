@@ -14,6 +14,7 @@
 #include <palerain.h>
 #include <sys/mman.h>
 #include <inttypes.h>
+#include <sys/stat.h>
 #ifdef TUI
 #include <tui.h>
 #endif
