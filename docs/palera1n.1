@@ -34,7 +34,7 @@ is writable, as well as rootless mode, where / cannot be written to.
 On tvOS and bridgeOS,
 only rootful is supported. On versions where fakefs-rootful is not
 applicable, palera1n modifies the actual root filesystem instead
-of making a fakefs
+of making a fakefs.
 .Pp
 Due to the nature of the
 .Em checkm8
@@ -276,7 +276,7 @@ To verbose boot, use the
 .Fl V , -verbose-boot
 option when jailbreaking.
 .Pp
-Fakefs takes up around 5-10 GB of storage, and take up to 10 minutes to setup.
+Fakefs takes up around 5-10 GB of storage, and takes up to 10 minutes to setup.
 .Pp
 iOS 15.0 requires DER entitlements, and iOS 15.1 requires hash agility in code signatures.
 As a result, binaries with the old code signature format need to be resigned with a recent
@@ -336,8 +336,8 @@ The directory where jailbreak-specific
 .Xr launchd.plist 5
 property list files should be placed on rootless.
 .It Pa /etc/rc.d
-The directory where executable filse that needs to be executed during boot, before
-daemons are launched, are placed rootful. They are executed after all filesystems
+The directory where executable files that needs to be executed during boot, before
+daemons are launched, are placed on rootful. They are executed after all filesystems
 has been mounted.
 .It Pa /var/jb/etc/rc.d
 The directory where executable files that needs to be executed during boot, before
