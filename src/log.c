@@ -34,6 +34,7 @@ int p1_log(log_level_t loglevel, const char *fname, int lineno, const char *fxna
 		&& !tui_started
 #endif
 ) fprintf(stderr, "p1_log: hid log with high log level (%d < %d)\n", verbose, loglevel - 3);
+		va_end(args);
         return 0;
     }
 	switch (loglevel) {

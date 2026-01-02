@@ -62,7 +62,7 @@ static void* tui_disconnected_dfu_mode(struct irecv_device_info* info) {
 
 static int tui_connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device) {
     struct tui_connected_device *tui_dev = malloc(sizeof(struct tui_connected_device));
-    strcpy(tui_dev->udid, usbmuxd_device->udid);
+    snprintf(tui_dev->udid, sizeof(tui_dev->udid), "%s", usbmuxd_device->udid);
     tui_dev->next = tui_connected_devices;
     tui_dev->mode = TUI_DEVICE_MODE_NORMAL;
     tui_connected_devices = tui_dev;
@@ -82,7 +82,7 @@ static int tui_connected_normal_mode(const usbmuxd_device_info_t *usbmuxd_device
     } else {
         tui_dev->arm64 = true;
     }
-    sprintf(tui_dev->version, "%s", dev.productVersion);
+    snprintf(tui_dev->version, sizeof(tui_dev->version), "%s", dev.productVersion);
 	if (!strncmp(dev.productType, "iPhone10,", strlen("iPhone10,"))) {
 		tui_dev->requires_passcode_disabled = true;
 		unsigned char passcode_state = 0;

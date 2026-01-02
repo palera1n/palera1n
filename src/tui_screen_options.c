@@ -186,7 +186,11 @@ tui_screen_t tui_screen_options(void) {
                 break;
             case TUI_INPUT_SELECT:
                 if (tui_options_is_editing_boot_args && tui_last_key == ' ' && tui_options_boot_args[strlen(tui_options_boot_args)] == '\x00') {
-                    int len = strlen(tui_options_boot_args);
+                    size_t max_len = sizeof(tui_options_boot_args) - 1;
+                    size_t len = strlen(tui_options_boot_args);
+                    if (len >= max_len) {
+                        break;
+                    }
                     tui_options_boot_args[len] = ' ';
                     tui_options_boot_args[len + 1] = '\x00';
                     tui_options_boot_args_cursor++;
@@ -304,7 +308,11 @@ tui_screen_t tui_screen_options(void) {
                 break;
             case TUI_INPUT_NONE:
                 if (tui_options_is_editing_boot_args && tui_options_boot_args[strlen(tui_options_boot_args)] == '\x00') {
-                    int len = strlen(tui_options_boot_args);
+                    size_t max_len = sizeof(tui_options_boot_args) - 1;
+                    size_t len = strlen(tui_options_boot_args);
+                    if (len >= max_len) {
+                        break;
+                    }
                     memmove(tui_options_boot_args + tui_options_boot_args_cursor + 1, tui_options_boot_args + tui_options_boot_args_cursor, strlen(tui_options_boot_args) - tui_options_boot_args_cursor);
                     tui_options_boot_args[tui_options_boot_args_cursor] = tui_last_key;
                     tui_options_boot_args[len + 1] = '\x00';
