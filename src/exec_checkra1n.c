@@ -155,8 +155,8 @@ setenv_ra1n:
 	} else {
 		strncat(args, "R", 0xf);
 	}
-	LOG(LOG_VERBOSE5, args);
-	if (pongo_path != NULL) LOG(LOG_VERBOSE5, pongo_path);
+	LOG(LOG_VERBOSE5, "%s", args);
+	if (pongo_path != NULL) LOG(LOG_VERBOSE5, "%s", pongo_path);
 	pid_t pid;
 	posix_spawn_file_actions_t action;
     posix_spawn_file_actions_init(&action);

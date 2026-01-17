@@ -86,7 +86,7 @@ bool tui_started = false;
 
 #ifdef USE_LIBUSB
 void log_cb(libusb_context *ctx, enum libusb_log_level level, const char *str) {
-    LOG(level + 0, str);
+    LOG(level + 0, "%s", str);
 }
 #endif
 
