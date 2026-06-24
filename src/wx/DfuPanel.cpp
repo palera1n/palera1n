@@ -156,53 +156,53 @@ void DfuPanel::LoadDevice(const std::string& productType)
 
     if (m_sequence.imageName == "ipadmini")
     {
-        imageData = ipadmini;
-        imageSize = ipadmini_len;
+        imageData = images_ipadmini_png;
+        imageSize = images_ipadmini_png_len;
     }
     else if (m_sequence.imageName == "ipad")
     {
-        imageData = ipad;
-        imageSize = ipad_len;
+        imageData = images_ipad_png;
+        imageSize = images_ipad_png_len;
     }
     else if (m_sequence.imageName == "iphonese")
     {
-        imageData = iphonese;
-        imageSize = iphonese_len;
+        imageData = images_iphonese_png;
+        imageSize = images_iphonese_png_len;
     }
     else if (m_sequence.imageName == "iphone6s")
     {
-        imageData = iphone6s;
-        imageSize = iphone6s_len;
+        imageData = images_iphone6s_png;
+        imageSize = images_iphone6s_png_len;
     }
     else if (m_sequence.imageName == "iphone7")
     {
-        imageData = iphone7;
-        imageSize = iphone7_len;
+        imageData = images_iphone7_png;
+        imageSize = images_iphone7_png_len;
     }
     else if (m_sequence.imageName == "iphone8")
     {
-        imageData = iphone8;
-        imageSize = iphone8_len;
+        imageData = images_iphone8_png;
+        imageSize = images_iphone8_png_len;
     }
     else if (m_sequence.imageName == "iphonex")
     {
-        imageData = iphonex;
-        imageSize = iphonex_len;
+        imageData = images_iphonex_png;
+        imageSize = images_iphonex_png_len;
     }
     else if (m_sequence.imageName == "ipodtouch")
     {
-        imageData = ipodtouch;
-        imageSize = ipodtouch_len;
+        imageData = images_ipodtouch_png;
+        imageSize = images_ipodtouch_png_len;
     }
     else if (m_sequence.imageName == "siriremote")
     {
-        imageData = siriremote;
-        imageSize = siriremote_len;
+        imageData = images_siriremote_png;
+        imageSize = images_siriremote_png_len;
     }
     else if (m_sequence.imageName == "atv_std_brd")
     {
-        imageData = atv_std_brd;
-        imageSize = atv_std_brd_len;
+        imageData = images_atv_std_brd_png;
+        imageSize = images_atv_std_brd_png_len;
     }
 
     if (imageData)

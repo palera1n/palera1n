@@ -5,14 +5,14 @@
 
 #include "../utils/log.h"
 #include "dfu.h"
-#include "../gen/payloads/t8015.h"
-#include "../gen/payloads/t8011.h"
-#include "../gen/payloads/t8010.h"
-#include "../gen/payloads/s8003.h"
-#include "../gen/payloads/s8001.h"
-#include "../gen/payloads/s8000.h"
-#include "../gen/payloads/t7001.h"
-#include "../gen/payloads/t7000.h"
+#include "../gen/payloads/yolo_t8015.h"
+#include "../gen/payloads/yolo_t8011.h"
+#include "../gen/payloads/yolo_t8010.h"
+#include "../gen/payloads/yolo_s8003.h"
+#include "../gen/payloads/yolo_s8001.h"
+#include "../gen/payloads/yolo_s8000.h"
+#include "../gen/payloads/yolo_t7001.h"
+#include "../gen/payloads/yolo_t7000.h"
 
 bool checkm8_find_device_configuration_for_cpid(int cpid, struct DeviceConfiguration *config) {
     bool foundMatchingConfiguration = true;
@@ -226,9 +226,23 @@ bool checkm8_find_payload_configuration_for_cpid(int cpid, struct PayloadConfigu
 
 uint8_t *create_pongo_overwrite_for_device(struct PayloadConfiguration *payloadConfig, size_t *overwriteSize) {
     LOG("Preparing overwrite for YoloDFU mode.");
+
     uint64_t *overwrite = malloc(0x30);
+
+    LOG("overwrite buffer: %p", (void *)overwrite);
+    LOG("insecureMemoryBase: 0x%016llx",
+        (unsigned long long)payloadConfig->insecureMemoryBase);
+
     overwrite[5] = payloadConfig->insecureMemoryBase;
+
+    LOG("overwrite[5]: 0x%016llx",
+        (unsigned long long)overwrite[5]);
+
     *overwriteSize = 0x30;
+
+    LOG("overwriteSize: 0x%zx (%zu)",
+        *overwriteSize, *overwriteSize);
+
     return (uint8_t *)overwrite;
 }
 
@@ -236,35 +250,34 @@ uint8_t *create_pongo_payload_for_device(struct DeviceConfiguration *deviceConfi
     LOG("Preparing YoloDFU payload for CPID 0x%x.", deviceConfig->cpid);
     switch (deviceConfig->cpid) {
         case 0x8015:
-            *payloadSize = t8015_len;
-            return (uint8_t *)t8015;
+            *payloadSize = payloads_yolo_t8015_bin_len;
+            return (uint8_t *)payloads_yolo_t8015_bin;
         case 0x8011:
-            *payloadSize = t8011_len;
-            return (uint8_t *)t8011;
+            *payloadSize = payloads_yolo_t8011_bin_len;
+            return (uint8_t *)payloads_yolo_t8011_bin;
         case 0x8010:
-            *payloadSize = t8010_len;
-            return (uint8_t *)t8010;
+            *payloadSize = payloads_yolo_t8010_bin_len;
+            return (uint8_t *)payloads_yolo_t8010_bin;
         case 0x8003:
-            *payloadSize = s8003_len;
-            return (uint8_t *)s8003;
+            *payloadSize = payloads_yolo_s8003_bin_len;
+            return (uint8_t *)payloads_yolo_s8003_bin;
         case 0x8001:
-            *payloadSize = s8001_len;
-            return (uint8_t *)s8001;
+            *payloadSize = payloads_yolo_s8001_bin_len;
+            return (uint8_t *)payloads_yolo_s8001_bin;
         case 0x8000:
-            *payloadSize = s8000_len;
-            return (uint8_t *)s8000;
+            *payloadSize = payloads_yolo_s8000_bin_len;
+            return (uint8_t *)payloads_yolo_s8000_bin;
         case 0x7001:
-            *payloadSize = t7001_len;
-            return (uint8_t *)t7001;
+            *payloadSize = payloads_yolo_t7001_bin_len;
+            return (uint8_t *)payloads_yolo_t7001_bin;
         case 0x7000:
-            *payloadSize = t7000_len;
-            return (uint8_t *)t7000;
+            *payloadSize = payloads_yolo_t7000_bin_len;
+            return (uint8_t *)payloads_yolo_t7000_bin;
         default:
             LOG("Failed to prepare payload for device with CPID 0x%x.", deviceConfig->cpid);
             return NULL;
     }
 }
-
 
 // TODO: move l8r
 
@@ -313,13 +326,13 @@ bool prepare_pongo(unsigned char **pongoBuf, size_t *size)
     // that decompresses the Pongo image into memory.
     // It is, in effect, a self-extracting payload.
 
-    shellcodeSize = lz4dec_len;
+    shellcodeSize = payloads_lz4dec_bin_len;
     shellcode = malloc(shellcodeSize);
-    memcpy(shellcode, lz4dec, shellcodeSize);
+    memcpy(shellcode, payloads_lz4dec_bin, shellcodeSize);
 
-    pongoSize = Pongo_len;
+    pongoSize = payloads_Pongo_bin_len;
     pongo = malloc(pongoSize);
-    memcpy(pongo, Pongo, pongoSize);
+    memcpy(pongo, payloads_Pongo_bin, pongoSize);
 
     // Compress PongoOS
     char *pongoCompressed = malloc(pongoSize);

@@ -23,7 +23,7 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
 
     wxInitAllImageHandlers();
 
-    wxMemoryInputStream stream(logo, logo_len);
+    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
 

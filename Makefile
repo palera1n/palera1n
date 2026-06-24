@@ -12,14 +12,14 @@ payloads:
 		name=$$(basename "$$file"); \
 		name=$${name%.*}; \
 		echo " XXD    $$file"; \
-		xxd -i -n "$$name" "$$file" > "src/gen/payloads/$$name.h"; \
+		xxd -i "$$file" > "src/gen/payloads/$$name.h"; \
 	done
 
 	@for file in images/*; do \
 		name=$$(basename "$$file"); \
 		name=$${name%.*}; \
 		echo " XXD    $$file"; \
-		xxd -i -n "$$name" "$$file" > "src/gen/images/$$name.h"; \
+		xxd -i "$$file" > "src/gen/images/$$name.h"; \
 	done
 
 	xxd -i -n "DFUHelperDeviceInfo" resources/DFUHelperDeviceInfo.json > src/gen/DFUHelperDeviceInfo.h
