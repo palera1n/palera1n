@@ -9,7 +9,7 @@
 # include <wx/wx.h>
 #endif
 
-#include "m8/run.hpp"
+#include "checkm8/run.h"
 
 #include "utils/constants.h"
 #include "utils/log.h"
@@ -169,11 +169,11 @@ int main(int argc, char* argv[], char* envp[]) {
         wxEntryCleanup();
         return 0;
     } else {
-        return checkm8(MODE_PONGOOS);
+        return checkm8();
     }
     #else
 
-    return checkm8(MODE_PONGOOS);
+    return checkm8();
 
     #endif
 
