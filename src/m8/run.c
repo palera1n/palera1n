@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "../utils.h"
-#include "../usb/usb_shim.h"
+#include "../usb/shim.h"
 #include "../pongo/pongo_helper.h"
 
 #include "checkm8.h"

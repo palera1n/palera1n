@@ -1,4 +1,4 @@
-#include "usb_shim.h"
+#include "shim.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,7 +1,7 @@
 #ifndef USB_PONGO_H
 #define USB_PONGO_H
 
-#include "../usb/usb_shim.h"
+#include "../usb/shim.h"
 
 #define CMD_LENGTH_MAX 512
 

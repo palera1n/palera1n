@@ -6,7 +6,7 @@
 #include <lz4.h>
 #include <lz4hc.h>
 
-#include "../usb/usb_shim.h"
+#include "../usb/shim.h"
 
 #include "../utils.h"
 #include "../m8/dfu.h"

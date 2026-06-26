@@ -5,7 +5,7 @@
 
 #include "payload.h"
 
-#include "../usb/usb_shim.h"
+#include "../usb/shim.h"
 
 #define EP0_MAX_PACKET_SZ (0x40)
 #define USB_MAX_STRING_DESCRIPTOR_IDX (10)

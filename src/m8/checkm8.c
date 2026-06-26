@@ -9,7 +9,7 @@
 #include "dfu.h"
 
 #include "../utils.h"
-#include "../usb/usb_shim.h"
+#include "../usb/shim.h"
 
 static struct {
     uint8_t b_len, b_descriptor_type;
