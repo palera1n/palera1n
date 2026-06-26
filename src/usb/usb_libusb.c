@@ -23,7 +23,7 @@ bool wait_usb_handle(usb_handle_t *handle) {
     if(libusb_init(NULL) == LIBUSB_SUCCESS) {
         for(;;) {
             if((handle->device = libusb_open_device_with_vid_pid(NULL, handle->vid, handle->pid)) != NULL) {
-                if(libusb_set_configuration(handle->device, 1)) {
+                if(libusb_set_configuration(handle->device, 1) == LIBUSB_SUCCESS) {
                     return true;
                 }
                 libusb_close(handle->device);
