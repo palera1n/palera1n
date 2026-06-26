@@ -8,7 +8,7 @@
 
 #include <libusb-1.0/libusb.h>
 
-#include "../utils.h"
+#include "../../utils.h"
 
 void close_usb_handle(usb_handle_t *handle) {
     libusb_close(handle->device);

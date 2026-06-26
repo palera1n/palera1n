@@ -9,7 +9,7 @@
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
 
-#include "../utils.h"
+#include "../../utils.h"
 
 static void cf_dictionary_set_int16(CFMutableDictionaryRef dict, const void *key, uint16_t val) {
     CFNumberRef cf_val = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt16Type, &val);
