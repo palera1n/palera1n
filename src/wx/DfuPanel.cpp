@@ -6,7 +6,7 @@
 #include "DevicePanel.hpp"
 #include "../state.hpp"
 #include "../sequence.hpp"
-#include "../utils/log.h"
+#include "../utils.h"
 
 #include <thread>
 

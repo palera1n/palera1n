@@ -3,7 +3,7 @@
 #include "AppFrame.hpp"
 
 #include <wx/wx.h>
-#include "../utils/constants.h"
+#include "../utils.h"
 #include "../event.hpp"
 
 #include <thread>

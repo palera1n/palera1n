@@ -6,8 +6,8 @@
 
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
-#include "../utils/constants.h"
-#include "../utils/paleinfo.h"
+#include "../utils.h"
+#include "../paleinfo.h"
 
 SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)

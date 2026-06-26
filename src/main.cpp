@@ -9,11 +9,10 @@
 # include <wx/wx.h>
 #endif
 
-#include "checkm8/run.h"
+#include "m8/run.h"
 
-#include "utils/constants.h"
-#include "utils/log.h"
-#include "utils/paleinfo.h"
+#include "utils.h"
+#include "paleinfo.h"
 
 void print_credits() {
     printf(
@@ -169,11 +168,11 @@ int main(int argc, char* argv[], char* envp[]) {
         wxEntryCleanup();
         return 0;
     } else {
-        return checkm8();
+        return exploit();
     }
     #else
 
-    return checkm8();
+    return exploit();
 
     #endif
 

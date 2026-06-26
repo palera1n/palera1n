@@ -35,6 +35,7 @@ struct PayloadConfiguration {
     handle_interface_request,
     usb_create_string_descriptor,
     usb_serial_number_string_descriptor;
+    uint32_t payload_dest_armv7;
 };
 
 bool checkm8_find_device_configuration_for_cpid(int cpid, struct DeviceConfiguration *config);

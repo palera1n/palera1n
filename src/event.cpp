@@ -5,7 +5,7 @@
 #include "wx/AppFrame.hpp"
 #include "state.hpp"
 #include "sequence.hpp"
-#include "utils/log.h"
+#include "utils.h"
 
 #include <wx/wx.h>
 #include <thread>
