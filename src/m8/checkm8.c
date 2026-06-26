@@ -1,7 +1,9 @@
 #include "checkm8.h"
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "payload.h"
 #include "dfu.h"

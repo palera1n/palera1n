@@ -1,5 +1,6 @@
 #include "pongo_helper.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include <lz4.h>

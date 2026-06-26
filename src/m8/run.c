@@ -1,5 +1,6 @@
 #include "run.h"
 
+#include <stdlib.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <pthread.h>
@@ -152,10 +153,7 @@ static void *pongo_thread(void *arg)
 bool exploit(void) {
     pthread_t t1, t2;
 
-    shared_t state = {
-        .stop = ATOMIC_VAR_INIT(false),
-        .result = ATOMIC_VAR_INIT(0)
-    };
+    shared_t state;
 
     pthread_create(&t1, NULL, exploit_thread, &state);
     pthread_create(&t2, NULL, pongo_thread, &state);

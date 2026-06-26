@@ -1,5 +1,8 @@
 #include "usb_shim.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #ifdef __APPLE__
 # include "usb_iokit.h"
 #else
