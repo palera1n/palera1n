@@ -96,6 +96,76 @@ bool send_usb_control_request_async(const usb_handle_t *handle, uint8_t bm_reque
     return completed != 0;
 }
 
+bool send_interface_control_request(const usb_handle_t *handle, uint8_t bm_request_type, uint8_t b_request, uint16_t w_value, uint16_t w_index, void *p_data, size_t w_len, transfer_ret_t *transfer_ret) {
+    int ret = libusb_control_transfer(handle->device, bm_request_type, b_request, w_value, w_index, p_data, (uint16_t)w_len, 0);
+
+    if(transfer_ret != NULL) {
+        if(ret >= 0) {
+            transfer_ret->sz = (uint32_t)ret;
+            transfer_ret->ret = USB_TRANSFER_OK;
+        } else if(ret == LIBUSB_ERROR_PIPE) {
+            transfer_ret->ret = USB_TRANSFER_STALL;
+        } else {
+            transfer_ret->ret = USB_TRANSFER_ERROR;
+        }
+    }
+    return true;
+}
+
+bool send_interface_bulk_transfer(const usb_handle_t *handle, void *data, int len)
+{
+    static uint32_t maxLen = 0;
+    int transferred = 0;
+    int32_t r;
+    if(maxLen == 0)
+    {
+        r = libusb_bulk_transfer(handle->device, 2, data, len, &transferred, 0);
+        if(r == LIBUSB_SUCCESS)
+        {
+            return transferred == len ? LIBUSB_SUCCESS : LIBUSB_ERROR_INTERRUPTED;
+        }
+        else if(r != LIBUSB_ERROR_NO_MEM)
+        {
+            return r;
+        }
+        // We only get here on ENOMEM
+        FILE *f = fopen("/sys/module/usbcore/parameters/usbfs_memory_mb", "r");
+        if(f)
+        {
+            char str[32]; // More than enough to hold a uint64 in decimal
+            size_t s = fread(str, 1, sizeof(str), f);
+            fclose(f);
+            if(s == 0 || s >= sizeof(str)) return r;
+            str[s] = '\0';
+            char *end = NULL;
+            unsigned long long max = strtoull(str, &end, 0);
+            // Using the limit as-is will lead to ENOMEM, so we multiply
+            // by half a MB and impose an appropriate max value.
+            if(*end == '\n') ++end;
+            if(*end != '\0' || max == 0 || max >= 0x2000) return r;
+            maxLen = (uint32_t)(max << 19);
+        }
+        else
+        {
+            // Just 1MB by default?
+            maxLen = 0x100000;
+        }
+    }
+    // If we get here, we have to chunk our data
+    for(int done = transferred; done < len; )
+    {
+        uint32_t chunk = len - done;
+        if(chunk > maxLen) chunk = maxLen;
+        transferred = 0;
+        r = libusb_bulk_transfer(handle->device, 2, (unsigned char*)data + done, chunk, &transferred, 0);
+        done += transferred;
+        if(r == LIBUSB_SUCCESS) continue;
+        if(r != LIBUSB_ERROR_NO_MEM || maxLen <= 0x40) return r;
+        maxLen /= 2;
+    }
+    return LIBUSB_SUCCESS;
+}
+
 void init_usb_handle(usb_handle_t *handle, uint16_t vid, uint16_t pid) {
     handle->vid = vid;
     handle->pid = pid;
