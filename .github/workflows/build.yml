@@ -8,6 +8,49 @@ on:
     - main
 
 jobs:
+  build-ramdisk:
+    runs-on: macos-15
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: palera1n/jbinit
+        submodules: true
+
+    - name: Select correct Xcode
+      uses: mobiledevops/xcode-select-version-action@v1
+      with:
+        xcode-select-version: 16.4
+
+    - name: Install dependencies (brew)
+      run: |
+        brew install make gnu-sed ldid-procursus fakeroot
+
+    - name: Obtain artifacts
+      run: |
+        curl -LOO https://static.palera.in/artifacts/loader/universal_lite/palera1nLoader{TV,}.ipa
+        curl -LO https://static.palera.in/binpack.tar
+        install -m644 binpack.tar palera1nLoader{TV,}.ipa src
+
+    - name: Build
+      run: |
+        gmake -j1 tools
+        gmake -j$(sysctl -n hw.ncpu)
+
+
+    - name: Prepare upload directory
+      run: |
+        mkdir upload
+        mv src/ramdisk.dmg upload/
+        mv src/binpack.dmg upload/
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: embedded
+        path: |
+          upload/*
+
   build-pongo:
     runs-on: macos-latest
 
@@ -35,7 +78,7 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
-    needs: build-pongo
+    needs: [build-pongo, build-ramdisk]
 
     steps:
     - uses: actions/checkout@v4
@@ -44,6 +87,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: pongo
+        path: payloads/
+
+    - name : Download embedded artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: embedded
         path: payloads/
 
     - name: Install dependencies (apt)
@@ -64,7 +113,7 @@ jobs:
 
   build-macos:
     runs-on: ${{ matrix.os }}
-    needs: build-pongo
+    needs: [build-pongo, build-ramdisk]
 
     strategy:
       matrix:
@@ -81,6 +130,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: pongo
+        path: payloads/
+
+    - name : Download embedded artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: embedded
         path: payloads/
 
     - name: Install dependencies (brew)
@@ -102,7 +157,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: build-pongo
+    needs: [build-pongo, build-ramdisk]
 
     steps:
     - uses: actions/checkout@v4
@@ -111,6 +166,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: pongo
+        path: payloads/
+
+    - name : Download embedded artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: embedded
         path: payloads/
 
     - name: Set up MSYS2
