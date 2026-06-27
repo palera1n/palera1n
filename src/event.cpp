@@ -157,7 +157,7 @@ void recovery_device_event_cb(
 
     if (client)
     {
-        VERBOSE("Opened client after %d attempts", attempts);
+        LOG_VERBOSE("Opened client after %d attempts", attempts);
 
         irecv_device_t device = nullptr;
         if (irecv_devices_get_device_by_client(client, &device) == IRECV_E_SUCCESS && device)
@@ -170,7 +170,7 @@ void recovery_device_event_cb(
     }
     else
     {
-        ERROR("Failed to open irecv client after retries");
+        LOG_ERROR("Failed to open irecv client after retries");
     }
 
     state.isSupported = SequenceIsSupported(state.productType);

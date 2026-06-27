@@ -139,7 +139,7 @@ void parse_arguments(int argc, char* argv[]) {
                 palerain_flags |= palerain_option_verbose_boot;
                 break;
             case '?':
-                ERROR("Unknown option");
+                LOG_ERROR("Unknown option");
                 print_usage(argv[0]);
                 exit(1);
             default: break;
@@ -148,7 +148,7 @@ void parse_arguments(int argc, char* argv[]) {
 
     if (!(palerain_flags & palerain_option_gui)) {
         if (!(palerain_flags & palerain_option_rootful) && !(palerain_flags & palerain_option_rootless)) {
-            ERROR("You must specify either -l, --rootless or -f, --rootful.\n");
+            LOG_ERROR("You must specify either -l, --rootless or -f, --rootful.\n");
             print_usage(argv[0]);
             exit(1);
         }

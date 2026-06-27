@@ -21,15 +21,15 @@ void compress_pongo(void *out, size_t *out_len) {
 
 void checkm8_boot_pongo(usb_handle_t *handle) {
     transfer_ret_t transfer_ret;
-    VERBOSE("Booting pongoOS");
-    VERBOSE("Compressing pongoOS");
-    VERBOSE("Appending shellcode to the top of pongoOS (512 bytes)");
+    LOG_VERBOSE("Booting pongoOS");
+    LOG_VERBOSE("Compressing pongoOS");
+    LOG_VERBOSE("Appending shellcode to the top of pongoOS (512 bytes)");
     void *shellcode = malloc(512);
     memcpy(shellcode, payloads_lz4dec_bin, payloads_lz4dec_bin_len);
     size_t out_len = payloads_Pongo_bin_len;
     void *out = malloc(out_len);
     compress_pongo(out, &out_len);
-    VERBOSE("Compressed pongoOS from %u to %zu bytes", payloads_Pongo_bin_len, out_len);
+    LOG_VERBOSE("Compressed pongoOS from %u to %zu bytes", payloads_Pongo_bin_len, out_len);
     void *tmp = malloc(out_len + 512);
     memcpy(tmp, shellcode, 512);
     memcpy(tmp + 512, out, out_len);
@@ -37,12 +37,12 @@ void checkm8_boot_pongo(usb_handle_t *handle) {
     out = tmp;
     out_len += 512;
     free(shellcode);
-    VERBOSE("Setting the compressed size into the shellcode");
+    LOG_VERBOSE("Setting the compressed size into the shellcode");
     uint32_t* size = (uint32_t*)(out + 0x1fc);
     *size = out_len - 512;
-    VERBOSE("Reconnecting to device");
+    LOG_VERBOSE("Reconnecting to device");
     init_usb_handle(handle, 0x5AC, 0x1227);
-    VERBOSE("Waiting for device to be ready");
+    LOG_VERBOSE("Waiting for device to be ready");
     wait_usb_handle(handle);
     {
         size_t len = 0;
@@ -54,16 +54,16 @@ void checkm8_boot_pongo(usb_handle_t *handle) {
             send_usb_control_request(handle, 0x21, DFU_DNLOAD, 0, 0, (unsigned char*)&out[len], size, &transfer_ret);
             if(transfer_ret.sz != size || transfer_ret.ret != USB_TRANSFER_OK)
             {
-                VERBOSE("retrying at len = %zu", len);
+                LOG_VERBOSE("retrying at len = %zu", len);
                 sleep_ms(100);
                 goto retry;
             }
             len += size;
-            VERBOSE("len = %zu", len);
+            LOG_VERBOSE("len = %zu", len);
         }
     }
     send_usb_control_request_no_data(handle, 0x21, 4, 0, 0, 0, NULL);
-    VERBOSE("pongoOS sent, should be booting");
+    LOG_VERBOSE("pongoOS sent, should be booting");
 }
 
 int issue_pongo_command(const usb_handle_t *handle, const char *command) {
@@ -81,11 +81,11 @@ int issue_pongo_command(const usb_handle_t *handle, const char *command) {
         size_t len = strlen(command);
 
         if (len > 510) {
-            ERROR("Pongo command too long: %s", command);
+            LOG_ERROR("Pongo command too long: %s", command);
             return -1;
         }
 
-        VERBOSE("Executing PongoOS command: '%s'", command);
+        LOG_VERBOSE("Executing PongoOS command: '%s'", command);
 
         snprintf(command_buf, sizeof(command_buf), "%s\n", command);
         len = strlen(command_buf);
@@ -115,7 +115,7 @@ int issue_pongo_command(const usb_handle_t *handle, const char *command) {
             return 0;
         }
 
-        ERROR("Pongo USB error: %d", tx_status.ret);
+        LOG_ERROR("Pongo USB error: %d", tx_status.ret);
         return -1;
     }
 
@@ -124,11 +124,11 @@ int issue_pongo_command(const usb_handle_t *handle, const char *command) {
 
 bool upload_buffer_to_pongo(usb_handle_t *handle, const void *data, size_t length) {
     if (data == NULL || length == 0) {
-        ERROR("Invalid data buffer or length.");
+        LOG_ERROR("Invalid data buffer or length.");
         return false;
     }
 
-    VERBOSE("Uploading %zu bytes to PongoOS...", length);
+    LOG_VERBOSE("Uploading %zu bytes to PongoOS...", length);
 
     bool ret = false;
     transfer_ret_t tx_status = {0};

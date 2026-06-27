@@ -26,10 +26,10 @@ typedef enum {
 } log_level_t;
 
 #define LOG(fmt, ...)    log_write(LOG_INFO, fmt, ##__VA_ARGS__)
-#define SUCCESS(fmt, ...) log_write(LOG_SUCCESS, fmt, ##__VA_ARGS__)
-#define WARN(fmt, ...)    log_write(LOG_WARN, fmt, ##__VA_ARGS__)
-#define ERROR(fmt, ...)   log_write(LOG_ERROR, fmt, ##__VA_ARGS__)
-#define VERBOSE(fmt, ...) log_write(LOG_VERBOSE, fmt, ##__VA_ARGS__)
+#define LOG_SUCCESS(fmt, ...) log_write(LOG_SUCCESS, fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...)    log_write(LOG_WARN, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...)   log_write(LOG_ERROR, fmt, ##__VA_ARGS__)
+#define LOG_VERBOSE(fmt, ...) log_write(LOG_VERBOSE, fmt, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {

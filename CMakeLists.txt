@@ -102,7 +102,7 @@ if(APPLE AND WITH_GUI)
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist
         MACOSX_BUNDLE_ICON_FILE palera1n.icns
     )
-elseif(MINGW OR MSYS AND WITH_GUI)
+elseif(MINGW AND WITH_GUI)
     set(APP_MANIFEST_RC ${CMAKE_SOURCE_DIR}/resources/app.rc)
     add_executable(palera1n WIN32 ${SOURCES} ${APP_MANIFEST_RC})
 else()
@@ -164,7 +164,7 @@ if(WITH_STATIC)
         mbedtls_LIBS=-lmbedtls\ -lmbedx509\ -lmbedcrypto
     )
 
-    if(MINGW OR MSYS)
+    if(MINGW)
         set(IMD_AUTOTOOLS_ARGS
             --disable-static
             --enable-shared
@@ -179,7 +179,7 @@ if(WITH_STATIC)
         )
     endif()
 
-    if(NOT MINGW AND NOT MSYS)
+    if(NOT MINGW)
     # =========================
     # mbedTLS
     # =========================
@@ -200,7 +200,7 @@ if(WITH_STATIC)
     )
     endif()
 
-    if(LINUX OR MINGW OR MSYS)
+    if(LINUX OR MINGW)
         # =========================
         # libusb
         # =========================
@@ -318,11 +318,11 @@ if(WITH_STATIC)
         limd_glue_ep
     )
 
-    if(NOT MINGW AND NOT MSYS)
+    if(NOT MINGW)
         list(APPEND LIBIMOBILEDEVICE_DEPS mbedtls_ep)
     endif()
 
-    if(LINUX OR MINGW OR MSYS)
+    if(LINUX OR MINGW)
         list(APPEND LIBIMOBILEDEVICE_DEPS libusb_ep)
     endif()
 
@@ -404,7 +404,7 @@ if(WITH_STATIC)
         libirecovery_ep
     )
 
-    if(NOT MINGW AND NOT MSYS)
+    if(NOT MINGW)
         add_dependencies(palera1n mbedtls_ep)
     endif()
 
@@ -428,7 +428,7 @@ if(WITH_STATIC)
         )
     endif()
 
-    if(MINGW OR MSYS)
+    if(MINGW)
         target_link_libraries(palera1n PRIVATE
             imobiledevice-1.0
             irecovery-1.0

@@ -140,7 +140,7 @@ static void *pongo_thread(void *arg)
         if (!seen) {
             seen = true;
 
-            SUCCESS("Pongo device detected!");
+            LOG_SUCCESS("Pongo device detected!");
 
             char paleinfo[64];
             snprintf(paleinfo, sizeof(paleinfo), "palera1n_flags 0x%" PRIx64, palerain_flags);

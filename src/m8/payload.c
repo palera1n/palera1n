@@ -56,7 +56,7 @@ bool checkm8_find_device_configuration_for_cpid(
             config->config_hole = 0;
             break;
         default:
-            ERROR("CPID 0x%x is not supported!", cpid);
+            LOG_ERROR("CPID 0x%x is not supported!", cpid);
             foundMatchingConfiguration = false;
             break;
     }
@@ -226,7 +226,7 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_serial_number_string_descriptor = 0x18008062A;
             break;
         default:
-            ERROR("CPID 0x%x is not supported!", cpid);
+            LOG_ERROR("CPID 0x%x is not supported!", cpid);
             foundMatchingConfiguration = false;
     }
     return foundMatchingConfiguration;
@@ -237,7 +237,7 @@ void create_pongo_payload_for_device(
     uint8_t **payload,
     size_t *payloadSize)
 {
-    VERBOSE("Preparing YoloDFU payload for CPID 0x%x.", cpid);
+    LOG_VERBOSE("Preparing YoloDFU payload for CPID 0x%x.", cpid);
 
     *payload = NULL;
     *payloadSize = 0;
