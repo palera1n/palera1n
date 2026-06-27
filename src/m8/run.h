@@ -2,10 +2,14 @@
 #define RUN_H
 
 #include <stdbool.h>
-#include <stdatomic.h>
 
 #ifdef __cplusplus
+#include <atomic>
+using std::atomic_int;
+using std::atomic_bool;
 extern "C" {
+#else
+#include <stdatomic.h>
 #endif
 
 enum exploit_stage {
