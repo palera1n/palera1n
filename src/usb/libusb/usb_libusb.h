@@ -11,7 +11,7 @@
 enum usb_transfer {
     USB_TRANSFER_OK,
     USB_TRANSFER_ERROR,
-    USB_TRANSFER_STALL
+    USB_TRANSFER_STALL,
 };
 
 typedef struct {

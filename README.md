@@ -145,7 +145,7 @@ make palera1n_mingw WITH_STATIC=1 WITH_GUI=1
 - [itsnebulalol](https://github.com/itsnebulalol) - Palera1n v1.
 - [staturnz](https://github.com/staturnz) - Contributions, Loader.
 - [plooshi](https://github.com/plooshi) - Plooshfinder, various legacy patches.
-- [hahalosah](https://github.com/hahalosah) - TUI.
+- [nekohaxx](https://github.com/nekohaxx) - TUI.
 - [checkra1n](https://checkra.in) - Checkra1n (1337), PongoOS, payloads, DFU helper & device assets.
 - [libimobiledevice](https://github.com/libimobiledevice/libimobiledevice) - Libimobiledevice, libirecovery, libplist & usbmuxd.
 - [libusb](https://github.com/libimobiledevice/libimobiledevice) - Library for access to usb-devices, used by libimobiledevice & openra1n.

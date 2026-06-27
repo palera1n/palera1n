@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#ifdef __WIN32
+#ifdef _WIN32
 # include <windows.h>
 #else
 # include <time.h>
@@ -9,7 +9,7 @@
 uint64_t palerain_flags = 0;
 
 void sleep_ms(unsigned ms) {
-    #ifdef __WIN32
+    #ifdef _WIN32
     Sleep(ms);
     #else
     struct timespec ts;

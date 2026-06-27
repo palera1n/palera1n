@@ -16,19 +16,21 @@
 
 void print_credits() {
     printf(
-        "#\n"
-        "# Palera1n beta " PALERAIN_VERSION "\n"
-        "#\n"
-        "# (c) 2026 Palera1n\n"
-        "#\n"
-        "# ========  Made by  =======\n"
-        "# Made by: asdfugil, kok3shidoll, claration, mineek, staturnz\n"
-        "# ======== Thanks to =======\n"
-        "# Thanks to: llsc12, Nebula, Lrdsnow, nikias (libimobiledevice),\n"
-        "# Checkra1n (Siguza, axi0mx, littlelailo et al.),\n"
-        "# Procursus (Hayden Seay, Cameron Katri, Keto et.al),\n"
-        "# kirb, ehilwyma, opa334\n"
-        "# ==========================\n\n"
+        "::\n"
+        ":: Palera1n beta " PALERAIN_VERSION "\n"
+        "::\n"
+        ":: (c) 2026\n"
+        "::\n"
+        ":: ========  Made by  ======== ::\n"
+        ":: Made by: asdfugil, kok3shidoll, claration, mineek\n"
+        ":: nekohaxx, plooshi, staturnz\n"
+        ":: ======== Thanks to ======== ::\n"
+        ":: Thanks to: llsc12, itsnebulalol, lrdsnow, kirb, ehilwyma\n"
+        ":: opa334, 0x7ff, sbingner, nikias (libimobiledevice)\n"
+        ":: dedbeddedbed, tihmstar\n"
+        ":: Checkra1n (Siguza, axi0mx, littlelailo et al.)\n"
+        ":: Procursus (Hayden Seay, Cameron Katri, Keto et al.)\n"
+        ":: =========================== ::\n\n"
     );
 }
 
@@ -78,8 +80,7 @@ void parse_arguments(int argc, char* argv[]) {
 
     #ifdef WITH_GUI
     palerain_flags |= palerain_option_gui;
-    # ifdef _WIN32
-    # else
+    # ifndef _WIN32
     if (isatty(STDIN_FILENO) && getenv("LLVM_PROFILE_FILE") == nullptr) {
         palerain_flags &= ~palerain_option_gui;
         palerain_flags |= palerain_option_cli;
@@ -171,9 +172,7 @@ int main(int argc, char* argv[], char* envp[]) {
         return exploit();
     }
     #else
-
     return exploit();
-
     #endif
 
     return 0;
