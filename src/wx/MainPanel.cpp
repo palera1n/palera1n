@@ -54,10 +54,10 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     root->Add(new wxStaticLine(this), 0, wxEXPAND | wxALL, 10);
 
     auto* credtext = new wxStaticText(this, wxID_ANY,
-        "Made by: asdfugil, kok3shidoll, claration, mineek, staturnz\n\n"
-        "Thanks to: itsnebulalol, llsc12, lrdsnow, nikias (libimobiledevice), Checkra1n\n"
-        "(Siguza, axi0mx, littlelailo et al.), Procursus (Hayden Seay, Cameron Katri,\n"
-        "Keto et al.)\n\n"
+        "Made by: asdfugil, kok3shidoll, C, mineek, nekohaxx, plooshi, staturnz\n\n"
+        "Thanks to: llsc12, itsnebulalol, lrdsnow, kirb, ehilwyma opa334, 0x7ff,\n"
+        "sbingner, nikias (libimobiledevice), Checkra1n (Siguza, axi0mx, littlelailo\n"
+        "et al.), Procursus (Hayden Seay, Cameron Katri, Keto et al.)\n\n"
         "With <3 from C (claration)");
 
     root->Add(credtext, 0, wxLEFT | wxRIGHT, 10);
