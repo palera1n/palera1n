@@ -9,19 +9,27 @@
 
 #include "../utils.h"
 #include "../usb/shim.h"
-#include "../pongo/pongo_helper.h"
+#include "../usb/pongo_helper.h"
 
 #include "checkm8.h"
 #include "dfu.h"
 #include "payload.h"
 
+#include "../gen/payloads/checkra1n-kpf-pongo.h"
+#include "../gen/payloads/ramdisk.h"
+#include "../gen/payloads/binpack.h"
+
 typedef struct {
-    atomic_bool stop;
     atomic_int result;
+    atomic_bool stop;
+
+    atomic_bool exploit_done;
+    atomic_bool pongo_done;
 } shared_t;
 
 static void *exploit_thread(void *arg)
 {
+    LOG("Waiting for DFU devices...");
     shared_t *s = (shared_t *)arg;
 
     usb_handle_t handle;
@@ -45,14 +53,14 @@ static void *exploit_thread(void *arg)
             char *sn = get_usb_serial_number(&handle);
             if (!sn) goto fail;
 
-            if (!checkm8_find_device_configuration_for_cpid(
-                    dfu_serial_number_get_cpid(sn), &deviceConfig)) {
+            uint64_t cpid = dfu_serial_number_get_cpid(sn);
+
+            if (!checkm8_find_device_configuration_for_cpid(cpid, &deviceConfig)) {
                 free(sn);
                 goto fail;
             }
 
-            if (!checkm8_find_payload_configuration_for_cpid(
-                    dfu_serial_number_get_cpid(sn), &payloadConfig)) {
+            if (!checkm8_find_payload_configuration_for_cpid(cpid, &payloadConfig)) {
                 free(sn);
                 goto fail;
             }
@@ -66,10 +74,12 @@ static void *exploit_thread(void *arg)
             stage = STAGE_RESET;
             break;
         }
+
         case STAGE_RESET:
             ret = checkm8_stage_reset(&handle);
             stage = ret ? STAGE_SETUP : STAGE_RESET;
             break;
+
         case STAGE_SETUP:
             LOG("Setting up the device for exploitation");
             ret = checkm8_stage_setup(&handle, &deviceConfig);
@@ -81,19 +91,23 @@ static void *exploit_thread(void *arg)
             stage = ret ? STAGE_PATCH : STAGE_RESET;
             break;
         case STAGE_PATCH:
-            LOG("Right before trigger (this is the real bug setup)");
+            LOG("Right before trigger (bug setup)");
             ret = checkm8_stage_patch(&handle, &deviceConfig, &payloadConfig);
             if (!ret) goto fail;
             stage = STAGE_PONGO;
             break;
         case STAGE_PONGO:
             LOG("Booting pongoOS");
+
             close_usb_handle(&handle);
             sleep_ms(3000);
+
             checkm8_boot_pongo(&handle);
-            stage = STAGE_DONE;
+
             atomic_store(&s->result, 1);
-            atomic_store(&s->stop, true);
+            atomic_store(&s->exploit_done, true);
+
+            stage = STAGE_DONE;
             break;
         default:
             goto fail;
@@ -101,18 +115,19 @@ static void *exploit_thread(void *arg)
 
         reset_usb_handle(&handle);
         continue;
-
-    fail:
-        atomic_store(&s->result, -1);
-        atomic_store(&s->stop, true);
-        break;
     }
 
+    return NULL;
+
+fail:
+    atomic_store(&s->result, -1);
+    atomic_store(&s->stop, true);
     return NULL;
 }
 
 static void *pongo_thread(void *arg)
 {
+    LOG("Waiting for Pongo devices...");
     shared_t *s = (shared_t *)arg;
 
     usb_handle_t handle;
@@ -129,31 +144,39 @@ static void *pongo_thread(void *arg)
 
         if (!seen) {
             LOG("Pongo device detected!");
-            seen = true;
+
             char paleinfo[64];
             snprintf(paleinfo, sizeof(paleinfo), "palera1n_flags 0x%" PRIx64, palerain_flags);
 
-            issue_pongo_command(&handle, "fuse lock", NULL);
-            issue_pongo_command(&handle, "sep auto", NULL);
-            // issue_pongo_command(&handle, paleinfo, NULL);
-            // issue_pongo_command(&handle, "bootx", NULL);
+            issue_pongo_command(&handle, "fuse lock");
+            issue_pongo_command(&handle, "sep auto");
+            upload_buffer_to_pongo(&handle, payloads_checkra1n_kpf_pongo, payloads_checkra1n_kpf_pongo_len);
+            issue_pongo_command(&handle, "modload");
+            issue_pongo_command(&handle, paleinfo);
+            upload_buffer_to_pongo(&handle, payloads_ramdisk_dmg, payloads_ramdisk_dmg_len);
+            issue_pongo_command(&handle, "ramdisk");
+            upload_buffer_to_pongo(&handle, payloads_binpack_dmg, payloads_binpack_dmg_len);
+            issue_pongo_command(&handle, "overlay");
+            issue_pongo_command(&handle, "bootx");
 
             atomic_store(&s->result, 1);
-            atomic_store(&s->stop, true);
             break;
         }
-
-        reset_usb_handle(&handle);
     }
 
     close_usb_handle(&handle);
     return NULL;
 }
 
-bool exploit(void) {
+bool exploit(void)
+{
     pthread_t t1, t2;
 
-    shared_t state;
+    shared_t state = {0};
+    atomic_init(&state.result, 0);
+    atomic_init(&state.stop, false);
+    atomic_init(&state.exploit_done, false);
+    atomic_init(&state.pongo_done, false);
 
     pthread_create(&t1, NULL, exploit_thread, &state);
     pthread_create(&t2, NULL, pongo_thread, &state);
@@ -161,5 +184,7 @@ bool exploit(void) {
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
 
-    return atomic_load(&state.result) == 1;
+    return atomic_load(&state.result) == 1 &&
+           atomic_load(&state.exploit_done) &&
+           atomic_load(&state.pongo_done);
 }

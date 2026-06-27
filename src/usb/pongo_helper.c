@@ -6,7 +6,7 @@
 #include <lz4.h>
 #include <lz4hc.h>
 
-#include "../usb/shim.h"
+#include "shim.h"
 
 #include "../utils.h"
 #include "../m8/dfu.h"
@@ -66,62 +66,75 @@ void checkm8_boot_pongo(usb_handle_t *handle) {
     LOG("pongoOS sent, should be booting");
 }
 
-int issue_pongo_command(usb_handle_t *handle, char *command, char *outBuffer) {
-    bool ret;
-    uint8_t inProgress = 1;
-    uint32_t outPosition = 0;
-    uint32_t outLength = 0;
-    transfer_ret_t transferRet;
-    char stdoutBuffer[0x2000];
-    if (command == NULL) goto fetch_output;
-    size_t length = strlen(command);
-    char commandBuffer[0x200];
-    if (length > (CMD_LENGTH_MAX - 2))
-    {
-        LOG("Pongo command %s too long (max %d)", command, CMD_LENGTH_MAX - 2);
-        return -1;
-    }
-    LOG("Executing PongoOS command: '%s'", command);
-    snprintf(commandBuffer, 512, "%s\n", command);
-    length = strlen(commandBuffer);
-    ret = send_usb_control_request_no_data(handle, 0x21, 4, 1, 0, 0, NULL);
-    if (!ret)
-        goto bad;
-    ret = send_usb_control_request(handle, 0x21, 3, 0, 0, commandBuffer, (uint32_t)length, NULL);
-fetch_output:
-    while (inProgress) {
-        ret = send_usb_control_request(handle, 0xA1, 2, 0, 0, &inProgress, (uint32_t)sizeof(inProgress), NULL);
-        if (ret) {
-            ret = send_usb_control_request(handle, 0xA1, 1, 0, 0, stdoutBuffer + outPosition, 0x1000, &transferRet);
-            outLength = transferRet.sz;
-            if (transferRet.ret == USB_TRANSFER_OK) {
-                outPosition += outLength;
-                if (outPosition > 0x1000) {
-                    memmove(stdoutBuffer, stdoutBuffer + outPosition - 0x1000, 0x1000);
-                    outPosition = 0x1000;
-                }
-            }
-        }
-        if (transferRet.ret != USB_TRANSFER_OK) {
-            goto bad;
-        }
-    }
-bad:
-    if (transferRet.ret != USB_TRANSFER_OK)
-    {
-        if (!strncmp("boot", command, 4)) {
-            return 0;
-        } else if (command != NULL) {
-            LOG("USB transfer error: 0x%x, wLength out 0x%x.", transferRet.ret, transferRet.sz);
-            return transferRet.ret;
-        } else {
+int issue_pongo_command(const usb_handle_t *handle, const char *command) {
+    uint32_t outpos = 0;
+    uint32_t outlen = 0;
+    transfer_ret_t tx_status;
+    uint8_t in_progress = 1;
+
+    char command_buf[512];
+    char stdout_buf[0x2000];
+
+    memset(stdout_buf, 0, sizeof(stdout_buf));
+
+    if (command != NULL) {
+        size_t len = strlen(command);
+
+        if (len > 510) {
+            LOG("Pongo command too long: %s", command);
             return -1;
         }
+
+        LOG("Executing PongoOS command: '%s'", command);
+
+        snprintf(command_buf, sizeof(command_buf), "%s\n", command);
+        len = strlen(command_buf);
+
+        if (!send_interface_control_request(handle, 0x21, 4, 1, 0, NULL, 0, &tx_status)) return -1;
+        if (!send_interface_control_request(handle, 0x21, 3, 0, 0, command_buf, len, &tx_status)) return -1;
     }
-    else {
-        if (outBuffer) {
-            memcpy(outBuffer, stdoutBuffer, outPosition);
+    fetch_output:
+    while (in_progress) {
+        if (!send_interface_control_request(handle, 0xA1, 2, 0, 0, &in_progress, sizeof(in_progress), &tx_status)) goto bad;
+
+        if (in_progress == 0) break;
+
+        if (outpos + 0x1000 >= sizeof(stdout_buf)) {
+            memmove(stdout_buf, stdout_buf + 0x1000, sizeof(stdout_buf) - 0x1000);
+            outpos -= 0x1000;
         }
-        return ret;
+
+        if (!send_interface_control_request(handle, 0xA1, 1, 0, 0, stdout_buf + outpos, 0x1000, &tx_status)) goto bad;
+
+        outlen = 0x1000;
+        outpos += outlen;
     }
+    bad:
+    if (tx_status.ret != USB_TRANSFER_OK) {
+        if (command != NULL && strncmp(command,"boot",4) == 0) {
+            return 0;
+        }
+
+        LOG("Pongo USB error: %d", tx_status.ret);
+        return -1;
+    }
+
+    return 0;
+}
+
+bool upload_buffer_to_pongo(usb_handle_t *handle, const void *data, size_t length) {
+    if (data == NULL || length == 0) {
+        LOG("Invalid data buffer or length.\n");
+        return false;
+    }
+
+    LOG("Uploading %zu bytes to PongoOS...\n", length);
+
+    bool ret = false;
+    transfer_ret_t tx_status = {0};
+
+    ret = send_interface_control_request(handle, 0x21, DFU_DNLOAD, 0, 0, (void *)&length, 4, &tx_status);
+    ret = send_interface_bulk_transfer(handle, (void *)data, (uint32_t)length);
+
+    return ret;
 }
