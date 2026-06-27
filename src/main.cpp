@@ -139,7 +139,7 @@ void parse_arguments(int argc, char* argv[]) {
                 palerain_flags |= palerain_option_verbose_boot;
                 break;
             case '?':
-                LOG("Unknown option");
+                ERROR("Unknown option");
                 print_usage(argv[0]);
                 exit(1);
             default: break;
@@ -148,7 +148,7 @@ void parse_arguments(int argc, char* argv[]) {
 
     if (!(palerain_flags & palerain_option_gui)) {
         if (!(palerain_flags & palerain_option_rootful) && !(palerain_flags & palerain_option_rootless)) {
-            LOG("You must specify either -l, --rootless or -f, --rootful.\n");
+            ERROR("You must specify either -l, --rootless or -f, --rootful.\n");
             print_usage(argv[0]);
             exit(1);
         }
@@ -159,6 +159,7 @@ int main(int argc, char* argv[], char* envp[]) {
     print_credits();
     parse_arguments(argc, argv);
     LOG("palera1n_flags: %llu", palerain_flags);
+    shared_t state{};
 
     #ifdef WITH_GUI
     if (palerain_flags & palerain_option_gui) {
@@ -169,10 +170,10 @@ int main(int argc, char* argv[], char* envp[]) {
         wxEntryCleanup();
         return 0;
     } else {
-        return exploit();
+        return exploit(&state);
     }
     #else
-    return exploit();
+    return exploit(&state);
     #endif
 
     return 0;

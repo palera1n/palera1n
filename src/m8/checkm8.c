@@ -165,28 +165,28 @@ bool checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration 
     create_pongo_payload_for_device(deviceConfig->cpid, &payload, &data_sz);
 
     if (payload == NULL || data_sz == 0) {
-        LOG("unsupported cpid 0x%X", (unsigned)deviceConfig->cpid);
+        ERROR("unsupported cpid 0x%X", (unsigned)deviceConfig->cpid);
         return false;
     }
 
-    LOG("setting up stage 2 for CPID 0x%X", (unsigned)deviceConfig->cpid);
+    VERBOSE("setting up stage 2 for CPID 0x%X", (unsigned)deviceConfig->cpid);
 
     data = calloc(1, data_sz);
     if (!data) {
-        LOG("failed to allocate payload buffer");
+        ERROR("failed to allocate payload buffer");
         return false;
     }
 
     memcpy(data, payload, data_sz);
 
     if(checkm8_usb_request_stall(handle) && checkm8_usb_request_leak(handle)) {
-        LOG("successfully leaked data");
+        VERBOSE("successfully leaked data");
     } else {
-        LOG("failed to leak data");
+        ERROR("failed to leak data");
         return false;
     }
     for(i = 0; i < 2; i++) {
-        LOG("i = %zu", i);
+        VERBOSE("i = %zu", i);
         send_usb_control_request_no_data(handle, 2, 3, 0, 0x80, 0, NULL);
     }
     if(p != NULL && send_usb_control_request(handle, 0x00, 0, 0, 0x00, p, 0x30, &transfer_ret) && transfer_ret.ret == USB_TRANSFER_STALL) {

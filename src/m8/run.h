@@ -2,6 +2,7 @@
 #define RUN_H
 
 #include <stdbool.h>
+#include <stdatomic.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,10 +15,21 @@ enum exploit_stage {
     STAGE_SPRAY = 3,
     STAGE_PATCH = 4,
     STAGE_PONGO = 5,
-    STAGE_DONE = 6,
+    STAGE_JAILBREAK = 6,
+    STAGE_DONE = 7,
 };
 
-bool exploit(void);
+typedef struct {
+    atomic_int result;
+    atomic_bool stop;
+
+    atomic_bool exploit_done;
+    atomic_bool pongo_done;
+
+    atomic_int stage;
+} shared_t;
+
+bool exploit(shared_t *state);
 
 #ifdef __cplusplus
 }

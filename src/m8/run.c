@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <inttypes.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #include "../utils.h"
 #include "../usb/shim.h"
@@ -18,14 +19,6 @@
 #include "../gen/payloads/checkra1n-kpf-pongo.h"
 #include "../gen/payloads/ramdisk.h"
 #include "../gen/payloads/binpack.h"
-
-typedef struct {
-    atomic_int result;
-    atomic_bool stop;
-
-    atomic_bool exploit_done;
-    atomic_bool pongo_done;
-} shared_t;
 
 static void *exploit_thread(void *arg)
 {
@@ -41,12 +34,14 @@ static void *exploit_thread(void *arg)
 
     init_usb_handle(&handle, 0x5AC, 0x1227);
 
-    while (stage != STAGE_DONE && !atomic_load(&s->stop)) {
+    while (stage != STAGE_JAILBREAK && !atomic_load(&s->stop)) {
         if (!wait_usb_handle(&handle)) {
             atomic_store(&s->result, -1);
             atomic_store(&s->stop, true);
             break;
         }
+
+        atomic_store(&s->stage, stage);
 
         switch (stage) {
         case STAGE_PREPARE: {
@@ -74,21 +69,19 @@ static void *exploit_thread(void *arg)
             stage = STAGE_RESET;
             break;
         }
-
         case STAGE_RESET:
             ret = checkm8_stage_reset(&handle);
-            stage = ret ? STAGE_SETUP : STAGE_RESET;
+            stage = ret ? STAGE_SETUP : STAGE_PREPARE;
             break;
-
         case STAGE_SETUP:
             LOG("Setting up the device for exploitation");
             ret = checkm8_stage_setup(&handle, &deviceConfig);
-            stage = ret ? STAGE_SPRAY : STAGE_RESET;
+            stage = ret ? STAGE_SPRAY : STAGE_PREPARE;
             break;
         case STAGE_SPRAY:
             LOG("Spraying the device with USB requests");
             ret = checkm8_stage_spray(&handle, &deviceConfig);
-            stage = ret ? STAGE_PATCH : STAGE_RESET;
+            stage = ret ? STAGE_PATCH : STAGE_PREPARE;
             break;
         case STAGE_PATCH:
             LOG("Right before trigger (bug setup)");
@@ -104,19 +97,20 @@ static void *exploit_thread(void *arg)
 
             checkm8_boot_pongo(&handle);
 
-            atomic_store(&s->result, 1);
             atomic_store(&s->exploit_done, true);
+            atomic_store(&s->pongo_done, true);
+            atomic_store(&s->stage, STAGE_JAILBREAK);
 
-            stage = STAGE_DONE;
+            stage = STAGE_JAILBREAK;
             break;
         default:
             goto fail;
         }
 
         reset_usb_handle(&handle);
-        continue;
     }
 
+    atomic_store(&s->result, 1);
     return NULL;
 
 fail:
@@ -136,6 +130,7 @@ static void *pongo_thread(void *arg)
     init_usb_handle(&handle, 0x5AC, 0x4141);
 
     while (!atomic_load(&s->stop)) {
+
         if (!wait_usb_handle(&handle)) {
             atomic_store(&s->result, -1);
             atomic_store(&s->stop, true);
@@ -143,7 +138,9 @@ static void *pongo_thread(void *arg)
         }
 
         if (!seen) {
-            LOG("Pongo device detected!");
+            seen = true;
+
+            SUCCESS("Pongo device detected!");
 
             char paleinfo[64];
             snprintf(paleinfo, sizeof(paleinfo), "palera1n_flags 0x%" PRIx64, palerain_flags);
@@ -159,7 +156,9 @@ static void *pongo_thread(void *arg)
             issue_pongo_command(&handle, "overlay");
             issue_pongo_command(&handle, "bootx");
 
-            atomic_store(&s->result, 1);
+            atomic_store(&s->pongo_done, true);
+            atomic_store(&s->stage, STAGE_DONE);
+
             break;
         }
     }
@@ -168,23 +167,17 @@ static void *pongo_thread(void *arg)
     return NULL;
 }
 
-bool exploit(void)
+bool exploit(shared_t *state)
 {
     pthread_t t1, t2;
 
-    shared_t state = {0};
-    atomic_init(&state.result, 0);
-    atomic_init(&state.stop, false);
-    atomic_init(&state.exploit_done, false);
-    atomic_init(&state.pongo_done, false);
-
-    pthread_create(&t1, NULL, exploit_thread, &state);
-    pthread_create(&t2, NULL, pongo_thread, &state);
+    pthread_create(&t1, NULL, exploit_thread, state);
+    pthread_create(&t2, NULL, pongo_thread, state);
 
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
 
-    return atomic_load(&state.result) == 1 &&
-           atomic_load(&state.exploit_done) &&
-           atomic_load(&state.pongo_done);
+    return atomic_load(&state->result) == 1 &&
+           atomic_load(&state->exploit_done) &&
+           atomic_load(&state->pongo_done);
 }

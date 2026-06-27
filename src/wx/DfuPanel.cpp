@@ -77,6 +77,7 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
 
     m_stagnentTimer.Bind(wxEVT_TIMER, [this](wxTimerEvent&)
     {
+        m_headerText->SetLabel("Time to put the device into DFU mode. Locate the buttons as marked below\non your device and check the instructions on the right.");
         m_backButton->Enable();
         m_startButton->Enable();
         GetMainFrame()->ShowExploit();
