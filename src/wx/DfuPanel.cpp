@@ -106,6 +106,19 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
         m_isEnteringDfu = false;
         m_headerText->SetLabel("Device entered DFU mode successfully.\n");
 
+        m_index = m_sequence.steps.size();
+        m_stepRemaining = -1;
+        m_actionExecutedIndex = -1;
+
+        const wxColour kInactive =
+            wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
+
+        for (auto* lbl : m_stepLabels)
+            lbl->SetForegroundColour(kInactive);
+
+        for (auto* lbl : m_buttonLabels)
+            lbl->SetForegroundColour(kInactive);
+
         if (!m_stagnentTimer.IsRunning())
             m_stagnentTimer.StartOnce(3000);
     }
