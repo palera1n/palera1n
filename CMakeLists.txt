@@ -9,6 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 option(WITH_GUI "Build with wxWidgets GUI" OFF)
 option(WITH_STATIC "Build with static wxWidgets / deps" OFF)
+option(WITH_TUI "Build with TUI" OFF)
+option(WITH_ARTIFACTS "Build with embedded artifacts" OFF)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -179,25 +181,44 @@ if(WITH_STATIC)
         )
     endif()
 
+    if(MINGW)
+        #=========================
+        # libwdi
+        #=========================
+        ExternalProject_Add(libwdi_ep
+            GIT_REPOSITORY https://github.com/pbatard/libwdi.git
+            GIT_TAG v1.5.1
+            UPDATE_COMMAND ""
+
+            CONFIGURE_COMMAND
+                ${PKG_ENV}
+                sh -lc "./bootstrap.sh && ./configure --prefix=${DEPS_PREFIX} --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --disable-32bit --with-wdfver=1011 --with-libusbk=${CMAKE_SOURCE_DIR}/libusbK/bin"
+
+            BUILD_COMMAND make -j
+            INSTALL_COMMAND make install
+            BUILD_IN_SOURCE 1
+        )
+    endif()
+
     if(NOT MINGW)
-    # =========================
-    # mbedTLS
-    # =========================
-    ExternalProject_Add(mbedtls_ep
-        GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
-        GIT_TAG mbedtls-3.5.2
-        UPDATE_COMMAND ""
+        # =========================
+        # mbedTLS
+        # =========================
+        ExternalProject_Add(mbedtls_ep
+            GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
+            GIT_TAG mbedtls-3.5.2
+            UPDATE_COMMAND ""
 
-        PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch
+            PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch
 
-        CMAKE_ARGS
-            -DCMAKE_INSTALL_PREFIX=${DEPS_PREFIX}
-            -DENABLE_TESTING=OFF
-            -DENABLE_PROGRAMS=OFF
-            -DBUILD_SHARED_LIBS=OFF
+            CMAKE_ARGS
+                -DCMAKE_INSTALL_PREFIX=${DEPS_PREFIX}
+                -DENABLE_TESTING=OFF
+                -DENABLE_PROGRAMS=OFF
+                -DBUILD_SHARED_LIBS=OFF
 
-        INSTALL_DIR ${DEPS_PREFIX}
-    )
+            INSTALL_DIR ${DEPS_PREFIX}
+        )
     endif()
 
     if(LINUX OR MINGW)
@@ -406,6 +427,8 @@ if(WITH_STATIC)
 
     if(NOT MINGW)
         add_dependencies(palera1n mbedtls_ep)
+    else()
+        add_dependencies(palera1n libwdi_ep)
     endif()
 
     if(LINUX)
@@ -436,6 +459,7 @@ if(WITH_STATIC)
             plist-2.0
             imobiledevice-glue-1.0
             usb-1.0
+            libwdi
         )
 
         set(DLLS
@@ -450,6 +474,7 @@ if(WITH_STATIC)
             libplist-2.0.dll
             libusbmuxd-2.0.dll
             libusb-1.0.dll
+            libwdi.dll
         )
 
         execute_process(

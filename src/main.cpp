@@ -13,6 +13,9 @@
 
 #include "utils.h"
 #include "paleinfo.h"
+#ifdef _WIN32
+# include "usb/driver.h"
+#endif
 
 void print_credits() {
     printf(
@@ -21,16 +24,16 @@ void print_credits() {
         "::\n"
         ":: (c) 2026\n"
         "::\n"
-        ":: ========  Made by  ======== ::\n"
+        ":: ========  Made by  =======>\n"
         ":: Made by: asdfugil, kok3shidoll, claration, mineek\n"
         ":: nekohaxx, plooshi, staturnz\n"
-        ":: ======== Thanks to ======== ::\n"
+        ":: ======== Thanks to =======>\n"
         ":: Thanks to: llsc12, itsnebulalol, lrdsnow, kirb, ehilwyma\n"
         ":: opa334, 0x7ff, sbingner, nikias (libimobiledevice)\n"
         ":: dedbeddedbed, tihmstar\n"
         ":: Checkra1n (Siguza, axi0mx, littlelailo et al.)\n"
         ":: Procursus (Hayden Seay, Cameron Katri, Keto et al.)\n"
-        ":: =========================== ::\n\n"
+        ":: ==========================>\n\n"
     );
 }
 
@@ -52,6 +55,10 @@ void print_usage(char* argv) {
         "  -s, --safe-mode               Enable safe mode\n"
         "  -T, --telnetd                 Enable TELNET daemon on port 46 (insecure)\n"
         "  -V, --verbose-boot            Enable verbose booting\n"
+        #ifdef _WIN32
+        "  --install-drivers <PID>       Install libusbK drivers for PID\n"
+        "  --remove-drivers <PID>        Remove libusbK drivers for PID\n"
+        #endif
         , argv
     );
 }
@@ -75,6 +82,10 @@ void parse_arguments(int argc, char* argv[]) {
         {"safe-mode", no_argument, NULL, 's'},
         {"telnetd", no_argument, NULL, 'T'},
         {"verbose-boot", no_argument, NULL, 'V'},
+        #ifdef _WIN32
+        {"install-drivers", required_argument, NULL, 2},
+        {"remove-drivers", required_argument, NULL, 4},
+        #endif
         {NULL, 0, NULL, 0}
     };
 
@@ -93,7 +104,7 @@ void parse_arguments(int argc, char* argv[]) {
     palerain_flags |= palerain_option_cli;
     #endif
 
-    while ((options = getopt_long(argc, argv, "hvlf:", long_options, &option_index)) != -1) {
+    while ((options = getopt_long(argc, argv, "hvlfcB:sTV", long_options, &option_index)) != -1) {
         switch (options) {
             case 'h': // --help
                 print_usage(argv[0]);
@@ -138,8 +149,28 @@ void parse_arguments(int argc, char* argv[]) {
             case 'V': // --verbose-boot
                 palerain_flags |= palerain_option_verbose_boot;
                 break;
+            #ifdef _WIN32
+            case 2: { // --install-drivers <PID>
+                unsigned short parsed_pid = (unsigned short)strtol(optarg, NULL, 16);
+                if (parsed_pid == 0) {
+                    LOG_ERROR("Invalid PID value provided\n");
+                    exit(1);
+                }
+                install_libusbk_target(0x05AC, parsed_pid);
+                exit(0);
+            }
+            case 4: { // --remove-drivers <PID>
+                unsigned short parsed_pid = (unsigned short)strtol(optarg, NULL, 16);
+                if (parsed_pid == 0) {
+                    LOG_ERROR("Invalid PID value provided\n");
+                    exit(1);
+                }
+                uninstall_libusbk_target(0x05AC, parsed_pid);
+                exit(0);
+            }
+            #endif
             case '?':
-                LOG_ERROR("Unknown option");
+                LOG_ERROR("Unknown option\n");
                 print_usage(argv[0]);
                 exit(1);
             default: break;

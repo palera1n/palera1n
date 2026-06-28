@@ -1,6 +1,8 @@
 .PHONY: payloads palera1n palera1n_xcode clean
 
 WITH_GUI ?= 0
+WITH_TUI ?= 0
+WITH_ARTIFACTS ?= 1
 WITH_STATIC ?= 0
 BUILD_TYPE ?= Debug
 
@@ -28,6 +30,8 @@ palera1n: payloads
 	@cmake -S . -B build \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DWITH_GUI=$(WITH_GUI) \
+		-DWITH_TUI=$(WITH_TUI) \
+		-DWITH_ARTIFACTS=$(WITH_ARTIFACTS) \
 		-DWITH_STATIC=$(WITH_STATIC) && \
 	cmake --build build
 
@@ -36,6 +40,8 @@ palera1n_xcode: payloads
 		-G Xcode \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DWITH_GUI=$(WITH_GUI) \
+		-DWITH_TUI=$(WITH_TUI) \
+		-DWITH_ARTIFACTS=$(WITH_ARTIFACTS) \
 		-DWITH_STATIC=$(WITH_STATIC)
 
 palera1n_mingw: payloads
@@ -43,6 +49,8 @@ palera1n_mingw: payloads
 		-G "MinGW Makefiles" \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DWITH_GUI=$(WITH_GUI) \
+		-DWITH_TUI=$(WITH_TUI) \
+		-DWITH_ARTIFACTS=$(WITH_ARTIFACTS) \
 		-DWITH_STATIC=$(WITH_STATIC) && \
 	cmake --build build
 

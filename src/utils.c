@@ -33,11 +33,30 @@ static const char* level_name(log_level_t level) {
     }
 }
 
+static const char* get_timestamp(void) {
+    static char buffer[32];
+    time_t raw_time = time(NULL);
+    struct tm *time_info = localtime(&raw_time);
+    
+    if (time_info) {
+        // YYYY-MM-DD HH:MM:SS
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", time_info);
+    } else {
+        snprintf(buffer, sizeof(buffer), "0000-00-00 00:00:00");
+    }
+    return buffer;
+}
+
 void log_write(log_level_t level, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    printf("%s[%s]%s [%s] => ", level_color(level), level_name(level), RESET_COLOR, time_now());
+    char tag_buf[32];
+    snprintf(tag_buf, sizeof(tag_buf), "<%s>", level_name(level));
+
+    printf(" %s%-9s%s [%s%s%s] => ", 
+           level_color(level), tag_buf, RESET_COLOR, 
+           GRAY_COLOR, get_timestamp(), RESET_COLOR);
 
     vprintf(fmt, args);
     printf("\n");

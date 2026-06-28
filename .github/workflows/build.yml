@@ -159,6 +159,12 @@ jobs:
     runs-on: windows-latest
     needs: [build-pongo, build-ramdisk]
 
+    env:
+      LIBUSBK_VERSION: libusbK-3.0.5.16-bin.7z
+      LIBUSBK_URL: https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/usb-travis/${{ env.LIBUSBK_VERSION }}
+      LIBUSBK_WDFCOINSTALLER: libusbK/bin/sys/WdfCoInstaller01009.dll
+      LIBUSBK_WDFCOINSTALLER_RENAMED: libusbK/bin/sys/WdfCoInstaller1011.dll
+
     steps:
     - uses: actions/checkout@v4
 
@@ -168,11 +174,18 @@ jobs:
         name: pongo
         path: payloads/
 
-    - name : Download embedded artifacts
+    - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
         name: embedded
         path: payloads/
+
+    - name: Download libusbK drivers
+      run: |
+        curl -LO $LIBUSBK_URL
+        7z x $LIBUSBK_VERSION -olibusbK
+        # libwdi doesn't like "9"s in the filename lol
+        mv $LIBUSBK_WDFCOINSTALLER $LIBUSBK_WDFCOINSTALLER_RENAMED
 
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2
