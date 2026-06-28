@@ -10,8 +10,11 @@
 
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
-#include "../state.hpp"
 
+#include "../state.hpp"
+#include "../globals.h"
+#include "../utils.h"
+#include "../paleinfo.h"
 #include "../gen/images/logo.h"
 
 const char* deviceTextString = "Connect your iPhone, iPod touch, iPad, or AppleTV to begin.";
@@ -82,11 +85,21 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
 
     root->AddStretchSpacer();
 
-    auto* btn = new wxButton(this, wxID_ANY, "Options");
+    auto* quickMode = new wxCheckBox(this, wxID_ANY, "Quick Mode");
+    auto* optionsButton = new wxButton(this, wxID_ANY, "Options");
     m_startButton = new wxButton(this, wxID_ANY, "Start");
     m_startButton->Disable();
 
-    btn->Bind(wxEVT_BUTTON, [frame](wxCommandEvent&)
+    quickMode->SetValue(palerain_flags & palerain_option_quick);
+    quickMode->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
+    {
+        if (e.IsChecked())
+            palerain_flags |= palerain_option_quick;
+        else
+            palerain_flags &= ~palerain_option_quick;
+    });
+
+    optionsButton->Bind(wxEVT_BUTTON, [frame](wxCommandEvent&)
     {
         frame->ShowSettings();
     });
@@ -105,7 +118,8 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
 
     auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
     bottomRow->AddStretchSpacer();
-    bottomRow->Add(btn, 0, wxRIGHT | wxBOTTOM, 10);
+    bottomRow->Add(quickMode, 0, wxRIGHT | wxTOP, 1);
+    bottomRow->Add(optionsButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 10);
     bottomRow->Add(m_startButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 10);
 
     root->Add(bottomRow, 0, wxEXPAND);

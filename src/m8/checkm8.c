@@ -152,7 +152,7 @@ bool checkm8_stage_spray(const usb_handle_t *handle, struct DeviceConfiguration 
 
 bool checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig, struct PayloadConfiguration *payloadConfig) {
     size_t i, data_sz, packet_sz;
-    uint8_t *payload = NULL;
+    const uint8_t *payload = NULL;
     uint8_t *data;
     transfer_ret_t transfer_ret;
     bool ret = false;

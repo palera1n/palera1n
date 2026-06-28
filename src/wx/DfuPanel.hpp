@@ -14,6 +14,7 @@ class DfuPanel : public DevicePanel
 public:
     explicit DfuPanel(MainFrame* frame, wxWindow* parent);
     void SetDeviceState(const DeviceState& state) override;
+    void OnShow(wxShowEvent& event) override;
     void LoadDevice(const std::string& productType);
     void StartSequence(const DfuSequence& seq);
     void RunStep();

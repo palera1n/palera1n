@@ -38,8 +38,14 @@ struct PayloadConfiguration {
     uint32_t payload_dest_armv7;
 };
 
+typedef struct {
+    uint16_t cpid;
+    const uint8_t *data;
+    size_t len;
+} yolo_payload_t;
+
 bool checkm8_find_device_configuration_for_cpid(int cpid, struct DeviceConfiguration *config);
 bool checkm8_find_payload_configuration_for_cpid(int cpid, struct PayloadConfiguration *config);
-void create_pongo_payload_for_device(uint16_t cpid, uint8_t **payload, size_t *payloadSize);
+void create_pongo_payload_for_device(uint16_t cpid, const uint8_t **payload, size_t *payloadSize);
 
 #endif // PAYLOAD_H

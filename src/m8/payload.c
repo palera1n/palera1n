@@ -5,12 +5,6 @@
 
 #include "../utils.h"
 
-extern uint8_t payloads_yolo_s8000_bin[], payloads_yolo_s8001_bin[], payloads_yolo_s8003_bin[], payloads_yolo_t7000_bin[], payloads_yolo_t7001_bin[], payloads_yolo_t8010_bin[],  payloads_yolo_t8011_bin[], payloads_yolo_t8015_bin[];
-extern unsigned payloads_yolo_s8000_bin_len, payloads_yolo_s8001_bin_len, payloads_yolo_s8003_bin_len, payloads_yolo_t7000_bin_len, payloads_yolo_t7001_bin_len, payloads_yolo_t8010_bin_len, payloads_yolo_t8011_bin_len, payloads_yolo_t8015_bin_len;
-
-extern uint8_t payloads_Pongo_bin[], payloads_shellcode_bin[];
-extern unsigned payloads_Pongo_bin_len, payloads_shellcode_bin_len;
-
 #include "../gen/payloads/yolo_s8000.h"
 #include "../gen/payloads/yolo_s8001.h"
 #include "../gen/payloads/yolo_s8003.h"
@@ -232,9 +226,20 @@ bool checkm8_find_payload_configuration_for_cpid(
     return foundMatchingConfiguration;
 }
 
+static const yolo_payload_t yolo_payloads[] = {
+    {0x8015, payloads_yolo_t8015_bin, payloads_yolo_t8015_bin_len},
+    {0x8011, payloads_yolo_t8011_bin, payloads_yolo_t8011_bin_len},
+    {0x8010, payloads_yolo_t8010_bin, payloads_yolo_t8010_bin_len},
+    {0x8003, payloads_yolo_s8003_bin, payloads_yolo_s8003_bin_len},
+    {0x8001, payloads_yolo_s8001_bin, payloads_yolo_s8001_bin_len},
+    {0x8000, payloads_yolo_s8000_bin, payloads_yolo_s8000_bin_len},
+    {0x7001, payloads_yolo_t7001_bin, payloads_yolo_t7001_bin_len},
+    {0x7000, payloads_yolo_t7000_bin, payloads_yolo_t7000_bin_len},
+};
+
 void create_pongo_payload_for_device(
     uint16_t cpid,
-    uint8_t **payload,
+    const uint8_t **payload,
     size_t *payloadSize)
 {
     LOG_VERBOSE("Preparing YoloDFU payload for CPID 0x%x.", cpid);
@@ -242,41 +247,15 @@ void create_pongo_payload_for_device(
     *payload = NULL;
     *payloadSize = 0;
 
-    switch (cpid) {
-        case 0x8015:
-            *payloadSize = payloads_yolo_t8015_bin_len;
-            *payload = payloads_yolo_t8015_bin;
-            break;
-        case 0x8011:
-            *payloadSize = payloads_yolo_t8011_bin_len;
-            *payload = payloads_yolo_t8011_bin;
-            break;
-        case 0x8010:
-            *payloadSize = payloads_yolo_t8010_bin_len;
-            *payload = payloads_yolo_t8010_bin;
-            break;
-        case 0x8003:
-            *payloadSize = payloads_yolo_s8003_bin_len;
-            *payload = payloads_yolo_s8003_bin;
-            break;
-        case 0x8001:
-            *payloadSize = payloads_yolo_s8001_bin_len;
-            *payload = payloads_yolo_s8001_bin;
-            break;
-        case 0x8000:
-            *payloadSize = payloads_yolo_s8000_bin_len;
-            *payload = payloads_yolo_s8000_bin;
-            break;
-        case 0x7001:
-            *payloadSize = payloads_yolo_t7001_bin_len;
-            *payload = payloads_yolo_t7001_bin;
-            break;
-        case 0x7000:
-            *payloadSize = payloads_yolo_t7000_bin_len;
-            *payload = payloads_yolo_t7000_bin;
-            break;
-        default:
-            LOG("Failed to prepare payload for device with CPID 0x%x.", cpid);
-            break;
+    size_t count = sizeof(yolo_payloads) / sizeof(yolo_payloads[0]);
+
+    for (size_t i = 0; i < count; i++) {
+        if (yolo_payloads[i].cpid == cpid) {
+            *payload = yolo_payloads[i].data;
+            *payloadSize = yolo_payloads[i].len;
+            return;
+        }
     }
+
+    LOG("Failed to prepare payload for device with CPID 0x%x.", cpid);
 }

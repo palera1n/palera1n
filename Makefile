@@ -14,14 +14,20 @@ payloads:
 		name=$$(basename "$$file"); \
 		name=$${name%.*}; \
 		echo " XXD    $$file"; \
-		xxd -i "$$file" > "src/gen/payloads/$$name.h"; \
+		xxd -i "$$file" \
+		| sed 's/unsigned char/static const unsigned char/g' \
+		| sed 's/unsigned int/static const size_t/g' \
+		> "src/gen/payloads/$$name.h"; \
 	done
 
 	@for file in images/*; do \
 		name=$$(basename "$$file"); \
 		name=$${name%.*}; \
 		echo " XXD    $$file"; \
-		xxd -i "$$file" > "src/gen/images/$$name.h"; \
+		xxd -i "$$file" \
+		| sed 's/unsigned char/static const unsigned char/g' \
+		| sed 's/unsigned int/static const size_t/g' \
+		> "src/gen/images/$$name.h"; \
 	done
 
 	xxd -i -n "DFUHelperDeviceInfo" resources/DFUHelperDeviceInfo.json > src/gen/DFUHelperDeviceInfo.h

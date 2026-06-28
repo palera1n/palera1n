@@ -9,14 +9,15 @@
 #include "shim.h"
 
 #include "../utils.h"
+#include "../globals.h"
 #include "../m8/dfu.h"
-#include "../gen/payloads/Pongo.h"
+
 #include "../gen/payloads/lz4dec.h"
 
 void compress_pongo(void *out, size_t *out_len) {
-    size_t len = payloads_Pongo_bin_len;
+    size_t len = g_payload_pongo.data_len;
     size_t out_len_ = *out_len;
-    *out_len = LZ4_compress_HC(payloads_Pongo_bin, out, len, out_len_, LZ4HC_CLEVEL_MAX);
+    *out_len = LZ4_compress_HC(g_payload_pongo.data, out, len, out_len_, LZ4HC_CLEVEL_MAX);
 }
 
 void checkm8_boot_pongo(usb_handle_t *handle) {
@@ -26,10 +27,10 @@ void checkm8_boot_pongo(usb_handle_t *handle) {
     LOG_VERBOSE("Appending shellcode to the top of pongoOS (512 bytes)");
     void *shellcode = malloc(512);
     memcpy(shellcode, payloads_lz4dec_bin, payloads_lz4dec_bin_len);
-    size_t out_len = payloads_Pongo_bin_len;
+    size_t out_len = g_payload_pongo.data_len;
     void *out = malloc(out_len);
     compress_pongo(out, &out_len);
-    LOG_VERBOSE("Compressed pongoOS from %u to %zu bytes", payloads_Pongo_bin_len, out_len);
+    LOG_VERBOSE("Compressed pongoOS from %u to %zu bytes", g_payload_pongo.data_len, out_len);
     void *tmp = malloc(out_len + 512);
     memcpy(tmp, shellcode, 512);
     memcpy(tmp + 512, out, out_len);
@@ -124,7 +125,7 @@ int issue_pongo_command(const usb_handle_t *handle, const char *command) {
 
 bool upload_buffer_to_pongo(usb_handle_t *handle, const void *data, size_t length) {
     if (data == NULL || length == 0) {
-        LOG_ERROR("Invalid data buffer or length.");
+        LOG_ERROR("Invalid data buffer or length");
         return false;
     }
 

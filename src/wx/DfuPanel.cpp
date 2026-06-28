@@ -4,9 +4,12 @@
 
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
+
 #include "../state.hpp"
 #include "../sequence.hpp"
 #include "../utils.h"
+#include "../globals.h"
+#include "../paleinfo.h"
 
 #include <thread>
 
@@ -31,6 +34,7 @@
 DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
 {
+    Bind(wxEVT_SHOW, &DfuPanel::OnShow, this);
     auto* root = new wxBoxSizer(wxVERTICAL);
 
     m_headerText = new wxStaticText(this, wxID_ANY, "Time to put the device into DFU mode. Locate the buttons as marked below\non your device and check the instructions on the right.");
@@ -139,6 +143,22 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
         m_startButton->Enable();
         GetMainFrame()->ShowMain();
     }
+}
+
+void DfuPanel::OnShow(wxShowEvent& event)
+{
+    if (event.IsShown())
+    {
+        if (palerain_flags & palerain_option_quick) {
+            m_isEnteringDfu = true;
+            m_backButton->Disable();
+            m_startButton->Disable();
+
+            StartSequence(m_sequence);
+        }
+    }
+
+    DevicePanel::OnShow(event);
 }
 
 void DfuPanel::LoadDevice(const std::string& productType)

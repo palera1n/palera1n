@@ -4,9 +4,15 @@
 
 #include <wx/wx.h>
 
+#include <thread>
+
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
+
 #include "../state.hpp"
+#include "../utils.h"
+#include "../globals.h"
+#include "../paleinfo.h"
 
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
@@ -15,6 +21,7 @@
 RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
 {
+    Bind(wxEVT_SHOW, &RecoveryPanel::OnShow, this);
     auto* root = new wxBoxSizer(wxVERTICAL);
 
     root->Add(new wxStaticText(this, wxID_ANY,
@@ -92,34 +99,52 @@ void RecoveryPanel::SetDeviceState(const DeviceState& state)
     }
 }
 
+void RecoveryPanel::OnShow(wxShowEvent& event)
+{
+    if (event.IsShown())
+    {
+        if (palerain_flags & palerain_option_quick)
+        {
+            m_statusText->SetLabel("Entering recovery mode...");
+            m_backButton->Disable();
+            m_nextButton->Disable();
+            EnterRecoveryMode();
+        }
+    }
+
+    DevicePanel::OnShow(event);
+}
+
 void RecoveryPanel::EnterRecoveryMode()
 {
-    const auto& state = GetDeviceState();
+    std::thread([this]()
+    {
+        const auto deviceState = GetDeviceState();
+        if (!deviceState.connected)
+            return;
 
-    if (!state.connected)
-        return;
+        idevice_t device = nullptr;
+        lockdownd_client_t client = nullptr;
 
-    idevice_t device = nullptr;
-    lockdownd_client_t client = nullptr;
+        if (idevice_new(&device, deviceState.udid.c_str()) != IDEVICE_E_SUCCESS)
+            return;
 
-    if (idevice_new(&device, state.udid.c_str()) != IDEVICE_E_SUCCESS)
-        return;
-
-    if (lockdownd_client_new_with_handshake(
+        if (lockdownd_client_new_with_handshake(
             device,
             &client,
             "palera1n") != LOCKDOWN_E_SUCCESS)
-    {
+        {
+            idevice_free(device);
+            return;
+        }
+
+        m_isEnteringRecovery = true;
+
+        lockdownd_enter_recovery(client);
+
+        lockdownd_client_free(client);
         idevice_free(device);
-        return;
-    }
-
-    m_isEnteringRecovery = true;
-
-    lockdownd_enter_recovery(client);
-
-    lockdownd_client_free(client);
-    idevice_free(device);
+    }).detach();
 }
 
 void RecoveryPanel::SetStatusText(const wxString& text)

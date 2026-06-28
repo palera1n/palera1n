@@ -58,9 +58,9 @@ int install_libusbk_target(unsigned short vid, unsigned short pid)
 
         if (wdi_prepare_driver(d, driver_path, "libusbk_driver.inf", &prep) != WDI_SUCCESS ||
             wdi_install_driver(d, driver_path, "libusbk_driver.inf", &inst) != WDI_SUCCESS) {
-            LOG_ERROR("Driver management pipeline failed for instance node.");
+            LOG_ERROR("Driver management pipeline failed for instance node");
         } else {
-            LOG_SUCCESS("Driver successfully installed!");
+            LOG_SUCCESS("Driver successfully installed");
         }
     }
 
@@ -128,7 +128,7 @@ int uninstall_libusbk_target(unsigned short vid, unsigned short pid)
         return 0;
     }
 
-    LOG_ERROR("No matching libusbK driver package found in system store.");
+    LOG_ERROR("No matching libusbK driver package found in system store");
     return 2;
 }
 

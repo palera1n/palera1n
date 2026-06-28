@@ -7,6 +7,7 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 #include "../utils.h"
+#include "../globals.h"
 #include "../paleinfo.h"
 
 SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
@@ -66,6 +67,18 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
     root->Add(new wxStaticText(this, wxID_ANY, "Boot Arguments:"), 0, wxALL, 10);
 
     auto* bootArgs = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize);
+
+    bootArgs->SetValue(wxString(boot_args, wxConvUTF8));
+    bootArgs->Bind(wxEVT_TEXT, [&](wxCommandEvent& e)
+    {
+        wxString value = e.GetString();
+        if (value.length() > (sizeof(boot_args) - 0x20)) {
+            LOG_ERROR("Boot arguments too long");
+            return;
+        }
+        snprintf(boot_args, sizeof(boot_args), "%s", value.ToStdString().c_str());
+    });
+
     root->Add(bootArgs, 0, wxLEFT | wxRIGHT | wxEXPAND, 30);
 
     root->Add(option_revert, 0, wxLEFT | wxRIGHT | wxTOP, 10);

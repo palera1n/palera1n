@@ -9,16 +9,14 @@
 #include <unistd.h>
 
 #include "../utils.h"
+#include "../globals.h"
+#include "../paleinfo.h"
 #include "../usb/shim.h"
 #include "../usb/pongo_helper.h"
 
 #include "checkm8.h"
 #include "dfu.h"
 #include "payload.h"
-
-#include "../gen/payloads/checkra1n-kpf-pongo.h"
-#include "../gen/payloads/ramdisk.h"
-#include "../gen/payloads/binpack.h"
 
 static void *exploit_thread(void *arg)
 {
@@ -142,18 +140,35 @@ static void *pongo_thread(void *arg)
 
             LOG_SUCCESS("Pongo device detected!");
 
+            if (palerain_flags & palerain_option_pongo_exit) {
+                close_usb_handle(&handle);
+                atomic_store(&s->pongo_done, true);
+                atomic_store(&s->stage, STAGE_DONE);
+                break;
+            }
+
             char paleinfo[64];
             snprintf(paleinfo, sizeof(paleinfo), "palera1n_flags 0x%" PRIx64, palerain_flags);
 
+            char xargs_cmd[0x270];
+            snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", boot_args);
+            if ((palerain_flags & palerain_option_setup_rootful)) {
+                strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);
+            }
+
+            LOG("Boot arguments: %s", xargs_cmd);
+
             issue_pongo_command(&handle, "fuse lock");
             issue_pongo_command(&handle, "sep auto");
-            upload_buffer_to_pongo(&handle, payloads_checkra1n_kpf_pongo, payloads_checkra1n_kpf_pongo_len);
+            upload_buffer_to_pongo(&handle, g_payload_kpf.data, g_payload_kpf.data_len);
             issue_pongo_command(&handle, "modload");
             issue_pongo_command(&handle, paleinfo);
-            upload_buffer_to_pongo(&handle, payloads_ramdisk_dmg, payloads_ramdisk_dmg_len);
+            upload_buffer_to_pongo(&handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
             issue_pongo_command(&handle, "ramdisk");
-            upload_buffer_to_pongo(&handle, payloads_binpack_dmg, payloads_binpack_dmg_len);
+            upload_buffer_to_pongo(&handle, g_payload_overlay.data, g_payload_overlay.data_len);
             issue_pongo_command(&handle, "overlay");
+            if (strlen(boot_args) > 0)
+                issue_pongo_command(&handle, xargs_cmd);
             issue_pongo_command(&handle, "bootx");
 
             atomic_store(&s->pongo_done, true);

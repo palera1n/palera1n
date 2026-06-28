@@ -14,6 +14,7 @@ public:
     void SetDeviceState(const DeviceState& state) override;
     void SetStatusText(const wxString& text);
     void EnterRecoveryMode();
+    void OnShow(wxShowEvent& event) override;
 private:
     wxButton* m_backButton = nullptr;
     wxButton* m_nextButton = nullptr;

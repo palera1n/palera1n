@@ -19,6 +19,10 @@ public:
         m_deviceState = state;
     }
 
+    virtual void OnShow(wxShowEvent& event)
+    {
+        event.Skip();
+    }
 protected:
     MainFrame* GetMainFrame() const
     {
@@ -29,7 +33,6 @@ protected:
     {
         return m_deviceState;
     }
-
 private:
     MainFrame* m_frame;
     DeviceState m_deviceState;

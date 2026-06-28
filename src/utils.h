@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <time.h>
 
 #define RESET_COLOR   "\033[0m"
@@ -25,11 +26,11 @@ typedef enum {
     LOG_VERBOSE
 } log_level_t;
 
-#define LOG(fmt, ...)    log_write(LOG_INFO, fmt, ##__VA_ARGS__)
-#define LOG_SUCCESS(fmt, ...) log_write(LOG_SUCCESS, fmt, ##__VA_ARGS__)
-#define LOG_WARN(fmt, ...)    log_write(LOG_WARN, fmt, ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...)   log_write(LOG_ERROR, fmt, ##__VA_ARGS__)
-#define LOG_VERBOSE(fmt, ...) log_write(LOG_VERBOSE, fmt, ##__VA_ARGS__)
+#define LOG(fmt, ...)           log_write(LOG_INFO, fmt, ##__VA_ARGS__)
+#define LOG_SUCCESS(fmt, ...)   log_write(LOG_SUCCESS, fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...)      log_write(LOG_WARN, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...)     log_write(LOG_ERROR, fmt, ##__VA_ARGS__)
+#define LOG_VERBOSE(fmt, ...)   log_write(LOG_VERBOSE, fmt, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +50,5 @@ static inline const char* time_now() {
     strftime(buf, sizeof(buf), "%H:%M:%S", tm_info);
     return buf;
 }
-
-extern uint64_t palerain_flags;
 
 #endif // CONSTANTS_H
