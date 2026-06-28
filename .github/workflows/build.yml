@@ -160,10 +160,10 @@ jobs:
     needs: [build-pongo, build-ramdisk]
 
     env:
-      LIBUSBK_VERSION: libusbK-3.0.5.16-bin.7z
-      LIBUSBK_URL: https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/usb-travis/${{ env.LIBUSBK_VERSION }}
-      LIBUSBK_WDFCOINSTALLER: libusbK/bin/sys/WdfCoInstaller01009.dll
-      LIBUSBK_WDFCOINSTALLER_RENAMED: libusbK/bin/sys/WdfCoInstaller1011.dll
+      LIBUSBK_VERSION: libusbK-3.0.5.16-bin
+      LIBUSBK_URL: https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/usb-travis/
+      LIBUSBK_WDFCOINSTALLER: libusbK/bin/sys/amd64/WdfCoInstaller01009.dll
+      LIBUSBK_WDFCOINSTALLER_RENAMED: libusbK/bin/sys/amd64/WdfCoInstaller1011.dll
 
     steps:
     - uses: actions/checkout@v4
@@ -181,11 +181,12 @@ jobs:
         path: payloads/
 
     - name: Download libusbK drivers
+      shell: bash
       run: |
-        curl -LO $LIBUSBK_URL
-        7z x $LIBUSBK_VERSION -olibusbK
-        # libwdi doesn't like "9"s in the filename lol
-        mv $LIBUSBK_WDFCOINSTALLER $LIBUSBK_WDFCOINSTALLER_RENAMED
+        curl -LO "${LIBUSBK_URL}${LIBUSBK_VERSION}.7z"
+        7z x "${LIBUSBK_VERSION}.7z" -olibusbK-tmp
+        mv "libusbK-tmp/${LIBUSBK_VERSION}" libusbK
+        mv "${LIBUSBK_WDFCOINSTALLER}" "${LIBUSBK_WDFCOINSTALLER_RENAMED}"
 
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2

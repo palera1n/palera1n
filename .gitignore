@@ -1,8 +1,12 @@
 build/
 .DS_Store
+
 src/gen/
 payloads/Pongo.bin
 payloads/checkra1n-kpf-pongo
 payloads/ramdisk.dmg
 payloads/binpack.dmg
+
 libusbK/
+libusbK-tmp/
+*.7z

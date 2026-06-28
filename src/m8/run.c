@@ -11,7 +11,6 @@
 #include "../utils.h"
 #include "../usb/shim.h"
 #include "../usb/pongo_helper.h"
-#include "../usb/driver/driver.h"
 
 #include "checkm8.h"
 #include "dfu.h"
