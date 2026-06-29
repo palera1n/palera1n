@@ -14,57 +14,72 @@
 
 #include "../gen/payloads/lz4dec.h"
 
-void compress_pongo(void *out, size_t *out_len) {
-    size_t len = g_payload_pongo.data_len;
-    size_t out_len_ = *out_len;
-    *out_len = LZ4_compress_HC(g_payload_pongo.data, out, len, out_len_, LZ4HC_CLEVEL_MAX);
+static bool compress_pongo(uint8_t **out, size_t *out_len)
+{
+    const uint8_t *src = g_payload_pongo.data;
+    int src_size = (int)g_payload_pongo.data_len;
+
+    int max_size = LZ4_compressBound(src_size);
+
+    uint8_t *buf = malloc(max_size);
+    if (!buf) return false;
+
+    int size = LZ4_compress_HC(
+        (const char *)src,
+        (char *)buf,
+        src_size,
+        max_size,
+        LZ4HC_CLEVEL_MAX
+    );
+
+    if (size <= 0) {
+        free(buf);
+        return false;
+    }
+
+    *out = buf;
+    *out_len = (size_t)size;
+
+    return true;
 }
 
-void checkm8_boot_pongo(usb_handle_t *handle) {
-    transfer_ret_t transfer_ret;
-    LOG_VERBOSE("Booting pongoOS");
-    LOG_VERBOSE("Compressing pongoOS");
-    LOG_VERBOSE("Appending shellcode to the top of pongoOS (512 bytes)");
-    void *shellcode = malloc(512);
-    memcpy(shellcode, payloads_lz4dec_bin, payloads_lz4dec_bin_len);
-    size_t out_len = g_payload_pongo.data_len;
-    void *out = malloc(out_len);
-    compress_pongo(out, &out_len);
-    LOG_VERBOSE("Compressed pongoOS from %u to %zu bytes", g_payload_pongo.data_len, out_len);
-    void *tmp = malloc(out_len + 512);
-    memcpy(tmp, shellcode, 512);
-    memcpy(tmp + 512, out, out_len);
-    free(out);
-    out = tmp;
-    out_len += 512;
-    free(shellcode);
-    LOG_VERBOSE("Setting the compressed size into the shellcode");
-    uint32_t* size = (uint32_t*)(out + 0x1fc);
-    *size = out_len - 512;
-    LOG_VERBOSE("Reconnecting to device");
-    init_usb_handle(handle, 0x5AC, 0x1227);
-    LOG_VERBOSE("Waiting for device to be ready");
-    wait_usb_handle(handle);
-    {
-        size_t len = 0;
-        size_t size;
-        while(len < out_len)
-        {
-        retry:
-            size = ((out_len - len) > 0x800) ? 0x800 : (out_len - len);
-            send_usb_control_request(handle, 0x21, DFU_DNLOAD, 0, 0, (unsigned char*)&out[len], size, &transfer_ret);
-            if(transfer_ret.sz != size || transfer_ret.ret != USB_TRANSFER_OK)
-            {
-                LOG_VERBOSE("retrying at len = %zu", len);
-                sleep_ms(100);
-                goto retry;
-            }
-            len += size;
-            LOG_VERBOSE("len = %zu", len);
-        }
+#define SHELLCODE_SZ (512)
+#define PONGO_MAX_SZ (0x7fe00)
+
+bool prepare_pongo(uint8_t **out, size_t *out_len)
+{
+    if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
+        LOG_ERROR("Pongo payload too large: %zu bytes (max 511 KB)", g_payload_pongo.data_len);
+        return false;
     }
-    send_usb_control_request_no_data(handle, 0x21, 4, 0, 0, 0, NULL);
-    LOG_VERBOSE("pongoOS sent, should be booting");
+    
+    size_t pongoSize;
+    uint8_t *pongo;
+
+    if (!compress_pongo(&pongo, &pongoSize))
+        return false;
+
+    uint8_t *payload = malloc(SHELLCODE_SZ + pongoSize);
+    if (!payload) {
+        free(pongo);
+        return false;
+    }
+
+    memcpy(payload, payloads_lz4dec_bin, SHELLCODE_SZ);
+    memcpy(payload + SHELLCODE_SZ, pongo, pongoSize);
+
+    free(pongo);
+
+    pongo = payload;
+    pongoSize += SHELLCODE_SZ;
+
+    uint32_t *pongoSizeInData = (uint32_t *)(pongo + 0x1fc);
+    *pongoSizeInData = (uint32_t)pongoSize - SHELLCODE_SZ;
+
+    *out = pongo;
+    *out_len = pongoSize;
+
+    return true;
 }
 
 int issue_pongo_command(const usb_handle_t *handle, const char *command) {

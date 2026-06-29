@@ -237,12 +237,12 @@ static const yolo_payload_t yolo_payloads[] = {
     {0x7000, payloads_yolo_t7000_bin, payloads_yolo_t7000_bin_len},
 };
 
-void create_pongo_payload_for_device(
+bool create_pongo_payload_for_device(
     uint16_t cpid,
     const uint8_t **payload,
     size_t *payloadSize)
 {
-    LOG_VERBOSE("Preparing YoloDFU payload for CPID 0x%x.", cpid);
+    LOG_VERBOSE("Preparing YoloDFU payload for CPID 0x%x", cpid);
 
     *payload = NULL;
     *payloadSize = 0;
@@ -253,9 +253,10 @@ void create_pongo_payload_for_device(
         if (yolo_payloads[i].cpid == cpid) {
             *payload = yolo_payloads[i].data;
             *payloadSize = yolo_payloads[i].len;
-            return;
+            return true;
         }
     }
 
-    LOG("Failed to prepare payload for device with CPID 0x%x.", cpid);
+    LOG("Failed to prepare payload for device with CPID 0x%x", cpid);
+    return false;
 }

@@ -95,7 +95,7 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
 
     auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
     bottomRow->AddStretchSpacer();
-    bottomRow->Add(back, 0, wxALL, 12);
+    bottomRow->Add(back, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
 
     root->Add(bottomRow, 0, wxEXPAND);
 

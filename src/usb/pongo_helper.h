@@ -5,8 +5,7 @@
 
 #define CMD_LENGTH_MAX 512
 
-void compress_pongo(void *out, size_t *out_len);
-void checkm8_boot_pongo(usb_handle_t *handle);
+bool prepare_pongo(uint8_t **out, size_t *out_len);
 int issue_pongo_command(const usb_handle_t *handle, const char *command);
 bool upload_buffer_to_pongo(usb_handle_t *handle, const void *data, size_t length);
 

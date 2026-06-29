@@ -1,9 +1,10 @@
-#include <unistd.h> // isatty, STDIN_FILENO
-#include <cstdlib>  // getenv
+#include <unistd.h>
+#include <cstdlib>
 #include <iostream>
 #include <getopt.h>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 #ifdef WITH_GUI
 # include <wx/wx.h>

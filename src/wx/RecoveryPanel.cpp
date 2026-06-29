@@ -61,8 +61,8 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
 
     auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
     bottomRow->AddStretchSpacer();
-    bottomRow->Add(m_backButton, 0, wxALL, 12);
-    bottomRow->Add(m_nextButton, 0, wxALL, 12);
+    bottomRow->Add(m_backButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
+    bottomRow->Add(m_nextButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
 
     root->AddStretchSpacer();
     root->Add(bottomRow, 0, wxEXPAND);

@@ -18,5 +18,6 @@ bool checkm8_stage_reset(const usb_handle_t *handle);
 bool checkm8_stage_setup(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig);
 bool checkm8_stage_spray(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig);
 bool checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig, struct PayloadConfiguration *payloadConfig);
+bool checkm8_boot_pongo(usb_handle_t *handle);
 
 #endif // CHECKM8_H

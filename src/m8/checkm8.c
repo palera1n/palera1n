@@ -10,6 +10,7 @@
 
 #include "../utils.h"
 #include "../usb/shim.h"
+#include "../usb/pongo_helper.h"
 
 static struct {
     uint8_t b_len, b_descriptor_type;
@@ -162,12 +163,8 @@ bool checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration 
     uint64_t* p = (uint64_t*)blank;
     p[5] = payloadConfig->insecure_memory_base;
 
-    create_pongo_payload_for_device(deviceConfig->cpid, &payload, &data_sz);
-
-    if (payload == NULL || data_sz == 0) {
-        LOG_ERROR("unsupported cpid 0x%X", (unsigned)deviceConfig->cpid);
-        return false;
-    }
+    ret = create_pongo_payload_for_device(deviceConfig->cpid, &payload, &data_sz);
+    if (!ret) return false;
 
     LOG_VERBOSE("setting up stage 2 for CPID 0x%X", (unsigned)deviceConfig->cpid);
 
@@ -199,4 +196,45 @@ bool checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration 
     }
     free(data);
     return ret;
+}
+
+bool checkm8_boot_pongo(usb_handle_t *handle)
+{
+    transfer_ret_t transfer_ret;
+
+    uint8_t *out;
+    size_t out_len;
+
+    if (!prepare_pongo(&out, &out_len)) {
+        LOG_ERROR("Failed to prepare pongoOS payload");
+        return false;
+    }
+
+    {
+        size_t len = 0;
+
+        while (len < out_len)
+        {
+            size_t chunk = (out_len - len > 0x800) ? 0x800 : (out_len - len);
+
+        retry:
+            send_usb_control_request(handle, 0x21, DFU_DNLOAD, 0, 0, out + len, chunk, &transfer_ret);
+
+            if (transfer_ret.sz != chunk || transfer_ret.ret != USB_TRANSFER_OK)
+            {
+                LOG_VERBOSE("retrying at len = %zu", len);
+                sleep_ms(100);
+                goto retry;
+            }
+
+            len += chunk;
+            LOG_VERBOSE("len = %zu", len);
+        }
+    }
+
+    free(out);
+
+    send_usb_control_request_no_data(handle, 0x21, 4, 0, 0, 0, NULL);
+    LOG_SUCCESS("PongoOS has been sent off");
+    return true;
 }

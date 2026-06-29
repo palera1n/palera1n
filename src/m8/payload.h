@@ -46,6 +46,6 @@ typedef struct {
 
 bool checkm8_find_device_configuration_for_cpid(uint16_t cpid, struct DeviceConfiguration *config);
 bool checkm8_find_payload_configuration_for_cpid(uint16_t cpid, struct PayloadConfiguration *config);
-void create_pongo_payload_for_device(uint16_t cpid, const uint8_t **payload, size_t *payloadSize);
+bool create_pongo_payload_for_device(uint16_t cpid, const uint8_t **payload, size_t *payloadSize);
 
 #endif // PAYLOAD_H
