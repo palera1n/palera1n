@@ -15,7 +15,7 @@
 #include "../gen/payloads/yolo_t8015.h"
 
 bool checkm8_find_device_configuration_for_cpid(
-    int cpid,
+    uint16_t cpid,
     struct DeviceConfiguration *config)
 {
     bool foundMatchingConfiguration = true;
@@ -58,7 +58,7 @@ bool checkm8_find_device_configuration_for_cpid(
 }
 
 bool checkm8_find_payload_configuration_for_cpid(
-    int cpid,
+    uint16_t cpid,
     struct PayloadConfiguration *config)
 {
     bool foundMatchingConfiguration = true;

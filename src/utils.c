@@ -55,11 +55,11 @@ void log_write(log_level_t level, const char *fmt, ...) {
     snprintf(tag_buf, sizeof(tag_buf), "<%s>", level_name(level));
 
     if (palerain_flags & palerain_option_no_colors) {
-        printf(" %s%-9s%s [%s%s%s] => ",
+        printf(" %s%9s%s [%s%s%s] => ",
                "", tag_buf, "",
                "", get_timestamp(), "");
     } else {
-        printf(" %s%-9s%s [%s%s%s] => ",
+        printf(" %s%9s%s [%s%s%s] => ",
                level_color(level), tag_buf, RESET_COLOR,
                GRAY_COLOR, get_timestamp(), RESET_COLOR);
     }

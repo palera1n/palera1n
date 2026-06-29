@@ -3,6 +3,7 @@
 #include "MainPanel.hpp"
 
 #include <wx/wx.h>
+#include <wx/hyperlink.h>
 #include <wx/mstream.h>
 #include <wx/image.h>
 #include <wx/bitmap.h>
@@ -60,10 +61,46 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
         "Made by: asdfugil, kok3shidoll, C, mineek, nekohaxx, plooshi, staturnz\n\n"
         "Thanks to: llsc12, itsnebulalol, lrdsnow, kirb, ehilwyma opa334, 0x7ff,\n"
         "sbingner, nikias (libimobiledevice), Checkra1n (Siguza, axi0mx, littlelailo\n"
-        "et al.), Procursus (Hayden Seay, Cameron Katri, Keto et al.)\n\n"
-        "With <3 from C (claration)");
+        "et al.), Procursus (Hayden Seay, Cameron Katri, Keto et al.)"
+    );
+    
+    auto* credrow = new wxBoxSizer(wxHORIZONTAL);
 
+    auto* lovetext = new wxStaticText(this, wxID_ANY,
+    #ifdef __APPLE__
+        "With 💖 from C (claration)"
+    #else
+        "With <3 from C (claration)"
+    #endif
+    );
+
+    auto* link1 = new wxStaticText(this, wxID_ANY, "@palera1n");
+    auto* link2 = new wxStaticText(this, wxID_ANY, "https://palera.in");
+
+    link1->SetForegroundColour(wxColour(0, 120, 215));
+    link2->SetForegroundColour(wxColour(0, 120, 215));
+
+    link1->SetCursor(wxCursor(wxCURSOR_HAND));
+    link2->SetCursor(wxCursor(wxCURSOR_HAND));
+    
+    link1->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent&) {
+        wxLaunchDefaultBrowser("https://twitter.com/intent/follow?screen_name=palera1n");
+    });
+
+    link2->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent&) {
+        wxLaunchDefaultBrowser("https://palera.in");
+    });
+
+    credrow->Add(lovetext, 0, wxALIGN_BOTTOM | wxLEFT, 0);
+    credrow->AddStretchSpacer();
+
+    auto* linkSizer = new wxBoxSizer(wxVERTICAL);
+    linkSizer->Add(link1, 0, wxALIGN_RIGHT | wxBOTTOM, 0);
+    linkSizer->Add(link2, 0, wxALIGN_RIGHT);
+
+    credrow->Add(linkSizer, 0, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxRIGHT, 0);
     root->Add(credtext, 0, wxLEFT | wxRIGHT, 10);
+    root->Add(credrow, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
 
     root->Add(new wxStaticLine(this), 0, wxEXPAND | wxALL, 10);
 
@@ -119,8 +156,8 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
     bottomRow->AddStretchSpacer();
     bottomRow->Add(quickMode, 0, wxRIGHT | wxTOP, 1);
-    bottomRow->Add(optionsButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 10);
-    bottomRow->Add(m_startButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 10);
+    bottomRow->Add(optionsButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
+    bottomRow->Add(m_startButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
 
     root->Add(bottomRow, 0, wxEXPAND);
 

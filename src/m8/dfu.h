@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-int dfu_serial_number_get_cpid(char *serial);
+uint16_t dfu_serial_number_get_cpid(char *serial);
 bool dfu_serial_number_is_in_dfu_mode(char *serial);
 bool dfu_serial_number_is_pwned(char *serial);
 bool dfu_serial_number_is_in_yolo_dfu(char *serial);

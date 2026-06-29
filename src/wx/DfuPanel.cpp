@@ -90,8 +90,8 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
     auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
 
     bottomRow->AddStretchSpacer();
-    bottomRow->Add(m_backButton, 0, wxALL, 10);
-    bottomRow->Add(m_startButton, 0, wxALL, 10);
+    bottomRow->Add(m_backButton, 0, wxALL, 12);
+    bottomRow->Add(m_startButton, 0, wxALL, 12);
 
     root->Add(bottomRow, 0, wxEXPAND);
 

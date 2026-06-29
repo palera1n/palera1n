@@ -128,6 +128,8 @@ void parse_arguments(int argc, char* argv[]) {
     } else {
         palerain_flags &= ~palerain_option_cli;
         palerain_flags |= palerain_option_gui;
+        // xcode doesn't know how to display colors
+        palerain_flags |= palerain_option_no_colors;
     }
     # endif
     #else
