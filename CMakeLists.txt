@@ -135,6 +135,14 @@ if(WITH_GUI)
     target_compile_definitions(palera1n PRIVATE WITH_GUI)
 endif()
 
+if(WITH_TUI)
+    target_compile_definitions(palera1n PRIVATE WITH_TUI)
+endif()
+
+if(WITH_ARTIFACTS)
+    target_compile_definitions(palera1n PRIVATE WITH_ARTIFACTS)
+endif()
+
 target_link_libraries(palera1n PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(palera1n PRIVATE lz4_static)
 

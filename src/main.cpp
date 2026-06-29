@@ -264,8 +264,14 @@ void parse_arguments(int argc, char* argv[]) {
         }
     }
 
-    if (!(palerain_flags & palerain_option_gui)) {
-        if (!(palerain_flags & palerain_option_rootful) && !(palerain_flags & palerain_option_rootless)) {
+    if (!(palerain_flags & palerain_option_gui) &&
+        !(palerain_flags & palerain_option_tui))
+    {
+
+        if (!(palerain_flags & palerain_option_rootful) &&
+            !(palerain_flags & palerain_option_rootless))
+        {
+
             LOG_ERROR("You must specify either -l, --rootless or -f, --rootful.\n");
             print_usage(argv[0]);
             exit(1);
@@ -277,7 +283,6 @@ int main(int argc, char* argv[], char* envp[]) {
     print_credits();
     parse_arguments(argc, argv);
     LOG("palera1n_flags: %llu", palerain_flags);
-    shared_t state{};
 
     #ifdef WITH_GUI
     if (palerain_flags & palerain_option_gui) {
@@ -287,10 +292,15 @@ int main(int argc, char* argv[], char* envp[]) {
         wxTheApp->OnExit();
         wxEntryCleanup();
         return 0;
+    } else if (palerain_flags & palerain_option_tui) {
+        LOG_WARN("TUI is not implemented yet");
+        exit(1);
     } else {
+        shared_t state{};
         return exploit(&state);
     }
     #else
+    shared_t state{};
     return exploit(&state);
     #endif
 

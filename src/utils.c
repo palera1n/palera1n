@@ -26,7 +26,7 @@ static const char* level_name(log_level_t level) {
     switch (level) {
         case LOG_INFO:    return "INFO";
         case LOG_SUCCESS: return "SUCCESS";
-        case LOG_WARN:    return "WARN";
+        case LOG_WARN:    return "WARNING";
         case LOG_ERROR:   return "ERROR";
         case LOG_VERBOSE: return "VERBOSE";
         default:          return "LOG";
