@@ -124,6 +124,7 @@ if(APPLE)
     target_link_libraries(palera1n PRIVATE
         ${IOKIT}
         ${COREFOUNDATION}
+        ncurses
     )
 endif()
 
@@ -446,18 +447,6 @@ if(WITH_STATIC)
     target_include_directories(palera1n PRIVATE
         ${DEPS_PREFIX}/include
     )
-
-    if(APPLE)
-        find_library(IOKIT IOKit)
-        find_library(COREFOUNDATION CoreFoundation)
-        find_library(SECURITY Security)
-
-        target_link_libraries(palera1n PRIVATE
-            ${IOKIT}
-            ${COREFOUNDATION}
-            ${SECURITY}
-        )
-    endif()
 
     if(MINGW)
         target_link_libraries(palera1n PRIVATE

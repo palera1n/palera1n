@@ -11,7 +11,9 @@
 #endif
 
 #include "m8/run.h"
-
+#ifdef WITH_TUI
+# include "tui/ui.h"
+#endif
 #include "utils.h"
 #include "globals.h"
 #include "paleinfo.h"
@@ -293,8 +295,8 @@ int main(int argc, char* argv[], char* envp[]) {
         wxEntryCleanup();
         return 0;
     } else if (palerain_flags & palerain_option_tui) {
-        LOG_WARN("TUI is not implemented yet");
-        return 1;
+        ui_run();
+        return 0;
     } else {
         shared_t state{};
         return exploit(&state);
