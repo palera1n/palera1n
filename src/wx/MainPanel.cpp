@@ -63,7 +63,7 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
         "sbingner, nikias (libimobiledevice), Checkra1n (Siguza, axi0mx, littlelailo\n"
         "et al.), Procursus (Hayden Seay, Cameron Katri, Keto et al.)"
     );
-    
+
     auto* credrow = new wxBoxSizer(wxHORIZONTAL);
 
     auto* lovetext = new wxStaticText(this, wxID_ANY,
@@ -82,7 +82,7 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
 
     link1->SetCursor(wxCursor(wxCURSOR_HAND));
     link2->SetCursor(wxCursor(wxCURSOR_HAND));
-    
+
     link1->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent&) {
         wxLaunchDefaultBrowser("https://twitter.com/intent/follow?screen_name=palera1n");
     });
@@ -95,10 +95,10 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     credrow->AddStretchSpacer();
 
     auto* linkSizer = new wxBoxSizer(wxVERTICAL);
-    linkSizer->Add(link1, 0, wxALIGN_RIGHT | wxBOTTOM, 0);
+    linkSizer->Add(link1, 0, wxALIGN_RIGHT);
     linkSizer->Add(link2, 0, wxALIGN_RIGHT);
 
-    credrow->Add(linkSizer, 0, wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL | wxRIGHT, 0);
+    credrow->Add(linkSizer, 0, wxALIGN_CENTER_VERTICAL, 0);
     root->Add(credtext, 0, wxLEFT | wxRIGHT, 10);
     root->Add(credrow, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
 
