@@ -17,19 +17,20 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
 
     root->Add(new wxStaticText(this, wxID_ANY,
         "You may set the following options. If you don't know what they mean you'll\n"
-        "probably have no reason to set them."), 0, wxALL, 10);
+        "probably have no reason to set them."
+    ), 0, wxALL, 10);
 
-    auto* option_safemode = new wxCheckBox(this, wxID_ANY, "Safe Mode");
-    auto* option_verbose = new wxCheckBox(this, wxID_ANY, "Verbose Boot");
-    auto* option_revert = new wxCheckBox(this, wxID_ANY, "Restore System");
-    auto* option_dark_blockchain = new wxCheckBox(this, wxID_ANY, "Dark Blockchain");
+    auto* optionSafemode = new wxCheckBox(this, wxID_ANY, "Safe Mode");
+    auto* optionVerbose = new wxCheckBox(this, wxID_ANY, "Verbose Boot");
+    auto* optionRevert = new wxCheckBox(this, wxID_ANY, "Restore System");
+    auto* optionDarkBlockchain = new wxCheckBox(this, wxID_ANY, "Dark Blockchain");
 
-    option_safemode->SetValue(palerain_flags & palerain_option_safemode);
-    option_verbose->SetValue(palerain_flags & palerain_option_verbose_boot);
-    option_revert->SetValue(palerain_flags & palerain_option_force_revert);
-    option_dark_blockchain->SetValue(palerain_flags & palerain_option_flower_chain);
+    optionSafemode->SetValue(palerain_flags & palerain_option_safemode);
+    optionVerbose->SetValue(palerain_flags & palerain_option_verbose_boot);
+    optionRevert->SetValue(palerain_flags & palerain_option_force_revert);
+    optionDarkBlockchain->SetValue(palerain_flags & palerain_option_flower_chain);
 
-    option_safemode->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
+    optionSafemode->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
     {
         if (e.IsChecked())
             palerain_flags |= palerain_option_safemode;
@@ -37,7 +38,7 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
             palerain_flags &= ~palerain_option_safemode;
     });
 
-    option_verbose->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
+    optionVerbose->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
     {
         if (e.IsChecked())
             palerain_flags |= palerain_option_verbose_boot;
@@ -45,7 +46,7 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
             palerain_flags &= ~palerain_option_verbose_boot;
     });
 
-    option_revert->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
+    optionRevert->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
     {
         if (e.IsChecked())
             palerain_flags |= palerain_option_force_revert;
@@ -53,7 +54,7 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
             palerain_flags &= ~palerain_option_force_revert;
     });
 
-    option_dark_blockchain->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
+    optionDarkBlockchain->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
     {
         if (e.IsChecked())
             palerain_flags |= palerain_option_flower_chain;
@@ -61,13 +62,11 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
             palerain_flags &= ~palerain_option_flower_chain;
     });
 
-    root->Add(option_safemode, 0, wxLEFT | wxRIGHT, 10);
-    root->Add(option_verbose, 0, wxLEFT | wxRIGHT | wxTOP, 10);
-
+    root->Add(optionSafemode, 0, wxLEFT | wxRIGHT, 10);
+    root->Add(optionVerbose, 0, wxLEFT | wxRIGHT | wxTOP, 10);
     root->Add(new wxStaticText(this, wxID_ANY, "Boot Arguments:"), 0, wxALL, 10);
 
     auto* bootArgs = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize);
-
     bootArgs->SetValue(wxString(boot_args, wxConvUTF8));
     bootArgs->Bind(wxEVT_TEXT, [&](wxCommandEvent& e)
     {
@@ -80,9 +79,8 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
     });
 
     root->Add(bootArgs, 0, wxLEFT | wxRIGHT | wxEXPAND, 30);
-
-    root->Add(option_revert, 0, wxLEFT | wxRIGHT | wxTOP, 10);
-    root->Add(option_dark_blockchain, 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    root->Add(optionRevert, 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    root->Add(optionDarkBlockchain, 0, wxLEFT | wxRIGHT | wxTOP, 10);
 
     root->AddStretchSpacer();
 

@@ -187,8 +187,15 @@ bool exploit(shared_t *state)
     pthread_create(&t1, NULL, exploit_thread, state);
     pthread_create(&t2, NULL, pongo_thread, state);
 
+    while (!atomic_load(&state->stop)) {
+        sleep_ms(10);
+    }
+
+    pthread_cancel(t1);
+    pthread_cancel(t2);
+
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
 
-    return atomic_load(&state->result) == 1 && atomic_load(&state->stop);
+    return atomic_load(&state->result) == 1;
 }

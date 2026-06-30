@@ -26,21 +26,20 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
 
     root->Add(new wxStaticText(this, wxID_ANY,
         "The device needs to be put into DFU mode to apply the jailbreak. This is a\n"
-        "manual process and we will guide you through it.\n\n"
+        "manual process and we will guide you through it.\n"
         "In order to prevent filesystem corruption through hard reset, the device will\n"
-        "be put into recovery mode first. Click next when you are ready."), 0, wxALL, 10);
+        "be put into recovery mode first. Click next when you are ready."
+    ), 0, wxALL, 10);
 
     m_statusText = new wxStaticText(this, wxID_ANY, "");
     root->Add(m_statusText, 0, wxALL, 10);
 
     m_backButton = new wxButton(this, wxID_ANY, "Back");
     m_nextButton = new wxButton(this, wxID_ANY, "Next");
-
     m_backButton->Bind(wxEVT_BUTTON, [frame](wxCommandEvent&)
     {
         frame->ShowMain();
     });
-
     m_nextButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
     {
         m_statusText->SetLabel("Entering recovery mode...");
@@ -61,7 +60,7 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
 
     auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
     bottomRow->AddStretchSpacer();
-    bottomRow->Add(m_backButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
+    bottomRow->Add(m_backButton, 0, wxRIGHT | wxBOTTOM, 12);
     bottomRow->Add(m_nextButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
 
     root->AddStretchSpacer();

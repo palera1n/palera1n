@@ -294,7 +294,7 @@ int main(int argc, char* argv[], char* envp[]) {
         return 0;
     } else if (palerain_flags & palerain_option_tui) {
         LOG_WARN("TUI is not implemented yet");
-        exit(1);
+        return 1;
     } else {
         shared_t state{};
         return exploit(&state);
@@ -303,6 +303,4 @@ int main(int argc, char* argv[], char* envp[]) {
     shared_t state{};
     return exploit(&state);
     #endif
-
-    return 0;
 }
