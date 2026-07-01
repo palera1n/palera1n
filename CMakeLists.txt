@@ -214,6 +214,7 @@ if(WITH_STATIC)
                 -DENABLE_TESTING=OFF
                 -DENABLE_PROGRAMS=OFF
                 -DBUILD_SHARED_LIBS=OFF
+                -DENABLE_ASSEMBLY=OFF
             INSTALL_DIR ${DEPS_PREFIX}
         )
     endif()
