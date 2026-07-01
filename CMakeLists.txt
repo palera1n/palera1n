@@ -207,6 +207,7 @@ if(WITH_STATIC)
             GIT_TAG mbedtls-3.5.2
             UPDATE_COMMAND ""
             PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch
+            COMMAND sed -i "/define MBEDTLS_AESNI_C/d" include/mbedtls/mbedtls_config.h
             CMAKE_ARGS
                 -DCMAKE_INSTALL_PREFIX=${DEPS_PREFIX}
                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
