@@ -97,11 +97,17 @@ jobs:
         name: pongo
         path: payloads/
 
-    - name : Download embedded artifacts
+    - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
         name: embedded
         path: payloads/
+
+    - name: Download musl toolchain
+      run: |
+        curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/${{ matrix.triple }}-cross.tar.zst
+        tar --zstd -xf ${{ matrix.triple }}-cross.tar.zst
+        echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
 
     - name: Install dependencies (apt)
       run: |
@@ -110,7 +116,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 BUILD_TYPE=Release
+        make palera1n WITH_STATIC=1 BUILD_TYPE=Release CMAKE_SYSROOT="$("$PWD/${{ matrix.triple }}-cross/bin/${{ matrix.triple }}-gcc" -print-sysroot)"
 
     - name: Upload
       uses: actions/upload-artifact@v4

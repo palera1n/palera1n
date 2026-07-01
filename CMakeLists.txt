@@ -17,8 +17,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(MINGW)
     set(DEPS_PREFIX /mingw64)
+elseif(CMAKE_SYSROOT)
+    set(DEPS_PREFIX "${CMAKE_SYSROOT}")
 else()
-    set(DEPS_PREFIX ${CMAKE_BINARY_DIR}/deps)
+    set(DEPS_PREFIX "${CMAKE_BINARY_DIR}/deps")
 endif()
 
 # =========================

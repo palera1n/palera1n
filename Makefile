@@ -5,6 +5,7 @@ WITH_TUI ?= 0
 WITH_ARTIFACTS ?= 1
 WITH_STATIC ?= 0
 BUILD_TYPE ?= Debug
+CMAKE_SYSROOT ?=
 
 payloads:
 	mkdir -p src/gen/images
@@ -34,6 +35,7 @@ payloads:
 
 palera1n: payloads
 	@cmake -S . -B build \
+		-DCMAKE_SYSROOT="$(CMAKE_SYSROOT)" \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DWITH_GUI=$(WITH_GUI) \
 		-DWITH_TUI=$(WITH_TUI) \
@@ -44,6 +46,7 @@ palera1n: payloads
 palera1n_xcode: payloads
 	@cmake -S . -B build \
 		-G Xcode \
+		-DCMAKE_SYSROOT="$(CMAKE_SYSROOT)" \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DWITH_GUI=$(WITH_GUI) \
 		-DWITH_TUI=$(WITH_TUI) \
@@ -53,6 +56,7 @@ palera1n_xcode: payloads
 palera1n_mingw: payloads
 	@cmake -S . -B build \
 		-G "MinGW Makefiles" \
+		-DCMAKE_SYSROOT="$(CMAKE_SYSROOT)" \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DWITH_GUI=$(WITH_GUI) \
 		-DWITH_TUI=$(WITH_TUI) \
