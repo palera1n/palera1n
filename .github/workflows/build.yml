@@ -37,7 +37,6 @@ jobs:
         gmake -j1 tools
         gmake -j$(sysctl -n hw.ncpu)
 
-
     - name: Prepare upload directory
       run: |
         mkdir upload
@@ -124,7 +123,8 @@ jobs:
           WITH_STATIC=1 \
           BUILD_TYPE=Release \
           CMAKE_SYSROOT="$SYSROOT_PATH" \
-          CROSS_HOST_TRIPLE="${{ matrix.triple }}"
+          CROSS_HOST_TRIPLE="${{ matrix.triple }}" \
+          JOBS=$(nproc)
         strip -s build/palera1n
 
     - name: Upload
@@ -168,7 +168,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release
+        make palera1n WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -s build/palera1n.app/Contents/MacOS/palera1n
         cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
 
@@ -235,7 +235,7 @@ jobs:
     - name: Build
       shell: msys2 {0}
       run: |
-        make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release
+        make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(nproc)
         strip -s build/palera1n.exe
 
     - name: Upload

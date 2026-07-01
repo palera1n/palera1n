@@ -1,4 +1,4 @@
-.PHONY: payloads palera1n palera1n_xcode clean
+.PHONY: payloads palera1n palera1n_xcode palera1n_mingw clean
 
 WITH_GUI ?= 0
 WITH_TUI ?= 0
@@ -8,6 +8,12 @@ WITH_STATIC ?= 0
 BUILD_TYPE ?= Debug
 CMAKE_SYSROOT ?=
 CROSS_HOST_TRIPLE ?=
+JOBS ?=
+
+BUILD_ARGS :=
+ifneq ($(strip $(JOBS)),)
+BUILD_ARGS += --parallel $(JOBS)
+endif
 
 payloads:
 	mkdir -p src/gen/images
@@ -45,7 +51,7 @@ palera1n: payloads
 		-DWITH_RAMDISK=$(WITH_RAMDISK) \
 		-DWITH_BINPACK=$(WITH_BINPACK) \
 		-DWITH_STATIC=$(WITH_STATIC) && \
-	cmake --build build
+	cmake --build build $(BUILD_ARGS)
 
 palera1n_xcode: payloads
 	@cmake -S . -B build \
@@ -70,7 +76,7 @@ palera1n_mingw: payloads
 		-DWITH_RAMDISK=$(WITH_RAMDISK) \
 		-DWITH_BINPACK=$(WITH_BINPACK) \
 		-DWITH_STATIC=$(WITH_STATIC) && \
-	cmake --build build
+	cmake --build build $(BUILD_ARGS)
 
 clean:
 	@rm -rf build src/gen
