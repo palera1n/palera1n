@@ -7,23 +7,41 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "gen/payloads/binpack.h"
-#include "gen/payloads/ramdisk.h"
+#if WITH_BINPACK
+# include "gen/payloads/binpack.h"
+#endif
+#if WITH_RAMDISK
+# include "gen/payloads/ramdisk.h"
+#endif
 #include "gen/payloads/Pongo.h"
 #include "gen/payloads/checkra1n-kpf-pongo.h"
 
 uint64_t palerain_flags = 0;
 char boot_args[0x270] = { '\0' };
 
+#if WITH_BINPACK
 payload_t g_payload_overlay = {
     .data = payloads_binpack_dmg,
     .data_len = payloads_binpack_dmg_len,
 };
+#else
+payload_t g_payload_overlay = {
+    .data = NULL,
+    .data_len = 0,
+};
+#endif
 
+#if WITH_RAMDISK
 payload_t g_payload_ramdisk = {
     .data = payloads_ramdisk_dmg,
     .data_len = payloads_ramdisk_dmg_len,
 };
+#else
+payload_t g_payload_ramdisk = {
+    .data = NULL,
+    .data_len = 0,
+};
+#endif
 
 payload_t g_payload_pongo = {
     .data = payloads_Pongo_bin,

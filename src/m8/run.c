@@ -161,13 +161,19 @@ static void *pongo_thread(void *arg)
 
         issue_pongo_command(&handle, "fuse lock");
         issue_pongo_command(&handle, "sep auto");
-        upload_buffer_to_pongo(&handle, g_payload_kpf.data, g_payload_kpf.data_len);
-        issue_pongo_command(&handle, "modload");
+        if (g_payload_kpf.data_len > 0) {
+            upload_buffer_to_pongo(&handle, g_payload_kpf.data, g_payload_kpf.data_len);
+            issue_pongo_command(&handle, "modload");
+        }
         issue_pongo_command(&handle, paleinfo);
-        upload_buffer_to_pongo(&handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
-        issue_pongo_command(&handle, "ramdisk");
-        upload_buffer_to_pongo(&handle, g_payload_overlay.data, g_payload_overlay.data_len);
-        issue_pongo_command(&handle, "overlay");
+        if (g_payload_ramdisk.data_len > 0) {
+            upload_buffer_to_pongo(&handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
+            issue_pongo_command(&handle, "ramdisk");
+        }
+        if (g_payload_overlay.data_len > 0) {
+            upload_buffer_to_pongo(&handle, g_payload_overlay.data, g_payload_overlay.data_len);
+            issue_pongo_command(&handle, "overlay");
+        }
         if (strlen(boot_args) > 0) issue_pongo_command(&handle, xargs_cmd);
         issue_pongo_command(&handle, "bootx");
 

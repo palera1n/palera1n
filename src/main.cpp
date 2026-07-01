@@ -18,6 +18,7 @@
 #ifdef _WIN32
 # include "usb/driver.h"
 #endif
+#include "usb/pongo_helper.h"
 
 void print_credits() {
     printf(
@@ -207,11 +208,21 @@ void parse_arguments(int argc, char* argv[]) {
                     LOG_ERROR("Failed to load pongo payload\n");
                     exit(1);
                 }
+                if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
+                    LOG_ERROR("Pongo payload too large: %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
+                    exit(1);
+                }
                 LOG("Overriding pongo payload with %s", optarg);
                 break;
             case 'K': // --override-kpf
                 if (!override_payload_from_file(optarg, &g_payload_kpf)) {
                     LOG_ERROR("Failed to load kpf payload\n");
+                    exit(1);
+                }
+                if (g_payload_kpf.data_len < 4
+                    || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0 && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
+                {
+                    LOG_ERROR("Invalid kpf payload, is it macho?");
                     exit(1);
                 }
                 LOG("Overriding kpf payload with %s", optarg);
