@@ -1,4 +1,4 @@
-#ifdef WITH_GUI
+#if defined(WITH_GUI) || defined(WITH_TUI)
 
 #include <nlohmann/json.hpp>
 #include "gen/DFUHelperDeviceInfo.h"
@@ -85,4 +85,4 @@ bool SequenceIsSupported(const std::string& deviceKey)
     return !seq.steps.empty();
 }
 
-#endif // WITH_GUI
+#endif // WITH_GUI || WITH_TUI

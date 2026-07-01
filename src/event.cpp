@@ -1,41 +1,48 @@
-#ifdef WITH_GUI
+#if defined(WITH_GUI) || defined(WITH_TUI)
 
 #include "event.hpp"
-
-#include "wx/AppFrame.hpp"
 #include "state.hpp"
 #include "sequence.hpp"
 #include "utils.h"
 
-#include <wx/wx.h>
 #include <thread>
-
+#include <mutex>
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 #include <libirecovery.h>
+
+static DeviceStateCallback g_state_callback = nullptr;
+static std::mutex g_callback_mutex;
+
+void register_device_state_callback(DeviceStateCallback cb)
+{
+    std::lock_guard<std::mutex> lock(g_callback_mutex);
+    g_state_callback = cb;
+}
+
+static void dispatch_device_state(const DeviceState& state)
+{
+    std::lock_guard<std::mutex> lock(g_callback_mutex);
+    if (g_state_callback)
+    {
+        g_state_callback(state);
+    }
+}
 
 static inline DeviceState make_fresh_state()
 {
     return DeviceState{};
 }
 
-void normal_device_event_cb(
-    const idevice_event_t* event,
-    void* user_data)
+void normal_device_event_cb(const idevice_event_t* event, void* user_data)
 {
-    #ifdef WITH_GUI
-    auto* frame = static_cast<MainFrame*>(user_data);
-    if (!frame || !event)
-        return;
-    #endif
+    if (!event) return;
 
     DeviceState state = make_fresh_state();
 
     if (event->event == IDEVICE_DEVICE_REMOVE)
     {
-        #ifdef WITH_GUI
-        send_device_state(frame, state);
-        #endif
+        dispatch_device_state(state);
         return;
     }
 
@@ -51,13 +58,11 @@ void normal_device_event_cb(
     state.udid = event->udid ? event->udid : "";
 
     lockdownd_client_t client = nullptr;
-
     if (lockdownd_client_new_with_handshake(device, &client, "palera1n") == LOCKDOWN_E_SUCCESS)
     {
         plist_t product = nullptr;
         plist_t version = nullptr;
         plist_t ecid = nullptr;
-
         char *p = nullptr, *v = nullptr;
         uint64_t ecid_val = 0;
 
@@ -73,42 +78,28 @@ void normal_device_event_cb(
         state.productVersion = v ? v : "";
         state.ecid = ecid_val;
 
-        free(p);
-        free(v);
-
+        free(p); free(v);
         if (product) plist_free(product);
         if (version) plist_free(version);
         if (ecid) plist_free(ecid);
 
         lockdownd_client_free(client);
     }
-
     idevice_free(device);
 
     state.isSupported = SequenceIsSupported(state.productType);
-
-    #ifdef WITH_GUI
-    send_device_state(frame, state);
-    #endif
+    dispatch_device_state(state);
 }
 
-void recovery_device_event_cb(
-    const irecv_device_event_t* event,
-    void* user_data)
+void recovery_device_event_cb(const irecv_device_event_t* event, void* user_data)
 {
-    #ifdef WITH_GUI
-    auto* frame = static_cast<MainFrame*>(user_data);
-    if (!frame || !event)
-        return;
-    #endif
+    if (!event) return;
 
     DeviceState state = make_fresh_state();
 
     if (event->type == IRECV_DEVICE_REMOVE)
     {
-        #ifdef WITH_GUI
-        send_device_state(frame, state);
-        #endif
+        dispatch_device_state(state);
         return;
     }
 
@@ -120,16 +111,14 @@ void recovery_device_event_cb(
     if (event->mode == IRECV_K_DFU_MODE)
     {
         state.mode = DeviceMode::DFU;
-        #ifdef WITH_GUI
-        send_device_state(frame, state);
-        #endif
+        dispatch_device_state(state);
         return;
     }
 
     if (!(event->mode == IRECV_K_RECOVERY_MODE_1 ||
-        event->mode == IRECV_K_RECOVERY_MODE_2 ||
-        event->mode == IRECV_K_RECOVERY_MODE_3 ||
-        event->mode == IRECV_K_RECOVERY_MODE_4))
+          event->mode == IRECV_K_RECOVERY_MODE_2 ||
+          event->mode == IRECV_K_RECOVERY_MODE_3 ||
+          event->mode == IRECV_K_RECOVERY_MODE_4))
     {
         return;
     }
@@ -142,7 +131,6 @@ void recovery_device_event_cb(
     state.ecid = ecid_val;
 
     irecv_client_t client = nullptr;
-
     int attempts = 0;
     const int max_attempts = 10;
 
@@ -150,7 +138,6 @@ void recovery_device_event_cb(
     {
         if (irecv_open_with_ecid(&client, state.ecid) == IRECV_E_SUCCESS)
             break;
-
         attempts++;
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
     }
@@ -158,14 +145,12 @@ void recovery_device_event_cb(
     if (client)
     {
         LOG_VERBOSE("Opened client after %d attempts", attempts);
-
         irecv_device_t device = nullptr;
         if (irecv_devices_get_device_by_client(client, &device) == IRECV_E_SUCCESS && device)
         {
             state.productType = device->product_type ? device->product_type : "";
             state.displayName = device->display_name ? device->display_name : "";
         }
-
         irecv_close(client);
     }
     else
@@ -174,10 +159,7 @@ void recovery_device_event_cb(
     }
 
     state.isSupported = SequenceIsSupported(state.productType);
-
-    #ifdef WITH_GUI
-    send_device_state(frame, state);
-    #endif
+    dispatch_device_state(state);
 }
 
-#endif // WITH_GUI
+#endif // WITH_GUI || WITH_TUI

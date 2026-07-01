@@ -1,3 +1,5 @@
+#if defined(WITH_GUI) || defined(WITH_TUI)
+
 #ifndef STATE_H
 #define STATE_H
 
@@ -25,3 +27,5 @@ struct DeviceState
 };
 
 #endif // STATE_H
+
+#endif // WITH_GUI || WITH_TUI

@@ -16,7 +16,10 @@ wxDEFINE_EVENT(EVT_DEVICE_STATE_UPDATE, wxCommandEvent);
 
 void send_device_state(MainFrame* frame, const DeviceState& state)
 {
+    if (!wxTheApp) return;
+
     wxTheApp->CallAfter([frame, state]() {
+        if (!frame) return;
         auto* evt = new wxCommandEvent(EVT_DEVICE_STATE_UPDATE);
         evt->SetClientData(new DeviceState(state));
         wxPostEvent(frame, *evt);
@@ -61,22 +64,26 @@ MainFrame::MainFrame()
 
     ShowMain();
 
-    std::thread([this]()
+    register_device_state_callback([this](const DeviceState& state) {
+        send_device_state(this, state);
+    });
+
+    std::thread([]()
     {
-        idevice_event_subscribe(normal_device_event_cb, this);
+        idevice_event_subscribe(normal_device_event_cb, nullptr);
 
         while (true)
             sleep_ms(1000);
     }).detach();
 
-    std::thread([this]()
+    std::thread([]()
     {
         static irecv_device_event_context_t ctx = nullptr;
 
         irecv_device_event_subscribe(
             &ctx,
             recovery_device_event_cb,
-            this
+            nullptr
         );
 
         while (true)

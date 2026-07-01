@@ -1,4 +1,4 @@
-#ifdef WITH_GUI
+#if defined(WITH_GUI) || defined(WITH_TUI)
 
 #ifndef SEQUENCE_H
 #define SEQUENCE_H
@@ -37,4 +37,4 @@ bool SequenceIsSupported(const std::string& deviceKey);
 
 #endif // SEQUENCE_H
 
-#endif // WITH_GUI
+#endif // WITH_GUI || WITH_TUI
