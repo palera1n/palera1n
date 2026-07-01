@@ -138,7 +138,7 @@ if(WITH_STATIC)
     find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
 
     set(BASE_CFLAGS "-g -I${DEPS_PREFIX}/include -L${DEPS_PREFIX}/lib")
-    set(BASE_LDFLAGS "-g -I${DEPS_PREFIX}/include -L${DEPS_PREFIX}/lib")
+    set(BASE_LDFLAGS "-g -L${DEPS_PREFIX}/lib")
 
     if(LINUX)
         set(PLATFORM_CFLAGS "-fdata-sections -ffunction-sections -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64")
@@ -151,6 +151,11 @@ if(WITH_STATIC)
         set(PLATFORM_LDFLAGS "")
     endif()
 
+    set(SYSROOT_ENV_FLAG "")
+    if(CMAKE_SYSROOT)
+        set(SYSROOT_ENV_FLAG "--sysroot=${CMAKE_SYSROOT}")
+    endif()
+
     set(PKG_ENV
         env
         "CC=${CMAKE_C_COMPILER}"
@@ -159,9 +164,9 @@ if(WITH_STATIC)
         PKG_CONFIG_PATH=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
         PKG_CONFIG_LIBDIR=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
 
-        CFLAGS=${BASE_CFLAGS}\ ${PLATFORM_CFLAGS}\ --sysroot=${CMAKE_SYSROOT}
+        CFLAGS=${BASE_CFLAGS}\ ${PLATFORM_CFLAGS}\ ${SYSROOT_ENV_FLAG}
         CPPFLAGS=-I${DEPS_PREFIX}/include
-        LDFLAGS=${BASE_LDFLAGS}\ ${PLATFORM_LDFLAGS}\ --sysroot=${CMAKE_SYSROOT}
+        LDFLAGS=${BASE_LDFLAGS}\ ${PLATFORM_LDFLAGS}\ ${SYSROOT_ENV_FLAG}
 
         C_INCLUDE_PATH=${DEPS_PREFIX}/include
         CPLUS_INCLUDE_PATH=${DEPS_PREFIX}/include
