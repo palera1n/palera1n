@@ -16,6 +16,12 @@ option(WITH_TUI "Build with TUI" OFF)
 option(WITH_RAMDISK "Build with ramdisk" ON)
 option(WITH_BINPACK "Build with binpack" ON)
 
+if(LINUX AND WITH_STATIC)
+    if(NOT CROSS_HOST_TRIPLE MATCHES "musl" AND NOT CMAKE_C_COMPILER_TARGET MATCHES "musl" AND NOT CMAKE_C_COMPILER MATCHES "musl")
+        message(FATAL_ERROR "Static builds on Linux require a musl toolchain. Please specify a musl cross-compiler or set -DCROSS_HOST_TRIPLE=...-linux-musl")
+    endif()
+endif()
+
 if(MINGW)
     set(DEPS_PREFIX /mingw64)
 elseif(CMAKE_SYSROOT)
@@ -221,7 +227,7 @@ if(WITH_STATIC)
             URL https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz
             CONFIGURE_COMMAND
                 ${PKG_ENV}
-                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
+                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} --disable-stripping
             BUILD_COMMAND make -j
             BUILD_IN_SOURCE 1
             INSTALL_COMMAND make install
@@ -287,7 +293,7 @@ if(WITH_STATIC)
         list(APPEND LIBIMOBILEDEVICE_DEPS libusb_ep)
     endif()
     if(LINUX)
-        set(READLINE_DEPS readline_ep)
+        list(APPEND LIBIMOBILEDEVICE_DEPS readline_ep)
     endif()
 
     ExternalProject_Add(libimobiledevice_ep
@@ -301,7 +307,7 @@ if(WITH_STATIC)
         BUILD_COMMAND make -j
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
-        DEPENDS ${LIBIMOBILEDEVICE_DEPS} ${READLINE_DEPS}
+        DEPENDS ${LIBIMOBILEDEVICE_DEPS}
     )
 
     file(WRITE "${CMAKE_BINARY_DIR}/fix_tools_makefile.cmake"
@@ -328,7 +334,7 @@ if(WITH_STATIC)
         BUILD_COMMAND make -j
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
-        DEPENDS libplist_ep libusbmuxd_ep limd_glue_ep ${READLINE_DEPS}
+        DEPENDS ${LIBIMOBILEDEVICE_DEPS}
     )
 
     add_dependencies(palera1n
@@ -409,6 +415,12 @@ if(WITH_STATIC)
                 "${DEPS_PREFIX}/lib/libreadline.a"
                 "${DEPS_PREFIX}/lib/libncurses.a"
             )
+        elseif(APPLE)
+            if(WITH_TUI)
+                find_package(Curses REQUIRED)
+                target_include_directories(palera1n PRIVATE ${CURSES_INCLUDE_DIRS})
+                target_link_libraries(palera1n PRIVATE ${CURSES_LIBRARIES})
+            endif()
         endif()
     endif()
 else()
