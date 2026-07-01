@@ -125,7 +125,7 @@ jobs:
           CMAKE_SYSROOT="$SYSROOT_PATH" \
           CROSS_HOST_TRIPLE="${{ matrix.triple }}" \
           JOBS=$(nproc)
-        strip -s build/palera1n
+        ${{ matrix.triple }}-strip -s build/palera1n
 
     - name: Upload
       uses: actions/upload-artifact@v4
