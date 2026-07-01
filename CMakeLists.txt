@@ -137,6 +137,20 @@ endif()
 if(WITH_STATIC)
     find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
 
+    set(BASE_CFLAGS "-g -I${DEPS_PREFIX}/include -L${DEPS_PREFIX}/lib")
+    set(BASE_LDFLAGS "-g -I${DEPS_PREFIX}/include -L${DEPS_PREFIX}/lib")
+
+    if(LINUX)
+        set(PLATFORM_CFLAGS "-fdata-sections -ffunction-sections -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64")
+        set(PLATFORM_LDFLAGS "-Wl,--gc-sections -fdata-sections -ffunction-sections")
+    elseif(APPLE)
+        set(PLATFORM_CFLAGS "")
+        set(PLATFORM_LDFLAGS "-Wl,-dead_strip")
+    else()
+        set(PLATFORM_CFLAGS "")
+        set(PLATFORM_LDFLAGS "")
+    endif()
+
     set(PKG_ENV
         env
         "CC=${CMAKE_C_COMPILER}"
@@ -145,9 +159,9 @@ if(WITH_STATIC)
         PKG_CONFIG_PATH=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
         PKG_CONFIG_LIBDIR=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
 
-        CFLAGS=-g\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib\ -D_FILE_OFFSET_BITS=64\ -D_TIME_BITS=64\ --sysroot=${CMAKE_SYSROOT}
+        CFLAGS=${BASE_CFLAGS}\ ${PLATFORM_CFLAGS}\ --sysroot=${CMAKE_SYSROOT}
         CPPFLAGS=-I${DEPS_PREFIX}/include
-        LDFLAGS=-g\ -Wl,--gc-sections\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib --sysroot=${CMAKE_SYSROOT}
+        LDFLAGS=${BASE_LDFLAGS}\ ${PLATFORM_LDFLAGS}\ --sysroot=${CMAKE_SYSROOT}
 
         C_INCLUDE_PATH=${DEPS_PREFIX}/include
         CPLUS_INCLUDE_PATH=${DEPS_PREFIX}/include
