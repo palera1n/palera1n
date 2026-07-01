@@ -60,8 +60,9 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
     m_backButton = new wxButton(this, wxID_ANY, "Back");
     m_startButton = new wxButton(this, wxID_ANY, "Start");
 
-    m_backButton->Bind(wxEVT_BUTTON, [frame](wxCommandEvent&)
+    m_backButton->Bind(wxEVT_BUTTON, [frame, this](wxCommandEvent&)
     {
+        Reboot();
         frame->ShowMain();
     });
 
