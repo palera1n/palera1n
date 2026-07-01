@@ -121,7 +121,7 @@ if(WITH_GUI)
 endif()
 
 # =========================
-# TUI
+# ncurses
 # =========================
 if(WITH_TUI)
     target_compile_definitions(palera1n PRIVATE WITH_TUI)
@@ -129,7 +129,7 @@ if(WITH_TUI)
     if(WITH_STATIC AND NOT APPLE)
         set(NCURSES_CONF_ARGS --with-shared=no --without-debug --without-cxx-binding --enable-widec)
         if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
-            list(APPEND NCURSES_CONF_ARGS "--host=${CROSS_HOST_TRIPLE}")
+            list(APPEND NCURSES_CONF_ARGS "--host=${CROSS_HOST_TRIPLE}" "--build=${AUTOTOOLS_BUILD_TRIPLE}")
         endif()
 
         ExternalProject_Add(ncurses_ep
@@ -182,7 +182,7 @@ if(WITH_STATIC)
     else()
         set(IMD_AUTOTOOLS_ARGS --enable-static --disable-shared)
         if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
-            list(APPEND IMD_AUTOTOOLS_ARGS "--host=${CROSS_HOST_TRIPLE}")
+            list(APPEND IMD_AUTOTOOLS_ARGS "--host=${CROSS_HOST_TRIPLE}" "--build=${AUTOTOOLS_BUILD_TRIPLE}")
         endif()
         set(MBEDUTILS_ARGS --with-mbedtls)
     endif()
