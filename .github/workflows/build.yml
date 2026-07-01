@@ -107,6 +107,7 @@ jobs:
       run: |
         curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/${{ matrix.triple }}-cross.tar.zst
         tar --zstd -xf ${{ matrix.triple }}-cross.tar.zst
+        find ./${{ matrix.triple }}-cross -name "*.la" -type f -delete
         echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
 
     - name: Install dependencies (apt)
@@ -117,7 +118,7 @@ jobs:
     - name: Build
       run: |
         SYSROOT_PATH="$("$PWD/${{ matrix.triple }}-cross/bin/${{ matrix.triple }}-gcc" -print-sysroot)"
-        
+
         CC="${{ matrix.triple }}-gcc" CXX="${{ matrix.triple }}-g++" \
         make palera1n \
           WITH_STATIC=1 \
