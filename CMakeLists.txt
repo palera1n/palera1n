@@ -21,7 +21,7 @@ if(MINGW)
 elseif(CMAKE_SYSROOT)
     set(DEPS_PREFIX "${CMAKE_SYSROOT}/usr")
 else()
-    set(DEPS_PREFIX "${CMAKE_BINARY_DIR}/deps")
+    set(DEPS_PREFIX "${CMAKE_BINARY_DIR}/sysroot/usr/local")
 endif()
 
 set(SYSROOT_FLAGS "")
@@ -29,10 +29,7 @@ if(CMAKE_SYSROOT)
     set(SYSROOT_FLAGS "--sysroot=${CMAKE_SYSROOT}")
 endif()
 
-set(AUTOTOOLS_BUILD_TRIPLE "")
-if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
-    set(AUTOTOOLS_BUILD_TRIPLE "x86_64-cross-linux-gnu")
-endif()
+set(AUTOTOOLS_BUILD_TRIPLE "x86_64-linux-gnu")
 
 # wxWidgets
 if(WITH_GUI)
@@ -143,6 +140,7 @@ if(WITH_TUI)
                 env
                 "CC=${CMAKE_C_COMPILER} ${SYSROOT_FLAGS}"
                 "CXX=${CMAKE_CXX_COMPILER} ${SYSROOT_FLAGS}"
+                cross_compiling=yes
                 sh -c "<SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${NCURSES_CONF_ARGS}"
             BUILD_COMMAND make -j
             INSTALL_COMMAND make install
@@ -157,7 +155,7 @@ if(WITH_TUI)
 endif()
 
 # =========================
-# libimobiledevice stack
+# libimobiledevice
 # =========================
 if(WITH_STATIC)
     find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
@@ -169,10 +167,10 @@ if(WITH_STATIC)
         PKG_CONFIG=${PKG_CONFIG_EXECUTABLE}
         PKG_CONFIG_PATH=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
         PKG_CONFIG_LIBDIR=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
-        PKG_CONFIG_PATH_CUSTOM=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
 
+        CFLAGS=-g\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib\ -D_FILE_OFFSET_BITS=64\ -D_TIME_BITS=64
         CPPFLAGS=-I${DEPS_PREFIX}/include
-        LDFLAGS=-L${DEPS_PREFIX}/lib
+        LDFLAGS=-g\ -Wl,--gc-sections\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib
 
         C_INCLUDE_PATH=${DEPS_PREFIX}/include
         CPLUS_INCLUDE_PATH=${DEPS_PREFIX}/include
@@ -180,6 +178,8 @@ if(WITH_STATIC)
         mbedtls_INCLUDES=${DEPS_PREFIX}/include
         mbedtls_LIBDIR=${DEPS_PREFIX}/lib
         mbedtls_LIBS=-lmbedtls\ -lmbedx509\ -lmbedcrypto
+
+        cross_compiling=yes
     )
 
     if(MINGW)
@@ -207,12 +207,16 @@ if(WITH_STATIC)
     endif()
 
     if(NOT MINGW)
+        set(MBEDTLS_PATCH_STEPS PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch)
+        if(CROSS_HOST_TRIPLE MATCHES "i486-linux-musl")
+            list(APPEND MBEDTLS_PATCH_STEPS COMMAND sed -i "/define MBEDTLS_AESNI_C/d" include/mbedtls/mbedtls_config.h)
+        endif()
+
         ExternalProject_Add(mbedtls_ep
             GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
             GIT_TAG mbedtls-3.5.2
             UPDATE_COMMAND ""
-            PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch
-            COMMAND sed -i "/define MBEDTLS_AESNI_C/d" include/mbedtls/mbedtls_config.h
+            ${MBEDTLS_PATCH_STEPS}
             CMAKE_ARGS
                 -DCMAKE_INSTALL_PREFIX=${DEPS_PREFIX}
                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
