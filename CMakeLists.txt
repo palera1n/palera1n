@@ -29,6 +29,11 @@ if(CMAKE_SYSROOT)
     set(SYSROOT_FLAGS "--sysroot=${CMAKE_SYSROOT}")
 endif()
 
+set(AUTOTOOLS_BUILD_TRIPLE "")
+if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
+    set(AUTOTOOLS_BUILD_TRIPLE "x86_64-cross-linux-gnu")
+endif()
+
 # wxWidgets
 if(WITH_GUI)
     if(WITH_STATIC)
