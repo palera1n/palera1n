@@ -16,11 +16,23 @@ option(WITH_TUI "Build with TUI" OFF)
 option(WITH_RAMDISK "Build with ramdisk" ON)
 option(WITH_BINPACK "Build with binpack" ON)
 
+# =========================
+# BUILD REQUIREMENTS
+# =========================
+
 if(LINUX AND WITH_STATIC)
     if(NOT CROSS_HOST_TRIPLE MATCHES "musl" AND NOT CMAKE_C_COMPILER_TARGET MATCHES "musl" AND NOT CMAKE_C_COMPILER MATCHES "musl")
         message(FATAL_ERROR "Static builds on Linux require a musl toolchain. Please specify a musl cross-compiler or set -DCROSS_HOST_TRIPLE=...-linux-musl")
     endif()
 endif()
+
+if(MINGW AND NOT WITH_STATIC)
+    message(FATAL_ERROR "MinGW builds must be static. Please configure with -DWITH_STATIC=ON")
+endif()
+
+# =========================
+# SETUP
+# =========================
 
 if(MINGW)
     set(DEPS_PREFIX /mingw64)
@@ -36,6 +48,10 @@ if(CMAKE_SYSROOT)
 endif()
 
 set(AUTOTOOLS_BUILD_TRIPLE "x86_64-linux-gnu")
+
+# =========================
+# CMAKE DEPENDENCIES
+# =========================
 
 # wxWidgets
 if(WITH_GUI)
@@ -74,8 +90,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(lz4)
 
 # =========================
-# TARGET DEFINITION
+# TARGET
 # =========================
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "src/*.cpp"
     "src/*.c"
@@ -109,20 +126,6 @@ endif()
 if(WITH_BINPACK)
     target_compile_definitions(palera1n PRIVATE WITH_BINPACK)
 endif()
-
-# =========================
-# APPLE FRAMEWORKS
-# =========================
-if(APPLE)
-    find_library(IOKIT IOKit)
-    find_library(COREFOUNDATION CoreFoundation)
-    find_library(SECURITY Security)
-    target_link_libraries(palera1n PRIVATE ${IOKIT} ${COREFOUNDATION} ${SECURITY})
-endif()
-
-# =========================
-# GUI
-# =========================
 if(WITH_GUI)
     target_link_libraries(palera1n PRIVATE ${WX_LIBRARIES})
     target_compile_definitions(palera1n PRIVATE WITH_GUI)
@@ -132,8 +135,20 @@ if(WITH_TUI)
 endif()
 
 # =========================
-# libimobiledevice
+# APPLE FRAMEWORKS
 # =========================
+
+if(APPLE)
+    find_library(IOKIT IOKit)
+    find_library(COREFOUNDATION CoreFoundation)
+    find_library(SECURITY Security)
+    target_link_libraries(palera1n PRIVATE ${IOKIT} ${COREFOUNDATION} ${SECURITY})
+endif()
+
+# =========================
+# NON-CMAKE DEPENDENCIES
+# =========================
+
 if(WITH_STATIC)
     find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
 
@@ -205,6 +220,7 @@ if(WITH_STATIC)
     endif()
 
     if(NOT MINGW)
+        # theres an issue with we cant build with amd or something
         set(MBEDTLS_PATCH_STEPS PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch)
         if(CROSS_HOST_TRIPLE MATCHES "i486-linux-musl")
             list(APPEND MBEDTLS_PATCH_STEPS COMMAND sed -i "/define MBEDTLS_AESNI_C/d" include/mbedtls/mbedtls_config.h)
@@ -329,6 +345,8 @@ if(WITH_STATIC)
         DEPENDS ${LIBIMOBILEDEVICE_DEPS}
     )
 
+    # to compile libimobiledevice appropriately we patch out the automake generated makefile
+    # so tools just dont build at all... theres some issue there thats not worth fixing here
     file(WRITE "${CMAKE_BINARY_DIR}/fix_tools_makefile.cmake"
         "file(WRITE \"${CMAKE_BINARY_DIR}/libimobiledevice_ep-prefix/src/libimobiledevice_ep/tools/Makefile\" \"all:\\ninstall:\\n\")\n"
     )
@@ -406,6 +424,7 @@ if(WITH_STATIC)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
+        # all dlls must be in the same directory as the executable
         foreach(DLL ${DLLS})
             add_custom_command(TARGET palera1n POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
