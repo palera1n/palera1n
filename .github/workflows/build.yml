@@ -125,6 +125,7 @@ jobs:
           BUILD_TYPE=Release \
           CMAKE_SYSROOT="$SYSROOT_PATH" \
           CROSS_HOST_TRIPLE="${{ matrix.triple }}"
+        strip -s build/palera1n
 
     - name: Upload
       uses: actions/upload-artifact@v4
@@ -168,6 +169,7 @@ jobs:
     - name: Build
       run: |
         make palera1n WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release
+        strip -s build/palera1n.app/Contents/MacOS/palera1n
         cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
 
     - name: Upload
@@ -234,6 +236,7 @@ jobs:
       shell: msys2 {0}
       run: |
         make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release
+        strip -s build/palera1n.exe
 
     - name: Upload
       uses: actions/upload-artifact@v4
