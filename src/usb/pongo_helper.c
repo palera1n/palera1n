@@ -44,15 +44,9 @@ static bool compress_pongo(uint8_t **out, size_t *out_len)
 }
 
 #define SHELLCODE_SZ (512)
-#define PONGO_MAX_SZ (0x7fe00)
 
 bool prepare_pongo(uint8_t **out, size_t *out_len)
 {
-    if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
-        LOG_ERROR("Pongo payload too large: %zu bytes (max 511 KB)", g_payload_pongo.data_len);
-        return false;
-    }
-    
     size_t pongoSize;
     uint8_t *pongo;
 
