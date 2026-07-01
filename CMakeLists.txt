@@ -121,37 +121,8 @@ if(WITH_GUI)
     target_link_libraries(palera1n PRIVATE ${WX_LIBRARIES})
     target_compile_definitions(palera1n PRIVATE WITH_GUI)
 endif()
-
-# =========================
-# ncurses
-# =========================
 if(WITH_TUI)
     target_compile_definitions(palera1n PRIVATE WITH_TUI)
-
-    if(WITH_STATIC AND NOT APPLE)
-        set(NCURSES_CONF_ARGS --with-shared=no --without-debug --without-cxx-binding --enable-widec)
-        if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
-            list(APPEND NCURSES_CONF_ARGS "--host=${CROSS_HOST_TRIPLE}" "--build=${AUTOTOOLS_BUILD_TRIPLE}")
-        endif()
-
-        ExternalProject_Add(ncurses_ep
-            URL https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz
-            CONFIGURE_COMMAND
-                env
-                "CC=${CMAKE_C_COMPILER} ${SYSROOT_FLAGS}"
-                "CXX=${CMAKE_CXX_COMPILER} ${SYSROOT_FLAGS}"
-                cross_compiling=yes
-                sh -c "<SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${NCURSES_CONF_ARGS}"
-            BUILD_COMMAND make -j
-            INSTALL_COMMAND make install
-        )
-        add_dependencies(palera1n ncurses_ep)
-        target_link_libraries(palera1n PRIVATE "${DEPS_PREFIX}/lib/libncursesw.a")
-    else()
-        find_package(Curses REQUIRED)
-        target_include_directories(palera1n PRIVATE ${CURSES_INCLUDE_DIRS})
-        target_link_libraries(palera1n PRIVATE ${CURSES_LIBRARIES})
-    endif()
 endif()
 
 # =========================
@@ -162,15 +133,15 @@ if(WITH_STATIC)
 
     set(PKG_ENV
         env
-        "CC=${CMAKE_C_COMPILER} ${SYSROOT_FLAGS}"
-        "CXX=${CMAKE_CXX_COMPILER} ${SYSROOT_FLAGS}"
+        "CC=${CMAKE_C_COMPILER}"
+        "CXX=${CMAKE_CXX_COMPILER}"
         PKG_CONFIG=${PKG_CONFIG_EXECUTABLE}
         PKG_CONFIG_PATH=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
         PKG_CONFIG_LIBDIR=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
 
-        CFLAGS=-g\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib\ -D_FILE_OFFSET_BITS=64\ -D_TIME_BITS=64
+        CFLAGS=-g\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib\ -D_FILE_OFFSET_BITS=64\ -D_TIME_BITS=64\ --sysroot=${CMAKE_SYSROOT}
         CPPFLAGS=-I${DEPS_PREFIX}/include
-        LDFLAGS=-g\ -Wl,--gc-sections\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib
+        LDFLAGS=-g\ -Wl,--gc-sections\ -fdata-sections\ -ffunction-sections\ -I${DEPS_PREFIX}/include\ -L${DEPS_PREFIX}/lib --sysroot=${CMAKE_SYSROOT}
 
         C_INCLUDE_PATH=${DEPS_PREFIX}/include
         CPLUS_INCLUDE_PATH=${DEPS_PREFIX}/include
@@ -179,6 +150,8 @@ if(WITH_STATIC)
         mbedtls_LIBDIR=${DEPS_PREFIX}/lib
         mbedtls_LIBS=-lmbedtls\ -lmbedx509\ -lmbedcrypto
 
+        lt_cv_deplibs_check_method=pass_all
+        lt_cv_file_magic_cmd=/usr/bin/file
         cross_compiling=yes
     )
 
@@ -186,7 +159,7 @@ if(WITH_STATIC)
         set(IMD_AUTOTOOLS_ARGS --disable-static --enable-shared)
     else()
         set(IMD_AUTOTOOLS_ARGS --enable-static --disable-shared)
-        if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
+        if(CROSS_HOST_TRIPLE)
             list(APPEND IMD_AUTOTOOLS_ARGS "--host=${CROSS_HOST_TRIPLE}" "--build=${AUTOTOOLS_BUILD_TRIPLE}")
         endif()
         set(MBEDUTILS_ARGS --with-mbedtls)
@@ -244,6 +217,18 @@ if(WITH_STATIC)
     endif()
 
     if(LINUX)
+        ExternalProject_Add(ncurses_ep
+            URL https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz
+            CONFIGURE_COMMAND
+                ${PKG_ENV}
+                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
+            BUILD_COMMAND make -j
+            BUILD_IN_SOURCE 1
+            INSTALL_COMMAND make install
+        )
+    endif()
+
+    if(LINUX)
         ExternalProject_Add(readline_ep
             URL https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz
             CONFIGURE_COMMAND
@@ -251,6 +236,8 @@ if(WITH_STATIC)
                 sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
             BUILD_COMMAND make -j
             INSTALL_COMMAND make install
+            BUILD_IN_SOURCE 1
+            DEPENDS ncurses_ep
         )
     endif()
 
@@ -328,7 +315,7 @@ if(WITH_STATIC)
     )
 
     if(LINUX)
-        set(LIBIRECOVERY_LIBS LIBS="-lncurses")
+        set(LIBIRECOVERY_LIBS LIBS=-lncurses)
     endif()
 
     ExternalProject_Add(libirecovery_ep
@@ -337,8 +324,8 @@ if(WITH_STATIC)
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND
             ${PKG_ENV}
-            sh -l ./autogen.sh --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
-        BUILD_COMMAND make -j ${LIBIRECOVERY_LIBS}
+            sh -l ./autogen.sh --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} ${LIBIRECOVERY_LIBS}
+        BUILD_COMMAND make -j
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
         DEPENDS libplist_ep libusbmuxd_ep limd_glue_ep ${READLINE_DEPS}
@@ -414,9 +401,13 @@ if(WITH_STATIC)
         )
 
         if(LINUX)
+            target_compile_options(palera1n PRIVATE "-static")
+            target_link_options(palera1n PRIVATE "-static")
+
             target_link_libraries(palera1n PRIVATE
                 "${DEPS_PREFIX}/lib/libusb-1.0.a"
                 "${DEPS_PREFIX}/lib/libreadline.a"
+                "${DEPS_PREFIX}/lib/libncurses.a"
             )
         endif()
     endif()
@@ -448,6 +439,10 @@ else()
         ${PLIST_CFLAGS_OTHER}
         ${USBMUXD_CFLAGS_OTHER}
     )
+
+    find_package(Curses REQUIRED)
+    target_include_directories(palera1n PRIVATE ${CURSES_INCLUDE_DIRS})
+    target_link_libraries(palera1n PRIVATE ${CURSES_LIBRARIES})
 
     if(NOT APPLE)
         pkg_check_modules(LIBUSB REQUIRED libusb-1.0)

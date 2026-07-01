@@ -10,3 +10,6 @@ payloads/binpack.dmg
 libusbK/
 libusbK-tmp/
 *.7z
+*.tgz
+*.tar.gz
+*-cross
