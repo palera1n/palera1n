@@ -220,7 +220,8 @@ void parse_arguments(int argc, char* argv[]) {
                     exit(1);
                 }
                 if (g_payload_kpf.data_len < 4
-                    || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0 && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
+                    || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0
+                    && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
                 {
                     LOG_ERROR("Invalid kpf payload, is it macho?");
                     exit(1);
