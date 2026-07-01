@@ -37,7 +37,10 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
     Bind(wxEVT_SHOW, &DfuPanel::OnShow, this);
     auto* root = new wxBoxSizer(wxVERTICAL);
 
-    m_headerText = new wxStaticText(this, wxID_ANY, "Time to put the device into DFU mode. Locate the buttons as marked below\non your device and check the instructions on the right.");
+    m_headerText = new wxStaticText(this, wxID_ANY,
+        "Time to put the device into DFU mode. Locate the buttons as marked below\n"
+        "on your device and check the instructions on the right."
+    );
     root->Add(m_headerText, 0, wxALL, 10);
 
     auto* contentRow = new wxBoxSizer(wxHORIZONTAL);
@@ -82,7 +85,10 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
 
     m_stagnentTimer.Bind(wxEVT_TIMER, [this](wxTimerEvent&)
     {
-        m_headerText->SetLabel("Time to put the device into DFU mode. Locate the buttons as marked below\non your device and check the instructions on the right.");
+        m_headerText->SetLabel(
+            "Time to put the device into DFU mode. Locate the buttons as marked below\n"
+            "on your device and check the instructions on the right."
+        );
         m_backButton->Enable();
         m_startButton->Enable();
         GetMainFrame()->ShowExploit();
@@ -452,14 +458,10 @@ void DfuPanel::Reboot()
             std::this_thread::sleep_for(std::chrono::milliseconds(250));
         }
 
-        if (!client)
-        {
-            return;
-        }
+        if (!client) return;
         irecv_setenv(client, "auto-boot", "true");
         irecv_saveenv(client);
         irecv_reboot(client);
-
         irecv_close(client);
     }).detach();
 }

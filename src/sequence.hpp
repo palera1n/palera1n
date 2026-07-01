@@ -4,6 +4,7 @@
 #define SEQUENCE_H
 
 #include <string>
+#include <vector>
 
 struct DfuButton
 {

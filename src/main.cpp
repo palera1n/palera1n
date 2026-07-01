@@ -12,7 +12,7 @@
 
 #include "m8/run.h"
 #ifdef WITH_TUI
-# include "tui/ui.h"
+# include "tui/Tui.hpp"
 #endif
 #include "utils.h"
 #include "globals.h"

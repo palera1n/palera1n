@@ -85,7 +85,7 @@ void RecoveryPanel::SetDeviceState(const DeviceState& state)
     if (m_isEnteringRecovery && state.mode == DeviceMode::Normal)
     {
         m_isEnteringRecovery = false;
-        m_statusText->SetLabel("Hmm... It seems like the device didn't enter recovery mode. Please try again.");
+        m_statusText->SetLabel("Hmm... It seems like the device didn't enter recovery mode.");
         m_backButton->Enable();
         m_nextButton->Enable();
     }
