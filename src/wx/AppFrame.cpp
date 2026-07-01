@@ -12,11 +12,6 @@
 #include <libimobiledevice/lockdown.h>
 #include <libirecovery.h>
 
-#ifdef _WIN32
-# include <windows.h>
-# define sleep(x) Sleep(x*1000)
-#endif
-
 wxDEFINE_EVENT(EVT_DEVICE_STATE_UPDATE, wxCommandEvent);
 
 void send_device_state(MainFrame* frame, const DeviceState& state)
@@ -71,7 +66,7 @@ MainFrame::MainFrame()
         idevice_event_subscribe(normal_device_event_cb, this);
 
         while (true)
-            sleep(1);
+            sleep_ms(1000);
     }).detach();
 
     std::thread([this]()
@@ -85,7 +80,7 @@ MainFrame::MainFrame()
         );
 
         while (true)
-            sleep(1);
+            sleep_ms(1000);
     }).detach();
 }
 

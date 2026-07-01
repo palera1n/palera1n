@@ -37,7 +37,6 @@ jobs:
         gmake -j1 tools
         gmake -j$(sysctl -n hw.ncpu)
 
-
     - name: Prepare upload directory
       run: |
         mkdir upload
@@ -97,20 +96,36 @@ jobs:
         name: pongo
         path: payloads/
 
-    - name : Download embedded artifacts
+    - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
         name: embedded
         path: payloads/
 
+    - name: Download musl toolchain
+      run: |
+        curl -u ${{ secrets.ACTIONS_RESOURCES_LOGIN }} -LO https://static.palera.in/action-resources/musl-cross/${{ matrix.triple }}-cross.tar.zst
+        tar --zstd -xf ${{ matrix.triple }}-cross.tar.zst
+        find ./${{ matrix.triple }}-cross -name "*.la" -type f -delete
+        echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
+
     - name: Install dependencies (apt)
       run: |
         sudo apt update
-        sudo apt install -y build-essential cmake autoconf automake libtool pkg-config
+        sudo apt install -y build-essential cmake autoconf automake libtool pkg-config zstd
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 BUILD_TYPE=Release
+        SYSROOT_PATH="$("$PWD/${{ matrix.triple }}-cross/bin/${{ matrix.triple }}-gcc" -print-sysroot)"
+
+        CC="${{ matrix.triple }}-gcc" CXX="${{ matrix.triple }}-g++" \
+        make palera1n \
+          WITH_STATIC=1 \
+          BUILD_TYPE=Release \
+          CMAKE_SYSROOT="$SYSROOT_PATH" \
+          CROSS_HOST_TRIPLE="${{ matrix.triple }}" \
+          JOBS=$(nproc)
+        ${{ matrix.triple }}-strip -s build/palera1n
 
     - name: Upload
       uses: actions/upload-artifact@v4
@@ -153,7 +168,8 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release
+        make palera1n WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        strip -s build/palera1n.app/Contents/MacOS/palera1n
         cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
 
     - name: Upload
@@ -219,7 +235,8 @@ jobs:
     - name: Build
       shell: msys2 {0}
       run: |
-        make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release
+        make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(nproc)
+        strip -s build/palera1n.exe
 
     - name: Upload
       uses: actions/upload-artifact@v4
