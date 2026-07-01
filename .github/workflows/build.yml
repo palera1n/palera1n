@@ -112,11 +112,18 @@ jobs:
     - name: Install dependencies (apt)
       run: |
         sudo apt update
-        sudo apt install -y build-essential cmake autoconf automake libtool pkg-config
+        sudo apt install -y build-essential cmake autoconf automake libtool pkg-config zstd
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 BUILD_TYPE=Release CMAKE_SYSROOT="$("$PWD/${{ matrix.triple }}-cross/bin/${{ matrix.triple }}-gcc" -print-sysroot)"
+        SYSROOT_PATH="$("$PWD/${{ matrix.triple }}-cross/bin/${{ matrix.triple }}-gcc" -print-sysroot)"
+        
+        CC="${{ matrix.triple }}-gcc" CXX="${{ matrix.triple }}-g++" \
+        make palera1n \
+          WITH_STATIC=1 \
+          BUILD_TYPE=Release \
+          CMAKE_SYSROOT="$SYSROOT_PATH" \
+          CROSS_HOST_TRIPLE="${{ matrix.triple }}"
 
     - name: Upload
       uses: actions/upload-artifact@v4

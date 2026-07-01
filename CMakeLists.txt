@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(palera1n VERSION 3.0)
 
 include(FetchContent)
@@ -6,40 +6,40 @@ include(ExternalProject)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CROSS_HOST_TRIPLE "" CACHE STRING "Cross-compile target triple for Autotools (e.g., x86_64-linux-musl)")
 
 option(WITH_GUI "Build with wxWidgets GUI" OFF)
 option(WITH_STATIC "Build with static wxWidgets / deps" OFF)
 option(WITH_TUI "Build with TUI" OFF)
-option(WITH_ARTIFACTS "Build with embedded artifacts" OFF)
-
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13")
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+option(WITH_RAMDISK "Build with ramdisk" ON)
+option(WITH_BINPACK "Build with binpack" ON)
 
 if(MINGW)
     set(DEPS_PREFIX /mingw64)
 elseif(CMAKE_SYSROOT)
-    set(DEPS_PREFIX "${CMAKE_SYSROOT}")
+    set(DEPS_PREFIX "${CMAKE_SYSROOT}/usr")
 else()
     set(DEPS_PREFIX "${CMAKE_BINARY_DIR}/deps")
 endif()
 
-# =========================
+set(SYSROOT_FLAGS "")
+if(CMAKE_SYSROOT)
+    set(SYSROOT_FLAGS "--sysroot=${CMAKE_SYSROOT}")
+endif()
+
 # wxWidgets
-# =========================
 if(WITH_GUI)
     if(WITH_STATIC)
         set(wxBUILD_SHARED OFF CACHE BOOL "" FORCE)
-
         FetchContent_Declare(
             wxWidgets
             GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
             GIT_SHALLOW ON
         )
-
         FetchContent_MakeAvailable(wxWidgets)
-
         set(WX_LIBRARIES wxcore wxbase wxnet)
-
     else()
         find_package(wxWidgets REQUIRED COMPONENTS core base net)
         include(${wxWidgets_USE_FILE})
@@ -47,39 +47,26 @@ if(WITH_GUI)
     endif()
 endif()
 
-# =========================
-# JSON
-# =========================
-
-include(FetchContent)
-
+# nlohmann_json
 FetchContent_Declare(
     nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG v3.11.3
 )
-
 FetchContent_MakeAvailable(nlohmann_json)
 
-# =========================
 # LZ4
-# =========================
-
-include(FetchContent)
-
 set(LZ4_BUILD_CLI OFF CACHE BOOL "" FORCE)
-
 FetchContent_Declare(
     lz4
     GIT_REPOSITORY https://github.com/lz4/lz4.git
     GIT_TAG v1.10.0
-    SOURCE_SUBDIR  build/cmake
+    SOURCE_SUBDIR build/cmake
 )
-
 FetchContent_MakeAvailable(lz4)
 
 # =========================
-# SOURCES
+# TARGET DEFINITION
 # =========================
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "src/*.cpp"
@@ -88,33 +75,32 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "src/*.hpp"
 )
 
-# =========================
-# TARGET
-# =========================
 if(APPLE AND WITH_GUI)
-    set(APP_ICON ${CMAKE_CURRENT_SOURCE_DIR}/resources/palera1n.icns)
-
+    set(APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/palera1n.icns")
     add_executable(palera1n MACOSX_BUNDLE ${SOURCES})
-
     target_sources(palera1n PRIVATE ${APP_ICON})
-
-    set_source_files_properties(${APP_ICON} PROPERTIES
-        MACOSX_PACKAGE_LOCATION "Resources"
-    )
-
+    set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     set_target_properties(palera1n PROPERTIES
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist"
         MACOSX_BUNDLE_ICON_FILE palera1n.icns
     )
 elseif(MINGW AND WITH_GUI)
-    set(APP_MANIFEST_RC ${CMAKE_SOURCE_DIR}/resources/app.rc)
+    set(APP_MANIFEST_RC "${CMAKE_SOURCE_DIR}/resources/app.rc")
     add_executable(palera1n WIN32 ${SOURCES} ${APP_MANIFEST_RC})
 else()
     add_executable(palera1n ${SOURCES})
 endif()
 
-include_directories(${DEPS_PREFIX}/include)
-link_directories(${DEPS_PREFIX}/lib)
+target_include_directories(palera1n PRIVATE "${DEPS_PREFIX}/include")
+target_link_directories(palera1n PRIVATE "${DEPS_PREFIX}/lib")
+target_link_libraries(palera1n PRIVATE nlohmann_json::nlohmann_json lz4_static)
+
+if(WITH_RAMDISK)
+    target_compile_definitions(palera1n PRIVATE WITH_RAMDISK)
+endif()
+if(WITH_BINPACK)
+    target_compile_definitions(palera1n PRIVATE WITH_BINPACK)
+endif()
 
 # =========================
 # APPLE FRAMEWORKS
@@ -122,44 +108,59 @@ link_directories(${DEPS_PREFIX}/lib)
 if(APPLE)
     find_library(IOKIT IOKit)
     find_library(COREFOUNDATION CoreFoundation)
-
-    target_link_libraries(palera1n PRIVATE
-        ${IOKIT}
-        ${COREFOUNDATION}
-    )
+    find_library(SECURITY Security)
+    target_link_libraries(palera1n PRIVATE ${IOKIT} ${COREFOUNDATION} ${SECURITY})
 endif()
 
 # =========================
-# wxWidgets
+# GUI
 # =========================
 if(WITH_GUI)
     target_link_libraries(palera1n PRIVATE ${WX_LIBRARIES})
     target_compile_definitions(palera1n PRIVATE WITH_GUI)
 endif()
 
+# =========================
+# TUI
+# =========================
 if(WITH_TUI)
     target_compile_definitions(palera1n PRIVATE WITH_TUI)
+
+    if(WITH_STATIC AND NOT APPLE)
+        set(NCURSES_CONF_ARGS --with-shared=no --without-debug --without-cxx-binding --enable-widec)
+        if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
+            list(APPEND NCURSES_CONF_ARGS "--host=${CROSS_HOST_TRIPLE}")
+        endif()
+
+        ExternalProject_Add(ncurses_ep
+            URL https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz
+            CONFIGURE_COMMAND
+                env
+                "CC=${CMAKE_C_COMPILER} ${SYSROOT_FLAGS}"
+                "CXX=${CMAKE_CXX_COMPILER} ${SYSROOT_FLAGS}"
+                sh -c "<SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${NCURSES_CONF_ARGS}"
+            BUILD_COMMAND make -j
+            INSTALL_COMMAND make install
+        )
+        add_dependencies(palera1n ncurses_ep)
+        target_link_libraries(palera1n PRIVATE "${DEPS_PREFIX}/lib/libncursesw.a")
+    else()
+        find_package(Curses REQUIRED)
+        target_include_directories(palera1n PRIVATE ${CURSES_INCLUDE_DIRS})
+        target_link_libraries(palera1n PRIVATE ${CURSES_LIBRARIES})
+    endif()
 endif()
 
-if(WITH_ARTIFACTS)
-    target_compile_definitions(palera1n PRIVATE WITH_ARTIFACTS)
-endif()
-
-target_link_libraries(palera1n PRIVATE nlohmann_json::nlohmann_json)
-target_link_libraries(palera1n PRIVATE lz4_static)
-
-
 # =========================
-# libimobiledevice
+# libimobiledevice stack
 # =========================
-
 if(WITH_STATIC)
-    include(ExternalProject)
-
     find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
 
     set(PKG_ENV
         env
+        "CC=${CMAKE_C_COMPILER} ${SYSROOT_FLAGS}"
+        "CXX=${CMAKE_CXX_COMPILER} ${SYSROOT_FLAGS}"
         PKG_CONFIG=${PKG_CONFIG_EXECUTABLE}
         PKG_CONFIG_PATH=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
         PKG_CONFIG_LIBDIR=${DEPS_PREFIX}/lib/pkgconfig:${DEPS_PREFIX}/share/pkgconfig
@@ -177,33 +178,23 @@ if(WITH_STATIC)
     )
 
     if(MINGW)
-        set(IMD_AUTOTOOLS_ARGS
-            --disable-static
-            --enable-shared
-        )
+        set(IMD_AUTOTOOLS_ARGS --disable-static --enable-shared)
     else()
-        set(IMD_AUTOTOOLS_ARGS
-            --enable-static
-            --disable-shared
-        )
-        set(MBEDUTILS_ARGS
-            --with-mbedtls
-        )
+        set(IMD_AUTOTOOLS_ARGS --enable-static --disable-shared)
+        if(CMAKE_CROSSCOMPILING AND CROSS_HOST_TRIPLE)
+            list(APPEND IMD_AUTOTOOLS_ARGS "--host=${CROSS_HOST_TRIPLE}")
+        endif()
+        set(MBEDUTILS_ARGS --with-mbedtls)
     endif()
 
     if(MINGW)
-        #=========================
-        # libwdi
-        #=========================
         ExternalProject_Add(libwdi_ep
             GIT_REPOSITORY https://github.com/pbatard/libwdi.git
             GIT_TAG v1.5.1
             UPDATE_COMMAND ""
-
             CONFIGURE_COMMAND
                 ${PKG_ENV}
                 sh -lc "./bootstrap.sh && ./configure --prefix=${DEPS_PREFIX} --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --disable-32bit --with-wdfver=1011 --with-libusbk=${CMAKE_SOURCE_DIR}/libusbK/bin"
-
             BUILD_COMMAND make -j
             INSTALL_COMMAND make install
             BUILD_IN_SOURCE 1
@@ -211,43 +202,30 @@ if(WITH_STATIC)
     endif()
 
     if(NOT MINGW)
-        # =========================
-        # mbedTLS
-        # =========================
         ExternalProject_Add(mbedtls_ep
             GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
             GIT_TAG mbedtls-3.5.2
             UPDATE_COMMAND ""
-
             PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/mbedtls/0001-Allow-empty-x509-cert-issuer.patch
-
             CMAKE_ARGS
                 -DCMAKE_INSTALL_PREFIX=${DEPS_PREFIX}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DCMAKE_SYSROOT=${CMAKE_SYSROOT}
                 -DENABLE_TESTING=OFF
                 -DENABLE_PROGRAMS=OFF
                 -DBUILD_SHARED_LIBS=OFF
-
             INSTALL_DIR ${DEPS_PREFIX}
         )
     endif()
 
     if(LINUX OR MINGW)
-        # =========================
-        # libusb
-        # =========================
         ExternalProject_Add(libusb_ep
             GIT_REPOSITORY https://github.com/libusb/libusb.git
             GIT_TAG v1.0.27
             UPDATE_COMMAND ""
-
             CONFIGURE_COMMAND
                 ${PKG_ENV}
-                sh
-                -l
-                ./autogen.sh
-                --prefix=${DEPS_PREFIX}
-                --disable-udev
-
+                sh -l ./autogen.sh --prefix=${DEPS_PREFIX} --disable-udev ${IMD_AUTOTOOLS_ARGS}
             BUILD_COMMAND make -j
             INSTALL_COMMAND make install
             BUILD_IN_SOURCE 1
@@ -257,106 +235,59 @@ if(WITH_STATIC)
     if(LINUX)
         ExternalProject_Add(readline_ep
             URL https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz
-
             CONFIGURE_COMMAND
                 ${PKG_ENV}
-                sh
-                -l
-                <SOURCE_DIR>/configure
-                --prefix=${DEPS_PREFIX}
-                ${IMD_AUTOTOOLS_ARGS}
-
+                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
             BUILD_COMMAND make -j
             INSTALL_COMMAND make install
         )
     endif()
 
-    # =========================
-    # libplist
-    # =========================
     ExternalProject_Add(libplist_ep
         GIT_REPOSITORY https://github.com/libimobiledevice/libplist.git
         GIT_TAG 2117b8fdb6b4096455bd2041a63e59a028120136
         UPDATE_COMMAND ""
-
         CONFIGURE_COMMAND
             ${PKG_ENV}
-            sh
-            -l
-            ./autogen.sh
-            --prefix=${DEPS_PREFIX}
-            ${IMD_AUTOTOOLS_ARGS}
-
+            sh -l ./autogen.sh --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
         BUILD_COMMAND make -j
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
     )
 
-    # =========================
-    # libimobiledevice-glue
-    # =========================
     ExternalProject_Add(limd_glue_ep
         GIT_REPOSITORY https://github.com/libimobiledevice/libimobiledevice-glue.git
         GIT_TAG 362f7848ac89b74d9dd113b38b51ecb601f76094
         UPDATE_COMMAND ""
-
         CONFIGURE_COMMAND
             ${PKG_ENV}
-            sh
-            -l
-            ./autogen.sh
-            --prefix=${DEPS_PREFIX}
-            ${IMD_AUTOTOOLS_ARGS}
-
+            sh -l ./autogen.sh --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
         BUILD_COMMAND make -j
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
-
         DEPENDS libplist_ep
     )
 
-    # =========================
-    # libusbmuxd
-    # =========================
     ExternalProject_Add(libusbmuxd_ep
         GIT_REPOSITORY https://github.com/libimobiledevice/libusbmuxd.git
         GIT_TAG a7f0543fb1ecb20ac7121c0fd77297200e0e43fc
         UPDATE_COMMAND ""
-
         CONFIGURE_COMMAND
             ${PKG_ENV}
-            sh
-            -l
-            ./autogen.sh
-            --prefix=${DEPS_PREFIX}
-            ${IMD_AUTOTOOLS_ARGS}
-            --without-systemd
-
+            sh -l ./autogen.sh --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} --without-systemd
         BUILD_COMMAND make -j
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
-
         DEPENDS libplist_ep limd_glue_ep
     )
 
-    # =========================
-    # libimobiledevice
-    # =========================
-
-    set(LIBIMOBILEDEVICE_DEPS
-        libplist_ep
-        libusbmuxd_ep
-        limd_glue_ep
-    )
-
+    set(LIBIMOBILEDEVICE_DEPS libplist_ep libusbmuxd_ep limd_glue_ep)
     if(NOT MINGW)
         list(APPEND LIBIMOBILEDEVICE_DEPS mbedtls_ep)
     endif()
-
     if(LINUX OR MINGW)
         list(APPEND LIBIMOBILEDEVICE_DEPS libusb_ep)
     endif()
-
     if(LINUX)
         set(READLINE_DEPS readline_ep)
     endif()
@@ -365,65 +296,40 @@ if(WITH_STATIC)
         GIT_REPOSITORY https://github.com/libimobiledevice/libimobiledevice.git
         GIT_TAG ed0d66d0341562731bb19928dfe48155509fa7a7
         UPDATE_COMMAND ""
-
-        PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/patches/libimobiledevice/0001-include-windows-header.patch
-
+        PATCH_COMMAND patch -p1 < "${CMAKE_SOURCE_DIR}/patches/libimobiledevice/0001-include-windows-header.patch"
         CONFIGURE_COMMAND
             ${PKG_ENV}
-            sh
-            -l
-            ./autogen.sh
-            --prefix=${DEPS_PREFIX}
-            ${MBEDUTILS_ARGS}
-            ${IMD_AUTOTOOLS_ARGS}
-            --disable-wireless-pairing
-
+            sh -l ./autogen.sh --prefix=${DEPS_PREFIX} ${MBEDUTILS_ARGS} ${IMD_AUTOTOOLS_ARGS} --disable-wireless-pairing
         BUILD_COMMAND make -j
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
-
         DEPENDS ${LIBIMOBILEDEVICE_DEPS} ${READLINE_DEPS}
     )
 
-    file(WRITE
-        ${CMAKE_BINARY_DIR}/fix_tools_makefile.cmake
-    "
-    file(WRITE \"${CMAKE_BINARY_DIR}/libimobiledevice_ep-prefix/src/libimobiledevice_ep/tools/Makefile\" \"all:\\ninstall:\\n\")
-    ")
+    file(WRITE "${CMAKE_BINARY_DIR}/fix_tools_makefile.cmake"
+        "file(WRITE \"${CMAKE_BINARY_DIR}/libimobiledevice_ep-prefix/src/libimobiledevice_ep/tools/Makefile\" \"all:\\ninstall:\\n\")\n"
+    )
 
     ExternalProject_Add_Step(libimobiledevice_ep fix_tools_makefile
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/fix_tools_makefile.cmake
+        COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/fix_tools_makefile.cmake"
         DEPENDEES configure
         DEPENDERS build
     )
 
-    # =========================
-    # libirecovery
-    # =========================
-
     if(LINUX)
-    set(LIBIRECOVERY_LIBS
-        LIBS="-lncurses"
-    )
+        set(LIBIRECOVERY_LIBS LIBS="-lncurses")
     endif()
 
     ExternalProject_Add(libirecovery_ep
         GIT_REPOSITORY https://github.com/libimobiledevice/libirecovery.git
         GIT_TAG 7ce02c347b7c26e59498e6af31c9da51018d0fa1
         UPDATE_COMMAND ""
-
         CONFIGURE_COMMAND
             ${PKG_ENV}
-            sh
-            -l
-            ./autogen.sh
-            --prefix=${DEPS_PREFIX}
-            ${IMD_AUTOTOOLS_ARGS}
-
+            sh -l ./autogen.sh --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS}
         BUILD_COMMAND make -j ${LIBIRECOVERY_LIBS}
         INSTALL_COMMAND make install
         BUILD_IN_SOURCE 1
-
         DEPENDS libplist_ep libusbmuxd_ep limd_glue_ep ${READLINE_DEPS}
     )
 
@@ -443,22 +349,6 @@ if(WITH_STATIC)
 
     if(LINUX)
         add_dependencies(palera1n readline_ep)
-    endif()
-
-    target_include_directories(palera1n PRIVATE
-        ${DEPS_PREFIX}/include
-    )
-
-    if(APPLE)
-        find_library(IOKIT IOKit)
-        find_library(COREFOUNDATION CoreFoundation)
-        find_library(SECURITY Security)
-
-        target_link_libraries(palera1n PRIVATE
-            ${IOKIT}
-            ${COREFOUNDATION}
-            ${SECURITY}
-        )
     endif()
 
     if(MINGW)
@@ -502,20 +392,20 @@ if(WITH_STATIC)
         endforeach()
     else()
         target_link_libraries(palera1n PRIVATE
-            ${DEPS_PREFIX}/lib/libimobiledevice-1.0.a
-            ${DEPS_PREFIX}/lib/libirecovery-1.0.a
-            ${DEPS_PREFIX}/lib/libusbmuxd-2.0.a
-            ${DEPS_PREFIX}/lib/libplist-2.0.a
-            ${DEPS_PREFIX}/lib/libimobiledevice-glue-1.0.a
-            ${DEPS_PREFIX}/lib/libmbedtls.a
-            ${DEPS_PREFIX}/lib/libmbedx509.a
-            ${DEPS_PREFIX}/lib/libmbedcrypto.a
+            "${DEPS_PREFIX}/lib/libimobiledevice-1.0.a"
+            "${DEPS_PREFIX}/lib/libirecovery-1.0.a"
+            "${DEPS_PREFIX}/lib/libusbmuxd-2.0.a"
+            "${DEPS_PREFIX}/lib/libplist-2.0.a"
+            "${DEPS_PREFIX}/lib/libimobiledevice-glue-1.0.a"
+            "${DEPS_PREFIX}/lib/libmbedtls.a"
+            "${DEPS_PREFIX}/lib/libmbedx509.a"
+            "${DEPS_PREFIX}/lib/libmbedcrypto.a"
         )
 
         if(LINUX)
             target_link_libraries(palera1n PRIVATE
-                ${DEPS_PREFIX}/lib/libusb-1.0.a
-                ${DEPS_PREFIX}/lib/libreadline.a
+                "${DEPS_PREFIX}/lib/libusb-1.0.a"
+                "${DEPS_PREFIX}/lib/libreadline.a"
             )
         endif()
     endif()
@@ -526,14 +416,12 @@ else()
     pkg_check_modules(IRECOVERY REQUIRED libirecovery-1.0)
     pkg_check_modules(PLIST REQUIRED libplist-2.0)
     pkg_check_modules(USBMUXD REQUIRED libusbmuxd-2.0)
-    pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 
     target_include_directories(palera1n PRIVATE
         ${IMD_INCLUDE_DIRS}
         ${IRECOVERY_INCLUDE_DIRS}
         ${PLIST_INCLUDE_DIRS}
         ${USBMUXD_INCLUDE_DIRS}
-        ${LIBUSB_INCLUDE_DIRS}
     )
 
     target_link_libraries(palera1n PRIVATE
@@ -541,7 +429,6 @@ else()
         ${IRECOVERY_LIBRARIES}
         ${PLIST_LIBRARIES}
         ${USBMUXD_LIBRARIES}
-        ${LIBUSB_LIBRARIES}
     )
 
     target_compile_options(palera1n PRIVATE
@@ -549,7 +436,12 @@ else()
         ${IRECOVERY_CFLAGS_OTHER}
         ${PLIST_CFLAGS_OTHER}
         ${USBMUXD_CFLAGS_OTHER}
-        ${LIBUSB_CFLAGS_OTHER}
     )
-endif()
 
+    if(NOT APPLE)
+        pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
+        target_include_directories(palera1n PRIVATE ${LIBUSB_INCLUDE_DIRS})
+        target_link_libraries(palera1n PRIVATE ${LIBUSB_LIBRARIES})
+        target_compile_options(palera1n PRIVATE ${LIBUSB_CFLAGS_OTHER})
+    endif()
+endif()
