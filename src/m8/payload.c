@@ -20,30 +20,30 @@ bool checkm8_find_device_configuration_for_cpid(
 {
     bool foundMatchingConfiguration = true;
     switch (cpid) {
-        case 0x8015:
-        case 0x8012:
-        case 0x8011:
+        case A11:
+        case T2:
+        case A10X:
             config->cpid = cpid;
             config->config_large_leak = 0;
             config->config_overwrite_pad = 0x540;
             config->config_hole = 6;
             break;
-        case 0x8010:
+        case A10:
             config->cpid = cpid;
             config->config_large_leak = 0;
             config->config_overwrite_pad = 0x5C0;
             config->config_hole = 5;
             break;
-        case 0x8001:
+        case A9X:
             config->cpid = cpid;
             config->config_large_leak = 0;
             config->config_overwrite_pad = 0x5C0;
             config->config_hole = 6;
             break;
-        case 0x8003:
-        case 0x8000:
-        case 0x7001:
-        case 0x7000:
+        case A9_TSMC:
+        case A9:
+        case A8X:
+        case A8:
             config->cpid = cpid;
             config->config_large_leak = 0;
             config->config_overwrite_pad = 0x500;
@@ -63,7 +63,7 @@ bool checkm8_find_payload_configuration_for_cpid(
 {
     bool foundMatchingConfiguration = true;
     switch (cpid) {
-        case 0x8015:
+        case A11:
             config->tlbi = 0x1000004AC;
             config->nop_gadget = 0x10000A9C4;
             config->ret_gadget = 0x100000148;
@@ -85,7 +85,7 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_create_string_descriptor = 0x10000AE80;
             config->usb_serial_number_string_descriptor = 0x1800008FA;
             break;
-        case 0x8012:
+        case T2:
             config->tlbi = 0x100000494;
             config->nop_gadget = 0x100008DB8;
             config->ret_gadget = 0x10000012C;
@@ -107,7 +107,7 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_create_string_descriptor = 0x10000B1CC;
             config->usb_serial_number_string_descriptor = 0x18000082A;
             break;
-        case 0x8011:
+        case A10X:
             config->tlbi = 0x100000444;
             config->nop_gadget = 0x10000CD0C;
             config->ret_gadget = 0x100000148;
@@ -129,7 +129,7 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_create_string_descriptor = 0x10000D234;
             config->usb_serial_number_string_descriptor = 0x18008062A;
             break;
-        case 0x8010:
+        case A10:
             config->tlbi = 0x100000434;
             config->nop_gadget = 0x10000CC6C;
             config->ret_gadget = 0x10000015C;
@@ -151,7 +151,7 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_create_string_descriptor = 0x10000D150;
             config->usb_serial_number_string_descriptor = 0x1800805DA;
             break;
-        case 0x8001:
+        case A9X:
             config->tlbi = 0x100000404;
             config->nop_gadget = 0x10000CD60;
             config->ret_gadget = 0x100000118;
@@ -173,8 +173,8 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_create_string_descriptor = 0x10000D280;
             config->usb_serial_number_string_descriptor = 0x18004486A;
             break;
-        case 0x8003:
-        case 0x8000:
+        case A9_TSMC:
+        case A9:
             config->patch_addr = 0x10000812C;
             config->ttbr0_addr = 0x1800C8000;
             config->memcpy_addr = 0x100011030;
@@ -191,7 +191,7 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_create_string_descriptor = 0x10000E354;
             config->usb_serial_number_string_descriptor = 0x1800807DA;
             break;
-        case 0x7001:
+        case A8X:
             config->patch_addr = 0x10000AD04;
             config->memcpy_addr = 0x100013F10;
             config->aes_crypto_cmd = 0x100010A90;
@@ -205,7 +205,7 @@ bool checkm8_find_payload_configuration_for_cpid(
             config->usb_create_string_descriptor = 0x100011074;
             config->usb_serial_number_string_descriptor = 0x180080C2A;
             break;
-        case 0x7000:
+        case A8:
             config->patch_addr = 0x100007E98;
             config->memcpy_addr = 0x100010E70;
             config->aes_crypto_cmd = 0x10000DA90;
@@ -227,14 +227,14 @@ bool checkm8_find_payload_configuration_for_cpid(
 }
 
 static const yolo_payload_t yolo_payloads[] = {
-    {0x8015, payloads_yolo_t8015_bin, payloads_yolo_t8015_bin_len},
-    {0x8011, payloads_yolo_t8011_bin, payloads_yolo_t8011_bin_len},
-    {0x8010, payloads_yolo_t8010_bin, payloads_yolo_t8010_bin_len},
-    {0x8003, payloads_yolo_s8003_bin, payloads_yolo_s8003_bin_len},
-    {0x8001, payloads_yolo_s8001_bin, payloads_yolo_s8001_bin_len},
-    {0x8000, payloads_yolo_s8000_bin, payloads_yolo_s8000_bin_len},
-    {0x7001, payloads_yolo_t7001_bin, payloads_yolo_t7001_bin_len},
-    {0x7000, payloads_yolo_t7000_bin, payloads_yolo_t7000_bin_len},
+    {A11, payloads_yolo_t8015_bin, payloads_yolo_t8015_bin_len},
+    {A10X, payloads_yolo_t8011_bin, payloads_yolo_t8011_bin_len},
+    {A10, payloads_yolo_t8010_bin, payloads_yolo_t8010_bin_len},
+    {A9_TSMC, payloads_yolo_s8003_bin, payloads_yolo_s8003_bin_len},
+    {A9X, payloads_yolo_s8001_bin, payloads_yolo_s8001_bin_len},
+    {A9, payloads_yolo_s8000_bin, payloads_yolo_s8000_bin_len},
+    {A8X, payloads_yolo_t7001_bin, payloads_yolo_t7001_bin_len},
+    {A8, payloads_yolo_t7000_bin, payloads_yolo_t7000_bin_len},
 };
 
 bool create_pongo_payload_for_device(

@@ -5,6 +5,17 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define A8      0x7000
+#define A8X     0x7001
+#define S1      0x7002
+#define A9      0x8000
+#define A9X     0x8001
+#define A9_TSMC 0x8003
+#define A10     0x8010
+#define A10X    0x8011
+#define T2      0x8012
+#define A11     0x8015
+
 struct DeviceConfiguration {
     uint16_t cpid;
     size_t

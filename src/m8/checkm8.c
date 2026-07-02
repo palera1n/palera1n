@@ -132,7 +132,7 @@ bool checkm8_stage_spray(const usb_handle_t *handle, struct DeviceConfiguration 
     size_t i;
 
     if(deviceConfig->config_large_leak == 0) {
-        if(deviceConfig->cpid == 0x7001 || deviceConfig->cpid == 0x7000 || deviceConfig->cpid == 0x7002 || deviceConfig->cpid == 0x8003 || deviceConfig->cpid == 0x8000) {
+        if(deviceConfig->cpid == A8X || deviceConfig->cpid == A8 || deviceConfig->cpid == S1 || deviceConfig->cpid == A9_TSMC || deviceConfig->cpid == A9) {
             while(!checkm8_usb_request_stall(handle) || !checkm8_usb_request_leak(handle) || !checkm8_no_leak(handle)) {}
         } else {
             checkm8_stall(handle);
