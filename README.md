@@ -141,7 +141,7 @@ make palera1n_mingw WITH_STATIC=1 WITH_GUI=1
 
 - [mineek](https://github.com/mineek) - Checkm8 exploit re-implementation (openra1n) using [gaster](https://github.com/0x7ff/gaster).
 - [alfiecg24](https://github.com/mineek) - Achilles, based on openra1n.
-- [kok3shidoll](https://github.com/kok3shidoll) - PongoOS patches.
+- [kok3shidoll](https://github.com/kok3shidoll) - PongoOS patches, ROP chain generator.
 - [itsnebulalol](https://github.com/itsnebulalol) - Palera1n v1.
 - [staturnz](https://github.com/staturnz) - Contributions, Loader.
 - [plooshi](https://github.com/plooshi) - Plooshfinder, various legacy patches.

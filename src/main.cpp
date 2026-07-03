@@ -78,6 +78,13 @@ void print_usage(char* argv) {
         #endif
         , argv
     );
+
+    printf(
+        "\n"
+        "Many things included in this program are made and developed by the Checkra1n team.\n"
+        "Please do NOT contact the Checkra1n team for Palera1n, they are not responsible for this program.\n"
+        "The original Checkra1n payloads are from: https://checkra.in/1337\n"
+    );
 }
 
 void parse_arguments(int argc, char* argv[]) {
@@ -146,6 +153,16 @@ void parse_arguments(int argc, char* argv[]) {
                 print_usage(argv[0]);
                 exit(1);
             case 'v': // --version
+                printf("Palera1n beta " PALERAIN_VERSION " [USB: %s (openra1n)]\n",
+                    #ifdef __APPLE__
+                    "IOKit"
+                    #else
+                    "libusb"
+                    #endif
+                );
+                printf("%s (%s)\n", GIT_HASH, GIT_BRANCH);
+                printf("Git: %s\n", GIT_URL);
+                printf("Compiled on %s at %s\n", __DATE__, __TIME__);
                 exit(0);
             case 1: // --cli
                 palerain_flags &= ~palerain_option_tui;
@@ -297,6 +314,13 @@ int main(int argc, char* argv[], char* envp[]) {
     print_credits();
     parse_arguments(argc, argv);
     LOG("palera1n_flags: %llu", palerain_flags);
+
+    // communicating with libusb on linux needs root
+    #ifdef __linux__
+    if (geteuid() != 0) {
+        LOG_WARN("You are not running as root, this may cause issues when exploiting");
+    }
+    #endif
 
     #ifdef WITH_GUI
     if (palerain_flags & palerain_option_gui) {

