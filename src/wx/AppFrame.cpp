@@ -31,7 +31,7 @@ MainFrame::MainFrame()
               wxID_ANY,
               "palera1n - Version beta " + wxString(PALERAIN_VERSION),
               wxDefaultPosition,
-              wxSize(480, 360),
+              wxSize(480, 348),
               wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX | wxRESIZE_BORDER))
 {
     auto* root = new wxBoxSizer(wxVERTICAL);

@@ -17,6 +17,7 @@
 #include <wx/mstream.h>
 #include <wx/image.h>
 #include <wx/bitmap.h>
+#include <wx/statline.h>
 
 #include "../gen/images/atv_std_brd.h"
 #include "../gen/images/ipad.h"
@@ -28,6 +29,7 @@
 #include "../gen/images/iphonex.h"
 #include "../gen/images/ipodtouch.h"
 #include "../gen/images/siriremote.h"
+#include "../gen/images/logo.h"
 
 #include <libirecovery.h>
 
@@ -35,15 +37,23 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
 {
     Bind(wxEVT_SHOW, &DfuPanel::OnShow, this);
-    auto* root = new wxBoxSizer(wxVERTICAL);
+
+    auto* root = new wxBoxSizer(wxHORIZONTAL);
+    auto* left = new wxBoxSizer(wxVERTICAL);
+    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxImage img(stream, wxBITMAP_TYPE_PNG);
+    wxBitmap bmp(img);
+    auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
+    auto* logoText = new wxStaticText(this, wxID_ANY, "DFU");
+    auto* right = new wxBoxSizer(wxVERTICAL);
 
     m_headerText = new wxStaticText(this, wxID_ANY,
-        "Time to put the device into DFU mode. Locate the buttons as marked below\n"
-        "on your device and check the instructions on the right."
+        "Time to put the device into DFU mode.",
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxST_WRAP
     );
-    root->Add(m_headerText, 0, wxALL, 10);
-
-    auto* contentRow = new wxBoxSizer(wxHORIZONTAL);
+    left->Add(m_headerText, 0, wxTOP | wxLEFT | wxRIGHT, 10);
 
     m_devicePanel = new wxPanel(this);
     m_devicePanel->SetMinSize(wxSize(310, 260));
@@ -54,11 +64,18 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
         wxBitmap()
     );
 
-    contentRow->Add(m_devicePanel, 1, wxTOP, 10);
-    m_stepsSizer = new wxBoxSizer(wxVERTICAL);
-    contentRow->Add(m_stepsSizer, 2, wxEXPAND | wxALL, 0);
+    auto* deviceSizer = new wxBoxSizer(wxVERTICAL);
+    deviceSizer->AddStretchSpacer(1);
+    deviceSizer->Add(m_deviceImage, 0, wxALIGN_CENTER);
+    deviceSizer->AddStretchSpacer(1);
+    m_devicePanel->SetSizer(deviceSizer);
 
-    root->Add(contentRow, 1, wxEXPAND);
+    left->Add(m_devicePanel, 1, wxEXPAND | wxTOP, 0);
+
+    left->AddStretchSpacer(1);
+
+    m_stepsSizer = new wxBoxSizer(wxVERTICAL);
+    left->Add(m_stepsSizer, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, 10);
 
     m_backButton = new wxButton(this, wxID_ANY, "Back");
     m_startButton = new wxButton(this, wxID_ANY, "Start");
@@ -85,21 +102,21 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
 
     m_stagnentTimer.Bind(wxEVT_TIMER, [this](wxTimerEvent&)
     {
-        m_headerText->SetLabel(
-            "Time to put the device into DFU mode. Locate the buttons as marked below\n"
-            "on your device and check the instructions on the right."
-        );
+        m_headerText->SetLabel("Time to put the device into DFU mode.");
         m_backButton->Enable();
         m_startButton->Enable();
         GetMainFrame()->ShowExploit();
     });
 
-    auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
-    bottomRow->AddStretchSpacer();
-    bottomRow->Add(m_backButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
-    bottomRow->Add(m_startButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
+    right->Add(logo, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxLEFT | wxRIGHT, 10);
+    right->Add(logoText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 5);
+    right->AddStretchSpacer();
+    right->Add(m_backButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    right->Add(m_startButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
-    root->Add(bottomRow, 0, wxEXPAND);
+    root->Add(left, 1, wxEXPAND);
+    root->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL), 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
+    root->Add(right, 0, wxEXPAND);
 
     SetSizer(root);
 }
@@ -260,7 +277,6 @@ void DfuPanel::LoadDevice(const std::string& productType)
             );
 
             m_deviceImage->SetBitmap(wxBitmap(img));
-            m_deviceImage->SetPosition(wxPoint(m_sequence.imageOffsetX, 0));
         }
     }
 
@@ -296,7 +312,7 @@ void DfuPanel::LoadDevice(const std::string& productType)
 
         lbl->SetForegroundColour(i == 0 ? kActive : kInactive);
 
-        m_stepsSizer->Add(lbl, 0, wxBOTTOM, 5);
+        m_stepsSizer->Add(lbl, 0, wxTOP, 5);
         m_stepLabels.push_back(lbl);
     }
 

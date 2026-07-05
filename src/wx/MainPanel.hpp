@@ -14,7 +14,8 @@ public:
     explicit MainPanel(MainFrame* frame, wxWindow* parent);
     void SetDeviceState(const DeviceState& state) override;
 private:
-    wxStaticText* m_deviceText = nullptr;
+    wxStaticText* m_deviceTitle = nullptr;
+    wxStaticText* m_deviceSubtitle = nullptr;
     wxButton* m_startButton = nullptr;
 };
 

@@ -27,7 +27,6 @@ struct DfuSequence
     std::string imageName;
     int imageWidth = 0;
     int imageHeight = 0;
-    int imageOffsetX = 0;
 
     std::vector<DfuButton> buttons;
     std::vector<DfuStep> steps;

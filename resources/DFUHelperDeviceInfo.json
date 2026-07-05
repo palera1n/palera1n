@@ -82,7 +82,6 @@
             "image_name":"ipodtouch",
             "image_width":116,
             "image_height":240,
-            "image_offset_x":100,
             "buttons":{
                 "top":{
                     "name":"- Top button",
@@ -101,7 +100,6 @@
             "image_name":"ipodtouch",
             "image_width":116,
             "image_height":240,
-            "image_offset_x":100,
             "buttons":{
                 "top":{
                     "name":"- Top button",
@@ -120,7 +118,6 @@
             "image_name":"iphonese",
             "image_width":119,
             "image_height":240,
-            "image_offset_x":100,
             "buttons":{
                 "top":{
                     "name":"- Top button",
@@ -139,7 +136,6 @@
             "image_name":"iphone6s",
             "image_width":123,
             "image_height":240,
-            "image_offset_x":100,
             "buttons":{
                 "side":{
                     "name":"- Side button",
@@ -158,7 +154,6 @@
             "image_name":"iphone7",
             "image_width":123,
             "image_height":240,
-            "image_offset_x":100,
             "buttons":{
                 "side":{
                     "name":"- Side button",
@@ -177,7 +172,6 @@
             "image_name":"iphone8",
             "image_width":120,
             "image_height":240,
-            "image_offset_x":100,
             "buttons":{
                 "side":{
                     "name":"- Side button",
@@ -196,7 +190,6 @@
             "image_name":"iphonex",
             "image_width":121,
             "image_height":240,
-            "image_offset_x":100,
             "buttons":{
                 "side":{
                     "name":"- Side button",
@@ -251,7 +244,6 @@
             "image_name":"siriremote",
             "image_width":79,
             "image_height":240,
-            "image_offset_x":120,
             "buttons":{
                 "menu":{
                     "name":"Menu -",
@@ -270,7 +262,6 @@
             "image_name":"atv_std_brd",
             "image_width":300,
             "image_height":240,
-            "image_offset_x":0,
             "buttons":{
                 "dfu":{
                     "name":"-- DFU button",
@@ -320,7 +311,7 @@
                     "top",
                     "home"
                 ],
-                "description":"Press and hold the Top\n    and Home buttons\n    together",
+                "description":"Press and hold the Top and Home buttons together",
                 "duration":4,
                 "action":"reboot"
             },
@@ -328,7 +319,7 @@
                 "buttons":[
                     "home"
                 ],
-                "description":"Release the Top button\n    BUT KEEP HOLDING the\n    Home button",
+                "description":"Release the Top button BUT KEEP HOLDING the Home button",
                 "duration":10
             }
         ],
@@ -345,7 +336,7 @@
                     "side",
                     "home"
                 ],
-                "description":"Press and hold the Side\n    and Home buttons\n    together",
+                "description":"Press and hold the Side and Home buttons together",
                 "duration":4,
                 "action":"reboot"
             },
@@ -353,7 +344,7 @@
                 "buttons":[
                     "home"
                 ],
-                "description":"Release the Side button\n    BUT KEEP HOLDING the\n    Home button",
+                "description":"Release the Side button BUT KEEP HOLDING the Home button",
                 "duration":10
             }
         ],
@@ -370,7 +361,7 @@
                     "side",
                     "vol_down"
                 ],
-                "description":"Press and hold the Side\n    and Volume down\n    buttons together",
+                "description":"HOLD Power and Volume down",
                 "duration":4,
                 "action":"reboot"
             },
@@ -378,7 +369,7 @@
                 "buttons":[
                     "vol_down"
                 ],
-                "description":"Release the Side button\n    BUT KEEP HOLDING the\n    Volume down button",
+                "description":"Release Power and KEEP holding Volume down",
                 "duration":10
             }
         ],
@@ -395,7 +386,7 @@
                     "side",
                     "vol_down"
                 ],
-                "description":"Press and hold the Side\n    and Volume down\n    buttons together",
+                "description":"Press and hold the Side and Volume down buttons together",
                 "duration":4,
                 "action":"reboot"
             },
@@ -403,7 +394,7 @@
                 "buttons":[
                     "vol_down"
                 ],
-                "description":"Release the Side button\n    BUT KEEP HOLDING the\n    Volume down button",
+                "description":"Release the Side button BUT KEEP HOLDING the Volume down button",
                 "duration":10
             }
         ],
@@ -420,7 +411,7 @@
                     "menu",
                     "playpause"
                 ],
-                "description":"Press and hold Menu\n    and Play/Pause together\n   ",
+                "description":"Press and hold Menu and Play/Pause together",
                 "duration":7
             },
             {
@@ -443,7 +434,7 @@
                 "buttons":[
                     "dfu"
                 ],
-                "description":"Press and hold the DFU\n    button",
+                "description":"Press and hold the DFU button",
                 "duration":10,
                 "action":"reboot"
             }

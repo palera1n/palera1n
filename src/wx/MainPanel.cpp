@@ -18,14 +18,16 @@
 #include "../paleinfo.h"
 #include "../gen/images/logo.h"
 
-const char* deviceTextString = "Connect your iPhone, iPod touch, iPad, or AppleTV to begin.";
+const char* deviceTextString = "No device connected";
+const char* deviceTextString2 = "Please connect a device to get started.\nEnsure version range is 15.0+";
 
 MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
 {
-    auto* root = new wxBoxSizer(wxVERTICAL);
-
     wxInitAllImageHandlers();
+    auto* root = new wxBoxSizer(wxHORIZONTAL);
+    auto* left = new wxBoxSizer(wxVERTICAL);
+    auto* right = new wxBoxSizer(wxVERTICAL);
 
     wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
@@ -33,101 +35,70 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
 
     auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
 
-    auto* titletext = new wxStaticText(this, wxID_ANY, "Welcome to palera1n!");
-    wxFont titlefont = titletext->GetFont();
-    titlefont.SetWeight(wxFONTWEIGHT_BOLD);
-    titletext->SetFont(titlefont);
+    m_deviceTitle = new wxStaticText(this, wxID_ANY, deviceTextString);
+    m_deviceSubtitle = new wxStaticText(this, wxID_ANY, deviceTextString2);
 
-    m_deviceText = new wxStaticText(
+    wxFont titleFont = m_deviceTitle->GetFont();
+    titleFont.SetPointSize(titleFont.GetPointSize() + 6);
+    titleFont.SetWeight(wxFONTWEIGHT_SEMIBOLD);
+    m_deviceTitle->SetFont(titleFont);
+
+    m_deviceSubtitle->SetForegroundColour(wxColour(160, 160, 160));
+
+    auto* credtext = new wxStaticText(
         this,
         wxID_ANY,
-        deviceTextString
+        "Made by: asdfugil, claration, kok3shidoll, mineek, plooshi, staturnz\n\n"
+        "Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed, kirb, ehilwyma, "
+        "opa334, 0x7ff, alfiecg24, sneko, sbingner, nikias (libimobiledevice), tihmstar, "
+        "Checkra1n (Siguza, axi0mx, littlelailo et al.), Procursus (Hayden Seay, "
+        "Cameron Katri, Keto et al.)",
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxST_WRAP
     );
 
-    auto* left = new wxBoxSizer(wxVERTICAL);
-    left->Add(titletext, 0, wxTOP | wxLEFT, 10);
-    left->Add(m_deviceText, 0, wxTOP | wxLEFT, 10);
+    auto* twitterLabel = new wxStaticText(this, wxID_ANY, "Twitter:");
+    auto* twitter = new wxStaticText(this, wxID_ANY, "@palera1n");
 
-    auto* row = new wxBoxSizer(wxHORIZONTAL);
-    row->Add(left, 0, wxALIGN_TOP);
-    row->AddStretchSpacer();
-    row->Add(logo, 0, wxTOP | wxRIGHT, 10);
+    auto* websiteLabel = new wxStaticText(this, wxID_ANY, "Website:");
+    auto* website = new wxStaticText(this, wxID_ANY, "https://palera.in");
 
-    root->Add(row, 0, wxEXPAND);
+    twitter->SetForegroundColour(wxColour(0, 120, 215));
+    website->SetForegroundColour(wxColour(0, 120, 215));
 
-    root->Add(new wxStaticLine(this), 0, wxEXPAND | wxALL, 10);
+    twitter->SetCursor(wxCursor(wxCURSOR_HAND));
+    website->SetCursor(wxCursor(wxCURSOR_HAND));
 
-    auto* credtext = new wxStaticText(this, wxID_ANY,
-        "Made by: asdfugil, kok3shidoll, C, mineek, nekohaxx, plooshi, staturnz\n\n"
-        "Thanks to: llsc12, itsnebulalol, lrdsnow, kirb, ehilwyma opa334, 0x7ff,\n"
-        "sbingner, nikias (libimobiledevice), Checkra1n (Siguza, axi0mx, littlelailo\n"
-        "et al.), Procursus (Hayden Seay, Cameron Katri, Keto et al.)"
-    );
-
-    auto* credrow = new wxBoxSizer(wxHORIZONTAL);
-
-    auto* lovetext = new wxStaticText(this, wxID_ANY,
-    #ifdef __APPLE__
-        "With 💖 from C (claration)"
-    #else
-        "With <3 from C (claration)"
-    #endif
-    );
-
-    auto* link1 = new wxStaticText(this, wxID_ANY, "@palera1n");
-    auto* link2 = new wxStaticText(this, wxID_ANY, "https://palera.in");
-
-    link1->SetForegroundColour(wxColour(0, 120, 215));
-    link2->SetForegroundColour(wxColour(0, 120, 215));
-
-    link1->SetCursor(wxCursor(wxCURSOR_HAND));
-    link2->SetCursor(wxCursor(wxCURSOR_HAND));
-
-    link1->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent&) {
+    twitter->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent&)
+    {
         wxLaunchDefaultBrowser("https://twitter.com/intent/follow?screen_name=palera1n");
     });
 
-    link2->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent&) {
+    website->Bind(wxEVT_LEFT_DOWN, [](wxMouseEvent&)
+    {
         wxLaunchDefaultBrowser("https://palera.in");
     });
 
-    credrow->Add(lovetext, 0, wxALIGN_BOTTOM | wxLEFT, 0);
-    credrow->AddStretchSpacer();
+    auto* twitterRow = new wxBoxSizer(wxHORIZONTAL);
+    twitterRow->Add(twitterLabel, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
+    twitterRow->Add(twitter, 0, wxALIGN_CENTER_VERTICAL);
 
-    auto* linkSizer = new wxBoxSizer(wxVERTICAL);
-    linkSizer->Add(link1, 0, wxALIGN_RIGHT);
-    linkSizer->Add(link2, 0, wxALIGN_RIGHT);
+    auto* websiteRow = new wxBoxSizer(wxHORIZONTAL);
+    websiteRow->Add(websiteLabel, 0, wxRIGHT | wxALIGN_CENTER_VERTICAL, 5);
+    websiteRow->Add(website, 0, wxALIGN_CENTER_VERTICAL);
 
-    credrow->Add(linkSizer, 0, wxALIGN_CENTER_VERTICAL, 0);
-    root->Add(credtext, 0, wxLEFT | wxRIGHT, 10);
-    root->Add(credrow, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
+    auto* logoText = new wxStaticText(this, wxID_ANY, "palera1n");
 
-    root->Add(new wxStaticLine(this), 0, wxEXPAND | wxALL, 10);
-
-    auto* notetext = new wxStaticText(this, wxID_ANY,
-        "NOTE: Please ensure you have a backup of your device before applying the\n"
-        "jailbreak. While data loss is unlikely, we won't be responsible if something goes\n"
-        "wrong. Use at your own risk.");
-
-    wxFont notefont = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
-    #ifdef __APPLE__
-    notefont.SetPointSize(12);
-    #else
-    notefont.SetPointSize(9);
-    #endif
-    notefont.SetStyle(wxFONTSTYLE_ITALIC);
-    notetext->SetFont(notefont);
-
-    root->Add(notetext, 0, wxLEFT | wxRIGHT, 10);
-
-    root->AddStretchSpacer();
-
-    auto* quickMode = new wxCheckBox(this, wxID_ANY, "Quick Mode");
+    auto* quickMode = new wxCheckBox(this, wxID_ANY, "Enable Quick Mode");
+    auto* donateButton = new wxButton(this, wxID_ANY, "Donate");
     auto* optionsButton = new wxButton(this, wxID_ANY, "Options");
+
     m_startButton = new wxButton(this, wxID_ANY, "Start");
     m_startButton->Disable();
 
     quickMode->SetValue(palerain_flags & palerain_option_quick);
+
     quickMode->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& e)
     {
         if (e.IsChecked())
@@ -144,22 +115,62 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     m_startButton->Bind(wxEVT_BUTTON, [frame](wxCommandEvent&)
     {
         if (frame->GetDeviceState().mode == DeviceMode::Normal)
-        {
             frame->ShowRecovery();
-        }
         else if (frame->GetDeviceState().mode == DeviceMode::Recovery)
-        {
             frame->ShowDfu();
-        }
     });
 
-    auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
-    bottomRow->AddStretchSpacer();
-    bottomRow->Add(quickMode, 0, wxRIGHT | wxTOP, 1);
-    bottomRow->Add(optionsButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
-    bottomRow->Add(m_startButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
+    left->Add(m_deviceTitle, 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    left->Add(m_deviceSubtitle, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    left->Add(new wxStaticLine(this), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    left->Add(credtext, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
-    root->Add(bottomRow, 0, wxEXPAND);
+    auto* linksCol = new wxBoxSizer(wxVERTICAL);
+    linksCol->Add(twitterRow, 0);
+    linksCol->Add(websiteRow, 0);
+
+    auto* warningNote = new wxStaticText(this, wxID_ANY,
+        "NOTE: Please ensure you've made a backup of your device before proceeding.\n",
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxST_WRAP
+    );
+
+    wxFont noteFont = warningNote->GetFont();
+    noteFont.SetStyle(wxFONTSTYLE_ITALIC);
+    warningNote->SetFont(noteFont);
+    warningNote->SetForegroundColour(wxColour(200, 80, 80));
+
+    auto* linksRow = new wxBoxSizer(wxHORIZONTAL);
+    linksRow->Add(linksCol, 0, wxLEFT | wxRIGHT | wxALIGN_TOP, 10);
+    linksRow->AddStretchSpacer();
+    linksRow->Add(warningNote, 0, wxRIGHT | wxALIGN_TOP, 10);
+
+    left->Add(linksRow, 0, wxEXPAND | wxBOTTOM, 10);
+
+    left->AddStretchSpacer();
+
+    left->Add(new wxStaticLine(this), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
+    auto* madeBy = new wxStaticText(this, wxID_ANY, "Made with 💖 by C (claration)");
+
+    auto* quickModeRow = new wxBoxSizer(wxHORIZONTAL);
+    quickModeRow->Add(madeBy, 0, wxALIGN_CENTER_VERTICAL);
+    quickModeRow->AddStretchSpacer();
+    quickModeRow->Add(quickMode, 0, wxALIGN_CENTER_VERTICAL);
+
+    left->Add(quickModeRow, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
+    right->Add(logo, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxLEFT | wxRIGHT, 10);
+    right->Add(logoText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 5);
+    right->AddStretchSpacer();
+    right->Add(donateButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    right->Add(optionsButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    right->Add(m_startButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
+    root->Add(left, 1, wxEXPAND);
+    root->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL), 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
+    root->Add(right, 0, wxEXPAND);
 
     SetSizer(root);
 }
@@ -168,11 +179,12 @@ void MainPanel::SetDeviceState(const DeviceState& state)
 {
     DevicePanel::SetDeviceState(state);
 
-    if (m_deviceText)
+    if (m_deviceTitle && m_deviceSubtitle)
     {
         if (!state.connected)
         {
-            m_deviceText->SetLabel(deviceTextString);
+            m_deviceTitle->SetLabel(deviceTextString);
+            m_deviceSubtitle->SetLabel(deviceTextString2);
             m_startButton->Enable(false);
         }
         else
@@ -187,28 +199,34 @@ void MainPanel::SetDeviceState(const DeviceState& state)
             {
                 case DeviceMode::Normal:
                     if (state.isSupported) {
-                        m_deviceText->SetLabel("Connected " + productString + " (iOS " + versionString + ") in normal mode.\n" + ecidString);
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Connected in normal mode • iOS " + versionString + "\n" + ecidString);
                         m_startButton->Enable();
                     } else {
-                        m_deviceText->SetLabel("Sorry, " + productString + " (iOS " + versionString + ") is not supported.\n" + ecidString);
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Not supported • iOS " + versionString + "\n" + ecidString);
                         m_startButton->Enable(false);
                     }
                     break;
                 case DeviceMode::Recovery:
                     if (state.isSupported) {
-                        m_deviceText->SetLabel("Connected " + productString + " in recovery mode.\n" + ecidString);
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Connected in recovery mode\n" + ecidString);
                         m_startButton->Enable();
                     } else {
-                        m_deviceText->SetLabel("Sorry, " + productString + " is not supported.\n" + ecidString);
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Not supported\n" + ecidString);
                         m_startButton->Enable(false);
                     }
                     break;
                 case DeviceMode::DFU:
-                    m_deviceText->SetLabel("Sorry, DFU mode is not supported.");
+                    m_deviceTitle->SetLabel("DFU Mode device");
+                    m_deviceSubtitle->SetLabel("Sorry, jailbreaking in DFU mode is not supported.\n");
                     m_startButton->Enable(false);
                     break;
                 case DeviceMode::None:
-                    m_deviceText->SetLabel(deviceTextString);
+                    m_deviceTitle->SetLabel(deviceTextString);
+                    m_deviceSubtitle->SetLabel(deviceTextString2);
                     m_startButton->Enable(false);
                     break;
             }
