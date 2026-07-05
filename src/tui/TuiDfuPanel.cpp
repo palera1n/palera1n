@@ -1,24 +1,34 @@
 #ifdef WITH_TUI
 
 #include "TuiDfuPanel.hpp"
-#include "Tui.hpp"
-#include "TuiRecoveryPanel.hpp"
 
 #include <algorithm>
 #include <thread>
 #include <chrono>
+#include <unordered_set>
+
 #include <ncurses.h>
 #include <libirecovery.h>
 
+#include "Tui.hpp"
+#include "TuiDfuArt.hpp"
+#include "TuiText.hpp"
+#include "TuiRecoveryPanel.hpp"
 #include "../sequence.hpp"
-#include "../state.hpp"
+#include "../event.hpp"
 #include "../globals.h"
 #include "../paleinfo.h"
 
-static const char *buttons[] = { "[ Back ]", "[ Start ]" };
+static const char *buttons[] = { "Back", "Start" };
 static constexpr int kDfuPanelCoordinateWidth = 310;
-static constexpr int kDfuPanelCoordinateHeight = 260;
 static constexpr int kTuiDeviceCanvasWidth = 52;
+static constexpr int kDfuButtonCoordinateMaxY = 200;
+static constexpr int kDfuContentX = 2;
+static constexpr int kDfuContentWidth = 60;
+static constexpr int kDfuStepsMaxLines = 5;
+static constexpr int kDfuStepsBottomY = 22;
+static constexpr int kDfuButtonX = 2;
+static constexpr int kDfuButtonY = 4;
 
 TuiDfuPanel::TuiDfuPanel(TuiFrame* frame)
     : TuiPanel(frame) {}
@@ -134,31 +144,31 @@ int TuiDfuPanel::scale_coord(int value, int input_span, int output_span) const {
     return (value * (output_span - 1)) / input_span;
 }
 
-void TuiDfuPanel::draw_sequence_buttons(int sy, int sx, int button_x, int button_y, int button_width, int button_height) const {
+void TuiDfuPanel::draw_sequence_buttons(int button_x, int button_y, int button_width, int button_height) const {
     if (m_sequence.buttons.empty()) {
         return;
     }
 
-    std::vector<std::string> active_buttons;
+    std::unordered_set<std::string> active_buttons;
     if (m_isEnteringDfu && m_index < m_sequence.steps.size()) {
-        active_buttons = m_sequence.steps[m_index].activeButtons;
+        const auto& buttons_for_step = m_sequence.steps[m_index].activeButtons;
+        active_buttons.insert(buttons_for_step.begin(), buttons_for_step.end());
     }
 
     for (const auto& btn : m_sequence.buttons) {
-        const int mapped_x = button_x + scale_coord(btn.x, kDfuPanelCoordinateWidth, std::max(1, button_width - 1));
-        const int mapped_y = button_y + scale_coord(btn.y, kDfuPanelCoordinateHeight, std::max(1, button_height - 1));
+        const int mapped_x = button_x + scale_coord(btn.x, kDfuPanelCoordinateWidth, button_width);
+        const int mapped_y = button_y + scale_coord(btn.y, kDfuButtonCoordinateMaxY, button_height);
 
-        std::string label = btn.name;
-        const int label_x = std::max(button_x, mapped_x);
+        const int label_x = std::clamp(mapped_x, button_x, button_x + std::max(0, button_width - 1));
 
-        const bool is_active = std::find(active_buttons.begin(), active_buttons.end(), btn.id) != active_buttons.end();
+        const bool is_active = active_buttons.find(btn.id) != active_buttons.end();
         if (is_active) {
             attron(A_BOLD);
         } else {
             attron(A_DIM);
         }
 
-        mvprintw(mapped_y, label_x, "%s", label.c_str());
+        mvprintw(mapped_y, label_x, "%s", btn.name.c_str());
 
         if (is_active) {
             attroff(A_BOLD);
@@ -168,146 +178,60 @@ void TuiDfuPanel::draw_sequence_buttons(int sy, int sx, int button_x, int button
     }
 }
 
-void TuiDfuPanel::draw_wrapped_steps(int sy, int sx, int steps_x, int steps_width) const {
-    const int right_edge = steps_x + steps_width;
-    struct StepBlock {
-        std::vector<std::string> lines;
-        size_t width = 0;
-        size_t prefix_size = 0;
+void TuiDfuPanel::draw_wrapped_steps(int steps_x, int steps_width, int max_lines, int bottom_y) const {
+    if (steps_width <= 0 || max_lines <= 0 || m_sequence.steps.empty()) {
+        return;
+    }
+
+    struct RenderedLine {
+        bool is_current;
+        bool is_completed;
+        std::string text;
     };
 
-    std::vector<StepBlock> blocks;
-    blocks.reserve(m_sequence.steps.size());
+    std::vector<RenderedLine> rendered_lines;
+    rendered_lines.reserve(static_cast<size_t>(max_lines));
 
     for (size_t i = 0; i < m_sequence.steps.size(); ++i) {
         const auto& step = m_sequence.steps[i];
+        const int seconds_left = (m_isEnteringDfu && i == m_index && m_stepRemaining >= 0)
+            ? m_stepRemaining
+            : ((i < m_index) || m_dfuSuccess) ? 0 : step.duration;
 
-        std::string prefix = std::to_string(i + 1) + ". ";
-        std::string suffix = " (" + std::to_string(
-            (m_isEnteringDfu && i == m_index && m_stepRemaining >= 0)
-                ? m_stepRemaining
-                : ((i < m_index) || m_dfuSuccess)
-                    ? 0
-                    : step.duration
-        ) + ")";
+        std::string text = std::to_string(i + 1) + ". " + step.description + " (" + std::to_string(seconds_left) + ")";
+        std::vector<std::string> wrapped;
+        tui_text::append_wrapped_lines(text, steps_width, wrapped);
 
-        const int first_line_width = std::max(1, steps_width - static_cast<int>(prefix.size()));
-        const int continuation_width = std::max(1, steps_width - static_cast<int>(prefix.size()));
-
-        StepBlock block;
-        block.prefix_size = prefix.size();
-
-        auto wrap_paragraph = [&](std::string paragraph) {
-            while (!paragraph.empty() && (paragraph.front() == ' ' || paragraph.front() == '\t')) {
-                paragraph.erase(paragraph.begin());
-            }
-
-            if (paragraph.empty()) {
-                block.lines.push_back("");
-                return;
-            }
-
-            size_t cursor = 0;
-            while (cursor < paragraph.size()) {
-                size_t line_end = cursor;
-                size_t last_space = std::string::npos;
-                const int target_width = block.lines.empty() ? first_line_width : continuation_width;
-
-                while (line_end < paragraph.size() && static_cast<int>(line_end - cursor) < target_width) {
-                    if (paragraph[line_end] == ' ') {
-                        last_space = line_end;
-                    }
-                    ++line_end;
-                }
-
-                if (line_end < paragraph.size() && last_space != std::string::npos && last_space > cursor) {
-                    line_end = last_space;
-                }
-
-                if (line_end == cursor) {
-                    line_end = std::min(paragraph.size(), cursor + static_cast<size_t>(target_width));
-                }
-
-                block.lines.push_back(paragraph.substr(cursor, line_end - cursor));
-
-                cursor = line_end;
-                while (cursor < paragraph.size() && paragraph[cursor] == ' ') {
-                    ++cursor;
-                }
-            }
-        };
-
-        std::string description = step.description;
-        size_t paragraph_start = 0;
-        while (paragraph_start <= description.size()) {
-            size_t paragraph_end = description.find('\n', paragraph_start);
-            if (paragraph_end == std::string::npos) {
-                wrap_paragraph(description.substr(paragraph_start));
+        const bool is_current = m_isEnteringDfu && i == m_index;
+        const bool is_completed = (i < m_index) || m_dfuSuccess;
+        for (const auto& line : wrapped) {
+            if (static_cast<int>(rendered_lines.size()) >= max_lines) {
                 break;
             }
-
-            wrap_paragraph(description.substr(paragraph_start, paragraph_end - paragraph_start));
-            paragraph_start = paragraph_end + 1;
+            rendered_lines.push_back({ is_current, is_completed, line });
         }
 
-        if (block.lines.empty()) {
-            block.lines.push_back("");
+        if (static_cast<int>(rendered_lines.size()) >= max_lines) {
+            break;
         }
-
-        const size_t last_line_index = block.lines.size() - 1;
-        block.lines[0] = prefix + block.lines[0] + (last_line_index == 0 ? suffix : "");
-
-        for (size_t line_index = 1; line_index < block.lines.size(); ++line_index) {
-            block.lines[line_index] = block.lines[line_index] + (line_index == last_line_index ? suffix : "");
-        }
-
-        for (const auto& line : block.lines) {
-            block.width = std::max(block.width, line.size());
-        }
-
-        blocks.push_back(std::move(block));
     }
 
-    size_t widest_block = 0;
-    for (const auto& block : blocks) {
-        widest_block = std::max(widest_block, block.width);
-    }
+    const int start_y = bottom_y - static_cast<int>(rendered_lines.size()) + 1;
+    for (size_t i = 0; i < rendered_lines.size(); ++i) {
+        const auto& line = rendered_lines[i];
 
-    const int block_x = std::max(steps_x, right_edge - static_cast<int>(widest_block));
-    int line_y = sy + 5;
-
-    for (size_t i = 0; i < blocks.size(); ++i) {
-        const int step_start_y = line_y;
-        const auto& block = blocks[i];
-        const bool is_current = m_isEnteringDfu && i == m_index;
-
-        if (is_current) {
+        if (line.is_current) {
             attron(A_BOLD);
-        } else {
+        } else if (line.is_completed) {
             attron(A_DIM);
         }
 
-        mvprintw(step_start_y, block_x, "%s", block.lines[0].c_str());
+        mvprintw(start_y + static_cast<int>(i), steps_x, "%.*s", steps_width, line.text.c_str());
 
-        for (size_t line_index = 1; line_index < block.lines.size(); ++line_index) {
-            const int current_line_y = step_start_y + static_cast<int>(line_index);
-            if (current_line_y >= sy + 20) {
-                break;
-            }
-
-            mvprintw(current_line_y, block_x + static_cast<int>(block.prefix_size), "%s", block.lines[line_index].c_str());
-        }
-
-        line_y = step_start_y + static_cast<int>(block.lines.size());
-
-        if (is_current) {
+        if (line.is_current) {
             attroff(A_BOLD);
-        } else {
+        } else if (line.is_completed) {
             attroff(A_DIM);
-        }
-
-        if (line_y >= sy + 20) {
-            break;
         }
     }
 }
@@ -316,25 +240,38 @@ void TuiDfuPanel::draw(int sy, int sx, int selected) {
     (void)selected;
     update_sequence_timer();
 
-    const int panel_width = 80;
-    const int button_x = sx + 2;
-    const int button_y = sy + 5;
-    const int button_width = kTuiDeviceCanvasWidth;
-    const int button_height = 16;
-    const int steps_x = sx + 40;
-    const int steps_width = std::max(1, panel_width - 42);
+    const int content_x = sx + kDfuContentX;
 
     if (m_sequence.steps.empty()) {
-        mvprintw(sy + 2, sx + 2, "No DFU helper sequence is available for this device.");
+        mvprintw(sy + 2, content_x, "No DFU helper sequence is available for this device.");
     } else if (m_dfuSuccess) {
-        mvprintw(sy + 2, sx + 2, "Device entered DFU mode successfully.");
+        mvprintw(sy + 2, content_x, "Device entered DFU mode successfully.");
     } else {
-        mvprintw(sy + 2, sx + 2, "Time to put the device into DFU mode. Locate the buttons as marked below on");
-        mvprintw(sy + 3, sx + 2, "your device and check the instructions on the right.");
+        tui_text::draw_wrapped_text(
+            sy + 2,
+            content_x,
+            kDfuContentWidth,
+            "Time to put the device into DFU mode.",
+            2
+        );
     }
 
-    draw_wrapped_steps(sy, sx, steps_x, steps_width);
-    draw_sequence_buttons(sy, sx, button_x, button_y, button_width, button_height);
+    const int steps_x = content_x;
+    const int steps_width = kDfuContentWidth;
+    const int steps_max_lines = kDfuStepsMaxLines;
+    const int steps_bottom_y = sy + kDfuStepsBottomY;
+
+    const int button_x = sx + kDfuButtonX;
+    const int button_y = sy + kDfuButtonY;
+    const int button_width = kTuiDeviceCanvasWidth - 1;
+    const int button_height = (steps_bottom_y - steps_max_lines + 1) - button_y;
+
+    if (const DfuAsciiPreview* preview = find_dfu_ascii_preview(m_sequence.imageName)) {
+        draw_dfu_ascii_preview(*preview, sx, sy);
+    }
+
+    draw_sequence_buttons(button_x, button_y, button_width, button_height);
+    draw_wrapped_steps(steps_x, steps_width, steps_max_lines, steps_bottom_y);
 }
 
 void TuiDfuPanel::handle_enter(int selected, int sy, int sx) {
@@ -390,6 +327,7 @@ void TuiDfuPanel::handle_device_update(const DeviceState& state) {
         reset_sequence_state();
         GetFrame()->ShowMain(0);
     }
+
 }
 
 void TuiDfuPanel::reboot() {

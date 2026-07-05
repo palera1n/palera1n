@@ -13,7 +13,7 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../state.hpp"
+#include "../event.hpp"
 #include "../utils.h"
 #include "../globals.h"
 #include "../paleinfo.h"

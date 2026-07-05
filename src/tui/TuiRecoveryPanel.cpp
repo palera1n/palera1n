@@ -1,19 +1,23 @@
 #ifdef WITH_TUI
 
 #include "TuiRecoveryPanel.hpp"
-#include "Tui.hpp"
+
 #include <ncurses.h>
+#include <string>
 #include <thread>
 #include <chrono>
 
+#include "Tui.hpp"
+#include "TuiText.hpp"
 #include "../globals.h"
-#include "../utils.h"
 #include "../paleinfo.h"
 
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 
-static const char *buttons[] = { "[ Back ]", "[ Next ]" };
+static const char *buttons[] = { "Back", "Next" };
+static constexpr int kRecoveryContentX = 2;
+static constexpr int kRecoveryContentWidth = 60;
 
 TuiRecoveryPanel::TuiRecoveryPanel(TuiFrame* frame)
     : TuiPanel(frame), m_status_text(""), m_is_entering_recovery(false), m_buttons_disabled(false) {}
@@ -48,13 +52,12 @@ void TuiRecoveryPanel::on_show() {
 }
 
 void TuiRecoveryPanel::draw(int sy, int sx, int selected) {
-    mvprintw(sy + 2, sx + 2, "The device needs to be put into DFU mode to apply the jailbreak. This is a");
-    mvprintw(sy + 3, sx + 2, "manual process and we will guide you through it.");
-    mvprintw(sy + 4, sx + 2, "In order to prevent filesystem corruption through hard reset, the device");
-    mvprintw(sy + 5, sx + 2, "will be put into recovery mode first. Click next when you are ready.");
+    const int content_x = sx + kRecoveryContentX;
+    const std::string intro = "The device needs to be put into DFU mode to apply the jailbreak. This is a manual process and we will guide you through it.";
+    tui_text::draw_wrapped_text(sy + 2, content_x, kRecoveryContentWidth, intro, 6);
 
     if (!m_status_text.empty()) {
-        mvprintw(sy + 8, sx + 2, "%s", m_status_text.c_str());
+        tui_text::draw_wrapped_text(sy + 9, content_x, kRecoveryContentWidth, m_status_text, 3);
     }
 }
 

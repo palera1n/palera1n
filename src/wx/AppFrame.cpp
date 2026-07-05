@@ -6,12 +6,6 @@
 #include "../utils.h"
 #include "../event.hpp"
 
-#include <thread>
-
-#include <libimobiledevice/libimobiledevice.h>
-#include <libimobiledevice/lockdown.h>
-#include <libirecovery.h>
-
 wxDEFINE_EVENT(EVT_DEVICE_STATE_UPDATE, wxCommandEvent);
 
 void send_device_state(MainFrame* frame, const DeviceState& state)
@@ -67,28 +61,7 @@ MainFrame::MainFrame()
     register_device_state_callback([this](const DeviceState& state) {
         send_device_state(this, state);
     });
-
-    std::thread([]()
-    {
-        idevice_event_subscribe(normal_device_event_cb, nullptr);
-
-        while (true)
-            sleep_ms(1000);
-    }).detach();
-
-    std::thread([]()
-    {
-        static irecv_device_event_context_t ctx = nullptr;
-
-        irecv_device_event_subscribe(
-            &ctx,
-            recovery_device_event_cb,
-            nullptr
-        );
-
-        while (true)
-            sleep_ms(1000);
-    }).detach();
+    ensure_device_event_system_started();
 }
 
 void MainFrame::ShowMain()

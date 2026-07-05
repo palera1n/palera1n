@@ -1,8 +1,11 @@
 #ifdef WITH_TUI
 
-#pragma once
+#ifndef TUI_PANEL_HPP
+#define TUI_PANEL_HPP
+
 #include <ncurses.h>
-#include "../state.hpp"
+
+#include "../event.hpp"
 
 class TuiFrame;
 
@@ -33,15 +36,14 @@ public:
     virtual int get_total_items() const = 0;
     virtual int get_button_count() const = 0;
     virtual const char** get_buttons() const = 0;
-
 protected:
     TuiFrame* GetFrame() const {
         return m_frame;
     }
-
 private:
     TuiFrame* m_frame = nullptr;
-
 };
+
+#endif // TUI_PANEL_HPP
 
 #endif // WITH_TUI

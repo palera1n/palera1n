@@ -1,13 +1,13 @@
 #ifdef WITH_TUI
 
-#ifndef UI_H
-#define UI_H
+#ifndef TUI_HPP
+#define TUI_HPP
 
 #include <memory>
 #include <mutex>
 #include <vector>
 
-#include "../state.hpp"
+#include "../event.hpp"
 #include "TuiPanel.hpp"
 
 class TuiPanel;
@@ -66,6 +66,6 @@ private:
 void ui_run(void);
 void update_tui_device_state(const DeviceState* new_state);
 
-#endif
+#endif // TUI_HPP
 
 #endif // WITH_TUI

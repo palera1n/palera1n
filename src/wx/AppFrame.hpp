@@ -4,7 +4,7 @@
 #ifdef WITH_GUI
 
 #include <wx/wx.h>
-#include "../state.hpp"
+#include "../event.hpp"
 
 #include "MainPanel.hpp"
 #include "SettingsPanel.hpp"

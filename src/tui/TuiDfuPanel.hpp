@@ -1,6 +1,8 @@
 #ifdef WITH_TUI
 
-#pragma once
+#ifndef TUI_DFU_PANEL_HPP
+#define TUI_DFU_PANEL_HPP
+
 #include "TuiPanel.hpp"
 #include "../sequence.hpp"
 #include <string>
@@ -29,8 +31,8 @@ private:
     void reboot();
     void update_sequence_timer();
     int scale_coord(int value, int input_span, int output_span) const;
-    void draw_sequence_buttons(int sy, int sx, int button_x, int button_y, int button_width, int button_height) const;
-    void draw_wrapped_steps(int sy, int sx, int steps_x, int steps_width) const;
+    void draw_sequence_buttons(int button_x, int button_y, int button_width, int button_height) const;
+    void draw_wrapped_steps(int steps_x, int steps_width, int max_lines, int bottom_y) const;
 
     DfuSequence m_sequence;
     std::string m_current_product_type;
@@ -43,5 +45,7 @@ private:
     std::chrono::steady_clock::time_point m_dfuSuccessAt;
     std::chrono::steady_clock::time_point m_last_tick;
 };
+
+#endif // TUI_DFU_PANEL_HPP
 
 #endif // WITH_TUI

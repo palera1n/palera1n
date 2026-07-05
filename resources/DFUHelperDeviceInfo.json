@@ -85,13 +85,13 @@
             "buttons":{
                 "top":{
                     "name":"- Top button",
-                    "x":192,
-                    "y":-4
+                    "x":237,
+                    "y":0
                 },
                 "vol_down":{
                     "name":"Volume down -",
-                    "x":8,
-                    "y":62
+                    "x":46,
+                    "y":56
                 }
             },
             "sequence":"ipodtouch7"
@@ -103,13 +103,13 @@
             "buttons":{
                 "top":{
                     "name":"- Top button",
-                    "x":196,
-                    "y":-4
+                    "x":237,
+                    "y":0
                 },
                 "home":{
                     "name":"Home button -",
-                    "x":50,
-                    "y":210
+                    "x":89,
+                    "y":190
                 }
             },
             "sequence":"iphone-old"
@@ -121,13 +121,13 @@
             "buttons":{
                 "top":{
                     "name":"- Top button",
-                    "x":200,
-                    "y":-4
+                    "x":237,
+                    "y":0
                 },
                 "home":{
                     "name":"Home button -",
-                    "x":56,
-                    "y":210
+                    "x":90,
+                    "y":195
                 }
             },
             "sequence":"iphone-old"
@@ -139,13 +139,13 @@
             "buttons":{
                 "side":{
                     "name":"- Side button",
-                    "x":224,
-                    "y":58
+                    "x":244,
+                    "y":54
                 },
                 "home":{
                     "name":"Home button -",
-                    "x":60,
-                    "y":210
+                    "x":90,
+                    "y":195
                 }
             },
             "sequence":"iphone6"
@@ -157,13 +157,13 @@
             "buttons":{
                 "side":{
                     "name":"- Side button",
-                    "x":224,
-                    "y":58
+                    "x":244,
+                    "y":54
                 },
                 "vol_down":{
                     "name":"Volume down -",
-                    "x":14,
-                    "y":78
+                    "x":44,
+                    "y":72
                 }
             },
             "sequence":"iphone7"
@@ -175,13 +175,13 @@
             "buttons":{
                 "side":{
                     "name":"- Side button",
-                    "x":220,
-                    "y":58
+                    "x":248,
+                    "y":54
                 },
                 "vol_down":{
                     "name":"Volume down -",
-                    "x":10,
-                    "y":78
+                    "x":44,
+                    "y":72
                 }
             },
             "sequence":"iphone8"
@@ -193,13 +193,13 @@
             "buttons":{
                 "side":{
                     "name":"- Side button",
-                    "x":220,
-                    "y":68
+                    "x":246,
+                    "y":62
                 },
                 "vol_down":{
                     "name":"Volume down -",
-                    "x":10,
-                    "y":75
+                    "x":44,
+                    "y":70
                 }
             },
             "sequence":"iphone8"
@@ -210,14 +210,14 @@
             "image_height":240,
             "buttons":{
                 "top":{
-                    "name":"Top button",
-                    "x":149,
-                    "y":5
+                    "name":"- Top button",
+                    "x":266,
+                    "y":0
                 },
                 "home":{
-                    "name":"Home button",
-                    "x":89,
-                    "y":225
+                    "name":"Home button -",
+                    "x":94,
+                    "y":200
                 }
             },
             "sequence":"iphone-old"
@@ -228,14 +228,14 @@
             "image_height":240,
             "buttons":{
                 "top":{
-                    "name":"Top button",
-                    "x":140,
-                    "y":4
+                    "name":"- Top button",
+                    "x":260,
+                    "y":0
                 },
                 "home":{
-                    "name":"Home button",
-                    "x":86,
-                    "y":224
+                    "name":"Home button -",
+                    "x":92,
+                    "y":200
                 }
             },
             "sequence":"iphone-old"
@@ -247,13 +247,13 @@
             "buttons":{
                 "menu":{
                     "name":"Menu -",
-                    "x":84,
-                    "y":84
+                    "x":110,
+                    "y":74
                 },
                 "playpause":{
                     "name":"Play/Pause -",
-                    "x":52,
-                    "y":146
+                    "x":80,
+                    "y":130
                 }
             },
             "sequence":"appletv4"
@@ -265,7 +265,7 @@
             "buttons":{
                 "dfu":{
                     "name":"-- DFU button",
-                    "x":120,
+                    "x":170,
                     "y":48
                 }
             },
@@ -286,7 +286,7 @@
                     "top",
                     "vol_down"
                 ],
-                "description":"Press and hold the Top and Volume down buttons together",
+                "description":"HOLD Top and Volume down",
                 "duration":4,
                 "action":"reboot"
             },
@@ -294,7 +294,7 @@
                 "buttons":[
                     "vol_down"
                 ],
-                "description":"Release the Top button BUT KEEP HOLDING the Volume down button",
+                "description":"Release Top and KEEP holding Volume down",
                 "duration":10
             }
         ],
@@ -311,7 +311,7 @@
                     "top",
                     "home"
                 ],
-                "description":"Press and hold the Top and Home buttons together",
+                "description":"HOLD Top and Home button",
                 "duration":4,
                 "action":"reboot"
             },
@@ -319,7 +319,7 @@
                 "buttons":[
                     "home"
                 ],
-                "description":"Release the Top button BUT KEEP HOLDING the Home button",
+                "description":"Release Top and KEEP holding Home button",
                 "duration":10
             }
         ],
@@ -336,7 +336,7 @@
                     "side",
                     "home"
                 ],
-                "description":"Press and hold the Side and Home buttons together",
+                "description":"HOLD Side and Home button",
                 "duration":4,
                 "action":"reboot"
             },
@@ -344,7 +344,7 @@
                 "buttons":[
                     "home"
                 ],
-                "description":"Release the Side button BUT KEEP HOLDING the Home button",
+                "description":"Release Side and KEEP holding Home button",
                 "duration":10
             }
         ],
@@ -361,7 +361,7 @@
                     "side",
                     "vol_down"
                 ],
-                "description":"HOLD Power and Volume down",
+                "description":"HOLD Side and Volume down",
                 "duration":4,
                 "action":"reboot"
             },
@@ -369,7 +369,7 @@
                 "buttons":[
                     "vol_down"
                 ],
-                "description":"Release Power and KEEP holding Volume down",
+                "description":"Release Side and KEEP holding Volume down",
                 "duration":10
             }
         ],
@@ -386,7 +386,7 @@
                     "side",
                     "vol_down"
                 ],
-                "description":"Press and hold the Side and Volume down buttons together",
+                "description":"HOLD Side and Volume down",
                 "duration":4,
                 "action":"reboot"
             },
@@ -394,7 +394,7 @@
                 "buttons":[
                     "vol_down"
                 ],
-                "description":"Release the Side button BUT KEEP HOLDING the Volume down button",
+                "description":"Release Side and KEEP holding Volume down",
                 "duration":10
             }
         ],

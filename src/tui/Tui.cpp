@@ -2,14 +2,16 @@
 
 #include "Tui.hpp"
 
-#include <ncurses.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <clocale>
+#include <string>
 #include <mutex>
-#include <thread>
-#include <chrono>
 #include <vector>
 #include <memory>
+
+#include <ncurses.h>
 
 #include "TuiPanel.hpp"
 #include "TuiMainPanel.hpp"
@@ -17,24 +19,102 @@
 #include "TuiRecoveryPanel.hpp"
 #include "TuiDfuPanel.hpp"
 #include "TuiExploitPanel.hpp"
-
+#include "TuiBranding.hpp"
 #include "../globals.h"
 #include "../utils.h"
 #include "../paleinfo.h"
-#include "../state.hpp"
 #include "../event.hpp"
 
 #define WIDTH 80
 #define HEIGHT 24
 
+static constexpr int LEFT_PANEL_WIDTH = 65;
+static constexpr int RIGHT_PANEL_WIDTH = WIDTH - LEFT_PANEL_WIDTH;
+static constexpr int RIGHT_INNER_WIDTH = RIGHT_PANEL_WIDTH - 2;
+static constexpr int MAIN_BUTTON_VERTICAL_GAP = 1;
+static constexpr int SIDEBAR_BUTTON_WIDTH = 13;
+static constexpr int SIDEBAR_WALL_GAP = 1;
+static constexpr short COLOR_PAIR_SUBTITLE = 1;
+
+static std::string trim_button_label(std::string label) {
+    while (!label.empty() && label.front() == ' ') {
+        label.erase(label.begin());
+    }
+    while (!label.empty() && label.back() == ' ') {
+        label.pop_back();
+    }
+
+    return label;
+}
+
+static std::string format_sidebar_button_label(const char* raw_label, int button_width) {
+    if (button_width < 2) {
+        return "";
+    }
+
+    if (!raw_label) {
+        return std::string(static_cast<size_t>(button_width), ' ');
+    }
+
+    std::string label(raw_label);
+    if (label.size() >= 2 && label.front() == '[' && label.back() == ']') {
+        label = label.substr(1, label.size() - 2);
+    }
+
+    label = trim_button_label(label);
+
+    const int inner_width = button_width - 2;
+    if (inner_width <= 0) {
+        return "[]";
+    }
+
+    if (static_cast<int>(label.size()) > inner_width) {
+        label.resize(static_cast<size_t>(inner_width));
+    }
+
+    const int left_pad = std::max(0, (inner_width - static_cast<int>(label.size())) / 2);
+    const int right_pad = std::max(0, inner_width - static_cast<int>(label.size()) - left_pad);
+
+    return "[" + std::string(static_cast<size_t>(left_pad), ' ') + label + std::string(static_cast<size_t>(right_pad), ' ') + "]";
+}
+
+static void draw_panel_border(int y, int x, int width, int height, const char* title = nullptr) {
+    if (title) {
+        char title_buf[64];
+        std::snprintf(title_buf, sizeof(title_buf), "[ %s ]", title);
+        int title_len = static_cast<int>(std::strlen(title_buf));
+        int title_start_x = x + (width - title_len) / 2;
+
+        mvhline(y, x, ACS_HLINE, title_start_x - x);
+        mvprintw(y, title_start_x, "%s", title_buf);
+        mvhline(y, title_start_x + title_len, ACS_HLINE, (x + width) - (title_start_x + title_len));
+    } else {
+        mvhline(y, x, ACS_HLINE, width);
+    }
+
+    mvhline(y + height - 1, x, ACS_HLINE, width);
+    mvvline(y, x, ACS_VLINE, height);
+    mvvline(y, x + width - 1, ACS_VLINE, height);
+
+    mvaddch(y, x, ACS_ULCORNER);
+    mvaddch(y, x + width - 1, ACS_URCORNER);
+    mvaddch(y + height - 1, x, ACS_LLCORNER);
+    mvaddch(y + height - 1, x + width - 1, ACS_LRCORNER);
+}
+
 static TuiFrame* g_frame = nullptr;
 
 TuiFrame::TuiFrame() {
     InitPanels();
+    g_frame = this;
     InitDeviceEventListeners();
 }
 
-TuiFrame::~TuiFrame() = default;
+TuiFrame::~TuiFrame() {
+    if (g_frame == this) {
+        g_frame = nullptr;
+    }
+}
 
 void TuiFrame::InitPanels() {
     m_panels.resize(PANEL_COUNT);
@@ -49,21 +129,7 @@ void TuiFrame::InitDeviceEventListeners() {
     register_device_state_callback([](const DeviceState& state) {
         update_tui_device_state(&state);
     });
-
-    std::thread([this]() {
-        idevice_event_subscribe(normal_device_event_cb, nullptr);
-        while (m_running) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        }
-    }).detach();
-
-    std::thread([this]() {
-        static irecv_device_event_context_t ctx = nullptr;
-        irecv_device_event_subscribe(&ctx, recovery_device_event_cb, nullptr);
-        while (m_running) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        }
-    }).detach();
+    ensure_device_event_system_started();
 }
 
 void TuiFrame::ActivatePanelIfNeeded(PanelState previous_panel) {
@@ -83,7 +149,7 @@ void TuiFrame::DrawUi() {
     erase();
 
     if (rows < HEIGHT || cols < WIDTH) {
-        mvprintw(rows / 2, (cols - 34) / 2, "Terminal too small! Need min 80x24.");
+        mvprintw(rows / 2, (cols - 34) / 2, "Terminal too small, need 80x24");
         refresh();
         return;
     }
@@ -91,27 +157,15 @@ void TuiFrame::DrawUi() {
     int start_y = (rows - HEIGHT) / 2;
     int start_x = (cols - WIDTH) / 2;
 
-    const char *title = "palera1n - Version beta " PALERAIN_VERSION;
-    char title_buf[64];
-    std::snprintf(title_buf, sizeof(title_buf), "[ %s ]", title);
-    int title_len = static_cast<int>(std::strlen(title_buf));
-    int title_start_x = start_x + (WIDTH - title_len) / 2;
 
-    mvhline(start_y, start_x, ACS_HLINE, title_start_x - start_x);
-    mvprintw(start_y, title_start_x, "%s", title_buf);
-    mvhline(start_y, title_start_x + title_len, ACS_HLINE, (start_x + WIDTH) - (title_start_x + title_len));
+    const int left_x = start_x;
+    const int right_x = start_x + LEFT_PANEL_WIDTH;
 
-    mvhline(start_y + HEIGHT - 1, start_x, ACS_HLINE, WIDTH);
-    mvvline(start_y, start_x, ACS_VLINE, HEIGHT);
-    mvvline(start_y, start_x + WIDTH - 1, ACS_VLINE, HEIGHT);
-
-    mvaddch(start_y, start_x, ACS_ULCORNER);
-    mvaddch(start_y, start_x + WIDTH - 1, ACS_URCORNER);
-    mvaddch(start_y + HEIGHT - 1, start_x, ACS_LLCORNER);
-    mvaddch(start_y + HEIGHT - 1, start_x + WIDTH - 1, ACS_LRCORNER);
+    draw_panel_border(start_y, left_x, LEFT_PANEL_WIDTH, HEIGHT, "palera1n - Version beta " PALERAIN_VERSION);
+    draw_panel_border(start_y, right_x, RIGHT_PANEL_WIDTH, HEIGHT);
 
     if (m_panels[m_currentPanel]) {
-        m_panels[m_currentPanel]->draw(start_y, start_x, m_selected);
+        m_panels[m_currentPanel]->draw(start_y, left_x, m_selected);
     }
 
     if (m_panels[m_currentPanel]) {
@@ -119,27 +173,49 @@ void TuiFrame::DrawUi() {
         int total_items = m_panels[m_currentPanel]->get_total_items();
         const char **panel_buttons = m_panels[m_currentPanel]->get_buttons();
 
-        int y = start_y + 22;
-        int x = start_x + WIDTH - 2;
+        const int sidebar_x = right_x;
+        const int sidebar_inner_x = sidebar_x + 1;
+        const int sidebar_inner_width = RIGHT_INNER_WIDTH;
+        const int sidebar_top = start_y + 1;
+        const int sidebar_bottom = start_y + HEIGHT - 2;
+        const int content_top = sidebar_top + SIDEBAR_WALL_GAP;
+        const int content_bottom = sidebar_bottom;
+        const int content_x = sidebar_inner_x + SIDEBAR_WALL_GAP;
+        const int content_width = std::max(1, sidebar_inner_width - (SIDEBAR_WALL_GAP * 2));
 
-        for (int i = btn_cnt - 1; i >= 0; i--) {
-            int len = static_cast<int>(std::strlen(panel_buttons[i]));
-            x -= len;
+        draw_tui_sidebar_branding(sidebar_top, sidebar_inner_x, sidebar_inner_width);
+
+        std::vector<std::string> labels;
+        labels.reserve(static_cast<size_t>(btn_cnt));
+        const int button_width = std::clamp(SIDEBAR_BUTTON_WIDTH, 8, content_width);
+
+        for (int i = 0; i < btn_cnt; ++i) {
+            labels.push_back(format_sidebar_button_label(panel_buttons[i], button_width));
+        }
+
+        const int buttons_block_height = std::max(1, btn_cnt + ((btn_cnt - 1) * MAIN_BUTTON_VERTICAL_GAP));
+        const int first_y = std::max(content_top, content_bottom - buttons_block_height + 1);
+        const int button_x = content_x + std::max(0, (content_width - button_width) / 2);
+
+        for (int i = 0; i < btn_cnt; ++i) {
+            if (i > 0) {
+                const int separator_y = first_y + (i * (MAIN_BUTTON_VERTICAL_GAP + 1)) - 1;
+                mvhline(separator_y, sidebar_inner_x, ACS_HLINE, sidebar_inner_width);
+            }
 
             int btn_idx = total_items - btn_cnt + i;
             bool enabled = m_panels[m_currentPanel]->is_button_enabled(btn_idx);
+            const std::string& label = labels[static_cast<size_t>(i)];
 
             if (!enabled) {
                 attron(A_DIM);
-                mvprintw(y, x, "%s", panel_buttons[i]);
+                mvprintw(first_y + (i * (MAIN_BUTTON_VERTICAL_GAP + 1)), button_x, "%s", label.c_str());
                 attroff(A_DIM);
             } else {
                 if (btn_idx == m_selected) attron(A_REVERSE);
-                mvprintw(y, x, "%s", panel_buttons[i]);
+                mvprintw(first_y + (i * (MAIN_BUTTON_VERTICAL_GAP + 1)), button_x, "%s", label.c_str());
                 if (btn_idx == m_selected) attroff(A_REVERSE);
             }
-
-            x -= 3;
         }
     }
 
@@ -188,13 +264,19 @@ void TuiFrame::HandleInput(int ch, int start_y, int start_x) {
 
 void TuiFrame::Run() {
     m_running = true;
-
+    std::setlocale(LC_ALL, "");
     initscr();
     noecho();
     cbreak();
     curs_set(0);
     keypad(stdscr, TRUE);
     timeout(100);
+
+    if (has_colors()) {
+        start_color();
+        use_default_colors();
+        init_pair(COLOR_PAIR_SUBTITLE, COLOR_YELLOW, -1);
+    }
 
     int ch;
 
@@ -320,9 +402,7 @@ void update_tui_device_state(const DeviceState* new_state) {
 
 void ui_run(void) {
     TuiFrame frame;
-    g_frame = &frame;
     frame.Run();
-    g_frame = nullptr;
 }
 
 #endif // WITH_TUI

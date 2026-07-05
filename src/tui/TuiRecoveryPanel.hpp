@@ -1,7 +1,10 @@
 #ifdef WITH_TUI
 
-#pragma once
+#ifndef TUI_RECOVERY_PANEL_HPP
+#define TUI_RECOVERY_PANEL_HPP
+
 #include "TuiPanel.hpp"
+
 #include <string>
 #include <atomic>
 
@@ -30,5 +33,7 @@ private:
     std::atomic<bool> m_is_entering_recovery;
     bool m_buttons_disabled;
 };
+
+#endif // TUI_RECOVERY_PANEL_HPP
 
 #endif // WITH_TUI

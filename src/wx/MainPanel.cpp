@@ -12,7 +12,7 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../state.hpp"
+#include "../event.hpp"
 #include "../globals.h"
 #include "../utils.h"
 #include "../paleinfo.h"
@@ -152,7 +152,11 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
 
     left->Add(new wxStaticLine(this), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
+    #if __APPLE__
     auto* madeBy = new wxStaticText(this, wxID_ANY, "Made with 💖 by C (claration)");
+    #else
+    auto* madeBy = new wxStaticText(this, wxID_ANY, "Made with <3 by C (claration)");
+    #endif
 
     auto* quickModeRow = new wxBoxSizer(wxHORIZONTAL);
     quickModeRow->Add(madeBy, 0, wxALIGN_CENTER_VERTICAL);
@@ -183,8 +187,21 @@ void MainPanel::SetDeviceState(const DeviceState& state)
     {
         if (!state.connected)
         {
-            m_deviceTitle->SetLabel(deviceTextString);
-            m_deviceSubtitle->SetLabel(deviceTextString2);
+            if (state.connectedDeviceCount > 1)
+            {
+                m_deviceTitle->SetLabel("Multiple devices detected");
+                m_deviceSubtitle->SetLabel(
+                    wxString::Format(
+                        "%u USB devices connected. Disconnect extras and keep only one device attached.",
+                        state.connectedDeviceCount
+                    )
+                );
+            }
+            else
+            {
+                m_deviceTitle->SetLabel(deviceTextString);
+                m_deviceSubtitle->SetLabel(deviceTextString2);
+            }
             m_startButton->Enable(false);
         }
         else

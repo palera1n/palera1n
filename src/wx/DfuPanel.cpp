@@ -5,7 +5,7 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../state.hpp"
+#include "../event.hpp"
 #include "../sequence.hpp"
 #include "../utils.h"
 #include "../globals.h"
@@ -160,6 +160,14 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
     }
 
     if (m_isEnteringDfu && state.mode == DeviceMode::Recovery)
+    {
+        m_isEnteringDfu = false;
+        m_backButton->Enable();
+        m_startButton->Enable();
+        GetMainFrame()->ShowMain();
+    }
+
+    if (!state.connected)
     {
         m_isEnteringDfu = false;
         m_backButton->Enable();
