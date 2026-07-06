@@ -23,6 +23,36 @@
 #define PID_PONGO   (0x4141)
 #define PID_DFU     (0x1227)
 
+#if defined(WITH_GUI) || defined(WITH_TUI)
+
+const char* stage_to_string(int stage)
+{
+    switch (stage) {
+        case STAGE_SETUP:       return "Checking if device is ready";
+        case STAGE_SPRAY:       return "Setting up the exploit (this is the heap spray)";
+        case STAGE_PATCH:       return "Right before trigger (this is the real bug setup)";
+        case STAGE_YOLODFU:     return "Booting PongoOS...";
+        case STAGE_PONGO:       return "Booting...";
+        case STAGE_DONE:        return "Done.";
+        default:                return "Idle.";
+    }
+}
+
+int stage_to_progress(int stage)
+{
+    switch (stage) {
+        case STAGE_SETUP:       return 30;
+        case STAGE_SPRAY:       return 40;
+        case STAGE_PATCH:       return 50;
+        case STAGE_YOLODFU:     return 60;
+        case STAGE_PONGO:       return 70;
+        case STAGE_DONE:        return 100;
+        default:                return 0;
+    }
+}
+
+#endif // WITH_GUI || WITH_TUI
+
 static void *exploit_thread(void *arg)
 {
     LOG_VERBOSE("Starting thread for DFU devices");

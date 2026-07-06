@@ -1,9 +1,10 @@
-#ifdef WITH_GUI
+#if defined(WITH_GUI) || defined(WITH_TUI)
 
 #ifndef SEQUENCE_H
 #define SEQUENCE_H
 
 #include <string>
+#include <vector>
 
 struct DfuButton
 {
@@ -26,7 +27,6 @@ struct DfuSequence
     std::string imageName;
     int imageWidth = 0;
     int imageHeight = 0;
-    int imageOffsetX = 0;
 
     std::vector<DfuButton> buttons;
     std::vector<DfuStep> steps;
@@ -37,4 +37,4 @@ bool SequenceIsSupported(const std::string& deviceKey);
 
 #endif // SEQUENCE_H
 
-#endif // WITH_GUI
+#endif // WITH_GUI || WITH_TUI

@@ -22,6 +22,13 @@ enum exploit_stage {
     STAGE_DONE      = 6,
 };
 
+#if defined(WITH_GUI) || defined(WITH_TUI)
+
+const char* stage_to_string(int stage);
+int stage_to_progress(int stage);
+
+#endif // WITH_GUI || WITH_TUI
+
 typedef struct {
     atomic_int result;
     atomic_bool stop;

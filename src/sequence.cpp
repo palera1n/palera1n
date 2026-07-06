@@ -1,4 +1,4 @@
-#ifdef WITH_GUI
+#if defined(WITH_GUI) || defined(WITH_TUI)
 
 #include <nlohmann/json.hpp>
 #include "gen/DFUHelperDeviceInfo.h"
@@ -28,7 +28,6 @@ DfuSequence ParseSequence(const std::string& deviceKey)
     seq.imageName = layout.value("image_name", "");
     seq.imageWidth = layout.value("image_width", 0);
     seq.imageHeight = layout.value("image_height", 0);
-    seq.imageOffsetX = layout.value("image_offset_x", 0);
 
     if (layout.contains("buttons"))
     {
@@ -85,4 +84,4 @@ bool SequenceIsSupported(const std::string& deviceKey)
     return !seq.steps.empty();
 }
 
-#endif // WITH_GUI
+#endif // WITH_GUI || WITH_TUI

@@ -6,17 +6,14 @@
 #include "../utils.h"
 #include "../event.hpp"
 
-#include <thread>
-
-#include <libimobiledevice/libimobiledevice.h>
-#include <libimobiledevice/lockdown.h>
-#include <libirecovery.h>
-
 wxDEFINE_EVENT(EVT_DEVICE_STATE_UPDATE, wxCommandEvent);
 
 void send_device_state(MainFrame* frame, const DeviceState& state)
 {
+    if (!wxTheApp) return;
+
     wxTheApp->CallAfter([frame, state]() {
+        if (!frame) return;
         auto* evt = new wxCommandEvent(EVT_DEVICE_STATE_UPDATE);
         evt->SetClientData(new DeviceState(state));
         wxPostEvent(frame, *evt);
@@ -28,7 +25,7 @@ MainFrame::MainFrame()
               wxID_ANY,
               "palera1n - Version beta " + wxString(PALERAIN_VERSION),
               wxDefaultPosition,
-              wxSize(480, 360),
+              wxSize(480, 348),
               wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX | wxRESIZE_BORDER))
 {
     auto* root = new wxBoxSizer(wxVERTICAL);
@@ -61,27 +58,10 @@ MainFrame::MainFrame()
 
     ShowMain();
 
-    std::thread([this]()
-    {
-        idevice_event_subscribe(normal_device_event_cb, this);
-
-        while (true)
-            sleep_ms(1000);
-    }).detach();
-
-    std::thread([this]()
-    {
-        static irecv_device_event_context_t ctx = nullptr;
-
-        irecv_device_event_subscribe(
-            &ctx,
-            recovery_device_event_cb,
-            this
-        );
-
-        while (true)
-            sleep_ms(1000);
-    }).detach();
+    register_device_state_callback([this](const DeviceState& state) {
+        send_device_state(this, state);
+    });
+    ensure_device_event_system_started();
 }
 
 void MainFrame::ShowMain()

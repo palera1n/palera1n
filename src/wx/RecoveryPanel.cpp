@@ -3,16 +3,21 @@
 #include "RecoveryPanel.hpp"
 
 #include <wx/wx.h>
+#include <wx/mstream.h>
+#include <wx/image.h>
+#include <wx/bitmap.h>
+#include <wx/statline.h>
 
 #include <thread>
 
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../state.hpp"
+#include "../event.hpp"
 #include "../utils.h"
 #include "../globals.h"
 #include "../paleinfo.h"
+#include "../gen/images/logo.h"
 
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
@@ -22,20 +27,19 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
 {
     Bind(wxEVT_SHOW, &RecoveryPanel::OnShow, this);
-    auto* root = new wxBoxSizer(wxVERTICAL);
-
-    root->Add(new wxStaticText(this, wxID_ANY,
-        "The device needs to be put into DFU mode to apply the jailbreak. This is a\n"
-        "manual process and we will guide you through it.\n"
-        "In order to prevent filesystem corruption through hard reset, the device will\n"
-        "be put into recovery mode first. Click next when you are ready."
-    ), 0, wxALL, 10);
+    auto* root = new wxBoxSizer(wxHORIZONTAL);
+    auto* left = new wxBoxSizer(wxVERTICAL);
+    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxImage img(stream, wxBITMAP_TYPE_PNG);
+    wxBitmap bmp(img);
+    auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
+    auto* logoText = new wxStaticText(this, wxID_ANY, "Recovery");
+    auto* right = new wxBoxSizer(wxVERTICAL);
 
     m_statusText = new wxStaticText(this, wxID_ANY, "");
-    root->Add(m_statusText, 0, wxALL, 10);
-
     m_backButton = new wxButton(this, wxID_ANY, "Back");
     m_nextButton = new wxButton(this, wxID_ANY, "Next");
+
     m_backButton->Bind(wxEVT_BUTTON, [frame](wxCommandEvent&)
     {
         frame->ShowMain();
@@ -47,7 +51,6 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
         m_nextButton->Disable();
         EnterRecoveryMode();
     });
-
     m_timer.Bind(wxEVT_TIMER, [this](wxTimerEvent&)
     {
         m_backButton->Enable();
@@ -58,13 +61,24 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
         m_statusText->SetLabel("");
     });
 
-    auto* bottomRow = new wxBoxSizer(wxHORIZONTAL);
-    bottomRow->AddStretchSpacer();
-    bottomRow->Add(m_backButton, 0, wxRIGHT | wxBOTTOM, 12);
-    bottomRow->Add(m_nextButton, 0, wxRIGHT | wxLEFT | wxBOTTOM, 12);
+    left->Add(
+        new wxStaticText(this, wxID_ANY,
+        "The device needs to be put into DFU mode to apply the jailbreak. This is a manual process and we will guide you through it.",
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxST_WRAP
+    ), 0, wxALL, 10);
+    left->Add(m_statusText, 0, wxALL, 10);
 
-    root->AddStretchSpacer();
-    root->Add(bottomRow, 0, wxEXPAND);
+    right->Add(logo, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP | wxLEFT | wxRIGHT, 10);
+    right->Add(logoText, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 5);
+    right->AddStretchSpacer();
+    right->Add(m_backButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    right->Add(m_nextButton, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
+    root->Add(left, 1, wxEXPAND);
+    root->Add(new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL), 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
+    root->Add(right, 0, wxEXPAND);
 
     SetSizer(root);
 }
@@ -85,7 +99,7 @@ void RecoveryPanel::SetDeviceState(const DeviceState& state)
     if (m_isEnteringRecovery && state.mode == DeviceMode::Normal)
     {
         m_isEnteringRecovery = false;
-        m_statusText->SetLabel("Hmm... It seems like the device didn't enter recovery mode. Please try again.");
+        m_statusText->SetLabel("Hmm... It seems like the device didn't enter recovery mode.");
         m_backButton->Enable();
         m_nextButton->Enable();
     }

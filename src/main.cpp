@@ -11,7 +11,9 @@
 #endif
 
 #include "m8/run.h"
-
+#ifdef WITH_TUI
+# include "tui/Tui.hpp"
+#endif
 #include "utils.h"
 #include "globals.h"
 #include "paleinfo.h"
@@ -31,9 +33,9 @@ void print_credits() {
         ":: Made by: asdfugil, kok3shidoll, claration, mineek\n"
         ":: nekohaxx, plooshi, staturnz\n"
         ":: ======== Thanks to =======>\n"
-        ":: Thanks to: llsc12, itsnebulalol, lrdsnow, kirb, ehilwyma\n"
-        ":: opa334, 0x7ff, sbingner, nikias (libimobiledevice)\n"
-        ":: dedbeddedbed, tihmstar\n"
+        ":: Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed\n"
+        ":: kirb, ehilwyma, opa334, 0x7ff, alfiecg25, sneko, sbingner\n"
+        ":: nikias, tihmstar\n"
         ":: Checkra1n (Siguza, axi0mx, littlelailo et al.)\n"
         ":: Procursus (Hayden Seay, Cameron Katri, Keto et al.)\n"
         ":: ==========================>\n\n"
@@ -329,8 +331,8 @@ int main(int argc, char* argv[], char* envp[]) {
         wxEntryCleanup();
         return 0;
     } else if (palerain_flags & palerain_option_tui) {
-        LOG_WARN("TUI is not implemented yet");
-        return 1;
+        ui_run();
+        return 0;
     } else {
         shared_t state{};
         return exploit(&state);

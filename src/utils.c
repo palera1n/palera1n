@@ -48,6 +48,9 @@ static const char* get_timestamp(void) {
 }
 
 void log_write(log_level_t level, const char *fmt, ...) {
+    if (palerain_flags & palerain_option_tui)
+        return;
+
     va_list args;
     va_start(args, fmt);
 
