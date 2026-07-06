@@ -294,10 +294,13 @@ if(WITH_STATIC)
             URL https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz
             CONFIGURE_COMMAND
                 ${PKG_ENV}
-                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} --disable-stripping --enable-overwrite
+                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} --disable-stripping --enable-overwrite --enable-widec
             BUILD_COMMAND make -j
             BUILD_IN_SOURCE 1
-            INSTALL_COMMAND make install
+            INSTALL_COMMAND
+                make install &&
+                ln -sf ${DEPS_PREFIX}/lib/libncursesw.a ${DEPS_PREFIX}/lib/libncurses.a &&
+                ln -sf ${DEPS_PREFIX}/lib/libtinfow.a ${DEPS_PREFIX}/lib/libtinfo.a
         )
     endif()
 
