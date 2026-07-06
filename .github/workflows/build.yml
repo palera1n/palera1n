@@ -121,6 +121,7 @@ jobs:
         CC="${{ matrix.triple }}-gcc" CXX="${{ matrix.triple }}-g++" \
         make palera1n \
           WITH_STATIC=1 \
+          WITH_TUI=1 \
           BUILD_TYPE=Release \
           CMAKE_SYSROOT="$SYSROOT_PATH" \
           CROSS_HOST_TRIPLE="${{ matrix.triple }}" \
