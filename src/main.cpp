@@ -98,7 +98,7 @@ void parse_arguments(int argc, char* argv[]) {
         #ifdef WITH_GUI
         {"gui", no_argument, NULL, 2},
         #endif
-        #ifdef WITH_GUI
+        #ifdef WITH_TUI
         {"tui", no_argument, NULL, 3},
         #endif
         {"dark-blockchain", no_argument, NULL, 4},
