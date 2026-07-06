@@ -50,7 +50,7 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
         wxID_ANY,
         "Made by: asdfugil, claration, kok3shidoll, mineek, plooshi, staturnz\n\n"
         "Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed, kirb, ehilwyma, "
-        "opa334, 0x7ff, alfiecg24, sneko, sbingner, nikias (libimobiledevice), tihmstar, "
+        "opa334, 0x7ff, alfiecg24, sneko, sbingner, nikias, tihmstar, "
         "Checkra1n (Siguza, axi0mx, littlelailo et al.), Procursus (Hayden Seay, "
         "Cameron Katri, Keto et al.)",
         wxDefaultPosition,

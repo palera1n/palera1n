@@ -35,7 +35,7 @@ void print_credits() {
         ":: ======== Thanks to =======>\n"
         ":: Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed\n"
         ":: kirb, ehilwyma, opa334, 0x7ff, alfiecg25, sneko, sbingner\n"
-        ":: nikias (libimobiledevice), tihmstar\n"
+        ":: nikias, tihmstar\n"
         ":: Checkra1n (Siguza, axi0mx, littlelailo et al.)\n"
         ":: Procursus (Hayden Seay, Cameron Katri, Keto et al.)\n"
         ":: ==========================>\n\n"
