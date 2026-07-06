@@ -102,6 +102,9 @@ int issue_pongo_command(const usb_handle_t *handle, const char *command) {
 
         if (!send_interface_control_request(handle, 0x21, 4, 1, 0, NULL, 0, &tx_status)) return -1;
         if (!send_interface_control_request(handle, 0x21, 3, 0, 0, command_buf, len, &tx_status)) return -1;
+
+        // return early if the command is boot, we dont care about results
+        if (strncmp(command,"boot",4) == 0) return 0;
     }
     fetch_output:
     while (in_progress) {
@@ -121,10 +124,6 @@ int issue_pongo_command(const usb_handle_t *handle, const char *command) {
     }
     bad:
     if (tx_status.ret != USB_TRANSFER_OK) {
-        if (command != NULL && strncmp(command,"boot",4) == 0) {
-            return 0;
-        }
-
         LOG_ERROR("Pongo USB error: %d", tx_status.ret);
         return -1;
     }

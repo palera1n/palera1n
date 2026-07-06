@@ -71,6 +71,7 @@ static void *exploit_thread(void *arg)
 
     while (!atomic_load(&s->stop)) {
         if (!wait_usb_handle(&handle)) {
+            if (atomic_load(&s->stop)) break;
             reset_usb_handle(&handle);
             continue;
         }
@@ -166,7 +167,7 @@ static void *pongo_thread(void *arg)
             continue;
         }
 
-        if (seen) continue;
+        if (seen) break;
         seen = true;
 
         LOG_SUCCESS("Detected PongoOS device");
