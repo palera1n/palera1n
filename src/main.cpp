@@ -147,7 +147,7 @@ void parse_arguments(int argc, char* argv[]) {
     palerain_flags |= palerain_option_cli;
     #endif
 
-    while ((options = getopt_long(argc, argv, "hvlfcB:sTVpe:k:K:o:r:nq", long_options, &option_index)) != -1) {
+    while ((options = getopt_long(argc, argv, "hvlfcBsTVpe:k:K:o:r:nq", long_options, &option_index)) != -1) {
         switch (options) {
             case 'h': // --help
                 print_usage(argv[0]);
@@ -295,15 +295,42 @@ void parse_arguments(int argc, char* argv[]) {
         }
     }
 
-    if (!(palerain_flags & palerain_option_gui) &&
-        !(palerain_flags & palerain_option_tui))
+    if (!(palerain_flags & palerain_option_gui) && !(palerain_flags & palerain_option_tui))
     {
+        bool is_rootful = (palerain_flags & palerain_option_rootful);
+        bool is_rootless = (palerain_flags & palerain_option_rootless);
+        bool has_setup = (palerain_flags & palerain_option_setup_rootful) ||
+                        (palerain_flags & palerain_option_setup_partial_root);
 
-        if (!(palerain_flags & palerain_option_rootful) &&
-            !(palerain_flags & palerain_option_rootless))
+        if (!is_rootful && !is_rootless)
         {
-
             LOG_ERROR("You must specify either -l, --rootless or -f, --rootful.\n");
+            print_usage(argv[0]);
+            exit(1);
+        }
+
+        if (is_rootful && is_rootless)
+        {
+            LOG_ERROR("You cannot specify both -l, --rootless and -f, --rootful.\n");
+            print_usage(argv[0]);
+            exit(1);
+        }
+
+        if ((palerain_flags & palerain_option_setup_rootful) &&
+            (palerain_flags & palerain_option_setup_partial_root))
+        {
+            LOG_ERROR("You cannot specify both -c, --setup-fakefs and -B, --setup-partial-fakefs.\n");
+            print_usage(argv[0]);
+            exit(1);
+        }
+
+        if (has_setup && !is_rootful)
+        {
+            if (is_rootless) {
+                LOG_ERROR("-c, --setup-fakefs or -B, --setup-partial-fakefs cannot be used with -l, --rootless.\n");
+            } else {
+                LOG_ERROR("-c, --setup-fakefs or -B, --setup-partial-fakefs require -f, --rootful.\n");
+            }
             print_usage(argv[0]);
             exit(1);
         }
