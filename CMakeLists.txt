@@ -32,7 +32,7 @@ endif()
 
 if(MINGW AND WITH_TUI)
     message(FATAL_ERROR "-DWITH_TUI=1 is not supported on MinGW builds.")
-endif()s
+endif()
 
 # =========================
 # SETUP
