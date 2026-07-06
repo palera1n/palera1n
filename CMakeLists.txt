@@ -27,8 +27,12 @@ if(LINUX AND WITH_STATIC)
 endif()
 
 if(MINGW AND NOT WITH_STATIC)
-    message(FATAL_ERROR "MinGW builds must be static. Please configure with -DWITH_STATIC=ON")
+    message(FATAL_ERROR "MinGW builds must be static. Please configure with -DWITH_STATIC=1")
 endif()
+
+if(MINGW AND WITH_TUI)
+    message(FATAL_ERROR "-DWITH_TUI=1 is not supported on MinGW builds.")
+endif()s
 
 # =========================
 # SETUP
@@ -290,7 +294,7 @@ if(WITH_STATIC)
             URL https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz
             CONFIGURE_COMMAND
                 ${PKG_ENV}
-                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} --disable-stripping
+                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} --disable-stripping --enable-overwrite
             BUILD_COMMAND make -j
             BUILD_IN_SOURCE 1
             INSTALL_COMMAND make install
