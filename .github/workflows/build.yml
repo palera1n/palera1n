@@ -169,7 +169,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -x build/palera1n.app/Contents/MacOS/palera1n
         cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
 

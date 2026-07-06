@@ -357,15 +357,16 @@ int main(int argc, char* argv[], char* envp[]) {
         wxTheApp->OnExit();
         wxEntryCleanup();
         return 0;
-    } else if (palerain_flags & palerain_option_tui) {
+    }
+    #endif
+
+    #ifdef WITH_TUI
+    if (palerain_flags & palerain_option_tui) {
         ui_run();
         return 0;
-    } else {
-        shared_t state{};
-        return exploit(&state);
     }
-    #else
+    #endif
+
     shared_t state{};
     return exploit(&state);
-    #endif
 }
