@@ -364,6 +364,13 @@ int main(int argc, char* argv[], char* envp[]) {
 
     #ifdef WITH_TUI
     if (palerain_flags & palerain_option_tui) {
+        // if terminfo is not set, set one
+        if (getenv("TERMINFO") == nullptr) {
+            // (at least on my environment) the terminal would fail to run
+            // with sudo unless this is set, so if its not set correctly
+            // just use a standard path on lunix
+            setenv("TERMINFO", "/usr/share/terminfo", 1);
+        }
         ui_run();
         return 0;
     }
