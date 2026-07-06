@@ -125,26 +125,28 @@ void parse_arguments(int argc, char* argv[]) {
         {NULL, 0, NULL, 0}
     };
 
-    #ifdef WITH_GUI
-    palerain_flags |= palerain_option_gui;
-    # ifndef _WIN32
+    #ifndef _WIN32
     if (isatty(STDIN_FILENO) && getenv("LLVM_PROFILE_FILE") == nullptr) {
         #ifdef WITH_TUI
-        palerain_flags &= ~palerain_option_gui;
         palerain_flags |= palerain_option_tui;
         #else
-        palerain_flags &= ~palerain_option_gui;
         palerain_flags |= palerain_option_cli;
         #endif
     } else {
-        palerain_flags &= ~palerain_option_cli;
+        #ifdef WITH_GUI
         palerain_flags |= palerain_option_gui;
         // xcode doesn't know how to display colors
         palerain_flags |= palerain_option_no_colors;
+        #else
+        palerain_flags |= palerain_option_cli;
+        #endif
     }
-    # endif
     #else
+    # ifdef WITH_GUI
+    palerain_flags |= palerain_option_gui;
+    # else
     palerain_flags |= palerain_option_cli;
+    # endif
     #endif
 
     while ((options = getopt_long(argc, argv, "hvlfcBsTVpe:k:K:o:r:nq", long_options, &option_index)) != -1) {
