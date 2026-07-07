@@ -278,7 +278,7 @@ if(WITH_STATIC)
     if(LINUX OR MINGW)
         ExternalProject_Add(libusb_ep
             GIT_REPOSITORY https://github.com/libusb/libusb.git
-            GIT_TAG v1.0.27
+            GIT_TAG v1.0.30
             UPDATE_COMMAND ""
             CONFIGURE_COMMAND
                 ${PKG_ENV}
