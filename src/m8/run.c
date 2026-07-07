@@ -175,10 +175,9 @@ static void *pongo_thread(void *arg)
         atomic_store(&s->stage, STAGE_PONGO);
 
         if (palerain_flags & palerain_option_pongo_exit) {
-            close_usb_handle(&handle);
             atomic_store(&s->stage, STAGE_DONE);
             atomic_store(&s->stop, true);
-            return NULL;
+            break;
         }
 
         char paleinfo[64];

@@ -217,11 +217,11 @@ void MainPanel::SetDeviceState(const DeviceState& state)
                 case DeviceMode::Normal:
                     if (state.isSupported) {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Connected in normal mode • iOS " + versionString + "\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Connected in normal mode - iOS " + versionString + "\n" + ecidString);
                         m_startButton->Enable();
                     } else {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Not supported • iOS " + versionString + "\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Not supported - iOS " + versionString + "\n" + ecidString);
                         m_startButton->Enable(false);
                     }
                     break;
