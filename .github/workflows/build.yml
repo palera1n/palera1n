@@ -185,8 +185,8 @@ jobs:
     needs: [build-pongo, build-ramdisk]
 
     env:
-      LIBUSBK_VERSION: libusbK-3.0.5.16-bin
-      LIBUSBK_URL: https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/usb-travis/
+      LIBUSBK_VERSION: libusbK-3.1.0.0-bin
+      LIBUSBK_URL: https://github.com/mcuee/libusbk/releases/download/V3.1.0.0/
       LIBUSBK_WDFCOINSTALLER: libusbK/bin/sys/amd64/WdfCoInstaller01009.dll
       LIBUSBK_WDFCOINSTALLER_RENAMED: libusbK/bin/sys/amd64/WdfCoInstaller1011.dll
 
