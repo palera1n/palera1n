@@ -167,7 +167,7 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
         GetMainFrame()->ShowMain();
     }
 
-    if (!state.connected)
+    if (!m_isEnteringDfu && !state.connected)
     {
         m_isEnteringDfu = false;
         m_backButton->Enable();
