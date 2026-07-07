@@ -13,6 +13,7 @@
 #include "../globals.h"
 #include "../paleinfo.h"
 #include "../usb/shim.h"
+#include "../usb/driver.h"
 #include "../usb/pongo_helper.h"
 
 #include "checkm8.h"
@@ -52,6 +53,43 @@ int stage_to_progress(int stage)
 }
 
 #endif // WITH_GUI || WITH_TUI
+
+#ifdef _WIN32
+
+static void *driver_thread(void *arg)
+{
+    shared_t *s = (shared_t *)arg;
+
+    LOG_VERBOSE("Starting thread for libusbK driver installing");
+
+    while (!atomic_load(&s->stop)) {
+
+        if (usb_device_present(VID_APPLE, PID_DFU)) {
+            driver_result_t ret =
+                install_libusbk_target(VID_APPLE, PID_DFU);
+
+            if (ret == DRIVER_SUCCESS)
+                LOG_VERBOSE("DFU libusbK ready");
+        }
+
+        if (usb_device_present(VID_APPLE, PID_PONGO)) {
+
+            driver_result_t ret =
+                install_libusbk_target(VID_APPLE, PID_PONGO);
+
+            if (ret == DRIVER_SUCCESS) {
+                LOG_SUCCESS("PongoOS libusbK ready");
+                break;
+            }
+        }
+
+        sleep_ms(500);
+    }
+
+    return NULL;
+}
+
+#endif
 
 static void *exploit_thread(void *arg)
 {
@@ -175,9 +213,7 @@ static void *pongo_thread(void *arg)
         atomic_store(&s->stage, STAGE_PONGO);
 
         if (palerain_flags & palerain_option_pongo_exit) {
-            atomic_store(&s->stage, STAGE_DONE);
-            atomic_store(&s->stop, true);
-            break;
+            goto exit;
         }
 
         char paleinfo[64];
@@ -207,6 +243,11 @@ static void *pongo_thread(void *arg)
         if (strlen(boot_args) > 0) issue_pongo_command(&handle, xargs_cmd);
         issue_pongo_command(&handle, "bootx");
 
+    exit:
+        #ifdef _WIN32
+        uninstall_libusbk_target(VID_APPLE, PID_DFU);
+        #endif
+
         atomic_store(&s->stage, STAGE_DONE);
         atomic_store(&s->stop, true);
         break;
@@ -219,9 +260,15 @@ static void *pongo_thread(void *arg)
 bool exploit(shared_t *state)
 {
     pthread_t t1, t2;
+    #ifdef _WIN32
+    pthread_t td;
+    #endif
 
     pthread_create(&t1, NULL, exploit_thread, state);
     pthread_create(&t2, NULL, pongo_thread, state);
+    #ifdef _WIN32
+    pthread_create(&td, NULL, driver_thread, state);
+    #endif
 
     while (!atomic_load(&state->stop)) {
         sleep_ms(10);
@@ -229,9 +276,15 @@ bool exploit(shared_t *state)
 
     pthread_cancel(t1);
     pthread_cancel(t2);
+    #ifdef _WIN32
+    pthread_cancel(td);
+    #endif
 
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
+    #ifdef _WIN32
+    pthread_join(td, NULL);
+    #endif
 
     return atomic_load(&state->result) == 1;
 }

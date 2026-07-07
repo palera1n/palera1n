@@ -167,7 +167,7 @@ target_compile_definitions(palera1n PRIVATE
 )
 
 # =========================
-# APPLE FRAMEWORKS
+# LINKS
 # =========================
 
 if(APPLE)
@@ -175,6 +175,10 @@ if(APPLE)
     find_library(COREFOUNDATION CoreFoundation)
     find_library(SECURITY Security)
     target_link_libraries(palera1n PRIVATE ${IOKIT} ${COREFOUNDATION} ${SECURITY})
+endif()
+
+if(WIN32)
+    target_link_libraries(palera1n PRIVATE setupapi cfgmgr32)
 endif()
 
 # =========================

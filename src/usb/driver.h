@@ -9,9 +9,15 @@
 extern "C" {
 #endif
 
-int install_libusbk_target(unsigned short vid, unsigned short pid);
-int uninstall_libusbk_target(unsigned short vid, unsigned short pid);
-bool is_installed_with_libusbk(unsigned short vid, unsigned short pid);
+typedef enum {
+    DRIVER_SUCCESS = 0,
+    DRIVER_NOT_PRESENT,
+    DRIVER_ERROR,
+} driver_result_t;
+
+driver_result_t install_libusbk_target(unsigned short vid, unsigned short pid);
+driver_result_t uninstall_libusbk_target(unsigned short vid, unsigned short pid);
+bool usb_device_present(unsigned short vid, unsigned short pid);
 
 #ifdef __cplusplus
 }
