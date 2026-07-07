@@ -128,6 +128,7 @@ bool send_interface_bulk_transfer(const usb_handle_t *handle, void *data, int le
         {
             return r;
         }
+        #if defined(__linux__)
         // We only get here on ENOMEM
         FILE *f = fopen("/sys/module/usbcore/parameters/usbfs_memory_mb", "r");
         if(f)
@@ -146,6 +147,7 @@ bool send_interface_bulk_transfer(const usb_handle_t *handle, void *data, int le
             maxLen = (uint32_t)(max << 19);
         }
         else
+        #endif
         {
             // Just 1MB by default?
             maxLen = 0x100000;
