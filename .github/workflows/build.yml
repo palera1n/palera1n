@@ -165,20 +165,35 @@ jobs:
     - name: Install dependencies (brew)
       run: |
         brew update
-        brew install cmake autoconf automake libtool pkg-config
+        brew install cmake autoconf automake libtool pkg-config create-dmg
 
     - name: Build
       run: |
         make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -x build/palera1n.app/Contents/MacOS/palera1n
-        cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
+
+    - name: Package
+      run: |
+        mkdir -p dist
+        cp -r build/palera1n.app dist/
+        create-dmg \
+          --volname "palera1n-macos-${{ matrix.arch }}" \
+          --volicon "packaging/drive.icns" \
+          --background "packaging/background.png" \
+          --window-pos 200 120 \
+          --window-size 510 350 \
+          --icon-size 100 \
+          --icon palera1n.app 160 155 \
+          --hide-extension palera1n.app \
+          --app-drop-link 350 155 \
+          dist/palera1n-macos-${{ matrix.arch }}.dmg dist
 
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: palera1n-macos-${{ matrix.arch }}
         path: |
-          build/palera1n-macos-${{ matrix.arch }}.zip
+          dist/palera1n-macos-${{ matrix.arch }}.dmg
 
   build-windows:
     runs-on: windows-latest
