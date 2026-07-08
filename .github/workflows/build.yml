@@ -228,7 +228,10 @@ jobs:
         mv "libusbK-tmp/${LIBUSBK_VERSION}" libusbK
         mv "${LIBUSBK_WDFCOINSTALLER}" "${LIBUSBK_WDFCOINSTALLER_RENAMED}"
 
-    - name: Set up MSYS2
+    - name: Install dependencies (choco)
+      run: choco install nsis.portable
+
+    - name: Install dependencies (msys2)
       uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
@@ -253,11 +256,20 @@ jobs:
       run: |
         make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(nproc)
         strip -s build/palera1n.exe
+    
+    - name: Package
+      run: |
+        mkdir -p dist\installer
+        copy build\*.exe dist\installer\
+        copy build\*.dll dist\installer\
+        copy packaging\installer.nsi dist\installer\
+        copy resources\palera1n.ico dist\installer\icon.ico
+        makensis dist\installer\installer.nsi
+        move dist\installer\installer.exe dist\palera1n-windows-x86_64-setup.exe
 
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: palera1n-windows-x86_64
         path: |
-          build/*.exe
-          build/*.dll
+          dist/palera1n-windows-x86_64-setup.exe
