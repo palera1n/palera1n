@@ -297,23 +297,32 @@ void parse_arguments(int argc, char* argv[]) {
         }
     }
 
-    if (!(palerain_flags & palerain_option_gui) && !(palerain_flags & palerain_option_tui))
+    if (!(palerain_flags & palerain_option_gui) &&
+        !(palerain_flags & palerain_option_tui))
     {
-        bool is_rootful = (palerain_flags & palerain_option_rootful);
-        bool is_rootless = (palerain_flags & palerain_option_rootless);
-        bool has_setup = (palerain_flags & palerain_option_setup_rootful) ||
-                        (palerain_flags & palerain_option_setup_partial_root);
-
-        if (!is_rootful && !is_rootless)
+        if ((palerain_flags & palerain_option_pongo_exit) &&
+            ((palerain_flags & palerain_option_rootful) ||
+            (palerain_flags & palerain_option_rootless) ||
+            (palerain_flags & palerain_option_setup_rootful) ||
+            (palerain_flags & palerain_option_setup_partial_root)))
         {
-            LOG_ERROR("You must specify either -l, --rootless or -f, --rootful.\n");
+            LOG_ERROR("[-p, --early-exit] cannot be used with [-f, --rootful], [-l, --rootless], [-c, --setup-fakefs], or [-B, --setup-partial-fakefs].\n");
             print_usage(argv[0]);
             exit(1);
         }
 
-        if (is_rootful && is_rootless)
+        if (!(palerain_flags & palerain_option_rootful) &&
+            !(palerain_flags & palerain_option_rootless))
         {
-            LOG_ERROR("You cannot specify both -l, --rootless and -f, --rootful.\n");
+            LOG_ERROR("You must specify either [-l, --rootless] or [-f, --rootful].\n");
+            print_usage(argv[0]);
+            exit(1);
+        }
+
+        if ((palerain_flags & palerain_option_rootful) &&
+            (palerain_flags & palerain_option_rootless))
+        {
+            LOG_ERROR("You cannot specify both [-l, --rootless] and [-f, --rootful].\n");
             print_usage(argv[0]);
             exit(1);
         }
@@ -321,18 +330,16 @@ void parse_arguments(int argc, char* argv[]) {
         if ((palerain_flags & palerain_option_setup_rootful) &&
             (palerain_flags & palerain_option_setup_partial_root))
         {
-            LOG_ERROR("You cannot specify both -c, --setup-fakefs and -B, --setup-partial-fakefs.\n");
+            LOG_ERROR("You cannot specify both [-c, --setup-fakefs] and [-B, --setup-partial-fakefs].\n");
             print_usage(argv[0]);
             exit(1);
         }
 
-        if (has_setup && !is_rootful)
+        if (((palerain_flags & palerain_option_setup_rootful) ||
+            (palerain_flags & palerain_option_setup_partial_root)) &&
+            !(palerain_flags & palerain_option_rootful))
         {
-            if (is_rootless) {
-                LOG_ERROR("-c, --setup-fakefs or -B, --setup-partial-fakefs cannot be used with -l, --rootless.\n");
-            } else {
-                LOG_ERROR("-c, --setup-fakefs or -B, --setup-partial-fakefs require -f, --rootful.\n");
-            }
+            LOG_ERROR("[-c, --setup-fakefs] or [-B, --setup-partial-fakefs] require [-f, --rootful].\n");
             print_usage(argv[0]);
             exit(1);
         }
