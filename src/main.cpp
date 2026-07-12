@@ -311,7 +311,8 @@ void parse_arguments(int argc, char* argv[]) {
             exit(1);
         }
 
-        if (!(palerain_flags & palerain_option_rootful) &&
+        if (!(palerain_flags & palerain_option_pongo_exit) &&
+            !(palerain_flags & palerain_option_rootful) &&
             !(palerain_flags & palerain_option_rootless))
         {
             LOG_ERROR("You must specify either [-l, --rootless] or [-f, --rootful].\n");
