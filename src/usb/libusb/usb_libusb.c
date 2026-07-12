@@ -11,7 +11,9 @@
 #include "../../utils.h"
 
 void close_usb_handle(usb_handle_t *handle) {
+    #if _WIN32
     libusb_release_interface(handle->device, 0);
+    #endif
     libusb_close(handle->device);
     libusb_exit(NULL);
 }
@@ -24,7 +26,7 @@ bool wait_usb_handle(usb_handle_t *handle) {
     if(libusb_init(NULL) == LIBUSB_SUCCESS) {
         for(;;) {
             if((handle->device = libusb_open_device_with_vid_pid(NULL, handle->vid, handle->pid)) != NULL) {
-
+                #if _WIN32
                 libusb_set_auto_detach_kernel_driver(handle->device, 1);
 
                 if(libusb_set_configuration(handle->device, 1) == LIBUSB_SUCCESS ||
@@ -34,6 +36,11 @@ bool wait_usb_handle(usb_handle_t *handle) {
                         return true;
                     }
                 }
+                #else
+                if(libusb_set_configuration(handle->device, 1) == LIBUSB_SUCCESS) {
+                    return true;
+                }
+                #endif
 
                 libusb_close(handle->device);
             }
