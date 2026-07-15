@@ -165,7 +165,7 @@ jobs:
     - name: Install dependencies (brew)
       run: |
         brew update
-        brew install cmake autoconf automake libtool pkg-config create-dmg
+        brew install cmake autoconf automake libtool pkg-config
 
     - name: Build
       run: |
@@ -199,6 +199,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: palera1n-macos-x86_64
+
+    - name: Install dependencies (brew)
+      run: |
+        brew update
+        brew install create-dmg
 
     - name: Create universal binary
       run: |
