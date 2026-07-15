@@ -174,16 +174,14 @@ jobs:
 
     - name: Package
       run: |
-        mkdir -p dist
         cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
-        mv build/palera1n-macos-${{ matrix.arch }}.zip dist/
 
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: palera1n-macos-${{ matrix.arch }}
         path: |
-          dist/palera1n-macos-${{ matrix.arch }}.zip
+          build/palera1n-macos-${{ matrix.arch }}.zip
 
   build-macos-universal:
     runs-on: macos-latest
