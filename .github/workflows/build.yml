@@ -174,7 +174,9 @@ jobs:
 
     - name: Package
       run: |
-        zip -r dist/palera1n-macos-${{ matrix.arch }}.zip build/palera1n.app
+        mkdir -p dist
+        cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
+        mv build/palera1n-macos-${{ matrix.arch }}.zip dist/
 
     - name: Upload
       uses: actions/upload-artifact@v4
@@ -207,15 +209,16 @@ jobs:
 
     - name: Create universal binary
       run: |
-        unzip -o dist/palera1n-macos-arm64.zip -d dist/palera1n-macos-arm64
-        unzip -o dist/palera1n-macos-x86_64.zip -d dist/palera1n-macos-universal
+        mkdir -p dist build
+        unzip -o palera1n-macos-arm64.zip -d build/palera1n-macos-arm64
+        unzip -o palera1n-macos-x86_64.zip -d dist/palera1n-macos-universal
 
         lipo -create \
-          dist/palera1n-macos-arm64/palera1n.app/Contents/MacOS/palera1n \
+          build/palera1n-macos-arm64/palera1n.app/Contents/MacOS/palera1n \
           dist/palera1n-macos-universal/palera1n.app/Contents/MacOS/palera1n \
-          -output dist/palera1n-universal-bin
+          -output build/palera1n-universal-bin
 
-        mv dist/palera1n-universal-bin dist/palera1n-macos-universal/palera1n.app/Contents/MacOS/palera1n
+        mv build/palera1n-universal-bin dist/palera1n-macos-universal/palera1n.app/Contents/MacOS/palera1n
 
     - name: Package
       run: |
