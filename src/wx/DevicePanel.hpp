@@ -2,7 +2,7 @@
 #define DEVICEPANEL_H
 
 #include <wx/wx.h>
-#include "../event.hpp"
+#include "../events/event.hpp"
 
 class MainFrame;
 class DevicePanel : public wxPanel

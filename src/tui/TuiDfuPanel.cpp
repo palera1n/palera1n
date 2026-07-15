@@ -8,14 +8,13 @@
 #include <unordered_set>
 
 #include <ncurses.h>
-#include <libirecovery.h>
 
 #include "Tui.hpp"
 #include "TuiDfuArt.hpp"
 #include "TuiText.hpp"
 #include "TuiRecoveryPanel.hpp"
 #include "../sequence.hpp"
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../globals.h"
 #include "../paleinfo.h"
 
@@ -337,22 +336,7 @@ void TuiDfuPanel::reboot() {
         if (!state.connected || state.mode != DeviceMode::Recovery)
             return;
 
-        irecv_client_t client = nullptr;
-        int attempts = 0;
-        const int max_attempts = 8;
-
-        while (attempts < max_attempts) {
-            if (irecv_open_with_ecid(&client, state.ecid) == IRECV_E_SUCCESS)
-                break;
-            attempts++;
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        }
-
-        if (!client) return;
-        irecv_setenv(client, "auto-boot", "true");
-        irecv_saveenv(client);
-        irecv_reboot(client);
-        irecv_close(client);
+        exit_recovery();
     }).detach();
 }
 

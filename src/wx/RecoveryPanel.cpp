@@ -13,15 +13,10 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../event.hpp"
-#include "../utils.h"
+#include "../events/event.hpp"
 #include "../globals.h"
 #include "../paleinfo.h"
-#include "../gen/images/logo.h"
-
-#include <libimobiledevice/libimobiledevice.h>
-#include <libimobiledevice/lockdown.h>
-#include <libirecovery.h>
+#include "../gen/embedded/logo.h"
 
 RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
@@ -29,7 +24,7 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
     Bind(wxEVT_SHOW, &RecoveryPanel::OnShow, this);
     auto* root = new wxBoxSizer(wxHORIZONTAL);
     auto* left = new wxBoxSizer(wxVERTICAL);
-    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxMemoryInputStream stream(embedded_logo_png, embedded_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
     auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
@@ -133,30 +128,9 @@ void RecoveryPanel::EnterRecoveryMode()
     std::thread([this]()
     {
         const auto deviceState = GetDeviceState();
-        if (!deviceState.connected)
-            return;
-
-        idevice_t device = nullptr;
-        lockdownd_client_t client = nullptr;
-
-        if (idevice_new(&device, deviceState.udid.c_str()) != IDEVICE_E_SUCCESS)
-            return;
-
-        if (lockdownd_client_new_with_handshake(
-            device,
-            &client,
-            "palera1n") != LOCKDOWN_E_SUCCESS)
-        {
-            idevice_free(device);
-            return;
-        }
-
+        if (!deviceState.connected) return;
         m_isEnteringRecovery = true;
-
-        lockdownd_enter_recovery(client);
-
-        lockdownd_client_free(client);
-        idevice_free(device);
+        enter_recovery();
     }).detach();
 }
 

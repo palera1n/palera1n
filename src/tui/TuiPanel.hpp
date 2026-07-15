@@ -5,7 +5,7 @@
 
 #include <ncurses.h>
 
-#include "../event.hpp"
+#include "../events/event.hpp"
 
 class TuiFrame;
 

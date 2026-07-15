@@ -3,8 +3,8 @@
 #include "AppFrame.hpp"
 
 #include <wx/wx.h>
-#include "../utils.h"
-#include "../event.hpp"
+#include "../globals.h"
+#include "../events/event.hpp"
 
 wxDEFINE_EVENT(EVT_DEVICE_STATE_UPDATE, wxCommandEvent);
 

@@ -5,7 +5,7 @@
 
 #include <wx/wx.h>
 #include "DevicePanel.hpp"
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../sequence.hpp"
 
 class DfuPanel;

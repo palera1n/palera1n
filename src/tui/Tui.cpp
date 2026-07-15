@@ -21,9 +21,8 @@
 #include "TuiExploitPanel.hpp"
 #include "TuiBranding.hpp"
 #include "../globals.h"
-#include "../utils.h"
 #include "../paleinfo.h"
-#include "../event.hpp"
+#include "../events/event.hpp"
 
 #define WIDTH 80
 #define HEIGHT 24

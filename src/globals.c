@@ -8,21 +8,21 @@
 #include <string.h>
 
 #if WITH_BINPACK
-# include "gen/payloads/binpack.h"
+# include "gen/embedded/binpack.h"
 #endif
 #if WITH_RAMDISK
-# include "gen/payloads/ramdisk.h"
+# include "gen/embedded/ramdisk.h"
 #endif
-#include "gen/payloads/Pongo.h"
-#include "gen/payloads/checkra1n-kpf-pongo.h"
+#include "gen/embedded/Pongo.h"
+#include "gen/embedded/checkra1n-kpf-pongo.h"
 
 uint64_t palerain_flags = 0;
 char boot_args[0x270] = { '\0' };
 
 #if WITH_BINPACK
 payload_t g_payload_overlay = {
-    .data = payloads_binpack_dmg,
-    .data_len = payloads_binpack_dmg_len,
+    .data = embedded_binpack_dmg,
+    .data_len = embedded_binpack_dmg_len,
 };
 #else
 payload_t g_payload_overlay = {
@@ -33,8 +33,8 @@ payload_t g_payload_overlay = {
 
 #if WITH_RAMDISK
 payload_t g_payload_ramdisk = {
-    .data = payloads_ramdisk_dmg,
-    .data_len = payloads_ramdisk_dmg_len,
+    .data = embedded_ramdisk_dmg,
+    .data_len = embedded_ramdisk_dmg_len,
 };
 #else
 payload_t g_payload_ramdisk = {
@@ -44,13 +44,13 @@ payload_t g_payload_ramdisk = {
 #endif
 
 payload_t g_payload_pongo = {
-    .data = payloads_Pongo_bin,
-    .data_len = payloads_Pongo_bin_len,
+    .data = embedded_Pongo_bin,
+    .data_len = embedded_Pongo_bin_len,
 };
 
 payload_t g_payload_kpf = {
-    .data = payloads_checkra1n_kpf_pongo,
-    .data_len = payloads_checkra1n_kpf_pongo_len,
+    .data = embedded_checkra1n_kpf_pongo,
+    .data_len = embedded_checkra1n_kpf_pongo_len,
 };
 
 bool override_payload_from_file(const char *path, payload_t *out)

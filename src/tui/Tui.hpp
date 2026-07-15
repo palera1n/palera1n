@@ -7,7 +7,7 @@
 #include <mutex>
 #include <vector>
 
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "TuiPanel.hpp"
 
 class TuiPanel;

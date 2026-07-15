@@ -8,7 +8,7 @@
 
 #include "Tui.hpp"
 #include "TuiText.hpp"
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../globals.h"
 #include "../paleinfo.h"
 
@@ -26,7 +26,7 @@ static std::string get_device_title(const DeviceState& state) {
         return "No device connected";
     }
 
-    const std::string product = state.productType.empty() ? "Unknown" : state.productType;
+    const std::string product = state.displayName.empty() ? (state.productType.empty() ? "Unknown" : state.productType) : state.displayName;
     if (state.mode == DeviceMode::DFU) {
         return "DFU Mode device";
     }

@@ -12,11 +12,10 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../globals.h"
-#include "../utils.h"
 #include "../paleinfo.h"
-#include "../gen/images/logo.h"
+#include "../gen/embedded/logo.h"
 
 const char* deviceTextString = "No device connected";
 const char* deviceTextString2 = "Please connect a device to get started.\nEnsure version range is 15.0+";
@@ -29,7 +28,7 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     auto* left = new wxBoxSizer(wxVERTICAL);
     auto* right = new wxBoxSizer(wxVERTICAL);
 
-    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxMemoryInputStream stream(embedded_logo_png, embedded_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
 
@@ -209,7 +208,7 @@ void MainPanel::SetDeviceState(const DeviceState& state)
             const std::string versionString =
                 state.productVersion.empty() ? "Unknown" : state.productVersion;
             const std::string productString =
-                state.productType.empty() ? "Unknown" : state.productType;
+                state.displayName.empty() ? (state.productType.empty() ? "Unknown" : state.productType) : state.displayName;
             const std::string ecidString = state.ecid != 0 ? ("ECID: " + std::to_string(state.ecid)) : "ECID: Unknown";
 
             switch (state.mode)

@@ -12,9 +12,6 @@
 #include "../globals.h"
 #include "../paleinfo.h"
 
-#include <libimobiledevice/libimobiledevice.h>
-#include <libimobiledevice/lockdown.h>
-
 static const char *buttons[] = { "Back", "Next" };
 static constexpr int kRecoveryContentX = 2;
 static constexpr int kRecoveryContentWidth = 60;
@@ -113,26 +110,7 @@ void TuiRecoveryPanel::enter_recovery_mode() {
             return;
         }
 
-        idevice_t device = nullptr;
-        lockdownd_client_t client = nullptr;
-
-        if (idevice_new(&device, state.udid.c_str()) != IDEVICE_E_SUCCESS) {
-            m_is_entering_recovery = false;
-            m_buttons_disabled = false;
-            return;
-        }
-
-        if (lockdownd_client_new_with_handshake(device, &client, "palera1n") != LOCKDOWN_E_SUCCESS) {
-            idevice_free(device);
-            m_is_entering_recovery = false;
-            m_buttons_disabled = false;
-            return;
-        }
-
-        lockdownd_enter_recovery(client);
-
-        lockdownd_client_free(client);
-        idevice_free(device);
+        enter_recovery();
     }).detach();
 }
 

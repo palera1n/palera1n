@@ -10,17 +10,16 @@
 
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
-#include "../utils.h"
 #include "../globals.h"
 #include "../paleinfo.h"
-#include "../gen/images/logo.h"
+#include "../gen/embedded/logo.h"
 
 SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
 {
     auto* root = new wxBoxSizer(wxHORIZONTAL);
     auto* left = new wxBoxSizer(wxVERTICAL);
-    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxMemoryInputStream stream(embedded_logo_png, embedded_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
     auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
@@ -120,7 +119,6 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
     {
         wxString value = e.GetString();
         if (value.length() > (sizeof(boot_args) - 0x20)) {
-            LOG_ERROR("Boot arguments too long");
             return;
         }
         snprintf(boot_args, sizeof(boot_args), "%s", value.ToStdString().c_str());

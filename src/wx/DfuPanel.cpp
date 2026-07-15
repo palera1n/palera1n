@@ -5,9 +5,8 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../sequence.hpp"
-#include "../utils.h"
 #include "../globals.h"
 #include "../paleinfo.h"
 
@@ -19,19 +18,17 @@
 #include <wx/bitmap.h>
 #include <wx/statline.h>
 
-#include "../gen/images/atv_std_brd.h"
-#include "../gen/images/ipad.h"
-#include "../gen/images/ipadmini.h"
-#include "../gen/images/iphone6s.h"
-#include "../gen/images/iphone7.h"
-#include "../gen/images/iphone8.h"
-#include "../gen/images/iphonese.h"
-#include "../gen/images/iphonex.h"
-#include "../gen/images/ipodtouch.h"
-#include "../gen/images/siriremote.h"
-#include "../gen/images/logo.h"
-
-#include <libirecovery.h>
+#include "../gen/embedded/atv_std_brd.h"
+#include "../gen/embedded/ipad.h"
+#include "../gen/embedded/ipadmini.h"
+#include "../gen/embedded/iphone6s.h"
+#include "../gen/embedded/iphone7.h"
+#include "../gen/embedded/iphone8.h"
+#include "../gen/embedded/iphonese.h"
+#include "../gen/embedded/iphonex.h"
+#include "../gen/embedded/ipodtouch.h"
+#include "../gen/embedded/siriremote.h"
+#include "../gen/embedded/logo.h"
 
 DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
@@ -40,7 +37,7 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
 
     auto* root = new wxBoxSizer(wxHORIZONTAL);
     auto* left = new wxBoxSizer(wxVERTICAL);
-    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxMemoryInputStream stream(embedded_logo_png, embedded_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
     auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
@@ -221,53 +218,53 @@ void DfuPanel::LoadDevice(const std::string& productType)
 
     if (m_sequence.imageName == "ipadmini")
     {
-        imageData = images_ipadmini_png;
-        imageSize = images_ipadmini_png_len;
+        imageData = embedded_ipadmini_png;
+        imageSize = embedded_ipadmini_png_len;
     }
     else if (m_sequence.imageName == "ipad")
     {
-        imageData = images_ipad_png;
-        imageSize = images_ipad_png_len;
+        imageData = embedded_ipad_png;
+        imageSize = embedded_ipad_png_len;
     }
     else if (m_sequence.imageName == "iphonese")
     {
-        imageData = images_iphonese_png;
-        imageSize = images_iphonese_png_len;
+        imageData = embedded_iphonese_png;
+        imageSize = embedded_iphonese_png_len;
     }
     else if (m_sequence.imageName == "iphone6s")
     {
-        imageData = images_iphone6s_png;
-        imageSize = images_iphone6s_png_len;
+        imageData = embedded_iphone6s_png;
+        imageSize = embedded_iphone6s_png_len;
     }
     else if (m_sequence.imageName == "iphone7")
     {
-        imageData = images_iphone7_png;
-        imageSize = images_iphone7_png_len;
+        imageData = embedded_iphone7_png;
+        imageSize = embedded_iphone7_png_len;
     }
     else if (m_sequence.imageName == "iphone8")
     {
-        imageData = images_iphone8_png;
-        imageSize = images_iphone8_png_len;
+        imageData = embedded_iphone8_png;
+        imageSize = embedded_iphone8_png_len;
     }
     else if (m_sequence.imageName == "iphonex")
     {
-        imageData = images_iphonex_png;
-        imageSize = images_iphonex_png_len;
+        imageData = embedded_iphonex_png;
+        imageSize = embedded_iphonex_png_len;
     }
     else if (m_sequence.imageName == "ipodtouch")
     {
-        imageData = images_ipodtouch_png;
-        imageSize = images_ipodtouch_png_len;
+        imageData = embedded_ipodtouch_png;
+        imageSize = embedded_ipodtouch_png_len;
     }
     else if (m_sequence.imageName == "siriremote")
     {
-        imageData = images_siriremote_png;
-        imageSize = images_siriremote_png_len;
+        imageData = embedded_siriremote_png;
+        imageSize = embedded_siriremote_png_len;
     }
     else if (m_sequence.imageName == "atv_std_brd")
     {
-        imageData = images_atv_std_brd_png;
-        imageSize = images_atv_std_brd_png_len;
+        imageData = embedded_atv_std_brd_png;
+        imageSize = embedded_atv_std_brd_png_len;
     }
 
     if (imageData)
@@ -468,25 +465,7 @@ void DfuPanel::Reboot()
         if (!state.connected || state.mode != DeviceMode::Recovery)
             return;
 
-        irecv_client_t client = nullptr;
-
-        int attempts = 0;
-        const int max_attempts = 8;
-
-        while (attempts < max_attempts)
-        {
-            if (irecv_open_with_ecid(&client, state.ecid) == IRECV_E_SUCCESS)
-                break;
-
-            attempts++;
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        }
-
-        if (!client) return;
-        irecv_setenv(client, "auto-boot", "true");
-        irecv_saveenv(client);
-        irecv_reboot(client);
-        irecv_close(client);
+        exit_recovery();
     }).detach();
 }
 

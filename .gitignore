@@ -2,7 +2,7 @@ build/
 dist/
 .DS_Store
 
-src/gen/
+gen/
 payloads/Pongo.bin
 payloads/checkra1n-kpf-pongo
 payloads/ramdisk.dmg

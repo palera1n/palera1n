@@ -1,0 +1,220 @@
+#include "pongo_helper.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <inttypes.h>
+
+#if WITH_CIDERRAIN
+# include <ciderra1n/usb.h>
+# include <ciderra1n/log.h>
+# include <ciderra1n/pongo_compress.h>
+#else
+# include <openra1n/shim.h>
+# include <openra1n/utils.h>
+#endif
+
+#include "globals.h"
+#include "paleinfo.h"
+
+p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char *command)
+{
+    p1_transfer_ret_t result;
+
+    uint32_t outpos = 0;
+    uint32_t outlen = 0;
+    uint8_t in_progress = 1;
+
+    char command_buf[512];
+    char stdout_buf[0x2000];
+
+    memset(stdout_buf, 0, sizeof(stdout_buf));
+
+    if (command != NULL) {
+        size_t len = strlen(command);
+
+        if (len > 510) {
+            LOG_ERROR("Pongo command too long: %s", command);
+            result.ret = 1;
+            return result;
+        }
+
+        LOG("Executing PongoOS command: '%s'", command);
+
+        snprintf(command_buf, sizeof(command_buf), "%s\n", command);
+        len = strlen(command_buf);
+
+        #if WITH_CIDERRAIN
+        result = usb_ctrl_transfer(handle, 0x21, 4, 1, 0, NULL, 0);
+        if (result.ret != kUSBResponseSuccess) goto result;
+        result = usb_ctrl_transfer(handle, 0x21, 3, 0, 0, (uint8_t *)command_buf, len);
+        if (result.ret != kUSBResponseSuccess) goto result;
+        #else
+        result = send_interface_control_request(handle, 0x21, 4, 1, 0, NULL, 0);
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        result = send_interface_control_request(handle, 0x21, 3, 0, 0, command_buf, len);
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        #endif
+
+        // return early if the command is boot, we dont care about results
+        if (strncmp(command,"boot",4) == 0) goto result;
+    }
+
+    while (in_progress) {
+        #if WITH_CIDERRAIN
+        result = usb_ctrl_transfer(handle, 0xA1, 2, 0, 0, &in_progress, sizeof(in_progress));
+        if (result.ret != kUSBResponseSuccess) goto result;
+        #else
+        result = send_interface_control_request(handle, 0xA1, 2, 0, 0, &in_progress, sizeof(in_progress));
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        #endif
+
+        if (in_progress == 0) break;
+
+        if (outpos + 0x1000 >= sizeof(stdout_buf)) {
+            memmove(stdout_buf, stdout_buf + 0x1000, sizeof(stdout_buf) - 0x1000);
+            outpos -= 0x1000;
+        }
+
+        #if WITH_CIDERRAIN
+        result = usb_ctrl_transfer(handle, 0xA1, 1, 0, 0, stdout_buf + outpos, 0x1000);
+        if (result.ret != kUSBResponseSuccess) goto result;
+        #else
+        result = send_interface_control_request(handle, 0xA1, 1, 0, 0, stdout_buf + outpos, 0x1000);
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        #endif
+
+        outlen = 0x1000;
+        outpos += outlen;
+    }
+
+    result:
+    return result;
+}
+
+p1_transfer_ret_t upload_buffer_to_pongo(p1_usb_handle_t *handle, const void *data, size_t length)
+{
+    p1_transfer_ret_t result;
+
+    if (data == NULL || length == 0) {
+        LOG_ERROR("Invalid data buffer or length");
+        result.ret = -1;
+        goto result;
+    }
+
+    LOG_DEBUG("Uploading %zu bytes to PongoOS...", length);
+
+    #if WITH_CIDERRAIN
+    result = usb_ctrl_transfer(handle, 0x21, 1, 0, 0, (void *)&length, 4);
+    if (result.ret != kUSBResponseSuccess) {
+        LOG_ERROR("Failed to initiate PongoOS upload: %d", result.ret);
+        goto result;
+    }
+    result = usb_bulk_upload(handle, (uint8_t *)data, (uint32_t)length);
+    if (result.ret != kUSBResponseSuccess) {
+        LOG_ERROR("Failed to upload data to PongoOS: %d", result.ret);
+        goto result;
+    }
+    #else
+    result = send_interface_control_request(handle, 0x21, 1, 0, 0, (void *)&length, 4);
+    if (result.ret != USB_TRANSFER_OK || result.sz != 4) {
+        LOG_ERROR("Failed to initiate PongoOS upload: %d", result.ret);
+        goto result;
+    }
+    result = send_interface_bulk_transfer(handle, (void *)data, (uint32_t)length);
+    if (result.ret != USB_TRANSFER_OK || result.sz != length) {
+        LOG_ERROR("Failed to upload data to PongoOS: %d", result.ret);
+        goto result;
+    }
+    #endif
+
+result:
+    return result;
+}
+
+p1_checkm8_err_t send_compressed_pongo(p1_usb_handle_t *handle, const uint8_t *pongo_bin, const size_t pongo_bin_length)
+{
+    uint8_t *pongo_lz4 = NULL;
+    size_t pongo_lz4_length = 0;
+
+    if (!pongo_bin) {
+        LOG_ERROR("pongoOS is not loaded");
+        return 15;
+    }
+    #if WITH_CIDERRAIN
+    if (lz4_compress_pongo(pongo_bin, pongo_bin_length, &pongo_lz4, &pongo_lz4_length)) {
+    #else
+    if (!prepare_pongo(&pongo_lz4, &pongo_lz4_length, pongo_bin, pongo_bin_length)) {
+    #endif
+        LOG_ERROR("Failed to compress pongo image");
+        free(pongo_lz4);
+        return 15;
+    }
+
+    p1_checkm8_err_t cr =
+    #if WITH_CIDERRAIN
+    ra1n_send_pongo(handle, pongo_lz4, pongo_lz4_length);
+    #else
+    checkm8_boot_pongo(handle, pongo_lz4, pongo_lz4_length);
+    #endif
+
+    free(pongo_lz4);
+
+    return cr;
+}
+
+p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
+{
+    p1_transfer_ret_t result;
+
+    char paleinfo[64];
+    snprintf(paleinfo, sizeof(paleinfo), "palera1n_flags 0x%" PRIx64, palerain_flags);
+
+    char xargs_cmd[0x270];
+    snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", boot_args);
+    if (palerain_flags & palerain_option_setup_rootful) {
+        strncat(xargs_cmd, " wdt=-1", sizeof(xargs_cmd) - strlen(xargs_cmd) - 1);
+    }
+
+    result = issue_pongo_command(handle, "fuse lock");
+    if (result.ret != 0) goto bad;
+
+    result = issue_pongo_command(handle, "sep auto");
+    if (result.ret != 0) goto bad;
+
+    if (g_payload_kpf.data_len > 0) {
+        result = upload_buffer_to_pongo(handle, g_payload_kpf.data, g_payload_kpf.data_len);
+        if (result.ret != 0) goto bad;
+        result = issue_pongo_command(handle, "modload");
+        if (result.ret != 0) goto bad;
+    }
+
+    result = issue_pongo_command(handle, paleinfo);
+    if (result.ret != 0) goto bad;
+
+    if (g_payload_ramdisk.data_len > 0) {
+        result = upload_buffer_to_pongo(handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
+        if (result.ret != 0) goto bad;
+        result = issue_pongo_command(handle, "ramdisk");
+        if (result.ret != 0) goto bad;
+    }
+
+    if (g_payload_overlay.data_len > 0) {
+        result = upload_buffer_to_pongo(handle, g_payload_overlay.data, g_payload_overlay.data_len);
+        if (result.ret != 0) goto bad;
+        result = issue_pongo_command(handle, "overlay");
+        if (result.ret != 0) goto bad;
+    }
+
+    if (strlen(boot_args) > 0) {
+        result = issue_pongo_command(handle, xargs_cmd);
+        if (result.ret != 0) goto bad;
+    }
+
+    result = issue_pongo_command(handle, "bootx");
+    if (result.ret != 0) goto bad;
+
+    return 0;
+bad:
+    return 255;
+}

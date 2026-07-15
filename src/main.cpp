@@ -10,17 +10,18 @@
 # include <wx/wx.h>
 #endif
 
-#include "m8/run.h"
+#include "exploit.h"
 #ifdef WITH_TUI
 # include "tui/Tui.hpp"
 #endif
-#include "utils.h"
+#if WITH_CIDERRAIN
+# include <ciderra1n/log.h>
+#else
+# include <openra1n/utils.h>
+#endif
 #include "globals.h"
 #include "paleinfo.h"
-#ifdef _WIN32
-# include "usb/driver.h"
-#endif
-#include "usb/pongo_helper.h"
+#include "pongo_helper.h"
 
 void print_credits() {
     printf(
@@ -72,10 +73,6 @@ void print_usage(char* argv) {
         "  -r, --override-ramdisk <FILE PATH>    Override ramdisk\n"
         "  -n, --no-colors                       [f] Disable colors on the command line\n"
         "  -q, --quick                           [f] Enable Quick Mode\n"
-        #ifdef _WIN32
-        "  --install-drivers <PID>               Install libusbK drivers for PID\n"
-        "  --remove-drivers <PID>                Remove libusbK drivers for PID\n"
-        #endif
         , argv
     );
 
@@ -118,10 +115,6 @@ void parse_arguments(int argc, char* argv[]) {
         {"override-ramdisk", required_argument, NULL, 'r'},
         {"no-colors", no_argument, NULL, 'n'},
         {"quick", no_argument, NULL, 'q'},
-        #ifdef _WIN32
-        {"install-drivers", required_argument, NULL, 6},
-        {"remove-drivers", required_argument, NULL, 7},
-        #endif
         {NULL, 0, NULL, 0}
     };
 
@@ -269,26 +262,6 @@ void parse_arguments(int argc, char* argv[]) {
             case 'q': // --quick
                 palerain_flags |= palerain_option_quick;
                 break;
-            #ifdef _WIN32
-            case 6: { // --install-drivers <PID>
-                unsigned short parsed_pid = (unsigned short)strtol(optarg, NULL, 16);
-                if (parsed_pid == 0) {
-                    LOG_ERROR("Invalid PID value provided\n");
-                    exit(1);
-                }
-                install_libusbk_target(0x05AC, parsed_pid);
-                exit(0);
-            }
-            case 7: { // --remove-drivers <PID>
-                unsigned short parsed_pid = (unsigned short)strtol(optarg, NULL, 16);
-                if (parsed_pid == 0) {
-                    LOG_ERROR("Invalid PID value provided\n");
-                    exit(1);
-                }
-                uninstall_libusbk_target(0x05AC, parsed_pid);
-                exit(0);
-            }
-            #endif
             case '?':
                 LOG_ERROR("Unknown option\n");
                 print_usage(argv[0]);
@@ -345,6 +318,10 @@ void parse_arguments(int argc, char* argv[]) {
             exit(1);
         }
     }
+
+    // controls logging settings in our checkm8 libraries
+    if (palerain_flags & palerain_option_no_colors) gSilentLogs = false;
+    if (palerain_flags & palerain_option_tui) gSilentLogs = true;
 }
 
 int main(int argc, char* argv[], char* envp[]) {
@@ -355,7 +332,7 @@ int main(int argc, char* argv[], char* envp[]) {
     // communicating with libusb on linux needs root
     #ifdef __linux__
     if (geteuid() != 0) {
-        LOG_WARN("You are not running as root, this may cause issues when exploiting");
+        LOG("You are not running as root, this may cause issues when exploiting");
     }
     #endif
 
