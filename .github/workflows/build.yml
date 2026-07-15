@@ -174,10 +174,48 @@ jobs:
 
     - name: Package
       run: |
-        mkdir -p dist
-        cp -r build/palera1n.app dist/
+        zip -r dist/palera1n-macos-${{ matrix.arch }}.zip build/palera1n.app
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: palera1n-macos-${{ matrix.arch }}
+        path: |
+          dist/palera1n-macos-${{ matrix.arch }}.zip
+
+  build-macos-universal:
+    runs-on: macos-latest
+    needs: [build-macos]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download arm64 artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-macos-arm64
+
+    - name: Download x86_64 artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-macos-x86_64
+
+    - name: Create universal binary
+      run: |
+        unzip -o dist/palera1n-macos-arm64.zip -d dist/palera1n-macos-arm64
+        unzip -o dist/palera1n-macos-x86_64.zip -d dist/palera1n-macos-universal
+
+        lipo -create \
+          dist/palera1n-macos-arm64/palera1n.app/Contents/MacOS/palera1n \
+          dist/palera1n-macos-universal/palera1n.app/Contents/MacOS/palera1n \
+          -output dist/palera1n-universal-bin
+
+        mv dist/palera1n-universal-bin dist/palera1n-macos-universal/palera1n.app/Contents/MacOS/palera1n
+
+    - name: Package
+      run: |
         create-dmg \
-          --volname "palera1n-macos-${{ matrix.arch }}" \
+          --volname "palera1n-macos-universal" \
           --volicon "packaging/drive.icns" \
           --background "packaging/background.png" \
           --window-pos 200 120 \
@@ -186,14 +224,14 @@ jobs:
           --icon palera1n.app 160 155 \
           --hide-extension palera1n.app \
           --app-drop-link 350 155 \
-          dist/palera1n-macos-${{ matrix.arch }}.dmg dist
+          dist/palera1n-macos-universal.dmg dist/palera1n-macos-universal
 
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: palera1n-macos-${{ matrix.arch }}
+        name: palera1n-macos-universal
         path: |
-          dist/palera1n-macos-${{ matrix.arch }}.dmg
+          dist/palera1n-macos-universal.dmg
 
   build-windows:
     runs-on: windows-latest
