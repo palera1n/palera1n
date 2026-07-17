@@ -3,10 +3,10 @@ dist/
 .DS_Store
 
 gen/
-payloads/Pongo.bin
-payloads/checkra1n-kpf-pongo
-payloads/ramdisk.dmg
-payloads/binpack.dmg
+embedded/Pongo.bin
+embedded/checkra1n-kpf-pongo
+embedded/ramdisk.dmg
+embedded/binpack.dmg
 
 libusbK/
 libusbK-tmp/
