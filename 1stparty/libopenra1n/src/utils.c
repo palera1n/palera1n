@@ -29,7 +29,12 @@ static inline void _get_timestamp(char *buf, size_t len)
     time_t t = time(NULL);
     struct tm tm_info;
 
+    #ifdef _WIN32
+    localtime_s(&tm_info, &t);
+    #else
     localtime_r(&t, &tm_info);
+    #endif
+
     strftime(buf, len, "%Y/%m/%d %H:%M:%S", &tm_info);
 }
 
