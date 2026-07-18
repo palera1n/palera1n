@@ -186,8 +186,16 @@ endif()
 # ra1ns
 if(WITH_CIDERRAIN)
     message(STATUS "Building with Ciderra1n support")
+
+    # TODO: get rid
     execute_process(
-        COMMAND make
+        COMMAND patch -p1 -i ${CMAKE_SOURCE_DIR}/patches/liteusb/0001-cpp-compatible.patch
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/external/liteusb
+        RESULT_VARIABLE LITEUSB_PATCH_RESULT
+    )
+
+    execute_process(
+        COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
         RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
     )
@@ -198,10 +206,15 @@ if(WITH_CIDERRAIN)
     set(CIDERRAIN_LIB           "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/build/lib/ciderra1n/libciderra1n.a")
     target_include_directories(palera1n PRIVATE ${CIDERRAIN_INCLUDE_DIR})
     target_link_libraries(palera1n PRIVATE "${CIDERRAIN_LIB}")
+    if(LINUX)
+        set(LITEUSB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/external/liteusb/include")
+        target_compile_definitions(palera1n PRIVATE LITEUSB_PLATFORM_LINUX)
+        target_include_directories(palera1n PRIVATE ${LITEUSB_INCLUDE_DIR})
+    endif()
 else()
     message(STATUS "Building with Openra1n support")
     execute_process(
-        COMMAND make
+        COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
         RESULT_VARIABLE OPENRA1N_BUILD_RESULT
     )
@@ -311,6 +324,16 @@ if(WITH_STATIC)
         cross_compiling=yes
     )
 
+    if(MINGW)
+        set(IMD_AUTOTOOLS_ARGS --disable-static --enable-shared)
+    else()
+        set(IMD_AUTOTOOLS_ARGS --enable-static --disable-shared)
+        if(CROSS_HOST_TRIPLE)
+            list(APPEND IMD_AUTOTOOLS_ARGS "--host=${CROSS_HOST_TRIPLE}" "--build=${AUTOTOOLS_BUILD_TRIPLE}")
+        endif()
+        set(MBEDUTILS_ARGS --with-mbedtls)
+    endif()
+
     if((LINUX OR MINGW) AND NOT WITH_CIDERRAIN)
         ExternalProject_Add(libusb_ep
             GIT_REPOSITORY https://github.com/libusb/libusb.git
@@ -332,13 +355,22 @@ if(WITH_STATIC)
             URL https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz
             CONFIGURE_COMMAND
                 ${PKG_ENV}
-                sh -l <SOURCE_DIR>/configure --prefix=${DEPS_PREFIX} ${IMD_AUTOTOOLS_ARGS} --disable-stripping --enable-overwrite --enable-widec
+                sh <SOURCE_DIR>/configure
+                    --prefix=${DEPS_PREFIX}
+                    ${IMD_AUTOTOOLS_ARGS}
+                    --disable-stripping
+                    --enable-overwrite
+                    --enable-widec
+                    --with-default-terminfo-dir=${DEPS_PREFIX}/share/terminfo
+                    --with-terminfo-dirs=${DEPS_PREFIX}/share/terminfo
             BUILD_COMMAND make -j
             BUILD_IN_SOURCE 1
             INSTALL_COMMAND
-                make install &&
-                ln -sf ${DEPS_PREFIX}/lib/libncursesw.a ${DEPS_PREFIX}/lib/libncurses.a &&
-                ln -sf ${DEPS_PREFIX}/lib/libtinfow.a ${DEPS_PREFIX}/lib/libtinfo.a
+                ${CMAKE_COMMAND} -E env ${PKG_ENV}
+                sh -c
+                "make install TERMINFO=${DEPS_PREFIX}/share/terminfo && \
+                ln -sf ${DEPS_PREFIX}/lib/libncursesw.a ${DEPS_PREFIX}/lib/libncurses.a && \
+                ln -sf ${DEPS_PREFIX}/lib/libtinfow.a ${DEPS_PREFIX}/lib/libtinfo.a"
         )
 
         add_dependencies(palera1n ncurses_ep)

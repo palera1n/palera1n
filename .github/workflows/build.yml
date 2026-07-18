@@ -122,6 +122,7 @@ jobs:
         make palera1n \
           WITH_STATIC=1 \
           WITH_TUI=1 \
+          WITH_CIDERRAIN=1 \
           BUILD_TYPE=Release \
           CMAKE_SYSROOT="$SYSROOT_PATH" \
           CROSS_HOST_TRIPLE="${{ matrix.triple }}" \
@@ -169,7 +170,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -x build/palera1n.app/Contents/MacOS/palera1n
 
     - name: Package
@@ -286,7 +287,7 @@ jobs:
       run: |
         make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(nproc)
         strip -s build/palera1n.exe
-    
+
     - name: Package
       run: |
         mkdir -p dist\installer

@@ -11,6 +11,8 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <condition_variable>
+#include <cstring>
 
 extern "C" {
 #include <idevice/idevice.h>
@@ -25,6 +27,18 @@ extern "C" {
 
 #include "ra1ncovery/hotplug_iokit.hpp"
 
+#if defined(__APPLE__)
+  using platform_service_t = io_service_t;
+#elif !defined(__APPLE__) && !defined(WITH_CIDERRAIN)
+  using platform_service_t = libusb_device*;
+#elif !defined(__APPLE__) && defined(WITH_CIDERRAIN)
+  using platform_service_t = liteusb_handle_t*;
+#endif
+
+#ifndef __APPLE__
+# define IO_OBJECT_NULL nullptr
+#endif
+
 namespace {
 
 struct ManagedDevice {
@@ -32,10 +46,11 @@ struct ManagedDevice {
     bool normalPresent = false;
     bool recoveryPresent = false;
     bool dfuPresent = false;
-    hotplug_handle_t handle = { IO_OBJECT_NULL, nullptr };
+    hotplug_handle_t handle;
 };
 
 void release_handle(hotplug_handle_t& h) {
+#ifdef __APPLE__
     if (h.serv != IO_OBJECT_NULL) {
         IOObjectRelease(h.serv);
         h.serv = IO_OBJECT_NULL;
@@ -44,11 +59,28 @@ void release_handle(hotplug_handle_t& h) {
         (*h.device)->Release(h.device);
         h.device = nullptr;
     }
+#elif !defined(__APPLE__) && !defined(WITH_CIDERRAIN)
+    if (h.serv != nullptr) {
+        libusb_unref_device(h.serv);
+        h.serv = nullptr;
+    }
+    h.device = nullptr;
+#elif !defined(__APPLE__) && defined(WITH_CIDERRAIN)
+    h.handle = nullptr;
+#endif
 }
 
 void retain_handle(const hotplug_handle_t& h) {
-    if (h.serv != IO_OBJECT_NULL) IOObjectRetain(h.serv);
+#ifdef __APPLE__
+    if (h.serv != IO_OBJECT_NULL) {
+        IOObjectRetain(h.serv);
+    }
     if (h.device) (*h.device)->AddRef(h.device);
+#elif !defined(__APPLE__) && !defined(WITH_CIDERRAIN)
+    if (h.serv != nullptr) {
+        libusb_ref_device(h.serv);
+    }
+#endif
 }
 
 template<auto FreeFn>
@@ -72,6 +104,11 @@ std::unordered_map<uint64_t, ManagedDevice> g_devices;
 uint64_t g_activeEcid = 0;
 std::once_flag g_startOnce;
 std::unique_ptr<ActiveLockdownConnection> g_activeLockdown = nullptr;
+
+#ifndef __APPLE__
+std::condition_variable g_recoveryCv;
+bool g_recoveryRunning = false;
+#endif
 
 void dispatch_callbacks(const std::vector<DeviceStateCallback>& callbacks, const DeviceState& state) {
     for (const auto& cb : callbacks) {
@@ -182,36 +219,46 @@ bool build_normal_state(struct UsbmuxdDeviceHandle* dev_handle, DeviceState& out
     lockdown_get_string(session->client.get(), "ProductVersion", out.productVersion);
     lockdown_get_uint(session->client.get(), "UniqueChipID", out.ecid);
 
+    // match productType and get proper displayName
+    for (int i = 0; irecv_devices[i].product_type; i++) {
+        if (irecv_devices[i].product_type == out.productType) {
+            out.displayName = irecv_devices[i].name;
+            break;
+        }
+    }
+
     out.isSupported = SequenceIsSupported(out.productType);
     return true;
 }
 
 void handle_normal_add(struct UsbmuxdDeviceHandle* dev_handle) {
-    DeviceState discovered;
-    std::unique_ptr<ActiveLockdownConnection> temp_session;
+    std::thread([dev_handle]() {
+        DeviceState discovered;
+        std::unique_ptr<ActiveLockdownConnection> temp_session;
 
-    if (!build_normal_state(dev_handle, discovered, temp_session))
-        return;
+        if (!build_normal_state(dev_handle, discovered, temp_session))
+            return;
 
-    if (discovered.ecid == 0) {
-        LOG_DEBUG("Ignoring normal mode device without ECID");
-        return;
-    }
+        if (discovered.ecid == 0) {
+            LOG_DEBUG("Ignoring normal mode device without ECID");
+            return;
+        }
 
-    {
-        std::lock_guard lock(g_mutex);
-        ManagedDevice& m = g_devices[discovered.ecid];
+        {
+            std::lock_guard lock(g_mutex);
+            ManagedDevice& m = g_devices[discovered.ecid];
 
-        release_handle(m.handle);
+            release_handle(m.handle);
 
-        m.state = discovered;
-        m.normalPresent = true;
-        m.recoveryPresent = false;
-        m.dfuPresent = false;
+            m.state = discovered;
+            m.normalPresent = true;
+            m.recoveryPresent = false;
+            m.dfuPresent = false;
 
-        g_activeLockdown = std::move(temp_session);
-    }
-    publish_state();
+            g_activeLockdown = std::move(temp_session);
+        }
+        publish_state();
+    }).detach();
 }
 
 static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supported) {
@@ -246,13 +293,19 @@ static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supp
     publish_state();
 }
 
-static void remove_device(io_service_t service, DeviceMode mode) {
+static void remove_device(platform_service_t service, DeviceMode mode) {
     bool changed = false;
     {
         std::lock_guard lock(g_mutex);
 
         auto it = std::find_if(g_devices.begin(), g_devices.end(), [&](const auto& pair) {
-            if (service != IO_OBJECT_NULL) return pair.second.handle.serv == service;
+            if (service != IO_OBJECT_NULL) {
+                #if !defined(__APPLE__) && defined(WITH_CIDERRAIN)
+                return pair.second.handle.handle == service;
+                #else
+                return pair.second.handle.serv == service;
+                #endif
+            }
             switch (mode) {
                 case DeviceMode::Normal:   return pair.second.normalPresent;
                 case DeviceMode::Recovery: return pair.second.recoveryPresent;
@@ -284,41 +337,69 @@ static void remove_device(io_service_t service, DeviceMode mode) {
 }
 
 void usbmuxd_listener_worker() {
-    struct UsbmuxdConnectionHandle* conn = nullptr;
-    if (idevice_usbmuxd_new_default_connection(1, &conn) != nullptr || !conn) return;
-    unique_c_ptr<UsbmuxdConnectionHandle, idevice_usbmuxd_connection_free> conn_guard(conn);
-
-    struct UsbmuxdListenerHandle* listener = nullptr;
-    if (idevice_usbmuxd_listen(conn, &listener) != nullptr || !listener) return;
-    unique_c_ptr<UsbmuxdListenerHandle, idevice_usbmuxd_listener_handle_free> listener_guard(listener);
-
     for (;;) {
-        bool connect = false;
-        struct UsbmuxdDeviceHandle* connection_device = nullptr;
-        uint32_t disconnection_id = 0;
+        struct UsbmuxdConnectionHandle* conn = nullptr;
+        if (idevice_usbmuxd_new_default_connection(1, &conn) != nullptr || !conn) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            continue;
+        }
+        unique_c_ptr<UsbmuxdConnectionHandle, idevice_usbmuxd_connection_free> conn_guard(conn);
 
-        if (idevice_usbmuxd_listener_next(listener, &connect, &connection_device, &disconnection_id) != nullptr) break;
+        struct UsbmuxdListenerHandle* listener = nullptr;
+        if (idevice_usbmuxd_listen(conn, &listener) != nullptr || !listener) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            continue;
+        }
+        unique_c_ptr<UsbmuxdListenerHandle, idevice_usbmuxd_listener_handle_free> listener_guard(listener);
 
-        if (connect && connection_device) {
-            handle_normal_add(connection_device);
-        } else {
-            remove_device(IO_OBJECT_NULL, DeviceMode::Normal);
+        for (;;) {
+            bool connect = false;
+            struct UsbmuxdDeviceHandle* connection_device = nullptr;
+            uint32_t disconnection_id = 0;
+
+            IdeviceFfiError* err = idevice_usbmuxd_listener_next(listener, &connect, &connection_device, &disconnection_id);
+
+            if (err != nullptr) {
+                unique_c_ptr<IdeviceFfiError, idevice_error_free> err_guard(err);
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                break;
+            }
+
+            if (connect && connection_device) {
+                handle_normal_add(connection_device);
+            } else if (!connect && disconnection_id != 0) {
+                std::thread([]() {
+                    remove_device(IO_OBJECT_NULL, DeviceMode::Normal);
+                }).detach();
+            }
         }
     }
 }
 
 static void hotplug_callback(hotplug_event_t event, hotplug_handle_t handle) {
+    #if !defined(__APPLE__) && defined(WITH_CIDERRAIN)
+    platform_service_t srv = handle.handle;
+    #else
+    platform_service_t srv = handle.serv;
+    #endif
+
     switch (event) {
         case HOTPLUG_EVENT_DFU_ADD:          handle_other_add(handle, DeviceMode::DFU, false); break;
-        case HOTPLUG_EVENT_DFU_REMOVE:       remove_device(handle.serv, DeviceMode::DFU); break;
+        case HOTPLUG_EVENT_DFU_REMOVE:       remove_device(srv, DeviceMode::DFU); break;
         case HOTPLUG_EVENT_RECOVERY_ADD:     handle_other_add(handle, DeviceMode::Recovery, true); break;
-        case HOTPLUG_EVENT_RECOVERY_REMOVE:  remove_device(handle.serv, DeviceMode::Recovery); break;
+        case HOTPLUG_EVENT_RECOVERY_REMOVE:  remove_device(srv, DeviceMode::Recovery); break;
     }
 }
 
 void recovery_listener_worker() {
     if (!start_hotplug_monitoring(hotplug_callback)) return;
+    #ifdef __APPLE__
     CFRunLoopRun();
+    #elif !defined(__APPLE__) && !defined(WITH_CIDERRAIN)
+    std::unique_lock<std::mutex> lock(g_mutex);
+    g_recoveryRunning = true;
+    g_recoveryCv.wait(lock, [] { return !g_recoveryRunning; });
+    #endif
 }
 
 } // namespace
@@ -359,7 +440,8 @@ bool enter_recovery() {
 }
 
 void exit_recovery() {
-    hotplug_handle_t handle = { IO_OBJECT_NULL, nullptr };
+    hotplug_handle_t handle;
+    std::memset(&handle, 0, sizeof(handle));
     {
         std::lock_guard lock(g_mutex);
         if (g_activeEcid == 0) return;
@@ -368,7 +450,6 @@ void exit_recovery() {
         if (it == g_devices.end() || it->second.state.mode != DeviceMode::Recovery) return;
 
         handle = it->second.handle;
-        if (handle.serv == IO_OBJECT_NULL) return;
     }
     exit_recovery(handle);
 }

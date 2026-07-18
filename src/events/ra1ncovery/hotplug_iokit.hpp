@@ -5,8 +5,15 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <IOKit/IOKitLib.h>
-#include <IOKit/usb/IOUSBLib.h>
+
+#ifdef __APPLE__
+# include <IOKit/IOKitLib.h>
+# include <IOKit/usb/IOUSBLib.h>
+#elif !defined(__APPLE__) && !defined(WITH_CIDERRAIN)
+# include <libusb-1.0/libusb.h>
+#elif !defined(__APPLE__) && defined(WITH_CIDERRAIN)
+# include <liteusb.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,8 +27,15 @@ typedef enum {
 } hotplug_event_t;
 
 typedef struct {
+#ifdef __APPLE__
     io_service_t serv;
     IOUSBDeviceInterface320 **device;
+#elif !defined(__APPLE__) && !defined(WITH_CIDERRAIN)
+    libusb_device *serv;
+    libusb_device_handle *device;
+#elif !defined(__APPLE__) && defined(WITH_CIDERRAIN)
+    liteusb_handle_t *handle;
+#endif
 } hotplug_handle_t;
 
 typedef void (*hotplug_callback_t)(hotplug_event_t event, hotplug_handle_t handle);

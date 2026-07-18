@@ -16,6 +16,9 @@
 #endif
 #if WITH_CIDERRAIN
 # include <ciderra1n/log.h>
+extern "C" {
+# include <ciderra1n/ra1n.h>
+}
 #else
 # include <openra1n/utils.h>
 #endif
@@ -148,13 +151,20 @@ void parse_arguments(int argc, char* argv[]) {
                 print_usage(argv[0]);
                 exit(1);
             case 'v': // --version
-                printf("Palera1n beta " PALERAIN_VERSION " [USB: %s (openra1n)]\n",
+                #if WITH_CIDERRAIN
+                printf("Palera1n beta " PALERAIN_VERSION " [USB: %s (libcidera1n %s)]\n",
+                    ra1n_show_usb_backend(),
+                    ra1n_show_build_version()
+                );
+                #else
+                printf("Palera1n beta " PALERAIN_VERSION " [USB: %s (libopenra1n)]\n",
                     #ifdef __APPLE__
                     "IOKit"
                     #else
                     "libusb"
                     #endif
                 );
+                #endif
                 printf("%s (%s)\n", GIT_HASH, GIT_BRANCH);
                 printf("Git: %s\n", GIT_URL);
                 printf("Compiled on %s at %s\n", __DATE__, __TIME__);
