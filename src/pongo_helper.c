@@ -185,7 +185,13 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
     if (g_payload_kpf.data_len > 0) {
         result = upload_buffer_to_pongo(handle, g_payload_kpf.data, g_payload_kpf.data_len);
         if (result.ret != 0) goto bad;
-        result = issue_pongo_command(handle, "modload");
+        if (g_payload_kpf.uncompressed_data_len > 0) {
+            char modload_cmd[64];
+            snprintf(modload_cmd, sizeof(modload_cmd), "modload %zu", g_payload_kpf.uncompressed_data_len);
+            result = issue_pongo_command(handle, modload_cmd);
+        } else {
+            result = issue_pongo_command(handle, "modload");
+        }
         if (result.ret != 0) goto bad;
     }
 
@@ -195,7 +201,13 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
     if (g_payload_ramdisk.data_len > 0) {
         result = upload_buffer_to_pongo(handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
         if (result.ret != 0) goto bad;
-        result = issue_pongo_command(handle, "ramdisk");
+        if (g_payload_ramdisk.uncompressed_data_len > 0) {
+            char modload_cmd[64];
+            snprintf(modload_cmd, sizeof(modload_cmd), "ramdisk %zu", g_payload_ramdisk.uncompressed_data_len);
+            result = issue_pongo_command(handle, modload_cmd);
+        } else {
+            result = issue_pongo_command(handle, "ramdisk");
+        }
         if (result.ret != 0) goto bad;
     }
 

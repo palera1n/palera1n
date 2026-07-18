@@ -19,6 +19,9 @@ endif
 payloads:
 	mkdir -p src/gen/embedded
 
+	xz --format=lzma -vfc6ekT 0 embedded/ramdisk.dmg > embedded/ramdisk-compressed.dmg.lzma
+	xz --format=lzma -vfc6ekT 0 embedded/checkra1n-kpf-pongo > embedded/checkra1n-kpf-pongo-compressed.lzma
+
 	@for file in embedded/*; do \
 		name=$$(basename "$$file"); \
 		name=$${name%.*}; \
@@ -29,6 +32,7 @@ payloads:
 		| sed 's/unsigned int/static const size_t/g' \
 		>> "src/gen/embedded/$$name.h"; \
 	done
+
 palera1n: payloads
 	@cmake -S . -B build \
 		-DCMAKE_SYSROOT="$(CMAKE_SYSROOT)" \

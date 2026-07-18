@@ -13,4 +13,5 @@ libusbK-tmp/
 *.7z
 *.tgz
 *.tar.gz
+*.lzma
 *-cross

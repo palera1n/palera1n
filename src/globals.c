@@ -12,9 +12,11 @@
 #endif
 #if WITH_RAMDISK
 # include "gen/embedded/ramdisk.h"
+# include "gen/embedded/ramdisk-compressed.dmg.h"
 #endif
 #include "gen/embedded/Pongo.h"
 #include "gen/embedded/checkra1n-kpf-pongo.h"
+#include "gen/embedded/checkra1n-kpf-pongo-compressed.h"
 
 uint64_t palerain_flags = 0;
 char boot_args[0x270] = { '\0' };
@@ -23,34 +25,40 @@ char boot_args[0x270] = { '\0' };
 payload_t g_payload_overlay = {
     .data = embedded_binpack_dmg,
     .data_len = embedded_binpack_dmg_len,
+    .uncompressed_data_len = 0,
 };
 #else
 payload_t g_payload_overlay = {
     .data = NULL,
     .data_len = 0,
+    .uncompressed_data_len = 0,
 };
 #endif
 
 #if WITH_RAMDISK
 payload_t g_payload_ramdisk = {
-    .data = embedded_ramdisk_dmg,
-    .data_len = embedded_ramdisk_dmg_len,
+    .data = embedded_ramdisk_compressed_dmg_lzma,
+    .data_len = embedded_ramdisk_compressed_dmg_lzma_len,
+    .uncompressed_data_len = embedded_ramdisk_dmg_len,
 };
 #else
 payload_t g_payload_ramdisk = {
     .data = NULL,
     .data_len = 0,
+    .uncompressed_data_len = 0,
 };
 #endif
 
 payload_t g_payload_pongo = {
     .data = embedded_Pongo_bin,
     .data_len = embedded_Pongo_bin_len,
+    .uncompressed_data_len = 0,
 };
 
 payload_t g_payload_kpf = {
-    .data = embedded_checkra1n_kpf_pongo,
-    .data_len = embedded_checkra1n_kpf_pongo_len,
+    .data = embedded_checkra1n_kpf_pongo_compressed_lzma,
+    .data_len = embedded_checkra1n_kpf_pongo_compressed_lzma_len,
+    .uncompressed_data_len = embedded_checkra1n_kpf_pongo_len,
 };
 
 bool override_payload_from_file(const char *path, payload_t *out)
@@ -86,6 +94,8 @@ bool override_payload_from_file(const char *path, payload_t *out)
 
     out->data = buf;
     out->data_len = (size_t)len;
+    // assume uncompressed
+    out->uncompressed_data_len = 0;
 
     return true;
 }

@@ -13,6 +13,7 @@ extern char boot_args[0x270];
 typedef struct {
     const uint8_t *data;
     size_t data_len;
+    size_t uncompressed_data_len;
 } payload_t;
 
 extern payload_t g_payload_overlay;
