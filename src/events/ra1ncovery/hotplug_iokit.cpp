@@ -116,7 +116,7 @@ bool start_hotplug_monitoring(hotplug_callback_t callback) {
 void stop_hotplug_monitoring(void) {
     if (!gNotifyPort) return;
     if (gRunLoopSource) {
-        CFRunLoopRemoveSource(CFRunLoopGetCurrent(), gRunLoopSource, kCFRunLoopDefaultModeMode);
+        CFRunLoopRemoveSource(CFRunLoopGetCurrent(), gRunLoopSource, kCFRunLoopDefaultMode);
         gRunLoopSource = nullptr;
     }
     for (io_iterator_t iter : gIterators) {

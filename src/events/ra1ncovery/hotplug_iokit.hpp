@@ -8,6 +8,7 @@
 
 #ifdef __APPLE__
 # include <IOKit/IOKitLib.h>
+# include <IOKit/IOCFPlugIn.h>
 # include <IOKit/usb/IOUSBLib.h>
 #elif !defined(__APPLE__) && !defined(WITH_CIDERRAIN)
 # include <libusb-1.0/libusb.h>
