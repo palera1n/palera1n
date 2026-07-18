@@ -89,6 +89,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BUILD_GITHUB_TOKEN }}
+        submodules: recursive
 
     - name: Download Pongo
       uses: actions/download-artifact@v4
@@ -150,6 +153,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BUILD_GITHUB_TOKEN }}
+        submodules: recursive
 
     - name: Download Pongo
       uses: actions/download-artifact@v4
