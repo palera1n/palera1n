@@ -112,6 +112,23 @@ jobs:
         find ./${{ matrix.triple }}-cross -name "*.la" -type f -delete
         echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
 
+    - name: Install Rust target
+      run: |
+        case "${{ matrix.triple }}" in
+          i486-linux-musl)
+            rustup target add i686-unknown-linux-musl
+            ;;
+          x86_64-linux-musl)
+            rustup target add x86_64-unknown-linux-musl
+            ;;
+          armel-linux-musleabi)
+            rustup target add arm-unknown-linux-musleabi
+            ;;
+          aarch64-linux-musl)
+            rustup target add aarch64-unknown-linux-musl
+            ;;
+        esac
+
     - name: Install dependencies (apt)
       run: |
         sudo apt update
