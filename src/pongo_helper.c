@@ -202,9 +202,9 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
         result = upload_buffer_to_pongo(handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
         if (result.ret != 0) goto bad;
         if (g_payload_ramdisk.uncompressed_data_len > 0) {
-            char modload_cmd[64];
-            snprintf(modload_cmd, sizeof(modload_cmd), "ramdisk %zu", g_payload_ramdisk.uncompressed_data_len);
-            result = issue_pongo_command(handle, modload_cmd);
+            char ramdisk_cmd[64];
+            snprintf(ramdisk_cmd, sizeof(ramdisk_cmd), "ramdisk %zu", g_payload_ramdisk.uncompressed_data_len);
+            result = issue_pongo_command(handle, ramdisk_cmd);
         } else {
             result = issue_pongo_command(handle, "ramdisk");
         }
