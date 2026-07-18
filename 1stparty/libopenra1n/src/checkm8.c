@@ -162,8 +162,7 @@ char *get_usb_serial_number(usb_handle_t *handle)
     if (str == NULL)
         return NULL;
 
-    for (i = 0; i < sz; ++i)
-        str[i] = (char)buf[2 * (i + 1)];
+    for (i = 0; i < sz; ++i) str[i] = (char)buf[2 * (i + 1)];
 
     str[sz - 1] = '\0';
 

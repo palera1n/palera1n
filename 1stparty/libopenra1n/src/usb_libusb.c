@@ -2,6 +2,7 @@
 
 #include <usb_libusb.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -57,16 +58,16 @@ void usb_async_cb(struct libusb_transfer *transfer) {
 transfer_ret_t send_usb_control_request(const usb_handle_t *handle, uint8_t bm_request_type, uint8_t b_request, uint16_t w_value, uint16_t w_index, void *p_data, size_t w_len) {
     transfer_ret_t result;
 
-    if(!handle || !handle->interface) {
+    if(!handle || !handle->device) {
         result.ret = USB_TRANSFER_ERROR;
         result.sz = 0;
         return result;
     }
 
-    libusb_error ret = libusb_control_transfer(handle->device, bm_request_type, b_request, w_value, w_index, p_data, (uint16_t)w_len, USB_TIMEOUT);
+    int ret = libusb_control_transfer(handle->device, bm_request_type, b_request, w_value, w_index, p_data, (uint16_t)w_len, USB_TIMEOUT);
 
-    if(ret == LIBUSB_SUCCESS) {
-        result.sz = (uint32_t)w_len;
+    if(ret >= 0) {
+        result.sz = (uint32_t)ret;
         result.ret = USB_TRANSFER_OK;
     } else if(ret == LIBUSB_ERROR_PIPE) {
         result.ret = USB_TRANSFER_STALL;
@@ -82,7 +83,7 @@ transfer_ret_t send_usb_control_request(const usb_handle_t *handle, uint8_t bm_r
 transfer_ret_t send_usb_control_request_async(const usb_handle_t *handle, uint8_t bm_request_type, uint8_t b_request, uint16_t w_value, uint16_t w_index, void *p_data, size_t w_len, unsigned usb_abort_timeout) {
     transfer_ret_t result;
 
-    if(!handle || !handle->interface) {
+    if(!handle || !handle->device) {
         result.ret = USB_TRANSFER_ERROR;
         result.sz = 0;
         return result;
@@ -137,16 +138,16 @@ transfer_ret_t send_interface_control_request(const usb_handle_t *handle, uint8_
 {
     transfer_ret_t result;
 
-    if(!handle || !handle->interface) {
+    if(!handle || !handle->device) {
         result.ret = USB_TRANSFER_ERROR;
         result.sz = 0;
         return result;
     }
 
-    libusb_error ret = libusb_control_transfer(handle->device, bm_request_type, b_request, w_value, w_index, p_data, (uint16_t)w_len, 0);
+    int ret = libusb_control_transfer(handle->device, bm_request_type, b_request, w_value, w_index, p_data, (uint16_t)w_len, 0);
 
-    if(ret == LIBUSB_SUCCESS) {
-        result.sz = (uint32_t)w_len;
+    if(ret >= 0) {
+        result.sz = (uint32_t)ret;
         result.ret = USB_TRANSFER_OK;
     } else if(ret == LIBUSB_ERROR_PIPE) {
         result.ret = USB_TRANSFER_STALL;
@@ -163,7 +164,7 @@ transfer_ret_t send_interface_bulk_transfer(const usb_handle_t *handle, void *da
 {
     transfer_ret_t result;
 
-    if(!handle || !handle->interface) {
+    if(!handle || !handle->device) {
         result.ret = USB_TRANSFER_ERROR;
         result.sz = 0;
         return result;
@@ -171,7 +172,7 @@ transfer_ret_t send_interface_bulk_transfer(const usb_handle_t *handle, void *da
 
     static uint32_t maxLen = 0;
     int transferred = 0;
-    libusb_error ret;
+    int ret;
 
     if(maxLen == 0)
     {
