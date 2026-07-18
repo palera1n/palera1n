@@ -229,22 +229,75 @@ endif()
 
 # idevice
 if(WITH_GUI OR WITH_TUI)
+    set(IDevice_CARGO_ARGS
+        --release
+        --no-default-features
+        --features "usbmuxd ring tcp"
+    )
+
+    set(IDevice_ENV)
+
+    if(CROSS_HOST_TRIPLE)
+        if(CROSS_HOST_TRIPLE STREQUAL "i486-linux-musl")
+            set(RUST_TARGET "i686-unknown-linux-musl")
+        elseif(CROSS_HOST_TRIPLE STREQUAL "x86_64-linux-musl")
+            set(RUST_TARGET "x86_64-unknown-linux-musl")
+        elseif(CROSS_HOST_TRIPLE STREQUAL "armel-linux-musleabi")
+            set(RUST_TARGET "arm-unknown-linux-musleabi")
+        elseif(CROSS_HOST_TRIPLE STREQUAL "aarch64-linux-musl")
+            set(RUST_TARGET "aarch64-unknown-linux-musl")
+        endif()
+
+        if(RUST_TARGET)
+            string(TOUPPER "${RUST_TARGET}" RUST_TARGET_ENV)
+            string(REPLACE "-" "_" RUST_TARGET_ENV "${RUST_TARGET_ENV}")
+
+            list(APPEND IDevice_CARGO_ARGS
+                --target ${RUST_TARGET}
+            )
+
+            list(APPEND IDevice_ENV
+                CC=${CMAKE_C_COMPILER}
+                AR=${CMAKE_AR}
+                CARGO_TARGET_${RUST_TARGET_ENV}_LINKER=${CMAKE_C_COMPILER}
+            )
+        endif()
+
+    elseif(MINGW)
+        set(RUST_TARGET "x86_64-pc-windows-gnu")
+
+        list(APPEND IDevice_CARGO_ARGS
+            --target ${RUST_TARGET}
+        )
+
+        list(APPEND IDevice_ENV
+            CC=${CMAKE_C_COMPILER}
+            AR=${CMAKE_AR}
+            CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=${CMAKE_C_COMPILER}
+        )
+    endif()
+
     ExternalProject_Add(idevice_ep
         GIT_REPOSITORY https://github.com/jkcoxson/idevice.git
         GIT_TAG v0.1.65
-        PATCH_COMMAND patch --forward -p1 < "${CMAKE_SOURCE_DIR}/patches/idevice/0001-compile-for-usbmuxd-ring-only.patch" || true
+
+        PATCH_COMMAND
+            patch --forward -p1 < "${CMAKE_SOURCE_DIR}/patches/idevice/0001-compile-for-usbmuxd-ring-only.patch" || true
 
         CONFIGURE_COMMAND ""
 
         BUILD_COMMAND
-            ${CMAKE_COMMAND} -E chdir <SOURCE_DIR>/ffi
-            cargo build --release --no-default-features --features "usbmuxd ring tcp"
+            ${CMAKE_COMMAND} -E env
+                ${IDevice_ENV}
+                cargo build
+                ${IDevice_CARGO_ARGS}
+                --manifest-path <SOURCE_DIR>/ffi/Cargo.toml
 
         INSTALL_COMMAND
             ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/lib
             COMMAND ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/include
             COMMAND ${CMAKE_COMMAND} -E copy
-                <SOURCE_DIR>/target/release/libidevice_ffi.a
+                <SOURCE_DIR>/target/${RUST_TARGET}/release/libidevice_ffi.a
                 <INSTALL_DIR>/lib/idevice/libidevice_ffi.a
             COMMAND ${CMAKE_COMMAND} -E copy
                 <SOURCE_DIR>/ffi/idevice.h
