@@ -274,13 +274,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: pongo
-        path: payloads/
+        path: embedded/
 
     - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
         name: embedded
-        path: payloads/
+        path: embedded/
 
     - name: Install dependencies (choco)
       run: choco install nsis.portable
