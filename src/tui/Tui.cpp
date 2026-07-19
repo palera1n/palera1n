@@ -309,7 +309,6 @@ void TuiFrame::Run() {
 }
 
 void TuiFrame::ShowMain(int selected) {
-    gShouldEventsRun = true;
     m_currentPanel = PANEL_MAIN;
     m_selected = selected;
 }
@@ -330,7 +329,6 @@ void TuiFrame::ShowDfu(int selected) {
 }
 
 void TuiFrame::ShowExploit(int selected) {
-    gShouldEventsRun = false;
     m_currentPanel = PANEL_FINAL;
     m_selected = selected;
 }

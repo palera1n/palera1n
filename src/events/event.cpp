@@ -39,8 +39,6 @@
 # define IO_OBJECT_NULL nullptr
 #endif
 
-bool gShouldEventsRun = true;
-
 namespace {
 
 struct ManagedDevice {
@@ -218,8 +216,6 @@ bool build_normal_state(const IdeviceFFI::UsbmuxdDevice& device, DeviceState& ou
 }
 
 static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supported) {
-    if (!gShouldEventsRun) return;
-
     char serial[256] = {};
     if (!get_usb_device_serial(handle, serial, sizeof(serial))) return;
 
@@ -252,8 +248,6 @@ static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supp
 }
 
 static void remove_device(platform_service_t service, DeviceMode mode, uint32_t target_device_id = 0) {
-    if (!gShouldEventsRun) return;
-
     bool changed = false;
     {
         std::lock_guard lock(g_mutex);
@@ -304,7 +298,6 @@ void usbmuxd_listener_worker() {
 
     for (;;) {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        if (!gShouldEventsRun) break;
 
         auto conn_res = IdeviceFFI::UsbmuxdConnection::default_new(0);
         if (conn_res.is_err()) continue;

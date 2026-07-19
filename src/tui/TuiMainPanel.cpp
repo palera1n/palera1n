@@ -56,7 +56,7 @@ static std::string get_device_subtitle(const DeviceState& state) {
             }
             return "Not supported\n" + ecid;
         case DeviceMode::DFU:
-            return "Sorry, jailbreaking in DFU mode is not supported.";
+            return "Sorry, jailbreaking in DFU mode is not supported.\n";
         case DeviceMode::None:
             return "Please connect a device to get started. Ensure version range is 15.0+";
     }
