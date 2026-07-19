@@ -184,23 +184,21 @@ void MainPanel::SetDeviceState(const DeviceState& state)
 
     if (m_deviceTitle && m_deviceSubtitle)
     {
-        if (!state.connected)
+        if (state.multipleDevices || state.connectedDeviceCount > 1)
         {
-            if (state.connectedDeviceCount > 1)
-            {
-                m_deviceTitle->SetLabel("Multiple devices detected");
-                m_deviceSubtitle->SetLabel(
-                    wxString::Format(
-                        "%u USB devices connected. Disconnect extras and keep only one device attached.",
-                        state.connectedDeviceCount
-                    )
-                );
-            }
-            else
-            {
-                m_deviceTitle->SetLabel(deviceTextString);
-                m_deviceSubtitle->SetLabel(deviceTextString2);
-            }
+            m_deviceTitle->SetLabel("Multiple devices detected");
+            m_deviceSubtitle->SetLabel(
+                wxString::Format(
+                    "%u devices connected. Please only connect one device.\n",
+                    state.connectedDeviceCount
+                )
+            );
+            m_startButton->Enable(false);
+        }
+        else if (!state.connected)
+        {
+            m_deviceTitle->SetLabel(deviceTextString);
+            m_deviceSubtitle->SetLabel(deviceTextString2);
             m_startButton->Enable(false);
         }
         else

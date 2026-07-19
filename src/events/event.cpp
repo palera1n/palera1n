@@ -13,10 +13,7 @@
 #include <memory>
 #include <condition_variable>
 #include <cstring>
-
-extern "C" {
-#include <idevice/idevice.h>
-}
+#include <iostream>
 
 #if WITH_CIDERRAIN
 # include <ciderra1n/log.h>
@@ -26,6 +23,9 @@ extern "C" {
 #endif
 
 #include "ra1ncovery/hotplug_iokit.hpp"
+#include <idevice++/lockdown.hpp>
+#include <idevice++/usbmuxd.hpp>
+#include <idevice++/provider.hpp>
 
 #if defined(__APPLE__)
   using platform_service_t = io_service_t;
@@ -39,6 +39,8 @@ extern "C" {
 # define IO_OBJECT_NULL nullptr
 #endif
 
+bool gShouldEventsRun = true;
+
 namespace {
 
 struct ManagedDevice {
@@ -46,7 +48,10 @@ struct ManagedDevice {
     bool normalPresent = false;
     bool recoveryPresent = false;
     bool dfuPresent = false;
-    hotplug_handle_t handle;
+    hotplug_handle_t handle{};
+    uint32_t device_id = 0;
+
+    std::unique_ptr<IdeviceFFI::UsbmuxdDevice> usbmuxd_device;
 };
 
 void release_handle(hotplug_handle_t& h) {
@@ -92,18 +97,11 @@ struct Releaser {
 template<typename T, auto FreeFn>
 using unique_c_ptr = std::unique_ptr<T, Releaser<FreeFn>>;
 
-struct ActiveLockdownConnection {
-    unique_c_ptr<UsbmuxdConnectionHandle, idevice_usbmuxd_connection_free> conn;
-    unique_c_ptr<IdeviceProviderHandle, idevice_provider_free> provider;
-    unique_c_ptr<LockdowndClientHandle, lockdownd_client_free> client;
-};
-
 std::mutex g_mutex;
 std::vector<DeviceStateCallback> g_callbacks;
 std::unordered_map<uint64_t, ManagedDevice> g_devices;
 uint64_t g_activeEcid = 0;
 std::once_flag g_startOnce;
-std::unique_ptr<ActiveLockdownConnection> g_activeLockdown = nullptr;
 
 #ifndef __APPLE__
 std::condition_variable g_recoveryCv;
@@ -118,8 +116,9 @@ void dispatch_callbacks(const std::vector<DeviceStateCallback>& callbacks, const
 
 DeviceState build_public_state_locked() {
     DeviceState out;
-    out.connectedDeviceCount = static_cast<uint32_t>(g_devices.size());
-    out.multipleDevices = out.connectedDeviceCount > 1;
+    const auto total_devices = static_cast<uint32_t>(g_devices.size());
+    out.connectedDeviceCount = total_devices;
+    out.multipleDevices = total_devices > 1;
 
     if (g_devices.empty()) {
         g_activeEcid = 0;
@@ -134,8 +133,8 @@ DeviceState build_public_state_locked() {
     g_activeEcid = it->first;
     out = it->second.state;
     out.connected = true;
-    out.connectedDeviceCount = static_cast<uint32_t>(g_devices.size());
-    out.multipleDevices = out.connectedDeviceCount > 1;
+    out.connectedDeviceCount = total_devices;
+    out.multipleDevices = total_devices > 1;
     return out;
 }
 
@@ -150,10 +149,11 @@ void publish_state() {
     dispatch_callbacks(callbacks, state);
 }
 
-bool lockdown_get_string(struct LockdowndClientHandle* client, const char* key, std::string& out) {
-    plist_t raw_plist = nullptr;
-    unique_c_ptr<IdeviceFfiError, idevice_error_free> err(lockdownd_get_value(client, key, nullptr, &raw_plist));
-    if (err || !raw_plist) return false;
+bool lockdown_get_string(IdeviceFFI::Lockdown& client, const char* key, std::string& out) {
+    auto res = client.get_value(key, nullptr);
+    if (res.is_err()) return false;
+    plist_t raw_plist = res.unwrap();
+    if (!raw_plist) return false;
 
     unique_c_ptr<std::remove_pointer_t<plist_t>, plist_free> plist(raw_plist);
     char* raw = nullptr;
@@ -165,61 +165,47 @@ bool lockdown_get_string(struct LockdowndClientHandle* client, const char* key, 
     return !out.empty();
 }
 
-bool lockdown_get_uint(struct LockdowndClientHandle* client, const char* key, uint64_t& out) {
-    plist_t raw_plist = nullptr;
-    unique_c_ptr<IdeviceFfiError, idevice_error_free> err(lockdownd_get_value(client, key, nullptr, &raw_plist));
-    if (err || !raw_plist) return false;
+bool lockdown_get_uint(IdeviceFFI::Lockdown& client, const char* key, uint64_t& out) {
+    auto res = client.get_value(key, nullptr);
+    if (res.is_err()) return false;
+    plist_t raw_plist = res.unwrap();
+    if (!raw_plist) return false;
 
     unique_c_ptr<std::remove_pointer_t<plist_t>, plist_free> plist(raw_plist);
     plist_get_uint_val(plist.get(), &out);
     return out != 0;
 }
 
-std::unique_ptr<ActiveLockdownConnection> establish_lockdown(struct UsbmuxdDeviceHandle* dev_handle, const std::string& udid_str) {
-    auto session = std::make_unique<ActiveLockdownConnection>();
+bool build_normal_state(const IdeviceFFI::UsbmuxdDevice& device, DeviceState& out) {
+    auto id_opt = device.get_id();
+    if (id_opt.is_none()) return false;
+    uint32_t device_id = id_opt.unwrap();
 
-    struct UsbmuxdConnectionHandle* raw_conn = nullptr;
-    if (idevice_usbmuxd_new_default_connection(1, &raw_conn) != nullptr || !raw_conn) return nullptr;
-    session->conn.reset(raw_conn);
+    auto udid_opt = device.get_udid();
+    if (udid_opt.is_none()) return false;
+    std::string udid_str = udid_opt.unwrap();
 
-    uint32_t device_id = idevice_usbmuxd_device_get_device_id(dev_handle);
-    struct UsbmuxdAddrHandle* addr = nullptr;
-    unique_c_ptr<IdeviceFfiError, idevice_error_free> err2(idevice_usbmuxd_default_addr_new(&addr));
-    if (err2 || !addr) return nullptr;
+    auto prov_res = IdeviceFFI::Provider::usbmuxd_new(IdeviceFFI::UsbmuxdAddr::default_new(), 0, udid_str, device_id, "ra1ncovery");
+    if (prov_res.is_err()) return false;
+    auto prov = std::move(prov_res).unwrap();
 
-    struct IdeviceProviderHandle* raw_provider = nullptr;
-    unique_c_ptr<IdeviceFfiError, idevice_error_free> err(usbmuxd_provider_new(
-        addr, 1, udid_str.c_str(), device_id, "palera1n", &raw_provider
-    ));
-    if (err || !raw_provider) return nullptr;
-    session->provider.reset(raw_provider);
+    auto lockdown_res = IdeviceFFI::Lockdown::connect(prov);
+    if (lockdown_res.is_err()) return false;
+    auto session = std::move(lockdown_res).unwrap();
 
-    struct LockdowndClientHandle* raw_client = nullptr;
-    err.reset(lockdownd_connect(session->provider.get(), &raw_client));
-    if (err || !raw_client) return nullptr;
-    session->client.reset(raw_client);
-
-    return session;
-}
-
-bool build_normal_state(struct UsbmuxdDeviceHandle* dev_handle, DeviceState& out, std::unique_ptr<ActiveLockdownConnection>& session) {
-    if (!dev_handle) return false;
-
-    unique_c_ptr<char, idevice_string_free> udid_raw(idevice_usbmuxd_device_get_udid(dev_handle));
-    std::string udid_str = udid_raw ? udid_raw.get() : "";
-
-    session = establish_lockdown(dev_handle, udid_str);
-    if (!session) return false;
+    auto pf_res = prov.get_pairing_file();
+    if (pf_res.is_ok()) {
+        (void)session.start_session(pf_res.unwrap());
+    }
 
     out.connected = true;
     out.mode = DeviceMode::Normal;
     out.udid = udid_str;
 
-    lockdown_get_string(session->client.get(), "ProductType", out.productType);
-    lockdown_get_string(session->client.get(), "ProductVersion", out.productVersion);
-    lockdown_get_uint(session->client.get(), "UniqueChipID", out.ecid);
+    lockdown_get_string(session, "ProductType", out.productType);
+    lockdown_get_string(session, "ProductVersion", out.productVersion);
+    lockdown_get_uint(session, "UniqueChipID", out.ecid);
 
-    // match productType and get proper displayName
     for (int i = 0; irecv_devices[i].product_type; i++) {
         if (irecv_devices[i].product_type == out.productType) {
             out.displayName = irecv_devices[i].name;
@@ -231,37 +217,9 @@ bool build_normal_state(struct UsbmuxdDeviceHandle* dev_handle, DeviceState& out
     return true;
 }
 
-void handle_normal_add(struct UsbmuxdDeviceHandle* dev_handle) {
-    std::thread([dev_handle]() {
-        DeviceState discovered;
-        std::unique_ptr<ActiveLockdownConnection> temp_session;
-
-        if (!build_normal_state(dev_handle, discovered, temp_session))
-            return;
-
-        if (discovered.ecid == 0) {
-            LOG_DEBUG("Ignoring normal mode device without ECID");
-            return;
-        }
-
-        {
-            std::lock_guard lock(g_mutex);
-            ManagedDevice& m = g_devices[discovered.ecid];
-
-            release_handle(m.handle);
-
-            m.state = discovered;
-            m.normalPresent = true;
-            m.recoveryPresent = false;
-            m.dfuPresent = false;
-
-            g_activeLockdown = std::move(temp_session);
-        }
-        publish_state();
-    }).detach();
-}
-
 static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supported) {
+    if (!gShouldEventsRun) return;
+
     char serial[256] = {};
     if (!get_usb_device_serial(handle, serial, sizeof(serial))) return;
 
@@ -293,7 +251,9 @@ static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supp
     publish_state();
 }
 
-static void remove_device(platform_service_t service, DeviceMode mode) {
+static void remove_device(platform_service_t service, DeviceMode mode, uint32_t target_device_id = 0) {
+    if (!gShouldEventsRun) return;
+
     bool changed = false;
     {
         std::lock_guard lock(g_mutex);
@@ -305,6 +265,9 @@ static void remove_device(platform_service_t service, DeviceMode mode) {
                 #else
                 return pair.second.handle.serv == service;
                 #endif
+            }
+            if (mode == DeviceMode::Normal && target_device_id != 0) {
+                return pair.second.normalPresent && pair.second.device_id == target_device_id;
             }
             switch (mode) {
                 case DeviceMode::Normal:   return pair.second.normalPresent;
@@ -319,7 +282,7 @@ static void remove_device(platform_service_t service, DeviceMode mode) {
 
             if (mode == DeviceMode::Normal) {
                 m.normalPresent = false;
-                g_activeLockdown.reset();
+                m.usbmuxd_device.reset();
             } else if (mode == DeviceMode::Recovery) {
                 m.recoveryPresent = false;
             } else if (mode == DeviceMode::DFU) {
@@ -337,40 +300,74 @@ static void remove_device(platform_service_t service, DeviceMode mode) {
 }
 
 void usbmuxd_listener_worker() {
+    std::unordered_map<uint32_t, std::string> known_normal_devices;
+
     for (;;) {
-        struct UsbmuxdConnectionHandle* conn = nullptr;
-        if (idevice_usbmuxd_new_default_connection(1, &conn) != nullptr || !conn) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            continue;
-        }
-        unique_c_ptr<UsbmuxdConnectionHandle, idevice_usbmuxd_connection_free> conn_guard(conn);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        if (!gShouldEventsRun) break;
 
-        struct UsbmuxdListenerHandle* listener = nullptr;
-        if (idevice_usbmuxd_listen(conn, &listener) != nullptr || !listener) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            continue;
-        }
-        unique_c_ptr<UsbmuxdListenerHandle, idevice_usbmuxd_listener_handle_free> listener_guard(listener);
+        auto conn_res = IdeviceFFI::UsbmuxdConnection::default_new(0);
+        if (conn_res.is_err()) continue;
 
-        for (;;) {
-            bool connect = false;
-            struct UsbmuxdDeviceHandle* connection_device = nullptr;
-            uint32_t disconnection_id = 0;
+        auto devices_res = std::move(conn_res).unwrap().get_devices();
+        if (devices_res.is_err()) continue;
 
-            IdeviceFfiError* err = idevice_usbmuxd_listener_next(listener, &connect, &connection_device, &disconnection_id);
+        std::unordered_map<uint32_t, std::string> current_devices;
+        std::vector<IdeviceFFI::UsbmuxdDevice> usb_only_devices;
 
-            if (err != nullptr) {
-                unique_c_ptr<IdeviceFfiError, idevice_error_free> err_guard(err);
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                break;
+        auto current_dev_list = std::move(devices_res).unwrap();
+        usb_only_devices.reserve(current_dev_list.size());
+
+        for (auto& dev : current_dev_list) {
+            auto conn_type_opt = dev.get_connection_type();
+            if (conn_type_opt.is_none() || conn_type_opt.unwrap().to_string() != "USB") {
+                continue;
             }
 
-            if (connect && connection_device) {
-                handle_normal_add(connection_device);
-            } else if (!connect && disconnection_id != 0) {
-                std::thread([]() {
-                    remove_device(IO_OBJECT_NULL, DeviceMode::Normal);
-                }).detach();
+            auto id_opt = dev.get_id();
+            auto udid_opt = dev.get_udid();
+            if (id_opt.is_some() && udid_opt.is_some()) {
+                current_devices[id_opt.unwrap()] = udid_opt.unwrap();
+                usb_only_devices.push_back(std::move(dev));
+            }
+        }
+
+        for (auto it = known_normal_devices.begin(); it != known_normal_devices.end();) {
+            if (current_devices.find(it->first) == current_devices.end()) {
+                uint32_t removed_id = it->first;
+                it = known_normal_devices.erase(it);
+                remove_device(IO_OBJECT_NULL, DeviceMode::Normal, removed_id);
+            } else {
+                ++it;
+            }
+        }
+
+        for (auto& dev : usb_only_devices) {
+            uint32_t id = dev.get_id().unwrap();
+
+            if (known_normal_devices.find(id) == known_normal_devices.end()) {
+                known_normal_devices[id] = dev.get_udid().unwrap();
+
+                DeviceState discovered;
+                if (build_normal_state(dev, discovered)) {
+                    if (discovered.ecid == 0) continue;
+
+                    {
+                        std::lock_guard lock(g_mutex);
+                        ManagedDevice& m = g_devices[discovered.ecid];
+
+                        release_handle(m.handle);
+
+                        m.state = discovered;
+                        m.normalPresent = true;
+                        m.recoveryPresent = false;
+                        m.dfuPresent = false;
+                        m.device_id = id;
+
+                        m.usbmuxd_device = std::make_unique<IdeviceFFI::UsbmuxdDevice>(std::move(dev));
+                    }
+                    publish_state();
+                }
             }
         }
     }
@@ -423,20 +420,35 @@ void ensure_device_event_system_started() {
 }
 
 bool enter_recovery() {
-    LockdowndClientHandle* client = nullptr;
+    uint32_t device_id = 0;
+    std::string udid_str = "";
+
     {
         std::lock_guard lock(g_mutex);
         if (g_activeEcid == 0) return false;
 
         auto it = g_devices.find(g_activeEcid);
         if (it == g_devices.end() || it->second.state.mode != DeviceMode::Normal) return false;
-        if (!g_activeLockdown || !g_activeLockdown->client) return false;
 
-        client = g_activeLockdown->client.get();
+        device_id = it->second.device_id;
+        udid_str = it->second.state.udid;
     }
 
-    unique_c_ptr<IdeviceFfiError, idevice_error_free> err(lockdownd_enter_recovery(client));
-    return !err;
+    auto prov_res = IdeviceFFI::Provider::usbmuxd_new(IdeviceFFI::UsbmuxdAddr::default_new(), 0, udid_str, device_id, "ra1ncovery");
+    if (prov_res.is_err()) return false;
+    auto prov = std::move(prov_res).unwrap();
+
+    auto lockdown_res = IdeviceFFI::Lockdown::connect(prov);
+    if (lockdown_res.is_err()) return false;
+    auto session = std::move(lockdown_res).unwrap();
+
+    auto pf_res = prov.get_pairing_file();
+    if (pf_res.is_ok()) {
+        (void)session.start_session(pf_res.unwrap());
+    }
+
+    auto res = session.enter_recovery();
+    return res.is_ok();
 }
 
 void exit_recovery() {

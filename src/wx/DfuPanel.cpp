@@ -128,7 +128,7 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
     if (m_isEnteringDfu && state.mode == DeviceMode::DFU)
     {
         m_isEnteringDfu = false;
-        m_headerText->SetLabel("Device entered DFU mode successfully.\n");
+        m_headerText->SetLabel("Device entered DFU mode successfully.");
 
         m_index = m_sequence.steps.size();
         m_stepRemaining = -1;

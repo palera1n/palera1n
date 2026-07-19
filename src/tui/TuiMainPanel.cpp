@@ -3,7 +3,6 @@
 #include "TuiMainPanel.hpp"
 
 #include <string>
-
 #include <ncurses.h>
 
 #include "Tui.hpp"
@@ -19,10 +18,10 @@ static constexpr int kMainSeparatorX = 1;
 static constexpr int kMainSeparatorWidth = 63;
 
 static std::string get_device_title(const DeviceState& state) {
+    if (state.multipleDevices || state.connectedDeviceCount > 1) {
+        return "Multiple devices detected";
+    }
     if (!state.connected) {
-        if (state.connectedDeviceCount > 1) {
-            return "Multiple devices detected";
-        }
         return "No device connected";
     }
 
@@ -34,11 +33,11 @@ static std::string get_device_title(const DeviceState& state) {
 }
 
 static std::string get_device_subtitle(const DeviceState& state) {
+    if (state.multipleDevices || state.connectedDeviceCount > 1) {
+        return std::to_string(state.connectedDeviceCount) +
+            " USB devices connected. Disconnect extras and keep only one device attached.";
+    }
     if (!state.connected) {
-        if (state.connectedDeviceCount > 1) {
-            return std::to_string(state.connectedDeviceCount) +
-                "USB devices connected. Disconnect extras and keep only one device attached.";
-        }
         return "Please connect a device to get started. Ensure version range is 15.0+";
     }
 
@@ -180,6 +179,9 @@ void TuiMainPanel::draw(int sy, int sx, int selected) {
 }
 
 void TuiMainPanel::handle_enter(int selected, int sy, int sx) {
+    DeviceState state = GetFrame()->GetDeviceState();
+    const bool block_start = state.multipleDevices || state.connectedDeviceCount > 1;
+
     switch(selected) {
         case 0:
             palerain_flags ^= palerain_option_quick;
@@ -190,9 +192,9 @@ void TuiMainPanel::handle_enter(int selected, int sy, int sx) {
             break;
 
         case 2: {
-            DeviceState state = GetFrame()->GetDeviceState();
-            bool can_start = (state.connected && state.isSupported && state.mode != DeviceMode::DFU);
+            if (block_start) break;
 
+            bool can_start = (state.connected && state.isSupported && state.mode != DeviceMode::DFU);
             if (can_start) {
                 if (state.mode == DeviceMode::Recovery) {
                     GetFrame()->ShowDfu(1);
@@ -213,6 +215,15 @@ void TuiMainPanel::handle_device_update(const DeviceState& state) {}
 
 bool TuiMainPanel::is_button_enabled(int btn_idx) const {
     DeviceState state = GetFrame()->GetDeviceState();
+
+    if (state.multipleDevices || state.connectedDeviceCount > 1) {
+        switch(btn_idx) {
+            case 0: return true;
+            case 1: return true;
+            case 2: return false;
+            case 3: return true;
+        }
+    }
 
     switch(btn_idx) {
         case 0: return true;

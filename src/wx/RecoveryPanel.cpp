@@ -130,7 +130,17 @@ void RecoveryPanel::EnterRecoveryMode()
         const auto deviceState = GetDeviceState();
         if (!deviceState.connected) return;
         m_isEnteringRecovery = true;
-        enter_recovery();
+        bool success = enter_recovery();
+        if (!success)
+        {
+            wxTheApp->CallAfter([this]()
+            {
+                m_isEnteringRecovery = false;
+                m_statusText->SetLabel("Failed to enter recovery mode.");
+                m_backButton->Enable();
+                m_nextButton->Enable();
+            });
+        }
     }).detach();
 }
 

@@ -11,10 +11,6 @@
 # include <wx/wx.h>
 #endif
 
-extern "C" {
-#include <idevice/idevice.h>
-}
-
 enum class DeviceMode
 {
     None,
@@ -38,6 +34,7 @@ struct DeviceState
 };
 
 using DeviceStateCallback = std::function<void(const DeviceState&)>;
+extern bool gShouldEventsRun;
 
 void register_device_state_callback(DeviceStateCallback cb);
 void ensure_device_event_system_started();

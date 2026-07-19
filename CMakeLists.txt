@@ -189,7 +189,7 @@ if(WITH_CIDERRAIN)
 
     # TODO: get rid
     execute_process(
-        COMMAND patch -p1 -i ${CMAKE_SOURCE_DIR}/patches/liteusb/0001-cpp-compatible.patch
+        COMMAND patch --batch --forward -p1 -i ${CMAKE_SOURCE_DIR}/patches/liteusb/0001-cpp-compatible.patch
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/external/liteusb
         RESULT_VARIABLE LITEUSB_PATCH_RESULT
     )
@@ -293,25 +293,40 @@ if(WITH_GUI OR WITH_TUI)
                 ${IDevice_CARGO_ARGS}
                 --manifest-path <SOURCE_DIR>/ffi/Cargo.toml
 
+            COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR>/cpp
+                cmake
+                    -B build
+                    -DCMAKE_BUILD_TYPE=Release
+                    -DIDEVICE_FFI_PATH=<SOURCE_DIR>/target/${RUST_TARGET}/release/libidevice_ffi.a
+
+            COMMAND ${CMAKE_COMMAND} --build <SOURCE_DIR>/cpp/build --config Release
+
         INSTALL_COMMAND
-            ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/lib
+            ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/lib/idevice
             COMMAND ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/include
+
             COMMAND ${CMAKE_COMMAND} -E copy
                 <SOURCE_DIR>/target/${RUST_TARGET}/release/libidevice_ffi.a
                 <INSTALL_DIR>/lib/idevice/libidevice_ffi.a
+
             COMMAND ${CMAKE_COMMAND} -E copy
-                <SOURCE_DIR>/ffi/idevice.h
-                <INSTALL_DIR>/include/idevice/idevice.h
+                <SOURCE_DIR>/cpp/build/libidevice++.a
+                <INSTALL_DIR>/lib/idevice/libidevice++.a
+
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                <SOURCE_DIR>/cpp/include
+                <INSTALL_DIR>/include
 
         BUILD_IN_SOURCE 1
     )
 
     ExternalProject_Get_Property(idevice_ep install_dir)
-    set(IDEVICE_LIBRARY "${install_dir}/lib/idevice/libidevice_ffi.a")
     set(IDEVICE_INCLUDE_DIR "${install_dir}/include")
+    set(IDEVICE_LIBRARY "${install_dir}/lib/idevice/libidevice++.a")
+    set(IDEVICE_FFI_LIBRARY "${install_dir}/lib/idevice/libidevice_ffi.a")
     add_dependencies(palera1n idevice_ep)
     target_include_directories(palera1n PRIVATE ${IDEVICE_INCLUDE_DIR})
-    target_link_libraries(palera1n PRIVATE "${IDEVICE_LIBRARY}")
+    target_link_libraries(palera1n PRIVATE "${IDEVICE_LIBRARY}" "${IDEVICE_FFI_LIBRARY}")
 endif()
 
 if(APPLE)

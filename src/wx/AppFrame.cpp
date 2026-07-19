@@ -66,6 +66,7 @@ MainFrame::MainFrame()
 
 void MainFrame::ShowMain()
 {
+    gShouldEventsRun = true;
     m_main->Show();
     m_settings->Hide();
     m_recovery->Hide();
@@ -107,6 +108,7 @@ void MainFrame::ShowDfu()
 
 void MainFrame::ShowExploit()
 {
+    gShouldEventsRun = false;
     m_main->Hide();
     m_settings->Hide();
     m_recovery->Hide();
