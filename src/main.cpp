@@ -61,6 +61,7 @@ void print_usage(char* argv) {
         #endif
         "  --dark-blockchain                     [f] Enable dark blockchain\n"
         "  --force-revert                        [f] Force environment reversion\n"
+        "  --force-enable-ssv                    [f] Force SSV detection to result in YES\n"
         "  -l, --rootless                        [f] Enable rootless mode (standard)\n"
         "  -f, --rootful                         [f] Boots fakefs\n"
         "  -c, --setup-fakefs                    [f] Setup fake filesystem\n"
@@ -103,6 +104,7 @@ void parse_arguments(int argc, char* argv[]) {
         #endif
         {"dark-blockchain", no_argument, NULL, 4},
         {"force-revert", no_argument, NULL, 5},
+        {"force-enable-ssv", no_argument, NULL, 6},
         {"rootless", no_argument, NULL, 'l'},
         {"rootful", no_argument, NULL, 'f'},
         {"setup-fakefs", no_argument, NULL, 'c'},
@@ -193,6 +195,9 @@ void parse_arguments(int argc, char* argv[]) {
                 break;
             case 5: // --force-revert
                 palerain_flags |= palerain_option_force_revert;
+                break;
+            case 6: // --force-enable-ssv
+                palerain_flags |= palerain_option_ssv;
                 break;
             case 'l': // --rootless
                 palerain_flags &= ~palerain_option_rootful;
