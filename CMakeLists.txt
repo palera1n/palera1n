@@ -107,7 +107,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "src/*.hpp"
 )
 
-if(MACOS AND WITH_GUI)
+if((APPLE AND NOT IOS) AND WITH_GUI)
     set(APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/palera1n.icns")
     add_executable(palera1n MACOSX_BUNDLE ${SOURCES})
     target_sources(palera1n PRIVATE ${APP_ICON})
