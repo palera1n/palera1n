@@ -8,8 +8,10 @@ embedded/checkra1n-kpf-pongo
 embedded/ramdisk.dmg
 embedded/binpack.dmg
 
+apple-include-*
 libusbK/
 libusbK-tmp/
+
 *.7z
 *.tgz
 *.tar.gz

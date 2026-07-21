@@ -6,7 +6,11 @@ include(ExternalProject)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+if(NOT IOS)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13")
+else()
+set(CMAKE_OSX_DEPLOYMENT_TARGET "12.0")
+endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CROSS_HOST_TRIPLE "" CACHE STRING "Cross-compile target triple for Autotools (e.g., x86_64-linux-musl)")
 
@@ -37,6 +41,10 @@ endif()
 
 if(MINGW AND WITH_CIDERRAIN)
     message(FATAL_ERROR "-DWITH_CIDERRAIN=1 is not supported on MinGW builds.")
+endif()
+
+if(IOS AND (WITH_TUI OR WITH_GUI))
+    message(FATAL_ERROR "-DWITH_TUI=1 or -DWITH_GUI=1 is not supported on iOS builds.")
 endif()
 
 # =========================
@@ -99,7 +107,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "src/*.hpp"
 )
 
-if(APPLE AND WITH_GUI)
+if(MACOS AND WITH_GUI)
     set(APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/palera1n.icns")
     add_executable(palera1n MACOSX_BUNDLE ${SOURCES})
     target_sources(palera1n PRIVATE ${APP_ICON})
@@ -107,6 +115,17 @@ if(APPLE AND WITH_GUI)
     set_target_properties(palera1n PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist"
         MACOSX_BUNDLE_ICON_FILE palera1n.icns
+    )
+elseif(IOS)
+    add_executable(palera1n MACOSX_BUNDLE ${SOURCES})
+
+    set_target_properties(palera1n PROPERTIES
+        XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "in.palera.palera1n"
+        XCODE_ATTRIBUTE_AD_HOC_CODE_SIGNING_ALLOWED "YES"
+        XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "YES"
+        XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "YES"
+        XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "-"
+        XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_SOURCE_DIR}/resources/entitlements.xml"
     )
 elseif(MINGW AND WITH_GUI)
     set(APP_MANIFEST_RC "${CMAKE_SOURCE_DIR}/resources/app.rc")
@@ -194,18 +213,43 @@ if(WITH_CIDERRAIN)
         RESULT_VARIABLE LITEUSB_PATCH_RESULT
     )
 
+    set(IOS_FLAGS "")
+
+    if(IOS)
+        execute_process(
+            COMMAND xcrun --sdk iphoneos --show-sdk-path
+            OUTPUT_VARIABLE IOS_SDK
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        set(IOS_FLAGS "-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos")
+    endif()
+
     execute_process(
-        COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
+        COMMAND ${CMAKE_COMMAND} -E env
+            CC=${CMAKE_C_COMPILER}
+            CXX=${CMAKE_CXX_COMPILER}
+            AR=${CMAKE_AR}
+            "CFLAGS=${IOS_FLAGS}"
+            "CXXFLAGS=${IOS_FLAGS}"
+            "LDFLAGS=${IOS_FLAGS}"
+            make
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
         RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
     )
     if(NOT CIDERRA1N_BUILD_RESULT EQUAL 0)
         message(FATAL_ERROR "Failed to build Ciderra1n.")
     endif()
+
     set(CIDERRAIN_INCLUDE_DIR   "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/build/include")
     set(CIDERRAIN_LIB           "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/build/lib/ciderra1n/libciderra1n.a")
     target_include_directories(palera1n PRIVATE ${CIDERRAIN_INCLUDE_DIR})
     target_link_libraries(palera1n PRIVATE "${CIDERRAIN_LIB}")
+
+    if(IOS)
+        target_include_directories(palera1n PRIVATE "${CMAKE_SOURCE_DIR}/apple-include-iphoneos")
+    endif()
+
     if(LINUX)
         set(LITEUSB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/external/liteusb/include")
         target_compile_definitions(palera1n PRIVATE LITEUSB_PLATFORM_LINUX)
@@ -213,18 +257,44 @@ if(WITH_CIDERRAIN)
     endif()
 else()
     message(STATUS "Building with Openra1n support")
+
+    set(IOS_FLAGS "")
+
+    if(IOS)
+        execute_process(
+            COMMAND xcrun --sdk iphoneos --show-sdk-path
+            OUTPUT_VARIABLE IOS_SDK
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        set(IOS_FLAGS "-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos")
+    endif()
+
     execute_process(
-        COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
+        COMMAND ${CMAKE_COMMAND} -E env
+            CC=${CMAKE_C_COMPILER}
+            CXX=${CMAKE_CXX_COMPILER}
+            AR=${CMAKE_AR}
+            "CFLAGS=${IOS_FLAGS}"
+            "CXXFLAGS=${IOS_FLAGS}"
+            "LDFLAGS=${IOS_FLAGS}"
+            make
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
         RESULT_VARIABLE OPENRA1N_BUILD_RESULT
     )
+
     if(NOT OPENRA1N_BUILD_RESULT EQUAL 0)
         message(FATAL_ERROR "Failed to build Openra1n.")
     endif()
+
     set(OPENRA1N_INCLUDE_DIR   "${CMAKE_SOURCE_DIR}/1stparty/libopenra1n/build/include")
     set(OPENRA1N_LIB           "${CMAKE_SOURCE_DIR}/1stparty/libopenra1n/build/lib/openra1n/libopenra1n.a")
     target_include_directories(palera1n PRIVATE ${OPENRA1N_INCLUDE_DIR})
     target_link_libraries(palera1n PRIVATE "${OPENRA1N_LIB}")
+
+    if(IOS)
+        target_include_directories(palera1n PRIVATE "${CMAKE_SOURCE_DIR}/apple-include-iphoneos")
+    endif()
 endif()
 
 # idevice

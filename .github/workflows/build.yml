@@ -207,6 +207,45 @@ jobs:
         path: |
           build/palera1n-macos-${{ matrix.arch }}.zip
 
+  build-ios:
+    runs-on: macos-latest
+    needs: [build-pongo, build-ramdisk]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BUILD_GITHUB_TOKEN }}
+        submodules: recursive
+
+    - name: Download Pongo
+      uses: actions/download-artifact@v4
+      with:
+        name: pongo
+        path: embedded/
+
+    - name : Download embedded artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: embedded
+        path: embedded/
+
+    - name: Install dependencies (brew)
+      run: |
+        brew update
+        brew install cmake libtool
+
+    - name: Build
+      run: |
+        make palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        cmake --build build
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: palera1n-iphoneos-arm64
+        path: |
+          build/Debug-iphoneos/palera1n.app/palera1n
+
   build-macos-universal:
     runs-on: macos-latest
     needs: [build-macos]
