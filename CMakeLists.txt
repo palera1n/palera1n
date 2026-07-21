@@ -331,18 +331,18 @@ endif()
 
 if(APPLE)
     target_link_options(palera1n PRIVATE
-        -Wl,-dead_strip
-        -Wl,-x
+        $<$<CONFIG:Release>:-Wl,-dead_strip>
+        $<$<CONFIG:Release>:-Wl,-x>
     )
 elseif(MINGW)
     target_link_options(palera1n PRIVATE
-        -Wl,--gc-sections
-        -Wl,--strip-all
+        $<$<CONFIG:Release>:-Wl,--gc-sections>
+        $<$<CONFIG:Release>:-Wl,--strip-all>
     )
 elseif(LINUX)
     target_link_options(palera1n PRIVATE
-        -Wl,--gc-sections
-        -Wl,--strip-all
+        $<$<CONFIG:Release>:-Wl,--gc-sections>
+        $<$<CONFIG:Release>:-Wl,--strip-all>
     )
 endif()
 

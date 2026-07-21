@@ -150,27 +150,28 @@ void publish_state() {
 bool lockdown_get_string(IdeviceFFI::Lockdown& client, const char* key, std::string& out) {
     auto res = client.get_value(key, nullptr);
     if (res.is_err()) return false;
+
     plist_t raw_plist = res.unwrap();
     if (!raw_plist) return false;
 
-    unique_c_ptr<std::remove_pointer_t<plist_t>, plist_free> plist(raw_plist);
     char* raw = nullptr;
-    plist_get_string_val(plist.get(), &raw);
+    plist_get_string_val(raw_plist, &raw);
+
     if (raw) {
         out = raw;
-        free(raw);
     }
+
     return !out.empty();
 }
 
 bool lockdown_get_uint(IdeviceFFI::Lockdown& client, const char* key, uint64_t& out) {
     auto res = client.get_value(key, nullptr);
     if (res.is_err()) return false;
-    plist_t raw_plist = res.unwrap();
-    if (!raw_plist) return false;
 
-    unique_c_ptr<std::remove_pointer_t<plist_t>, plist_free> plist(raw_plist);
-    plist_get_uint_val(plist.get(), &out);
+    plist_t plist = res.unwrap();
+    if (!plist) return false;
+
+    plist_get_uint_val(plist, &out);
     return out != 0;
 }
 
