@@ -295,12 +295,15 @@ void TuiDfuPanel::handle_device_update(const DeviceState& state) {
     }
 
     if (!state.connected) {
-        if (!m_isEnteringDfu) {
-            reset_sequence_state();
-            GetFrame()->ShowMain(1);
+        if (m_isEnteringDfu || m_waitingForDfuTransition) {
+            return;
         }
+
+        reset_sequence_state();
+        GetFrame()->ShowMain(1);
         return;
     }
+
 
     if (m_isEnteringDfu && state.mode == DeviceMode::DFU) {
         m_isEnteringDfu = false;
