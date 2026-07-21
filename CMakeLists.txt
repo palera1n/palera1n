@@ -220,29 +220,23 @@ if(WITH_CIDERRAIN)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
-        set(OPENRA1N_ENV
-            CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-            AR=${CMAKE_AR}
-            "CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-            "CXXFLAGS=-isysroot ${CMAKE_OSX_SYSROOT} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-            "LDFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E env
+                "CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
+                "CXXFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
+                "LDFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+                make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} AR=${CMAKE_AR}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
+            RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
         )
     else()
-        set(OPENRA1N_ENV
-            CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-            AR=${CMAKE_AR}
+        execute_process(
+            COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
+            RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
         )
     endif()
 
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E env
-            ${OPENRA1N_ENV}
-            make
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
-        RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
-    )
     if(NOT CIDERRA1N_BUILD_RESULT EQUAL 0)
         message(FATAL_ERROR "Failed to build Ciderra1n.")
     endif()
@@ -261,6 +255,7 @@ if(WITH_CIDERRAIN)
         target_compile_definitions(palera1n PRIVATE LITEUSB_PLATFORM_LINUX)
         target_include_directories(palera1n PRIVATE ${LITEUSB_INCLUDE_DIR})
     endif()
+
 else()
     message(STATUS "Building with Openra1n support")
 
@@ -271,29 +266,22 @@ else()
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
-        set(OPENRA1N_ENV
-            CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-            AR=${CMAKE_AR}
-            "CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-            "CXXFLAGS=-isysroot ${CMAKE_OSX_SYSROOT} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-            "LDFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E env
+                "CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
+                "CXXFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
+                "LDFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+                make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} AR=${CMAKE_AR}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
+            RESULT_VARIABLE OPENRA1N_BUILD_RESULT
         )
     else()
-        set(OPENRA1N_ENV
-            CC=${CMAKE_C_COMPILER}
-            CXX=${CMAKE_CXX_COMPILER}
-            AR=${CMAKE_AR}
+        execute_process(
+            COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
+            RESULT_VARIABLE OPENRA1N_BUILD_RESULT
         )
     endif()
-
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E env
-            ${OPENRA1N_ENV}
-            make
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
-        RESULT_VARIABLE OPENRA1N_BUILD_RESULT
-    )
 
     if(NOT OPENRA1N_BUILD_RESULT EQUAL 0)
         message(FATAL_ERROR "Failed to build Openra1n.")
