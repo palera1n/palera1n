@@ -329,21 +329,23 @@ if(WITH_GUI OR WITH_TUI)
     target_compile_definitions(palera1n PRIVATE LIBPLIST_STATIC)
 endif()
 
-if(APPLE)
-    target_link_options(palera1n PRIVATE
-        $<$<CONFIG:Release>:-Wl,-dead_strip>
-        $<$<CONFIG:Release>:-Wl,-x>
-    )
-elseif(MINGW)
-    target_link_options(palera1n PRIVATE
-        $<$<CONFIG:Release>:-Wl,--gc-sections>
-        $<$<CONFIG:Release>:-Wl,--strip-all>
-    )
-elseif(LINUX)
-    target_link_options(palera1n PRIVATE
-        $<$<CONFIG:Release>:-Wl,--gc-sections>
-        $<$<CONFIG:Release>:-Wl,--strip-all>
-    )
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    if(APPLE)
+        target_link_options(palera1n PRIVATE
+            -Wl,-dead_strip
+            -Wl,-x
+        )
+    elseif(MINGW)
+        target_link_options(palera1n PRIVATE
+            -Wl,--gc-sections
+            -Wl,--strip-all
+        )
+    elseif(LINUX)
+        target_link_options(palera1n PRIVATE
+            -Wl,--gc-sections
+            -Wl,--strip-all
+        )
+    endif()
 endif()
 
 if(WITH_STATIC)
