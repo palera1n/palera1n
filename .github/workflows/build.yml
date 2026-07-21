@@ -232,7 +232,7 @@ jobs:
     - name: Install dependencies (brew)
       run: |
         brew update
-        brew install cmake libtool
+        brew install cmake libtool gnu-sed
 
     - name: Build
       run: |
