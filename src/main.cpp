@@ -75,6 +75,7 @@ void print_usage(char* argv) {
         "  -K, --override-kpf <FILE PATH>        Override kernel patchfinder\n"
         "  -o, --override-overlay <FILE PATH>    Override overlay\n"
         "  -r, --override-ramdisk <FILE PATH>    Override ramdisk\n"
+        "  -d, --debug-logging                   Enable debug logging\n"
         "  -n, --no-colors                       [f] Disable colors on the command line\n"
         "  -q, --quick                           [f] Enable Quick Mode\n"
         , argv
@@ -118,6 +119,7 @@ void parse_arguments(int argc, char* argv[]) {
         {"override-kpf", required_argument, NULL, 'K'},
         {"override-overlay", required_argument, NULL, 'o'},
         {"override-ramdisk", required_argument, NULL, 'r'},
+        {"debug-logging", no_argument, NULL, 'd'},
         {"no-colors", no_argument, NULL, 'n'},
         {"quick", no_argument, NULL, 'q'},
         {NULL, 0, NULL, 0}
@@ -147,7 +149,7 @@ void parse_arguments(int argc, char* argv[]) {
     # endif
     #endif
 
-    while ((options = getopt_long(argc, argv, "hvlfcBsTVpe:k:K:o:r:nq", long_options, &option_index)) != -1) {
+    while ((options = getopt_long(argc, argv, "hvlfcBsTVpe:k:K:o:r:dnq", long_options, &option_index)) != -1) {
         switch (options) {
             case 'h': // --help
                 print_usage(argv[0]);
@@ -271,6 +273,9 @@ void parse_arguments(int argc, char* argv[]) {
                 }
                 LOG("Overriding ramdisk payload with %s", optarg);
                 break;
+            case 'd': // --debug-logging
+                if (gDebugLevel < 5) gDebugLevel++;
+                break;
             case 'n': // --no-colors
                 palerain_flags |= palerain_option_no_colors;
                 break;
@@ -376,6 +381,6 @@ int main(int argc, char* argv[], char* envp[]) {
     }
     #endif
 
-    shared_t state{};
-    return exploit(&state);
+    int stage;
+    return exploit(&stage);
 }

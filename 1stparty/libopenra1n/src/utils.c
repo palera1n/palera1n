@@ -9,6 +9,7 @@
 #endif
 #include <time.h>
 
+uint8_t gDebugLevel = 0;
 bool gSilentLogs = false;
 bool gColoredLogs = true;
 
@@ -38,9 +39,10 @@ static inline void _get_timestamp(char *buf, size_t len)
     strftime(buf, len, "%Y/%m/%d %H:%M:%S", &tm_info);
 }
 
-void log_write_internal(log_level_t level, const char *fmt, ...)
+void log_write_internal(log_level_t level, const char* func, const char* file, int line, const char *fmt, ...)
 {
     if (gSilentLogs) return;
+    if (level == LOG_VERBOSE && gDebugLevel < 1) return;
 
     va_list args;
     va_start(args, fmt);
@@ -55,15 +57,38 @@ void log_write_internal(log_level_t level, const char *fmt, ...)
         printf(" %9s [%s] => ", tag_buf, ts);
     } else {
         printf(" %s%9s%s [%s%s%s] => ",
-               level_colors[level],
-               tag_buf,
-               RESET_COLOR,
-               GRAY_COLOR,
-               ts,
-               RESET_COLOR);
+            level_colors[level],
+            tag_buf,
+            RESET_COLOR,
+            GRAY_COLOR,
+            ts,
+            RESET_COLOR
+        );
     }
 
     vprintf(fmt, args);
+
+    if (gDebugLevel >= 2) {
+        if (gColoredLogs) {
+            printf("\n      %s└────[%sTRACE(%d)%s = %s()[%s:%d]]",
+                RESET_COLOR,
+                MAGENTA_COLOR,
+                gDebugLevel,
+                RESET_COLOR,
+                func,
+                file,
+                line
+            );
+        } else {
+            printf("\n      └────[TRACE(%d) = %s()[%s:%d]]",
+                gDebugLevel,
+                func,
+                file,
+                line
+            );
+        }
+    }
+
     putchar('\n');
 
     va_end(args);

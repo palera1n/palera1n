@@ -24,30 +24,31 @@ void reset_usb_handle(const usb_handle_t *handle) {
 }
 
 bool wait_usb_handle(usb_handle_t *handle) {
-    if(libusb_init(NULL) == LIBUSB_SUCCESS) {
-        for(;;) {
-            if((handle->device = libusb_open_device_with_vid_pid(NULL, handle->vid, handle->pid)) != NULL) {
-                #if _WIN32
-                libusb_set_auto_detach_kernel_driver(handle->device, 1);
+    if (libusb_init(NULL) != LIBUSB_SUCCESS) {
+        return false;
+    }
 
-                if(libusb_set_configuration(handle->device, 1) == LIBUSB_SUCCESS ||
-                   libusb_set_configuration(handle->device, 1) == LIBUSB_ERROR_BUSY)
-                {
-                    if(libusb_claim_interface(handle->device, 0) == LIBUSB_SUCCESS) {
-                        return true;
-                    }
-                }
-                #else
-                if(libusb_set_configuration(handle->device, 1) == LIBUSB_SUCCESS) {
-                    return true;
-                }
-                #endif
+    handle->device = libusb_open_device_with_vid_pid(NULL, handle->vid, handle->pid);
+    if (handle->device == NULL) {
+        return false;
+    }
 
-                libusb_close(handle->device);
-            }
-            sleep_ms(USB_TIMEOUT);
+    #if _WIN32
+    libusb_set_auto_detach_kernel_driver(handle->device, 1);
+
+    if (libusb_set_configuration(handle->device, 1) == LIBUSB_SUCCESS ||
+        libusb_set_configuration(handle->device, 1) == LIBUSB_ERROR_BUSY) {
+        if (libusb_claim_interface(handle->device, 0) == LIBUSB_SUCCESS) {
+            return true;
         }
     }
+    #else
+    if (libusb_set_configuration(handle->device, 1) == LIBUSB_SUCCESS) {
+        return true;
+    }
+    #endif
+
+    libusb_close(handle->device);
     return false;
 }
 

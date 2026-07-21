@@ -134,14 +134,14 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
         m_stepRemaining = -1;
         m_actionExecutedIndex = -1;
 
-        const wxColour kInactive =
+        const wxColour inactive =
             wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
 
         for (auto* lbl : m_stepLabels)
-            lbl->SetForegroundColour(kInactive);
+            lbl->SetForegroundColour(inactive);
 
         for (auto* lbl : m_buttonLabels)
-            lbl->SetForegroundColour(kInactive);
+            lbl->SetForegroundColour(inactive);
 
         if (!m_stagnentTimer.IsRunning())
             m_stagnentTimer.StartOnce(3000);
@@ -191,10 +191,10 @@ void DfuPanel::OnShow(wxShowEvent& event)
 
 void DfuPanel::LoadDevice(const std::string& productType)
 {
-    const wxColour kActive =
+    const wxColour active =
         wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
 
-    const wxColour kInactive =
+    const wxColour inactive =
         wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
 
     m_sequence = ParseSequence(productType);
@@ -315,7 +315,7 @@ void DfuPanel::LoadDevice(const std::string& productType)
             label
         );
 
-        lbl->SetForegroundColour(i == 0 ? kActive : kInactive);
+        lbl->SetForegroundColour(i == 0 ? active : inactive);
 
         m_stepsSizer->Add(lbl, 0, wxTOP, 5);
         m_stepLabels.push_back(lbl);
@@ -337,7 +337,6 @@ void DfuPanel::StartSequence(const DfuSequence& seq)
     m_actionExecutedIndex = -1;
 
     RunStep();
-    m_timer.StartOnce(1000);
 }
 
 void DfuPanel::RunStep()
@@ -345,108 +344,91 @@ void DfuPanel::RunStep()
     if (m_sequence.steps.empty())
         return;
 
-    const wxColour kActive =
+    const wxColour active =
         wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
 
-    const wxColour kInactive =
+    const wxColour inactive =
         wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
+
+    if (m_index < m_sequence.steps.size())
+    {
+        if (m_stepRemaining < 0)
+        {
+            m_stepRemaining = m_sequence.steps[m_index].duration;
+        }
+        else if (m_stepRemaining > 0)
+        {
+            --m_stepRemaining;
+        }
+
+        if (m_stepRemaining == 0)
+        {
+            ++m_index;
+
+            if (m_index < m_sequence.steps.size())
+                m_stepRemaining = m_sequence.steps[m_index].duration;
+        }
+    }
 
     if (m_index >= m_sequence.steps.size())
     {
         for (auto* lbl : m_stepLabels)
-            lbl->SetForegroundColour(kInactive);
-
-        Layout();
-        Refresh();
+            lbl->SetForegroundColour(inactive);
 
         m_timer.Stop();
+        Refresh();
         return;
+    }
+
+    for (size_t i = 0; i < m_stepLabels.size(); ++i)
+    {
+        auto* lbl = m_stepLabels[i];
+        const auto& step = m_sequence.steps[i];
+
+        lbl->SetForegroundColour(i == m_index ? active : inactive);
+
+        int remaining = step.duration;
+
+        if (i == m_index)
+            remaining = m_stepRemaining;
+        else if (i < m_index)
+            remaining = 0;
+
+        lbl->SetLabel(wxString::Format(
+            "%zu. %s (%d)",
+            i + 1,
+            step.description,
+            remaining
+        ));
+    }
+
+    for (auto* lbl : m_buttonLabels)
+        lbl->SetForegroundColour(inactive);
+
+    for (const auto& buttonId : m_sequence.steps[m_index].activeButtons)
+    {
+        for (const auto& btn : m_sequence.buttons)
+        {
+            if (btn.id != buttonId)
+                continue;
+
+            for (auto* lbl : m_buttonLabels)
+            {
+                if (lbl->GetLabel() == btn.name)
+                    lbl->SetForegroundColour(active);
+            }
+        }
     }
 
     const auto& step = m_sequence.steps[m_index];
 
-    if (m_stepRemaining < 0)
-        m_stepRemaining = step.duration;
-
-    if (m_stepRemaining > 0)
-        --m_stepRemaining;
-
-    bool finished = (m_stepRemaining == 0);
-    size_t completedIndex = m_index;
-
-    if (finished)
+    if (!step.action.empty() &&
+        m_actionExecutedIndex != static_cast<int>(m_index))
     {
-        ++m_index;
-        m_stepRemaining = -1;
-    }
+        m_actionExecutedIndex = m_index;
 
-    for (size_t i = 0; i < m_stepLabels.size(); i++)
-    {
-        auto* lbl = m_stepLabels[i];
-
-        if (i == m_index)
-        {
-            lbl->SetForegroundColour(kActive);
-
-            lbl->SetLabel(wxString::Format(
-                "%zu. %s (%d)",
-                i + 1,
-                m_sequence.steps[i].description,
-                m_stepRemaining < 0 ? m_sequence.steps[i].duration : m_stepRemaining
-            ));
-        }
-        else if (finished && i == completedIndex)
-        {
-            lbl->SetForegroundColour(kInactive);
-
-            lbl->SetLabel(wxString::Format(
-                "%zu. %s (0)",
-                i + 1,
-                m_sequence.steps[i].description
-            ));
-        }
-        else
-        {
-            lbl->SetForegroundColour(kInactive);
-        }
-    }
-
-    for (auto* lbl : m_buttonLabels)
-        lbl->SetForegroundColour(kInactive);
-
-    const auto& activeStep =
-        (m_index < m_sequence.steps.size())
-            ? m_sequence.steps[m_index]
-            : m_sequence.steps.back();
-
-    for (const auto& buttonId : activeStep.activeButtons)
-    {
-        for (const auto& btn : m_sequence.buttons)
-        {
-            if (btn.id == buttonId)
-            {
-                for (auto* lbl : m_buttonLabels)
-                {
-                    if (lbl->GetLabel() == btn.name)
-                        lbl->SetForegroundColour(kActive);
-                }
-            }
-        }
-    }
-
-    if (m_index < m_sequence.steps.size())
-    {
-        const auto& activeStep = m_sequence.steps[m_index];
-
-        if (!activeStep.action.empty() && m_actionExecutedIndex != m_index)
-        {
-            m_actionExecutedIndex = m_index;
-
-            if (activeStep.action == "reboot")
-            {
-                Reboot();
-            }
-        }
+        if (step.action == "reboot")
+            Reboot();
     }
 
     Layout();

@@ -54,6 +54,8 @@ static bool dfu_set_state_wait_reset(const usb_handle_t *handle)
 
 checkm8_err_t checkm8_stage_reset(const usb_handle_t *handle)
 {
+    LOG("checkm8 reset stage");
+
     transfer_ret_t result;
 
     result = send_usb_control_request_no_data(handle, 0x21, DFU_DNLOAD, 0, 0, DFU_FILE_SUFFIX_LEN);
@@ -77,6 +79,8 @@ fail:
 
 checkm8_err_t checkm8_stage_setup(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig)
 {
+    LOG("checkm8 setup stage");
+
     unsigned usb_abort_timeout = USB_TIMEOUT - 1;
     transfer_ret_t result;
 
@@ -170,6 +174,8 @@ char *get_usb_serial_number(usb_handle_t *handle)
 }
 
 checkm8_err_t checkm8_stage_spray(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig) {
+    LOG("checkm8 trigger stage");
+
     size_t i;
     transfer_ret_t result;
 
@@ -195,6 +201,8 @@ checkm8_err_t checkm8_stage_spray(const usb_handle_t *handle, struct DeviceConfi
 }
 
 checkm8_err_t checkm8_stage_patch(const usb_handle_t *handle, struct DeviceConfiguration *deviceConfig, struct PayloadConfiguration *payloadConfig) {
+    LOG("checkm8 patch stage");
+
     size_t i, data_sz, packet_sz;
     void *data;
     transfer_ret_t result;
@@ -289,6 +297,8 @@ bool prepare_pongo(uint8_t **out, size_t *out_len, const uint8_t *pongo_bin, siz
 
     if (!compress_pongo(pongo_bin, pongo_bin_len, &pongo, &pongoSize))
         return false;
+
+    LOG("Sending pongo image");
 
     uint8_t *payload = malloc(SHELLCODE_SZ + pongoSize);
     if (!payload) {

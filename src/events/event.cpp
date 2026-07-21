@@ -22,7 +22,7 @@
 # include <openra1n/shim.h>
 #endif
 
-#include "ra1ncovery/hotplug_iokit.hpp"
+#include "ra1ncovery/hotplug.hpp"
 #include <idevice++/lockdown.hpp>
 #include <idevice++/usbmuxd.hpp>
 #include <idevice++/provider.hpp>

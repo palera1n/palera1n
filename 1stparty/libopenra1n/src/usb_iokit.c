@@ -147,27 +147,28 @@ bool wait_usb_handle(usb_handle_t *handle) {
     CFMutableDictionaryRef matching_dict;
     io_iterator_t iter;
     io_service_t serv;
-    bool ret = false;
 
-    while((matching_dict = IOServiceMatching(kUSBDeviceClassName)) != NULL) {
-        cf_dictionary_set_int16(matching_dict, CFSTR(kUSBVendorID), handle->vid);
-        cf_dictionary_set_int16(matching_dict, CFSTR(kUSBProductID), handle->pid);
+    matching_dict = IOServiceMatching(kUSBDeviceClassName);
+    if (matching_dict == NULL) {
+        return false;
+    }
 
-        if(IOServiceGetMatchingServices(0, matching_dict, &iter) == kIOReturnSuccess) {
-            while((serv = IOIteratorNext(iter)) != IO_OBJECT_NULL) {
-                if(open_usb_device(serv, handle)) {
-                    ret = true;
-                    break;
-                }
-            }
+    cf_dictionary_set_int16(matching_dict, CFSTR(kUSBVendorID), handle->vid);
+    cf_dictionary_set_int16(matching_dict, CFSTR(kUSBProductID), handle->pid);
 
+    if (IOServiceGetMatchingServices(0, matching_dict, &iter) != kIOReturnSuccess) {
+        return false;
+    }
+
+    while ((serv = IOIteratorNext(iter)) != IO_OBJECT_NULL) {
+        if (open_usb_device(serv, handle)) {
             IOObjectRelease(iter);
-            if(ret) break;
-            sleep_ms(USB_TIMEOUT);
+            return true;
         }
     }
 
-    return ret;
+    IOObjectRelease(iter);
+    return false;
 }
 
 void reset_usb_handle(usb_handle_t *handle) {

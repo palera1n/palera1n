@@ -1,6 +1,6 @@
 #if defined(WITH_GUI) || defined(WITH_TUI)
 
-#include "hotplug_iokit.hpp"
+#include "hotplug.hpp"
 #include <vector>
 #include <algorithm>
 #include <string>
