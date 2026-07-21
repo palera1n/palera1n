@@ -1,3 +1,16 @@
+diff --git a/cpp/include/idevice++/dvt/network_monitor.hpp b/cpp/include/idevice++/dvt/network_monitor.hpp
+index 229bf6d..6dcf2a2 100644
+--- a/cpp/include/idevice++/dvt/network_monitor.hpp
++++ b/cpp/include/idevice++/dvt/network_monitor.hpp
+@@ -22,7 +22,7 @@ struct CppSocketAddress {
+ 
+ /// A decoded network event from the device
+ struct NetworkEvent {
+-    IdeviceNetworkEventType event_type = Unknown;
++    IdeviceNetworkEventType event_type = NetworkEventUnknown;
+ 
+     // InterfaceDetection
+     uint32_t    interface_index = 0;
 diff --git a/ffi/Cargo.toml b/ffi/Cargo.toml
 index 91bd981..933e743 100644
 --- a/ffi/Cargo.toml
@@ -11,6 +24,28 @@ index 91bd981..933e743 100644
  wda = ["idevice/wda", "dep:serde_json"]
  xpc = ["idevice/xpc"]
  screenshotr = ["idevice/screenshotr"]
+diff --git a/ffi/src/dvt/network_monitor.rs b/ffi/src/dvt/network_monitor.rs
+index e089ffa..264b36d 100644
+--- a/ffi/src/dvt/network_monitor.rs
++++ b/ffi/src/dvt/network_monitor.rs
+@@ -18,7 +18,7 @@ pub enum IdeviceNetworkEventType {
+     InterfaceDetection = 0,
+     ConnectionDetection = 1,
+     ConnectionUpdate = 2,
+-    Unknown = 255,
++    NetworkEventUnknown = 255,
+ }
+ 
+ /// A socket address (IPv4 or IPv6), represented as a null-terminated string + port
+@@ -286,7 +286,7 @@ pub unsafe extern "C" fn network_monitor_next_event(
+                     unknown_type: 0,
+                 },
+                 NetworkEvent::Unknown(t) => IdeviceNetworkEvent {
+-                    event_type: IdeviceNetworkEventType::Unknown,
++                    event_type: IdeviceNetworkEventType::NetworkEventUnknown,
+                     interface_index: 0,
+                     interface_name: null_mut(),
+                     local_addr: make_socket_addr(None),
 diff --git a/ffi/src/lockdown.rs b/ffi/src/lockdown.rs
 index cb04c27..d13a25a 100644
 --- a/ffi/src/lockdown.rs
@@ -79,3 +114,16 @@ index cb04c27..d13a25a 100644
  /// Creates a new LockdowndClient from an existing Idevice connection
  ///
  /// # Arguments
+diff --git a/idevice/src/lib.rs b/idevice/src/lib.rs
+index b208525..d8d8109 100644
+--- a/idevice/src/lib.rs
++++ b/idevice/src/lib.rs
+@@ -51,7 +51,7 @@ pub mod tunnel;
+ pub use xpc::RemoteXpcClient;
+ 
+ use plist_macro::{plist, pretty_print_dictionary, pretty_print_plist};
+-use provider::{IdeviceProvider, RsdProvider};
++use provider::IdeviceProvider;
+ #[cfg(feature = "rustls")]
+ use rustls::{crypto::CryptoProvider, pki_types::ServerName};
+ use std::{

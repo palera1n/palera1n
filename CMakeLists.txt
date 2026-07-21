@@ -277,7 +277,7 @@ if(WITH_GUI OR WITH_TUI)
         GIT_TAG v0.1.65
 
         PATCH_COMMAND
-            patch --forward --ignore-whitespace -p1 < "${CMAKE_SOURCE_DIR}/patches/idevice/0001-compile-for-usbmuxd-ring-only.patch" || true
+            patch --forward --ignore-whitespace -p1 < "${CMAKE_SOURCE_DIR}/patches/idevice/0001-compile-usbmuxd-and-windows-fixes.patch" || true
 
         CONFIGURE_COMMAND ""
 
