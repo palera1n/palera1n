@@ -89,18 +89,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BUILD_GITHUB_TOKEN }}
+        submodules: recursive
 
     - name: Download Pongo
       uses: actions/download-artifact@v4
       with:
         name: pongo
-        path: payloads/
+        path: embedded/
 
     - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
         name: embedded
-        path: payloads/
+        path: embedded/
 
     - name: Download musl toolchain
       run: |
@@ -108,6 +111,23 @@ jobs:
         tar --zstd -xf ${{ matrix.triple }}-cross.tar.zst
         find ./${{ matrix.triple }}-cross -name "*.la" -type f -delete
         echo "$(pwd)/${{ matrix.triple }}-cross/bin" >> $GITHUB_PATH
+
+    - name: Install Rust target
+      run: |
+        case "${{ matrix.triple }}" in
+          i486-linux-musl)
+            rustup target add i686-unknown-linux-musl
+            ;;
+          x86_64-linux-musl)
+            rustup target add x86_64-unknown-linux-musl
+            ;;
+          armel-linux-musleabi)
+            rustup target add arm-unknown-linux-musleabi
+            ;;
+          aarch64-linux-musl)
+            rustup target add aarch64-unknown-linux-musl
+            ;;
+        esac
 
     - name: Install dependencies (apt)
       run: |
@@ -122,6 +142,7 @@ jobs:
         make palera1n \
           WITH_STATIC=1 \
           WITH_TUI=1 \
+          WITH_CIDERRAIN=1 \
           BUILD_TYPE=Release \
           CMAKE_SYSROOT="$SYSROOT_PATH" \
           CROSS_HOST_TRIPLE="${{ matrix.triple }}" \
@@ -149,18 +170,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BUILD_GITHUB_TOKEN }}
+        submodules: recursive
 
     - name: Download Pongo
       uses: actions/download-artifact@v4
       with:
         name: pongo
-        path: payloads/
+        path: embedded/
 
     - name : Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
         name: embedded
-        path: payloads/
+        path: embedded/
 
     - name: Install dependencies (brew)
       run: |
@@ -169,7 +193,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -x build/palera1n.app/Contents/MacOS/palera1n
 
     - name: Package
@@ -182,6 +206,45 @@ jobs:
         name: palera1n-macos-${{ matrix.arch }}
         path: |
           build/palera1n-macos-${{ matrix.arch }}.zip
+
+  build-ios:
+    runs-on: macos-latest
+    needs: [build-pongo, build-ramdisk]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BUILD_GITHUB_TOKEN }}
+        submodules: recursive
+
+    - name: Download Pongo
+      uses: actions/download-artifact@v4
+      with:
+        name: pongo
+        path: embedded/
+
+    - name : Download embedded artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: embedded
+        path: embedded/
+
+    - name: Install dependencies (brew)
+      run: |
+        brew update
+        brew install cmake libtool gnu-sed
+
+    - name: Build
+      run: |
+        make palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        cmake --build build
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: palera1n-iphoneos-arm64
+        path: |
+          build/Debug-iphoneos/palera1n.app/palera1n
 
   build-macos-universal:
     runs-on: macos-latest
@@ -243,12 +306,6 @@ jobs:
     runs-on: windows-latest
     needs: [build-pongo, build-ramdisk]
 
-    env:
-      LIBUSBK_VERSION: libusbK-3.1.0.0-bin
-      LIBUSBK_URL: https://github.com/mcuee/libusbk/releases/download/V3.1.0.0/
-      LIBUSBK_WDFCOINSTALLER: libusbK/bin/sys/amd64/WdfCoInstaller01009.dll
-      LIBUSBK_WDFCOINSTALLER_RENAMED: libusbK/bin/sys/amd64/WdfCoInstaller1011.dll
-
     steps:
     - uses: actions/checkout@v4
 
@@ -256,21 +313,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: pongo
-        path: payloads/
+        path: embedded/
 
     - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
         name: embedded
-        path: payloads/
-
-    - name: Download libusbK drivers
-      shell: bash
-      run: |
-        curl -LO "${LIBUSBK_URL}${LIBUSBK_VERSION}.7z"
-        7z x "${LIBUSBK_VERSION}.7z" -olibusbK-tmp
-        mv "libusbK-tmp/${LIBUSBK_VERSION}" libusbK
-        mv "${LIBUSBK_WDFCOINSTALLER}" "${LIBUSBK_WDFCOINSTALLER_RENAMED}"
+        path: embedded/
 
     - name: Install dependencies (choco)
       run: choco install nsis.portable
@@ -283,6 +332,8 @@ jobs:
           git
           mingw-w64-x86_64-toolchain
           mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-libusb
+          mingw-w64-x86_64-rust
           libtool
           openssl
           openssl-devel
@@ -300,7 +351,7 @@ jobs:
       run: |
         make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(nproc)
         strip -s build/palera1n.exe
-    
+
     - name: Package
       run: |
         mkdir -p dist\installer

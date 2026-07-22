@@ -1,3 +1,30 @@
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #ifdef WITH_GUI
 
 #include "MainPanel.hpp"
@@ -12,11 +39,10 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../globals.h"
-#include "../utils.h"
 #include "../paleinfo.h"
-#include "../gen/images/logo.h"
+#include "../gen/embedded/logo.h"
 
 const char* deviceTextString = "No device connected";
 const char* deviceTextString2 = "Please connect a device to get started.\nEnsure version range is 15.0+";
@@ -29,7 +55,7 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     auto* left = new wxBoxSizer(wxVERTICAL);
     auto* right = new wxBoxSizer(wxVERTICAL);
 
-    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxMemoryInputStream stream(embedded_logo_png, embedded_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
 
@@ -185,23 +211,21 @@ void MainPanel::SetDeviceState(const DeviceState& state)
 
     if (m_deviceTitle && m_deviceSubtitle)
     {
-        if (!state.connected)
+        if (state.multipleDevices || state.connectedDeviceCount > 1)
         {
-            if (state.connectedDeviceCount > 1)
-            {
-                m_deviceTitle->SetLabel("Multiple devices detected");
-                m_deviceSubtitle->SetLabel(
-                    wxString::Format(
-                        "%u USB devices connected. Disconnect extras and keep only one device attached.",
-                        state.connectedDeviceCount
-                    )
-                );
-            }
-            else
-            {
-                m_deviceTitle->SetLabel(deviceTextString);
-                m_deviceSubtitle->SetLabel(deviceTextString2);
-            }
+            m_deviceTitle->SetLabel("Multiple devices detected");
+            m_deviceSubtitle->SetLabel(
+                wxString::Format(
+                    "%u devices connected. Please only connect one device.\n",
+                    state.connectedDeviceCount
+                )
+            );
+            m_startButton->Enable(false);
+        }
+        else if (!state.connected)
+        {
+            m_deviceTitle->SetLabel(deviceTextString);
+            m_deviceSubtitle->SetLabel(deviceTextString2);
             m_startButton->Enable(false);
         }
         else
@@ -209,7 +233,7 @@ void MainPanel::SetDeviceState(const DeviceState& state)
             const std::string versionString =
                 state.productVersion.empty() ? "Unknown" : state.productVersion;
             const std::string productString =
-                state.productType.empty() ? "Unknown" : state.productType;
+                state.displayName.empty() ? (state.productType.empty() ? "Unknown" : state.productType) : state.displayName;
             const std::string ecidString = state.ecid != 0 ? ("ECID: " + std::to_string(state.ecid)) : "ECID: Unknown";
 
             switch (state.mode)

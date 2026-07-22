@@ -1,3 +1,30 @@
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #ifdef WITH_GUI
 
 #include "DfuPanel.hpp"
@@ -5,9 +32,8 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../sequence.hpp"
-#include "../utils.h"
 #include "../globals.h"
 #include "../paleinfo.h"
 
@@ -19,19 +45,17 @@
 #include <wx/bitmap.h>
 #include <wx/statline.h>
 
-#include "../gen/images/atv_std_brd.h"
-#include "../gen/images/ipad.h"
-#include "../gen/images/ipadmini.h"
-#include "../gen/images/iphone6s.h"
-#include "../gen/images/iphone7.h"
-#include "../gen/images/iphone8.h"
-#include "../gen/images/iphonese.h"
-#include "../gen/images/iphonex.h"
-#include "../gen/images/ipodtouch.h"
-#include "../gen/images/siriremote.h"
-#include "../gen/images/logo.h"
-
-#include <libirecovery.h>
+#include "../gen/embedded/atv_std_brd.h"
+#include "../gen/embedded/ipad.h"
+#include "../gen/embedded/ipadmini.h"
+#include "../gen/embedded/iphone6s.h"
+#include "../gen/embedded/iphone7.h"
+#include "../gen/embedded/iphone8.h"
+#include "../gen/embedded/iphonese.h"
+#include "../gen/embedded/iphonex.h"
+#include "../gen/embedded/ipodtouch.h"
+#include "../gen/embedded/siriremote.h"
+#include "../gen/embedded/logo.h"
 
 DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
@@ -40,7 +64,7 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
 
     auto* root = new wxBoxSizer(wxHORIZONTAL);
     auto* left = new wxBoxSizer(wxVERTICAL);
-    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxMemoryInputStream stream(embedded_logo_png, embedded_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
     auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
@@ -131,20 +155,20 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
     if (m_isEnteringDfu && state.mode == DeviceMode::DFU)
     {
         m_isEnteringDfu = false;
-        m_headerText->SetLabel("Device entered DFU mode successfully.\n");
+        m_headerText->SetLabel("Device entered DFU mode successfully.");
 
         m_index = m_sequence.steps.size();
         m_stepRemaining = -1;
         m_actionExecutedIndex = -1;
 
-        const wxColour kInactive =
+        const wxColour inactive =
             wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
 
         for (auto* lbl : m_stepLabels)
-            lbl->SetForegroundColour(kInactive);
+            lbl->SetForegroundColour(inactive);
 
         for (auto* lbl : m_buttonLabels)
-            lbl->SetForegroundColour(kInactive);
+            lbl->SetForegroundColour(inactive);
 
         if (!m_stagnentTimer.IsRunning())
             m_stagnentTimer.StartOnce(3000);
@@ -194,10 +218,10 @@ void DfuPanel::OnShow(wxShowEvent& event)
 
 void DfuPanel::LoadDevice(const std::string& productType)
 {
-    const wxColour kActive =
+    const wxColour active =
         wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
 
-    const wxColour kInactive =
+    const wxColour inactive =
         wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
 
     m_sequence = ParseSequence(productType);
@@ -221,53 +245,53 @@ void DfuPanel::LoadDevice(const std::string& productType)
 
     if (m_sequence.imageName == "ipadmini")
     {
-        imageData = images_ipadmini_png;
-        imageSize = images_ipadmini_png_len;
+        imageData = embedded_ipadmini_png;
+        imageSize = embedded_ipadmini_png_len;
     }
     else if (m_sequence.imageName == "ipad")
     {
-        imageData = images_ipad_png;
-        imageSize = images_ipad_png_len;
+        imageData = embedded_ipad_png;
+        imageSize = embedded_ipad_png_len;
     }
     else if (m_sequence.imageName == "iphonese")
     {
-        imageData = images_iphonese_png;
-        imageSize = images_iphonese_png_len;
+        imageData = embedded_iphonese_png;
+        imageSize = embedded_iphonese_png_len;
     }
     else if (m_sequence.imageName == "iphone6s")
     {
-        imageData = images_iphone6s_png;
-        imageSize = images_iphone6s_png_len;
+        imageData = embedded_iphone6s_png;
+        imageSize = embedded_iphone6s_png_len;
     }
     else if (m_sequence.imageName == "iphone7")
     {
-        imageData = images_iphone7_png;
-        imageSize = images_iphone7_png_len;
+        imageData = embedded_iphone7_png;
+        imageSize = embedded_iphone7_png_len;
     }
     else if (m_sequence.imageName == "iphone8")
     {
-        imageData = images_iphone8_png;
-        imageSize = images_iphone8_png_len;
+        imageData = embedded_iphone8_png;
+        imageSize = embedded_iphone8_png_len;
     }
     else if (m_sequence.imageName == "iphonex")
     {
-        imageData = images_iphonex_png;
-        imageSize = images_iphonex_png_len;
+        imageData = embedded_iphonex_png;
+        imageSize = embedded_iphonex_png_len;
     }
     else if (m_sequence.imageName == "ipodtouch")
     {
-        imageData = images_ipodtouch_png;
-        imageSize = images_ipodtouch_png_len;
+        imageData = embedded_ipodtouch_png;
+        imageSize = embedded_ipodtouch_png_len;
     }
     else if (m_sequence.imageName == "siriremote")
     {
-        imageData = images_siriremote_png;
-        imageSize = images_siriremote_png_len;
+        imageData = embedded_siriremote_png;
+        imageSize = embedded_siriremote_png_len;
     }
     else if (m_sequence.imageName == "atv_std_brd")
     {
-        imageData = images_atv_std_brd_png;
-        imageSize = images_atv_std_brd_png_len;
+        imageData = embedded_atv_std_brd_png;
+        imageSize = embedded_atv_std_brd_png_len;
     }
 
     if (imageData)
@@ -318,7 +342,7 @@ void DfuPanel::LoadDevice(const std::string& productType)
             label
         );
 
-        lbl->SetForegroundColour(i == 0 ? kActive : kInactive);
+        lbl->SetForegroundColour(i == 0 ? active : inactive);
 
         m_stepsSizer->Add(lbl, 0, wxTOP, 5);
         m_stepLabels.push_back(lbl);
@@ -340,7 +364,6 @@ void DfuPanel::StartSequence(const DfuSequence& seq)
     m_actionExecutedIndex = -1;
 
     RunStep();
-    m_timer.StartOnce(1000);
 }
 
 void DfuPanel::RunStep()
@@ -348,108 +371,91 @@ void DfuPanel::RunStep()
     if (m_sequence.steps.empty())
         return;
 
-    const wxColour kActive =
+    const wxColour active =
         wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHTTEXT);
 
-    const wxColour kInactive =
+    const wxColour inactive =
         wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
+
+    if (m_index < m_sequence.steps.size())
+    {
+        if (m_stepRemaining < 0)
+        {
+            m_stepRemaining = m_sequence.steps[m_index].duration;
+        }
+        else if (m_stepRemaining > 0)
+        {
+            --m_stepRemaining;
+        }
+
+        if (m_stepRemaining == 0)
+        {
+            ++m_index;
+
+            if (m_index < m_sequence.steps.size())
+                m_stepRemaining = m_sequence.steps[m_index].duration;
+        }
+    }
 
     if (m_index >= m_sequence.steps.size())
     {
         for (auto* lbl : m_stepLabels)
-            lbl->SetForegroundColour(kInactive);
-
-        Layout();
-        Refresh();
+            lbl->SetForegroundColour(inactive);
 
         m_timer.Stop();
+        Refresh();
         return;
+    }
+
+    for (size_t i = 0; i < m_stepLabels.size(); ++i)
+    {
+        auto* lbl = m_stepLabels[i];
+        const auto& step = m_sequence.steps[i];
+
+        lbl->SetForegroundColour(i == m_index ? active : inactive);
+
+        int remaining = step.duration;
+
+        if (i == m_index)
+            remaining = m_stepRemaining;
+        else if (i < m_index)
+            remaining = 0;
+
+        lbl->SetLabel(wxString::Format(
+            "%zu. %s (%d)",
+            i + 1,
+            step.description,
+            remaining
+        ));
+    }
+
+    for (auto* lbl : m_buttonLabels)
+        lbl->SetForegroundColour(inactive);
+
+    for (const auto& buttonId : m_sequence.steps[m_index].activeButtons)
+    {
+        for (const auto& btn : m_sequence.buttons)
+        {
+            if (btn.id != buttonId)
+                continue;
+
+            for (auto* lbl : m_buttonLabels)
+            {
+                if (lbl->GetLabel() == btn.name)
+                    lbl->SetForegroundColour(active);
+            }
+        }
     }
 
     const auto& step = m_sequence.steps[m_index];
 
-    if (m_stepRemaining < 0)
-        m_stepRemaining = step.duration;
-
-    if (m_stepRemaining > 0)
-        --m_stepRemaining;
-
-    bool finished = (m_stepRemaining == 0);
-    size_t completedIndex = m_index;
-
-    if (finished)
+    if (!step.action.empty() &&
+        m_actionExecutedIndex != static_cast<int>(m_index))
     {
-        ++m_index;
-        m_stepRemaining = -1;
-    }
+        m_actionExecutedIndex = m_index;
 
-    for (size_t i = 0; i < m_stepLabels.size(); i++)
-    {
-        auto* lbl = m_stepLabels[i];
-
-        if (i == m_index)
-        {
-            lbl->SetForegroundColour(kActive);
-
-            lbl->SetLabel(wxString::Format(
-                "%zu. %s (%d)",
-                i + 1,
-                m_sequence.steps[i].description,
-                m_stepRemaining < 0 ? m_sequence.steps[i].duration : m_stepRemaining
-            ));
-        }
-        else if (finished && i == completedIndex)
-        {
-            lbl->SetForegroundColour(kInactive);
-
-            lbl->SetLabel(wxString::Format(
-                "%zu. %s (0)",
-                i + 1,
-                m_sequence.steps[i].description
-            ));
-        }
-        else
-        {
-            lbl->SetForegroundColour(kInactive);
-        }
-    }
-
-    for (auto* lbl : m_buttonLabels)
-        lbl->SetForegroundColour(kInactive);
-
-    const auto& activeStep =
-        (m_index < m_sequence.steps.size())
-            ? m_sequence.steps[m_index]
-            : m_sequence.steps.back();
-
-    for (const auto& buttonId : activeStep.activeButtons)
-    {
-        for (const auto& btn : m_sequence.buttons)
-        {
-            if (btn.id == buttonId)
-            {
-                for (auto* lbl : m_buttonLabels)
-                {
-                    if (lbl->GetLabel() == btn.name)
-                        lbl->SetForegroundColour(kActive);
-                }
-            }
-        }
-    }
-
-    if (m_index < m_sequence.steps.size())
-    {
-        const auto& activeStep = m_sequence.steps[m_index];
-
-        if (!activeStep.action.empty() && m_actionExecutedIndex != m_index)
-        {
-            m_actionExecutedIndex = m_index;
-
-            if (activeStep.action == "reboot")
-            {
-                Reboot();
-            }
-        }
+        if (step.action == "reboot")
+            Reboot();
     }
 
     Layout();
@@ -468,25 +474,7 @@ void DfuPanel::Reboot()
         if (!state.connected || state.mode != DeviceMode::Recovery)
             return;
 
-        irecv_client_t client = nullptr;
-
-        int attempts = 0;
-        const int max_attempts = 8;
-
-        while (attempts < max_attempts)
-        {
-            if (irecv_open_with_ecid(&client, state.ecid) == IRECV_E_SUCCESS)
-                break;
-
-            attempts++;
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        }
-
-        if (!client) return;
-        irecv_setenv(client, "auto-boot", "true");
-        irecv_saveenv(client);
-        irecv_reboot(client);
-        irecv_close(client);
+        exit_recovery();
     }).detach();
 }
 

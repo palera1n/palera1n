@@ -1,3 +1,30 @@
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #ifdef WITH_GUI
 
 #include "RecoveryPanel.hpp"
@@ -13,15 +40,10 @@
 #include "AppFrame.hpp"
 #include "DevicePanel.hpp"
 
-#include "../event.hpp"
-#include "../utils.h"
+#include "../events/event.hpp"
 #include "../globals.h"
 #include "../paleinfo.h"
-#include "../gen/images/logo.h"
-
-#include <libimobiledevice/libimobiledevice.h>
-#include <libimobiledevice/lockdown.h>
-#include <libirecovery.h>
+#include "../gen/embedded/logo.h"
 
 RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
     : DevicePanel(frame, parent)
@@ -29,7 +51,7 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
     Bind(wxEVT_SHOW, &RecoveryPanel::OnShow, this);
     auto* root = new wxBoxSizer(wxHORIZONTAL);
     auto* left = new wxBoxSizer(wxVERTICAL);
-    wxMemoryInputStream stream(images_logo_png, images_logo_png_len);
+    wxMemoryInputStream stream(embedded_logo_png, embedded_logo_png_len);
     wxImage img(stream, wxBITMAP_TYPE_PNG);
     wxBitmap bmp(img);
     auto* logo = new wxStaticBitmap(this, wxID_ANY, bmp);
@@ -133,30 +155,19 @@ void RecoveryPanel::EnterRecoveryMode()
     std::thread([this]()
     {
         const auto deviceState = GetDeviceState();
-        if (!deviceState.connected)
-            return;
-
-        idevice_t device = nullptr;
-        lockdownd_client_t client = nullptr;
-
-        if (idevice_new(&device, deviceState.udid.c_str()) != IDEVICE_E_SUCCESS)
-            return;
-
-        if (lockdownd_client_new_with_handshake(
-            device,
-            &client,
-            "palera1n") != LOCKDOWN_E_SUCCESS)
-        {
-            idevice_free(device);
-            return;
-        }
-
+        if (!deviceState.connected) return;
         m_isEnteringRecovery = true;
-
-        lockdownd_enter_recovery(client);
-
-        lockdownd_client_free(client);
-        idevice_free(device);
+        bool success = enter_recovery();
+        if (!success)
+        {
+            wxTheApp->CallAfter([this]()
+            {
+                m_isEnteringRecovery = false;
+                m_statusText->SetLabel("Failed to enter recovery mode.");
+                m_backButton->Enable();
+                m_nextButton->Enable();
+            });
+        }
     }).detach();
 }
 

@@ -1,3 +1,30 @@
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #ifdef WITH_TUI
 
 #include "TuiDfuPanel.hpp"
@@ -8,14 +35,13 @@
 #include <unordered_set>
 
 #include <ncurses.h>
-#include <libirecovery.h>
 
 #include "Tui.hpp"
 #include "TuiDfuArt.hpp"
 #include "TuiText.hpp"
 #include "TuiRecoveryPanel.hpp"
 #include "../sequence.hpp"
-#include "../event.hpp"
+#include "../events/event.hpp"
 #include "../globals.h"
 #include "../paleinfo.h"
 
@@ -296,12 +322,15 @@ void TuiDfuPanel::handle_device_update(const DeviceState& state) {
     }
 
     if (!state.connected) {
-        if (!m_isEnteringDfu) {
-            reset_sequence_state();
-            GetFrame()->ShowMain(1);
+        if (m_isEnteringDfu || m_waitingForDfuTransition) {
+            return;
         }
+
+        reset_sequence_state();
+        GetFrame()->ShowMain(1);
         return;
     }
+
 
     if (m_isEnteringDfu && state.mode == DeviceMode::DFU) {
         m_isEnteringDfu = false;
@@ -337,22 +366,7 @@ void TuiDfuPanel::reboot() {
         if (!state.connected || state.mode != DeviceMode::Recovery)
             return;
 
-        irecv_client_t client = nullptr;
-        int attempts = 0;
-        const int max_attempts = 8;
-
-        while (attempts < max_attempts) {
-            if (irecv_open_with_ecid(&client, state.ecid) == IRECV_E_SUCCESS)
-                break;
-            attempts++;
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        }
-
-        if (!client) return;
-        irecv_setenv(client, "auto-boot", "true");
-        irecv_saveenv(client);
-        irecv_reboot(client);
-        irecv_close(client);
+        exit_recovery();
     }).detach();
 }
 

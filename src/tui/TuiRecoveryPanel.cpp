@@ -1,3 +1,30 @@
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #ifdef WITH_TUI
 
 #include "TuiRecoveryPanel.hpp"
@@ -11,9 +38,6 @@
 #include "TuiText.hpp"
 #include "../globals.h"
 #include "../paleinfo.h"
-
-#include <libimobiledevice/libimobiledevice.h>
-#include <libimobiledevice/lockdown.h>
 
 static const char *buttons[] = { "Back", "Next" };
 static constexpr int kRecoveryContentX = 2;
@@ -113,26 +137,7 @@ void TuiRecoveryPanel::enter_recovery_mode() {
             return;
         }
 
-        idevice_t device = nullptr;
-        lockdownd_client_t client = nullptr;
-
-        if (idevice_new(&device, state.udid.c_str()) != IDEVICE_E_SUCCESS) {
-            m_is_entering_recovery = false;
-            m_buttons_disabled = false;
-            return;
-        }
-
-        if (lockdownd_client_new_with_handshake(device, &client, "palera1n") != LOCKDOWN_E_SUCCESS) {
-            idevice_free(device);
-            m_is_entering_recovery = false;
-            m_buttons_disabled = false;
-            return;
-        }
-
-        lockdownd_enter_recovery(client);
-
-        lockdownd_client_free(client);
-        idevice_free(device);
+        enter_recovery();
     }).detach();
 }
 

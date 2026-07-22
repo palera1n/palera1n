@@ -1,0 +1,443 @@
+{
+    "devicemap":{
+        "iPhone6,1":"iphonese",
+        "iPhone6,2":"iphonese",
+        "iPhone7,1":"iphone6s",
+        "iPhone7,2":"iphone6s",
+        "iPhone8,1":"iphone6s",
+        "iPhone8,2":"iphone6s",
+        "iPhone8,4":"iphonese",
+        "iPhone9,1":"iphone7",
+        "iPhone9,2":"iphone7",
+        "iPhone9,3":"iphone7",
+        "iPhone9,4":"iphone7",
+        "iPhone10,1":"iphone8",
+        "iPhone10,2":"iphone8",
+        "iPhone10,4":"iphone8",
+        "iPhone10,5":"iphone8",
+        "iPhone10,3":"iphonex",
+        "iPhone10,6":"iphonex",
+
+        "iPhone11,2":"iphonex",
+        "iPhone11,4":"iphonex",
+        "iPhone11,6":"iphonex",
+        "iPhone11,8":"iphonex",
+        "iPhone12,1":"iphonex",
+        "iPhone12,3":"iphonex",
+        "iPhone12,5":"iphonex",
+        "iPhone12,8":"iphone8",
+
+        "iPad4,1":"ipad",
+        "iPad4,2":"ipad",
+        "iPad4,3":"ipad",
+        "iPad5,3":"ipad",
+        "iPad5,4":"ipad",
+        "iPad6,3":"ipad",
+        "iPad6,4":"ipad",
+        "iPad6,7":"ipad",
+        "iPad6,8":"ipad",
+        "iPad6,11":"ipad",
+        "iPad6,12":"ipad",
+        "iPad7,1":"ipad",
+        "iPad7,2":"ipad",
+        "iPad7,3":"ipad",
+        "iPad7,4":"ipad",
+        "iPad7,5":"ipad",
+        "iPad7,6":"ipad",
+        "iPad7,11":"ipad",
+        "iPad7,12":"ipad",
+
+        "iPad8,1":"ipad",
+        "iPad8,2":"ipad",
+        "iPad8,3":"ipad",
+        "iPad8,4":"ipad",
+        "iPad8,5":"ipad",
+        "iPad8,6":"ipad",
+        "iPad8,7":"ipad",
+        "iPad8,8":"ipad",
+        "iPad8,9":"ipad",
+        "iPad8,10":"ipad",
+        "iPad8,11":"ipad",
+        "iPad8,12":"ipad",
+        "iPad11,3":"ipad",
+        "iPad11,4":"ipad",
+        "iPad11,6":"ipad",
+        "iPad11,7":"ipad",
+
+        "iPad4,4":"ipadmini",
+        "iPad4,5":"ipadmini",
+        "iPad4,6":"ipadmini",
+        "iPad4,7":"ipadmini",
+        "iPad4,8":"ipadmini",
+        "iPad4,9":"ipadmini",
+        "iPad5,1":"ipadmini",
+        "iPad5,2":"ipadmini",
+        "iPod7,1":"ipodtouch",
+        "iPod9,1":"ipodtouch7",
+        "AppleTV5,3":"appletv4",
+        "AppleTV6,2":"appletv4k"
+    },
+    "devicelayout":{
+        "ipodtouch7":{
+            "image_name":"ipodtouch",
+            "image_width":116,
+            "image_height":240,
+            "buttons":{
+                "top":{
+                    "name":"- Top button",
+                    "x":237,
+                    "y":0
+                },
+                "vol_down":{
+                    "name":"Volume down -",
+                    "x":46,
+                    "y":56
+                }
+            },
+            "sequence":"ipodtouch7"
+        },
+        "ipodtouch":{
+            "image_name":"ipodtouch",
+            "image_width":116,
+            "image_height":240,
+            "buttons":{
+                "top":{
+                    "name":"- Top button",
+                    "x":237,
+                    "y":0
+                },
+                "home":{
+                    "name":"Home button -",
+                    "x":89,
+                    "y":190
+                }
+            },
+            "sequence":"iphone-old"
+        },
+        "iphonese":{
+            "image_name":"iphonese",
+            "image_width":119,
+            "image_height":240,
+            "buttons":{
+                "top":{
+                    "name":"- Top button",
+                    "x":237,
+                    "y":0
+                },
+                "home":{
+                    "name":"Home button -",
+                    "x":90,
+                    "y":195
+                }
+            },
+            "sequence":"iphone-old"
+        },
+        "iphone6s":{
+            "image_name":"iphone6s",
+            "image_width":123,
+            "image_height":240,
+            "buttons":{
+                "side":{
+                    "name":"- Side button",
+                    "x":244,
+                    "y":54
+                },
+                "home":{
+                    "name":"Home button -",
+                    "x":90,
+                    "y":195
+                }
+            },
+            "sequence":"iphone6"
+        },
+        "iphone7":{
+            "image_name":"iphone7",
+            "image_width":123,
+            "image_height":240,
+            "buttons":{
+                "side":{
+                    "name":"- Side button",
+                    "x":244,
+                    "y":54
+                },
+                "vol_down":{
+                    "name":"Volume down -",
+                    "x":44,
+                    "y":72
+                }
+            },
+            "sequence":"iphone7"
+        },
+        "iphone8":{
+            "image_name":"iphone8",
+            "image_width":120,
+            "image_height":240,
+            "buttons":{
+                "side":{
+                    "name":"- Side button",
+                    "x":248,
+                    "y":54
+                },
+                "vol_down":{
+                    "name":"Volume down -",
+                    "x":44,
+                    "y":72
+                }
+            },
+            "sequence":"iphone8"
+        },
+        "iphonex":{
+            "image_name":"iphonex",
+            "image_width":121,
+            "image_height":240,
+            "buttons":{
+                "side":{
+                    "name":"- Side button",
+                    "x":246,
+                    "y":62
+                },
+                "vol_down":{
+                    "name":"Volume down -",
+                    "x":44,
+                    "y":70
+                }
+            },
+            "sequence":"iphone8"
+        },
+        "ipad":{
+            "image_name":"ipad",
+            "image_width":170,
+            "image_height":240,
+            "buttons":{
+                "top":{
+                    "name":"- Top button",
+                    "x":266,
+                    "y":0
+                },
+                "home":{
+                    "name":"Home button -",
+                    "x":94,
+                    "y":200
+                }
+            },
+            "sequence":"iphone-old"
+        },
+        "ipadmini":{
+            "image_name":"ipadmini",
+            "image_width":163,
+            "image_height":240,
+            "buttons":{
+                "top":{
+                    "name":"- Top button",
+                    "x":260,
+                    "y":0
+                },
+                "home":{
+                    "name":"Home button -",
+                    "x":92,
+                    "y":200
+                }
+            },
+            "sequence":"iphone-old"
+        },
+        "appletv4":{
+            "image_name":"siriremote",
+            "image_width":79,
+            "image_height":240,
+            "buttons":{
+                "menu":{
+                    "name":"Menu -",
+                    "x":110,
+                    "y":74
+                },
+                "playpause":{
+                    "name":"Play/Pause -",
+                    "x":80,
+                    "y":130
+                }
+            },
+            "sequence":"appletv4"
+        },
+        "appletv4k":{
+            "image_name":"atv_std_brd",
+            "image_width":300,
+            "image_height":240,
+            "buttons":{
+                "dfu":{
+                    "name":"-- DFU button",
+                    "x":170,
+                    "y":48
+                }
+            },
+            "sequence":"atv_standard_breakout"
+        }
+    },
+    "sequences":{
+        "ipodtouch7":[
+            {
+                "buttons":[
+
+                ],
+                "description":"Click Start",
+                "duration":1
+            },
+            {
+                "buttons":[
+                    "top",
+                    "vol_down"
+                ],
+                "description":"HOLD Top and Volume down",
+                "duration":4,
+                "action":"reboot"
+            },
+            {
+                "buttons":[
+                    "vol_down"
+                ],
+                "description":"Release Top and KEEP holding Volume down",
+                "duration":10
+            }
+        ],
+        "iphone-old":[
+            {
+                "buttons":[
+
+                ],
+                "description":"Click Start",
+                "duration":1
+            },
+            {
+                "buttons":[
+                    "top",
+                    "home"
+                ],
+                "description":"HOLD Top and Home button",
+                "duration":4,
+                "action":"reboot"
+            },
+            {
+                "buttons":[
+                    "home"
+                ],
+                "description":"Release Top and KEEP holding Home button",
+                "duration":10
+            }
+        ],
+        "iphone6":[
+            {
+                "buttons":[
+
+                ],
+                "description":"Click Start",
+                "duration":1
+            },
+            {
+                "buttons":[
+                    "side",
+                    "home"
+                ],
+                "description":"HOLD Side and Home button",
+                "duration":4,
+                "action":"reboot"
+            },
+            {
+                "buttons":[
+                    "home"
+                ],
+                "description":"Release Side and KEEP holding Home button",
+                "duration":10
+            }
+        ],
+        "iphone7":[
+            {
+                "buttons":[
+
+                ],
+                "description":"Click Start",
+                "duration":1
+            },
+            {
+                "buttons":[
+                    "side",
+                    "vol_down"
+                ],
+                "description":"HOLD Side and Volume down",
+                "duration":4,
+                "action":"reboot"
+            },
+            {
+                "buttons":[
+                    "vol_down"
+                ],
+                "description":"Release Side and KEEP holding Volume down",
+                "duration":10
+            }
+        ],
+        "iphone8":[
+            {
+                "buttons":[
+
+                ],
+                "description":"Click Start",
+                "duration":1
+            },
+            {
+                "buttons":[
+                    "side",
+                    "vol_down"
+                ],
+                "description":"HOLD Side and Volume down",
+                "duration":4,
+                "action":"reboot"
+            },
+            {
+                "buttons":[
+                    "vol_down"
+                ],
+                "description":"Release Side and KEEP holding Volume down",
+                "duration":10
+            }
+        ],
+        "appletv4":[
+            {
+                "buttons":[
+
+                ],
+                "description":"Get Ready",
+                "duration":3
+            },
+            {
+                "buttons":[
+                    "menu",
+                    "playpause"
+                ],
+                "description":"Press and hold Menu and Play/Pause together",
+                "duration":7
+            },
+            {
+                "buttons":[
+
+                ],
+                "description":"Release the buttons",
+                "duration":2
+            }
+        ],
+        "atv_standard_breakout":[
+            {
+                "buttons":[
+
+                ],
+                "description":"Get Ready",
+                "duration":3
+            },
+            {
+                "buttons":[
+                    "dfu"
+                ],
+                "description":"Press and hold the DFU button",
+                "duration":10,
+                "action":"reboot"
+            }
+        ]
+    }
+}
