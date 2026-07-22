@@ -59,7 +59,7 @@ extern "C" {
 void print_credits() {
     printf(
         "::\n"
-        ":: Palera1n beta " PALERAIN_VERSION "\n"
+        ":: Palera1n " PALERAIN_VERSION "\n"
         "::\n"
         ":: Copyright (C) 2026 palera1n team\n"
         "::\n"
@@ -144,7 +144,7 @@ void print_usage(char* argv) {
         "  RA1N_OVERRIDE_RAMDISK                 Override ramdisk\n"
         "  RA1N_DEBUG_LOGGING                    Enable debug logging\n"
         "  RA1N_NO_COLORS                        [f] Disable colors on the command line\n"
-        "  RA1N_QUICK                            [f] Enable Quick Mode\n\n"
+        "  RA1N_QUICK                            [f] Enable Quick Mode\n"
         , argv
     );
 
