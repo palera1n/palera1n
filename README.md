@@ -18,7 +18,6 @@ Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 
 | iPhone X                  | iPad Pro (12.9") (2nd generation)		|								|								|
 |                           | iPad Air 2                            |								|								|
 
-
 > Note that on `A11` (iPhone X, 8, 8 Plus), **you must disable your passcode while in the jailbroken state** (on iOS 16, you need to **reset your device** before proceeding with palera1n).
 
 <!--- T2 --->

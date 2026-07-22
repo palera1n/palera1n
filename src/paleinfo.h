@@ -18,15 +18,15 @@ typedef uint64_t palerain_option_t;
 #define palerain_option_rootful              (UINT64_C(1) << 0) /* rootful jailbreak */
 #define palerain_option_rootless             (UINT64_C(1) << 1) /* rootless jailbreak */
 #define palerain_option_setup_rootful        (UINT64_C(1) << 2) /* create fakefs */
-// (UINT64_C(1) << 3) /* Deprecated and removed */
+/* reserved */
 #define palerain_option_setup_partial_root   (UINT64_C(1) << 4) /* fakefs creating should be partial */
 #define palerain_option_checkrain_is_clone   (UINT64_C(1) << 5) /* supplied checkra1n is checkra1n clone */
 #define palerain_option_rootless_livefs      (UINT64_C(1) << 6) /* mount root livefs on rootless */
-#define palerain_option_ssv                  (UINT64_C(1) << 7) /* has signed system volume */
-// (UINT64_C(1) << 8) /* reserved */
+#define palerain_option_ssv                  (UINT64_C(1) << 7) /* signed system volume */
+// #define palerain_option_force_fakefs      (UINT64_C(1) << 8) /* force fakefs, even without SSV */
 #define palerain_option_clean_fakefs         (UINT64_C(1) << 9) /* clean fakefs, but does not delete it */
 #define palerain_option_tui                  (UINT64_C(1) << 10) /* terminal user interface */
-#define palerain_option_gui                  (UINT64_C(1) << 11) /* graphical user interface*/
+// #define palerain_option_gui               (UINT64_C(1) << 11) /* graphical user interface*/
 #define palerain_option_dfuhelper_only       (UINT64_C(1) << 12) /* dfuhelper only */
 #define palerain_option_pongo_exit           (UINT64_C(1) << 13) /* boot to clean pongo shell */
 #define palerain_option_demote               (UINT64_C(1) << 14) /* Demote effective production fuse status */
@@ -45,11 +45,15 @@ typedef uint64_t palerain_option_t;
 // #define palerain_option_sf_ssh            (UINT64_C(1) << 27) /* safe mode with bootstrap ssh */
 // #define palerain_option_sf_launchdaemons  (UINT64_C(1) << 28) /* safe mode with launchdaemons */
 // #define palerain_option_emerg_mode        (UINT64_C(1) << 29) /* emergency mode (early boot usb shell) */
-#define palerain_option_jbinit_log_to_file   (UINT64_C(1) << 30) /* deprecated (kept for compatibility) */
+// #define palerain_option_jbinit_log_to_file   (UINT64_C(1) << 30) /* deprecated (kept for compatibility) */
 #define palerain_option_cli                  (UINT64_C(1) << 31) /* CLI mode */
-#define palerain_option_telnetd              (UINT64_C(1) << 32) /* Enable TELNET daemon */
+#define palerain_option_telnetd              (UINT64_C(1) << 32) /* Enable TELNET daemon (insecure) */
 #define palerain_option_quick                (UINT64_C(1) << 33) /* Quick mode */
 
+#define palerain_option_jbinit_log_to_file   (UINT64_C(1) << 50) /* make ramdisk log to file (jbinit2) */
+#define palerain_option_setup_rootful_forced (UINT64_C(1) << 51) /* create fakefs over an existing one (jbinit2) */
+
+#define palerain_option_failure              (UINT64_C(1) << 60) /* something went wrong */
 #define palerain_option_flower_chain         (UINT64_C(1) << 61) /* Flower chain */
 #define palerain_option_test1                (UINT64_C(1) << 62) /* Developer test option 1 */
 #define palerain_option_test2                (UINT64_C(1) << 63) /* Developer test option 2 */
