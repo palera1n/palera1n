@@ -4,8 +4,14 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - koputer
-    - main
+      - main
+    tags:
+      - v*
+    paths:
+      - src/**
+      - 1stparty/**
+      - CMakeLists.txt
+      - Makefile
 
 jobs:
   build-ramdisk:
@@ -18,7 +24,7 @@ jobs:
         submodules: true
 
     - name: Select correct Xcode
-      uses: mobiledevops/xcode-select-version-action@v1
+      uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b
       with:
         xcode-select-version: 16.4
 
@@ -325,7 +331,7 @@ jobs:
       run: choco install nsis.portable
 
     - name: Install dependencies (msys2)
-      uses: msys2/setup-msys2@v2
+      uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884
       with:
         msystem: MINGW64
         install: >
@@ -368,3 +374,86 @@ jobs:
         name: palera1n-windows-x86_64
         path: |
           dist/palera1n-windows-x86_64-setup.exe
+
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [build-ramdisk, build-pongo, build-linux, build-macos-universal, build-windows, build-ios]
+
+    steps:
+    - name: Download embedded artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: embedded
+        path: embedded/
+
+    - name: Download Pongo
+      uses: actions/download-artifact@v4
+      with:
+        name: pongo
+        path: embedded/
+
+    - name: Download Linux i486 Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-i486-linux-musl
+        path: dist/
+
+    - name: Download Linux x86_64 Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-x86_64-linux-musl
+        path: dist/
+
+    - name: Download Linux armel Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-armel-linux-musleabi
+        path: dist/
+
+    - name: Download Linux aarch64 Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-aarch64-linux-musl
+        path: dist/
+
+    - name: Download macOS Universal Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-macos-universal
+        path: dist/
+
+    - name: Download Windows Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-windows-x86_64
+        path: dist/
+
+    - name: Download iOS Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-iphoneos-arm64
+        path: dist/
+
+    - name: Prepare artifacts
+      run: |
+        find . -maxdepth 1 -type f -print0 | tar --null --zstd -cf ../dist/resource.tar.zst --files-from=-
+      working-directory: embedded
+
+    - name: Extract Version
+      id: get_version
+      run: |
+        echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
+      with:
+        name: v${{ steps.get_version.outputs.version }}
+        tag_name: v${{ steps.get_version.outputs.version }}
+        files: |
+          dist/*
+        generate_release_notes: true
+        fail_on_unmatched_files: true
+        draft: true
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
