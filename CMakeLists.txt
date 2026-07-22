@@ -78,6 +78,8 @@ if(WITH_GUI)
             wxWidgets
             GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
             GIT_SHALLOW ON
+            PATCH_COMMAND
+                patch --forward --ignore-whitespace -p1 < "${CMAKE_SOURCE_DIR}/patches/wxWidgets/0001-cpp11-support.patch" || true
         )
         FetchContent_MakeAvailable(wxWidgets)
         set(WX_LIBRARIES wxcore wxbase wxnet)
