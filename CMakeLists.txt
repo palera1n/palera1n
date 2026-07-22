@@ -77,7 +77,7 @@ if(WITH_GUI)
         FetchContent_Declare(
             wxWidgets
             GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-            GIT_SHALLOW ON
+            GIT_TAG v3.3.3
             PATCH_COMMAND
                 patch --forward --ignore-whitespace -p1 < "${CMAKE_SOURCE_DIR}/patches/wxWidgets/0001-cpp11-support.patch" || true
         )
