@@ -144,11 +144,11 @@ TuiFrame::~TuiFrame() {
 
 void TuiFrame::InitPanels() {
     m_panels.resize(PANEL_COUNT);
-    m_panels[PANEL_MAIN] = std::make_unique<TuiMainPanel>(this);
-    m_panels[PANEL_OPTIONS] = std::make_unique<TuiSettingsPanel>(this);
-    m_panels[PANEL_START_1] = std::make_unique<TuiRecoveryPanel>(this);
-    m_panels[PANEL_START_2] = std::make_unique<TuiDfuPanel>(this);
-    m_panels[PANEL_FINAL] = std::make_unique<TuiExploitPanel>(this);
+    m_panels[PANEL_MAIN] = std::unique_ptr<TuiMainPanel>(new TuiMainPanel(this));
+    m_panels[PANEL_OPTIONS] = std::unique_ptr<TuiSettingsPanel>(new TuiSettingsPanel(this));
+    m_panels[PANEL_START_1] = std::unique_ptr<TuiRecoveryPanel>(new TuiRecoveryPanel(this));
+    m_panels[PANEL_START_2] = std::unique_ptr<TuiDfuPanel>(new TuiDfuPanel(this));
+    m_panels[PANEL_FINAL] = std::unique_ptr<TuiExploitPanel>(new TuiExploitPanel(this));
 }
 
 void TuiFrame::InitDeviceEventListeners() {
@@ -213,7 +213,7 @@ void TuiFrame::DrawUi() {
 
         std::vector<std::string> labels;
         labels.reserve(static_cast<size_t>(btn_cnt));
-        const int button_width = std::clamp(SIDEBAR_BUTTON_WIDTH, 8, content_width);
+        const int button_width = std::min(std::max(SIDEBAR_BUTTON_WIDTH, 8), content_width);
 
         for (int i = 0; i < btn_cnt; ++i) {
             labels.push_back(format_sidebar_button_label(panel_buttons[i], button_width));

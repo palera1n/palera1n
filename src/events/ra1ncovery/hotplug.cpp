@@ -325,7 +325,7 @@ static void hotplug_polling_worker() {
             active_paths.insert(path);
 
             if (gConnectedDevices.find(path) == gConnectedDevices.end()) {
-                auto ctx = std::make_unique<PersistentDeviceContext>();
+                auto ctx = std::unique_ptr<PersistentDeviceContext>(new PersistentDeviceContext());
                 ctx->device = dev;
 
                 if (liteusb_open_handle(&ctx->device, &ctx->session) == LITEUSB_ERR_SUCCESS) {

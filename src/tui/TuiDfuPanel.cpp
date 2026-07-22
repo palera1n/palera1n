@@ -185,7 +185,10 @@ void TuiDfuPanel::draw_sequence_buttons(int button_x, int button_y, int button_w
         const int mapped_x = button_x + scale_coord(btn.x, kDfuPanelCoordinateWidth, button_width);
         const int mapped_y = button_y + scale_coord(btn.y, kDfuButtonCoordinateMaxY, button_height);
 
-        const int label_x = std::clamp(mapped_x, button_x, button_x + std::max(0, button_width - 1));
+        const int label_x = std::min(
+            std::max(mapped_x, button_x),
+            button_x + std::max(0, button_width - 1)
+        );
 
         const bool is_active = active_buttons.find(btn.id) != active_buttons.end();
         if (is_active) {

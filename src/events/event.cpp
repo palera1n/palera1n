@@ -113,14 +113,15 @@ void retain_handle(const hotplug_handle_t& h) {
 #endif
 }
 
-template<auto FreeFn>
+template<typename T, void (*FreeFn)(T*)>
 struct Releaser {
-    template<typename T>
-    void operator()(T* ptr) const { if (ptr) FreeFn(ptr); }
+    void operator()(T* ptr) const {
+        if (ptr) FreeFn(ptr);
+    }
 };
 
-template<typename T, auto FreeFn>
-using unique_c_ptr = std::unique_ptr<T, Releaser<FreeFn>>;
+template<typename T, void (*FreeFn)(T*)>
+using unique_c_ptr = std::unique_ptr<T, Releaser<T, FreeFn>>;
 
 std::mutex g_mutex;
 std::vector<DeviceStateCallback> g_callbacks;
@@ -168,7 +169,7 @@ void publish_state() {
     std::vector<DeviceStateCallback> callbacks;
     DeviceState state;
     {
-        std::lock_guard lock(g_mutex);
+        std::lock_guard<std::mutex> lock(g_mutex);
         callbacks = g_callbacks;
         state = build_public_state_locked();
     }
@@ -255,7 +256,7 @@ static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supp
     if (ecid == 0) return;
 
     {
-        std::lock_guard lock(g_mutex);
+        std::lock_guard<std::mutex> lock(g_mutex);
         ManagedDevice& m = g_devices[ecid];
 
         release_handle(m.handle);
@@ -279,9 +280,9 @@ static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supp
 static void remove_device(platform_service_t service, DeviceMode mode, uint32_t target_device_id = 0, const std::string& target_udid = "") {
     bool changed = false;
     {
-        std::lock_guard lock(g_mutex);
+        std::lock_guard<std::mutex> lock(g_mutex);
 
-        auto it = std::find_if(g_devices.begin(), g_devices.end(), [&](const auto& pair) {
+        auto it = std::find_if(g_devices.begin(), g_devices.end(), [&](const std::pair<const uint64_t, ManagedDevice>& pair) {
             if (service != IO_OBJECT_NULL) {
                 #if !defined(__APPLE__) && defined(WITH_CIDERRAIN)
                 return pair.second.handle.handle == service;
@@ -302,7 +303,8 @@ static void remove_device(platform_service_t service, DeviceMode mode, uint32_t 
         });
 
         if (it != g_devices.end()) {
-            auto& [ecid, m] = *it;
+            auto& ecid = it->first;
+            auto& m = it->second;
 
             if (mode == DeviceMode::Normal) {
                 m.normalPresent = false;
@@ -377,7 +379,7 @@ void usbmuxd_listener_worker() {
                     known_normal_devices[id] = dev.get_udid().unwrap();
 
                     {
-                        std::lock_guard lock(g_mutex);
+                        std::lock_guard<std::mutex> lock(g_mutex);
                         ManagedDevice& m = g_devices[discovered.ecid];
 
                         release_handle(m.handle);
@@ -388,7 +390,9 @@ void usbmuxd_listener_worker() {
                         m.dfuPresent = false;
                         m.device_id = id;
 
-                        m.usbmuxd_device = std::make_unique<IdeviceFFI::UsbmuxdDevice>(std::move(dev));
+                        m.usbmuxd_device = std::unique_ptr<IdeviceFFI::UsbmuxdDevice>(
+                            new IdeviceFFI::UsbmuxdDevice(std::move(dev))
+                        );
                     }
                     publish_state();
                 }
@@ -429,7 +433,7 @@ void register_device_state_callback(DeviceStateCallback cb) {
     if (!cb) return;
     DeviceState snapshot;
     {
-        std::lock_guard lock(g_mutex);
+        std::lock_guard<std::mutex> lock(g_mutex);
         g_callbacks.push_back(cb);
         snapshot = build_public_state_locked();
     }
@@ -448,7 +452,7 @@ bool enter_recovery() {
     std::string udid_str = "";
 
     {
-        std::lock_guard lock(g_mutex);
+        std::lock_guard<std::mutex> lock(g_mutex);
         if (g_activeEcid == 0) return false;
 
         auto it = g_devices.find(g_activeEcid);
@@ -479,7 +483,7 @@ void exit_recovery() {
     hotplug_handle_t handle;
     std::memset(&handle, 0, sizeof(handle));
     {
-        std::lock_guard lock(g_mutex);
+        std::lock_guard<std::mutex> lock(g_mutex);
         if (g_activeEcid == 0) return;
 
         auto it = g_devices.find(g_activeEcid);
