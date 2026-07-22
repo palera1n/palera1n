@@ -1,9 +1,36 @@
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #include "pongo_helper.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <inttypes.h>
+#include <inttypes.h> // PRIx64
 
 #if WITH_CIDERRAIN
 # include <ciderra1n/usb.h>
@@ -39,7 +66,7 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
             return result;
         }
 
-        LOG("Executing PongoOS command: '%s'", command);
+        LOG_DEBUG("Executing PongoOS command: '%s'", command);
 
         snprintf(command_buf, sizeof(command_buf), "%s\n", command);
         len = strlen(command_buf);
@@ -138,15 +165,19 @@ p1_checkm8_err_t send_compressed_pongo(p1_usb_handle_t *handle, const uint8_t *p
     size_t pongo_lz4_length = 0;
 
     if (!pongo_bin) {
-        LOG_ERROR("pongoOS is not loaded");
+        LOG_ERROR("pongoOS is not loaded?");
         return 15;
     }
+
+    // pongo has been moved to sram, due to space constraints
+    // we need to make a self-decompressing payload before sending
     #if WITH_CIDERRAIN
     if (lz4_compress_pongo(pongo_bin, pongo_bin_length, &pongo_lz4, &pongo_lz4_length)) {
     #else
     if (!prepare_pongo(&pongo_lz4, &pongo_lz4_length, pongo_bin, pongo_bin_length)) {
     #endif
-        LOG_ERROR("Failed to compress pongo image");
+        // how on earth
+        LOG_ERROR("Failed to compress pongo image?");
         free(pongo_lz4);
         return 15;
     }
@@ -185,6 +216,11 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
     if (g_payload_kpf.data_len > 0) {
         result = upload_buffer_to_pongo(handle, g_payload_kpf.data, g_payload_kpf.data_len);
         if (result.ret != 0) goto bad;
+
+        // embedded artifacts are lzma compressed, mostly for binary size
+        // this tells pongo to decompress after sending the KPF
+        // overwritten artifacts should not be compressed, so we always
+        // assume not compressed
         if (g_payload_kpf.uncompressed_data_len > 0) {
             char modload_cmd[64];
             snprintf(modload_cmd, sizeof(modload_cmd), "modload %zu", g_payload_kpf.uncompressed_data_len);
@@ -192,15 +228,23 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
         } else {
             result = issue_pongo_command(handle, "modload");
         }
+
         if (result.ret != 0) goto bad;
     }
 
+    // palera1n specific flags
     result = issue_pongo_command(handle, paleinfo);
     if (result.ret != 0) goto bad;
 
+    // this wont run by default if builds dont have a ramdisk (WITH_RAMDISK=0)
     if (g_payload_ramdisk.data_len > 0) {
         result = upload_buffer_to_pongo(handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
         if (result.ret != 0) goto bad;
+
+        // embedded artifacts are lzma compressed, mostly for binary size
+        // this tells pongo to decompress after sending the ramdisk
+        // overwritten artifacts should not be compressed, so we always
+        // assume not compressed
         if (g_payload_ramdisk.uncompressed_data_len > 0) {
             char ramdisk_cmd[64];
             snprintf(ramdisk_cmd, sizeof(ramdisk_cmd), "ramdisk %zu", g_payload_ramdisk.uncompressed_data_len);
@@ -208,9 +252,11 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
         } else {
             result = issue_pongo_command(handle, "ramdisk");
         }
+
         if (result.ret != 0) goto bad;
     }
 
+    // this wont run by default if builds dont have a binpack (WITH_BINPACK=0)
     if (g_payload_overlay.data_len > 0) {
         result = upload_buffer_to_pongo(handle, g_payload_overlay.data, g_payload_overlay.data_len);
         if (result.ret != 0) goto bad;

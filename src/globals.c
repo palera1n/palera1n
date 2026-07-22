@@ -94,7 +94,10 @@ bool override_payload_from_file(const char *path, payload_t *out)
 
     out->data = buf;
     out->data_len = (size_t)len;
-    // assume uncompressed
+    // assume overwritten file is uncompressed
+    // this ultimately determines if pongo should
+    // decompress these files. user provided
+    // files should not be compressed.
     out->uncompressed_data_len = 0;
 
     return true;

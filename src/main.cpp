@@ -1,3 +1,30 @@
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #include <unistd.h>
 #include <cstdlib>
 #include <iostream>
@@ -5,6 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <inttypes.h>  // PRIx64
 
 #ifdef WITH_GUI
 # include <wx/wx.h>
@@ -31,7 +59,7 @@ void print_credits() {
         "::\n"
         ":: Palera1n beta " PALERAIN_VERSION "\n"
         "::\n"
-        ":: (c) 2026\n"
+        ":: Copyright (C) 2026 palera1n team\n"
         "::\n"
         ":: ========  Made by  =======>\n"
         ":: Made by: asdfugil, kok3shidoll, claration, mineek\n"
@@ -229,25 +257,25 @@ void parse_arguments(int argc, char* argv[]) {
                 break;
             case 'e': // --extra-bootargs
                 if (strlen(optarg) > (sizeof(boot_args) - 0x20)) {
-                    LOG_ERROR("Boot arguments too long");
+                    LOG_ERROR("Boot arguments too long!");
                     exit(1);
                 }
                 snprintf(boot_args, sizeof(boot_args), "%s", optarg);
                 break;
             case 'k': // --override-pongo
                 if (!override_payload_from_file(optarg, &g_payload_pongo)) {
-                    LOG_ERROR("Failed to load pongo payload\n");
+                    LOG_ERROR("Failed to load pongo payload, is the path correct?");
                     exit(1);
                 }
                 if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
-                    LOG_ERROR("Pongo payload too large: %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
+                    LOG_ERROR("Pongo payload is too large! %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
                     exit(1);
                 }
                 LOG("Overriding pongo payload with %s", optarg);
                 break;
             case 'K': // --override-kpf
                 if (!override_payload_from_file(optarg, &g_payload_kpf)) {
-                    LOG_ERROR("Failed to load kpf payload\n");
+                    LOG_ERROR("Failed to load kpf payload, is the path correct?");
                     exit(1);
                 }
                 if (g_payload_kpf.data_len < 4
@@ -261,14 +289,14 @@ void parse_arguments(int argc, char* argv[]) {
                 break;
             case 'o': // --override-overlay
                 if (!override_payload_from_file(optarg, &g_payload_overlay)) {
-                    LOG_ERROR("Failed to load overlay payload\n");
+                    LOG_ERROR("Failed to load overlay payload, is the path correct?");
                     exit(1);
                 }
                 LOG("Overriding overlay payload with %s", optarg);
                 break;
             case 'r': // --override-ramdisk
                 if (!override_payload_from_file(optarg, &g_payload_ramdisk)) {
-                    LOG_ERROR("Failed to load ramdisk payload\n");
+                    LOG_ERROR("Failed to load ramdisk payload, is the path correct?");
                     exit(1);
                 }
                 LOG("Overriding ramdisk payload with %s", optarg);
@@ -347,12 +375,15 @@ void parse_arguments(int argc, char* argv[]) {
 int main(int argc, char* argv[], char* envp[]) {
     print_credits();
     parse_arguments(argc, argv);
-    LOG("palera1n_flags: %llu", palerain_flags);
+
+    LOG("Welcome to palera1n!");
+    LOG("Reminder, this jailbreak IS designed for iOS 15+");
+    LOG_DEBUG("palera1n_flags: 0x%" PRIx64, palerain_flags);
 
     // communicating with libusb on linux needs root
     #ifdef __linux__
     if (geteuid() != 0) {
-        LOG("You are not running as root, this may cause issues when exploiting");
+        LOG_ERROR("You are not running as root, this may cause issues when exploiting...");
     }
     #endif
 
@@ -382,5 +413,7 @@ int main(int argc, char* argv[], char* envp[]) {
     #endif
 
     int stage;
-    return exploit(&stage);
+    bool ret = exploit(&stage);
+    LOG("Thank you for using palera1n!");
+    return ret;
 }
