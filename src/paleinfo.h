@@ -26,7 +26,7 @@ typedef uint64_t palerain_option_t;
 // #define palerain_option_force_fakefs      (UINT64_C(1) << 8) /* force fakefs, even without SSV */
 #define palerain_option_clean_fakefs         (UINT64_C(1) << 9) /* clean fakefs, but does not delete it */
 #define palerain_option_tui                  (UINT64_C(1) << 10) /* terminal user interface */
-// #define palerain_option_gui               (UINT64_C(1) << 11) /* graphical user interface*/
+#define palerain_option_gui                  (UINT64_C(1) << 11) /* graphical user interface*/
 #define palerain_option_dfuhelper_only       (UINT64_C(1) << 12) /* dfuhelper only */
 #define palerain_option_pongo_exit           (UINT64_C(1) << 13) /* boot to clean pongo shell */
 #define palerain_option_demote               (UINT64_C(1) << 14) /* Demote effective production fuse status */
