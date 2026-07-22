@@ -187,7 +187,7 @@ void TuiFrame::DrawUi() {
     const int left_x = start_x;
     const int right_x = start_x + LEFT_PANEL_WIDTH;
 
-    draw_panel_border(start_y, left_x, LEFT_PANEL_WIDTH, HEIGHT, "palera1n - Version beta " PALERAIN_VERSION);
+    draw_panel_border(start_y, left_x, LEFT_PANEL_WIDTH, HEIGHT, "palera1n - Version " PALERAIN_VERSION);
     draw_panel_border(start_y, right_x, RIGHT_PANEL_WIDTH, HEIGHT);
 
     if (m_panels[m_currentPanel]) {

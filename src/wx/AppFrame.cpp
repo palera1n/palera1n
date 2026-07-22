@@ -50,7 +50,7 @@ void send_device_state(MainFrame* frame, const DeviceState& state)
 MainFrame::MainFrame()
     : wxFrame(nullptr,
               wxID_ANY,
-              "palera1n - Version beta " + wxString(PALERAIN_VERSION),
+              "palera1n - Version " + wxString(PALERAIN_VERSION),
               wxDefaultPosition,
               wxSize(480, 348),
               wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX | wxRESIZE_BORDER))

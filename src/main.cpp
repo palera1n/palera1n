@@ -54,6 +54,8 @@ extern "C" {
 #include "paleinfo.h"
 #include "pongo_helper.h"
 
+// MARK: print_credits
+
 void print_credits() {
     printf(
         "::\n"
@@ -73,6 +75,8 @@ void print_credits() {
         ":: ==========================>\n\n"
     );
 }
+
+// MARK: print_usage
 
 void print_usage(char* argv) {
     printf(
@@ -105,7 +109,42 @@ void print_usage(char* argv) {
         "  -r, --override-ramdisk <FILE PATH>    Override ramdisk\n"
         "  -d, --debug-logging                   Enable debug logging\n"
         "  -n, --no-colors                       [f] Disable colors on the command line\n"
-        "  -q, --quick                           [f] Enable Quick Mode\n"
+        "  -q, --quick                           [f] Enable Quick Mode\n\n"
+        "Environment Variables:\n\n"
+        #if WITH_CIDERRAIN
+        "  RA1N_ABORT_TIMEOUT                    Set a custom timeout value (0 to 999999999) for the exploit abort timer.\n"
+        "                                        While the default value is sufficient for standard platforms (intel or\n"
+        "                                        Apple Silicon), this variable allows for timing adjustments on specific\n"
+        "                                        environments like Linux (AMD) or Raspberry Pi (ARM64) where the exploit \n"
+        "                                        may fail due to platform-specific USB stack behavior.\n"
+        "                                        e.g. Raspberry Pi 5: RA1N_ABORT_TIMEOUT=1000000\n"
+        #endif
+        "  RA1N_CLI                              [f] Use command line interface\n"
+        #ifdef WITH_GUI
+        "  RA1N_GUI                              [f] Use graphical user interface\n"
+        #endif
+        #ifdef WITH_TUI
+        "  RA1N_TUI                              [f] Use terminal user interface\n"
+        #endif
+        "  RA1N_DARK_BLOCKCHAIN                  [f] Enable dark blockchain\n"
+        "  RA1N_FORCE_REVERT                     [f] Force environment reversion\n"
+        "  RA1N_FORCE_ENABLE_SSV                 [f] Force SSV detection to result in YES\n"
+        "  RA1N_ROOTLESS                         [f] Enable rootless mode (standard)\n"
+        "  RA1N_ROOTFUL                          [f] Boots fakefs\n"
+        "  RA1N_SETUP_FAKEFS                     [f] Setup fake filesystem\n"
+        "  RA1N_SETUP_PARTIAL_FAKEFS             [f] Setup partial fake filesystem\n"
+        "  RA1N_SAFE_MODE                        [f] Enable safe mode\n"
+        "  RA1N_TELNETD                          [f] Enable TELNET daemon on port 46 (insecure)\n"
+        "  RA1N_VERBOSE_BOOT                     [f] Enable verbose booting\n"
+        "  RA1N_EARLY_EXIT                       [f] Exit after uploading Pongo\n"
+        "  RA1N_EXTRA_BOOTARGS                   Set extra bootargs\n"
+        "  RA1N_OVERRIDE_PONGO                   Override Pongo image\n"
+        "  RA1N_OVERRIDE_KPF                     Override kernel patchfinder\n"
+        "  RA1N_OVERRIDE_OVERLAY                 Override overlay\n"
+        "  RA1N_OVERRIDE_RAMDISK                 Override ramdisk\n"
+        "  RA1N_DEBUG_LOGGING                    Enable debug logging\n"
+        "  RA1N_NO_COLORS                        [f] Disable colors on the command line\n"
+        "  RA1N_QUICK                            [f] Enable Quick Mode\n\n"
         , argv
     );
 
@@ -117,9 +156,28 @@ void print_usage(char* argv) {
     );
 }
 
+// MARK: parse_arguments
+
+static int get_env_binary(const char *env_name) {
+    const char *val = getenv(env_name);
+    if (!val) return -1;
+    if (strcmp(val, "1") == 0) return 1;
+    if (strcmp(val, "0") == 0) return 0;
+    return -1;
+}
+
 void parse_arguments(int argc, char* argv[]) {
     int options;
     int option_index = 0;
+
+    bool set_cli = false, set_gui = false, set_tui = false;
+    bool set_flower = false, set_force_revert = false, set_ssv = false;
+    bool set_rootless = false, set_rootful = false;
+    bool set_fakefs = false, set_partial_fakefs = false;
+    bool set_safemode = false, set_telnetd = false, set_verbose = false;
+    bool set_pongo_exit = false, set_no_colors = false, set_quick = false;
+    bool set_extra_bootargs = false, set_pongo = false, set_kpf = false;
+    bool set_overlay = false, set_ramdisk = false;
 
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
@@ -177,6 +235,8 @@ void parse_arguments(int argc, char* argv[]) {
     # endif
     #endif
 
+    // MARK: Standard
+
     while ((options = getopt_long(argc, argv, "hvlfcBsTVpe:k:K:o:r:dnq", long_options, &option_index)) != -1) {
         switch (options) {
             case 'h': // --help
@@ -184,12 +244,12 @@ void parse_arguments(int argc, char* argv[]) {
                 exit(1);
             case 'v': // --version
                 #if WITH_CIDERRAIN
-                printf("Palera1n beta " PALERAIN_VERSION " [USB: %s (libcidera1n %s)]\n",
+                printf("Palera1n " PALERAIN_VERSION " [USB: %s (libcidera1n %s)]\n",
                     ra1n_show_usb_backend(),
                     ra1n_show_build_version()
                 );
                 #else
-                printf("Palera1n beta " PALERAIN_VERSION " [USB: %s (libopenra1n)]\n",
+                printf("Palera1n " PALERAIN_VERSION " [USB: %s (libopenra1n)]\n",
                     #ifdef __APPLE__
                     "IOKit"
                     #else
@@ -318,6 +378,146 @@ void parse_arguments(int argc, char* argv[]) {
         }
     }
 
+    // MARK: Environment vars
+
+    if (!set_cli && get_env_binary("RA1N_CLI") == 1) {
+        palerain_flags &= ~palerain_option_tui;
+        palerain_flags &= ~palerain_option_gui;
+        palerain_flags |= palerain_option_cli;
+    }
+    #ifdef WITH_GUI
+    if (!set_gui && get_env_binary("RA1N_GUI") == 1) {
+        palerain_flags &= ~palerain_option_cli;
+        palerain_flags &= ~palerain_option_tui;
+        palerain_flags |= palerain_option_gui;
+    }
+    #endif
+    #ifdef WITH_TUI
+    if (!set_tui && get_env_binary("RA1N_TUI") == 1) {
+        palerain_flags &= ~palerain_option_cli;
+        palerain_flags &= ~palerain_option_gui;
+        palerain_flags |= palerain_option_tui;
+    }
+    #endif
+
+    if (!set_flower && get_env_binary("RA1N_DARK_BLOCKCHAIN") == 1) {
+        palerain_flags |= palerain_option_flower_chain;
+    }
+    if (!set_force_revert && get_env_binary("RA1N_FORCE_REVERT") == 1) {
+        palerain_flags |= palerain_option_force_revert;
+    }
+    if (!set_ssv && get_env_binary("RA1N_FORCE_ENABLE_SSV") == 1) {
+        palerain_flags |= palerain_option_ssv;
+    }
+    if (!set_rootless && get_env_binary("RA1N_ROOTLESS") == 1) {
+        palerain_flags &= ~palerain_option_rootful;
+        palerain_flags |= palerain_option_rootless;
+    }
+    if (!set_rootful && get_env_binary("RA1N_ROOTFUL") == 1) {
+        palerain_flags &= ~palerain_option_rootless;
+        palerain_flags |= palerain_option_rootful;
+    }
+    if (!set_fakefs && get_env_binary("RA1N_SETUP_FAKEFS") == 1) {
+        palerain_flags |= palerain_option_setup_rootful;
+    }
+    if (!set_partial_fakefs && get_env_binary("RA1N_SETUP_PARTIAL_FAKEFS") == 1) {
+        palerain_flags |= palerain_option_setup_partial_root;
+    }
+    if (!set_safemode && get_env_binary("RA1N_SAFE_MODE") == 1) {
+        palerain_flags |= palerain_option_safemode;
+    }
+    if (!set_telnetd && get_env_binary("RA1N_TELNETD") == 1) {
+        palerain_flags |= palerain_option_telnetd;
+    }
+    if (!set_verbose && get_env_binary("RA1N_VERBOSE_BOOT") == 1) {
+        palerain_flags |= palerain_option_verbose_boot;
+    }
+    if (!set_pongo_exit && get_env_binary("RA1N_EARLY_EXIT") == 1) {
+        palerain_flags |= palerain_option_pongo_exit;
+    }
+    if (!set_no_colors && get_env_binary("RA1N_NO_COLORS") == 1) {
+        palerain_flags |= palerain_option_no_colors;
+    }
+    if (!set_quick && get_env_binary("RA1N_QUICK") == 1) {
+        palerain_flags |= palerain_option_quick;
+    }
+
+    const char *env_debug = getenv("RA1N_DEBUG_LOGGING");
+    if (env_debug) {
+        int lvl = atoi(env_debug);
+        if (lvl > 0) {
+            gDebugLevel = (lvl > 5) ? 5 : lvl;
+        }
+    }
+
+    if (!set_extra_bootargs) {
+        const char *env_bootargs = getenv("RA1N_EXTRA_BOOTARGS");
+        if (env_bootargs) {
+            if (strlen(env_bootargs) > (sizeof(boot_args) - 0x20)) {
+                LOG_ERROR("Boot arguments too long!");
+                exit(1);
+            }
+            snprintf(boot_args, sizeof(boot_args), "%s", env_bootargs);
+        }
+    }
+
+    if (!set_pongo) {
+        const char *env_pongo = getenv("RA1N_OVERRIDE_PONGO");
+        if (env_pongo) {
+            if (!override_payload_from_file(env_pongo, &g_payload_pongo)) {
+                LOG_ERROR("Failed to load pongo payload from env, is the path correct?");
+                exit(1);
+            }
+            if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
+                LOG_ERROR("Pongo payload is too large! %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
+                exit(1);
+            }
+            LOG("Overriding pongo payload with %s (from env)", env_pongo);
+        }
+    }
+
+    if (!set_kpf) {
+        const char *env_kpf = getenv("RA1N_OVERRIDE_KPF");
+        if (env_kpf) {
+            if (!override_payload_from_file(env_kpf, &g_payload_kpf)) {
+                LOG_ERROR("Failed to load kpf payload from env, is the path correct?");
+                exit(1);
+            }
+            if (g_payload_kpf.data_len < 4
+                || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0
+                && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
+            {
+                LOG_ERROR("Invalid kpf payload from env, is it macho?");
+                exit(1);
+            }
+            LOG("Overriding kpf payload with %s (from env)", env_kpf);
+        }
+    }
+
+    if (!set_overlay) {
+        const char *env_overlay = getenv("RA1N_OVERRIDE_OVERLAY");
+        if (env_overlay) {
+            if (!override_payload_from_file(env_overlay, &g_payload_overlay)) {
+                LOG_ERROR("Failed to load overlay payload from env, is the path correct?");
+                exit(1);
+            }
+            LOG("Overriding overlay payload with %s (from env)", env_overlay);
+        }
+    }
+
+    if (!set_ramdisk) {
+        const char *env_ramdisk = getenv("RA1N_OVERRIDE_RAMDISK");
+        if (env_ramdisk) {
+            if (!override_payload_from_file(env_ramdisk, &g_payload_ramdisk)) {
+                LOG_ERROR("Failed to load ramdisk payload from env, is the path correct?");
+                exit(1);
+            }
+            LOG("Overriding ramdisk payload with %s (from env)", env_ramdisk);
+        }
+    }
+
+    // MARK: Flag checks
+
     if (!(palerain_flags & palerain_option_gui) &&
         !(palerain_flags & palerain_option_tui))
     {
@@ -371,6 +571,8 @@ void parse_arguments(int argc, char* argv[]) {
     if (palerain_flags & palerain_option_no_colors) gSilentLogs = false;
     if (palerain_flags & palerain_option_tui) gSilentLogs = true;
 }
+
+// MARK: main
 
 int main(int argc, char* argv[], char* envp[]) {
     print_credits();

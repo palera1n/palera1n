@@ -32,7 +32,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define PALERAIN_VERSION "3.0.0"
+#define PALERAIN_VERSION "beta 3.0.0"
 
 extern uint64_t palerain_flags;
 extern char boot_args[0x270];
