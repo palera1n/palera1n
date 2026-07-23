@@ -109,8 +109,10 @@ void print_usage(char* argv) {
         "  -r, --override-ramdisk <FILE PATH>    Override ramdisk\n"
         "  -d, --debug-logging                   Enable debug logging\n"
         "  -n, --no-colors                       [f] Disable colors on the command line\n"
-        "  -q, --quick                           [f] Enable Quick Mode\n\n"
-        "Environment Variables:\n\n"
+        #if defined(WITH_GUI) || defined(WITH_TUI)
+        "  -q, --quick                           [f] Enable Quick Mode\n"
+        #endif
+        "\nEnvironment Variables:\n\n"
         #if WITH_CIDERRAIN
         "  RA1N_ABORT_TIMEOUT=0                  Set a custom timeout value (0 to 999999999) for the exploit abort timer.\n"
         "                                        While the default value is sufficient for standard platforms (intel or\n"
@@ -144,7 +146,9 @@ void print_usage(char* argv) {
         "  RA1N_OVERRIDE_RAMDISK=<FILE PATH>     Override ramdisk\n"
         "  RA1N_DEBUG_LOGGING=1                  Enable debug logging\n"
         "  RA1N_NO_COLORS=1                      [f] Disable colors on the command line\n"
+        #if defined(WITH_GUI) || defined(WITH_TUI)
         "  RA1N_QUICK=1                          [f] Enable Quick Mode\n"
+        #endif
         , argv
     );
 
@@ -207,7 +211,9 @@ void parse_arguments(int argc, char* argv[]) {
         {"override-ramdisk", required_argument, NULL, 'r'},
         {"debug-logging", no_argument, NULL, 'd'},
         {"no-colors", no_argument, NULL, 'n'},
+        #if defined(WITH_GUI) || defined(WITH_TUI)
         {"quick", no_argument, NULL, 'q'},
+        #endif
         {NULL, 0, NULL, 0}
     };
 
@@ -367,9 +373,11 @@ void parse_arguments(int argc, char* argv[]) {
             case 'n': // --no-colors
                 palerain_flags |= palerain_option_no_colors;
                 break;
+            #if defined(WITH_GUI) || defined(WITH_TUI)
             case 'q': // --quick
                 palerain_flags |= palerain_option_quick;
                 break;
+            #endif
             case '?':
                 LOG_ERROR("Unknown option\n");
                 print_usage(argv[0]);
@@ -399,7 +407,6 @@ void parse_arguments(int argc, char* argv[]) {
         palerain_flags |= palerain_option_tui;
     }
     #endif
-
     if (!set_flower && get_env_binary("RA1N_DARK_BLOCKCHAIN") == 1) {
         palerain_flags |= palerain_option_flower_chain;
     }
@@ -438,9 +445,11 @@ void parse_arguments(int argc, char* argv[]) {
     if (!set_no_colors && get_env_binary("RA1N_NO_COLORS") == 1) {
         palerain_flags |= palerain_option_no_colors;
     }
+    #if defined(WITH_GUI) || defined(WITH_TUI)
     if (!set_quick && get_env_binary("RA1N_QUICK") == 1) {
         palerain_flags |= palerain_option_quick;
     }
+    #endif
 
     const char *env_debug = getenv("RA1N_DEBUG_LOGGING");
     if (env_debug) {
