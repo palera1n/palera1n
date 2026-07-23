@@ -44,6 +44,8 @@
 #include "globals.h"
 #include "paleinfo.h"
 
+#define CMD_LENGTH_MAX 512
+
 p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char *command)
 {
     p1_transfer_ret_t result;
@@ -52,7 +54,7 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
     uint32_t outlen = 0;
     uint8_t in_progress = 1;
 
-    char command_buf[512];
+    char command_buf[CMD_LENGTH_MAX];
     char stdout_buf[0x2000];
 
     memset(stdout_buf, 0, sizeof(stdout_buf));
@@ -60,7 +62,9 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
     if (command != NULL) {
         size_t len = strlen(command);
 
-        if (len > 510) {
+        // unlikely to happen, unless we add support for pongoterm
+        // TODO: discuss on adding a pongoterm
+        if (len > CMD_LENGTH_MAX) {
             LOG_ERROR("Pongo command too long: %s", command);
             result.ret = 1;
             return result;
@@ -87,6 +91,7 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
         if (strncmp(command,"boot",4) == 0) goto result;
     }
 
+    // TODO: does this work correctly?
     while (in_progress) {
         #if WITH_CIDERRAIN
         result = usb_ctrl_transfer(handle, 0xA1, 2, 0, 0, &in_progress, sizeof(in_progress));
@@ -194,6 +199,8 @@ p1_checkm8_err_t send_compressed_pongo(p1_usb_handle_t *handle, const uint8_t *p
     return cr;
 }
 
+// TODO: support early-exit but with all embedded artifacts already loaded
+
 p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
 {
     p1_transfer_ret_t result;
@@ -217,6 +224,7 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
         result = upload_buffer_to_pongo(handle, g_payload_kpf.data, g_payload_kpf.data_len);
         if (result.ret != 0) goto bad;
 
+        // TODO: discuss on adding support for compressed artifacts
         // embedded artifacts are lzma compressed, mostly for binary size
         // this tells pongo to decompress after sending the KPF
         // overwritten artifacts should not be compressed, so we always
@@ -241,6 +249,7 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
         result = upload_buffer_to_pongo(handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
         if (result.ret != 0) goto bad;
 
+        // TODO: discuss on adding support for compressed artifacts
         // embedded artifacts are lzma compressed, mostly for binary size
         // this tells pongo to decompress after sending the ramdisk
         // overwritten artifacts should not be compressed, so we always
@@ -269,6 +278,7 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
         if (result.ret != 0) goto bad;
     }
 
+    // TODO: why do we check results
     result = issue_pongo_command(handle, "bootx");
     if (result.ret != 0) goto bad;
 

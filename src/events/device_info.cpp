@@ -45,12 +45,14 @@ static uint64_t get_hex_field(const char *serial, const char *field) {
     return p ? strtoull(p + strlen(field), nullptr, 16) : 0;
 }
 
+// get device info from a recovery mode serial number
 void get_recovery_info(char *sn, const char **ecid, const char **product_model, const char **product_name)
 {
     static char cpid_buf[16];
     static char ecid_buf[32];
     static char bdid_buf[16];
 
+    // we can get the model based on cpid and bdid
     uint16_t cpid_val = (uint16_t)get_hex_field(sn, "CPID:");
     uint32_t bdid_val = (uint32_t)get_hex_field(sn, "BDID:");
     uint64_t ecid_val = get_hex_field(sn, "ECID:");
@@ -64,6 +66,7 @@ void get_recovery_info(char *sn, const char **ecid, const char **product_model, 
     *product_model = nullptr;
     *product_name = nullptr;
 
+    // cpid+bdid -> product type & product name
     for (int i = 0; irecv_devices[i].product_type; i++) {
         if (irecv_devices[i].cpid == cpid_val &&
             irecv_devices[i].bdid == bdid_val) {
@@ -74,6 +77,7 @@ void get_recovery_info(char *sn, const char **ecid, const char **product_model, 
     }
 }
 
+// iPhone9,3 -> iPhone 7 (GSM)
 void get_name_from_product_type(const char *product_type, const char **name) {
     *name = nullptr;
     for (int i = 0; irecv_devices[i].product_type; i++) {

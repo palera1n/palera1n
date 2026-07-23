@@ -30,6 +30,8 @@
 #ifndef MAIN__DEVICE_INFO_H
 #define MAIN__DEVICE_INFO_H
 
+// stolen from irecovery, I dont think an array
+// of devices can be copyrighted?
 struct irecv_device {
     const char *product_type;
     const char *board;
