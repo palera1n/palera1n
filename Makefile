@@ -1,5 +1,7 @@
 .PHONY: apple-include payloads palera1n palera1n_xcode palera1n_mingw clean
 
+# TODO: get rid of this makefile, this is too complicated
+
 WITH_GUI ?= 0
 WITH_TUI ?= 0
 WITH_RAMDISK ?= 1
@@ -147,3 +149,5 @@ palera1n_mingw: payloads
 clean:
 	@rm -rf build src/gen
 	@rm -rf apple-include-*
+	@if [ -d 1stparty/libciderra1n ]; then $(MAKE) -C 1stparty/libciderra1n clean; fi
+	@$(MAKE) -C 1stparty/libopenra1n clean

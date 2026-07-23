@@ -155,12 +155,34 @@ jobs:
           JOBS=$(nproc)
         ${{ matrix.triple }}-strip -s build/palera1n
 
+    - name: Package
+      run: |
+        cd build
+        case "${{ matrix.triple }}" in
+          i486-linux-musl)
+            cpack
+            mv palera1n.tar.gz palera1n-linux-i486.tar.gz
+            ;;
+          x86_64-linux-musl)
+            cpack
+            mv palera1n.tar.gz palera1n-linux-x86_64.tar.gz
+            ;;
+          armel-linux-musleabi)
+            cpack
+            mv palera1n.tar.gz palera1n-linux-armel.tar.gz
+            ;;
+          aarch64-linux-musl)
+            cpack
+            mv palera1n.tar.gz palera1n-linux-aarch64.tar.gz
+            ;;
+        esac
+
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: palera1n-${{ matrix.triple }}
         path: |
-          build/palera1n
+          build/*.tar.gz
 
   build-macos:
     runs-on: ${{ matrix.os }}
@@ -245,12 +267,19 @@ jobs:
         make palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         cmake --build build
 
+    - name: Package
+      run: |
+        cd build && \
+          cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-iphoneos-arm" && \
+          cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-iphoneos-arm64" \
+            -DCPACK_PACKAGING_INSTALL_PREFIX="/var/jb/usr/local"
+
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: palera1n-iphoneos-arm64
         path: |
-          build/Debug-iphoneos/palera1n.app/palera1n
+          build/*.tar.gz
 
   build-macos-universal:
     runs-on: macos-latest
@@ -340,6 +369,7 @@ jobs:
           mingw-w64-x86_64-cmake
           mingw-w64-x86_64-libusb
           mingw-w64-x86_64-rust
+          mingw-w64-x86_64-nsis
           libtool
           openssl
           openssl-devel
@@ -360,20 +390,14 @@ jobs:
 
     - name: Package
       run: |
-        mkdir -p dist\installer
-        copy build\*.exe dist\installer\
-        copy build\*.dll dist\installer\
-        copy packaging\installer.nsi dist\installer\
-        copy resources\palera1n.ico dist\installer\icon.ico
-        makensis dist\installer\installer.nsi
-        move dist\installer\installer.exe dist\palera1n-windows-x86_64-setup.exe
+        cd build && cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-windows-x86_64-setup"
 
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: palera1n-windows-x86_64
         path: |
-          dist/palera1n-windows-x86_64-setup.exe
+          build/palera1n-windows-x86_64-setup.exe
 
   release:
     runs-on: ubuntu-latest
@@ -437,7 +461,7 @@ jobs:
 
     - name: Prepare artifacts
       run: |
-        find . -maxdepth 1 -type f -print0 | tar --null --zstd -cf ../dist/resource.tar.zst --files-from=-
+        find . -maxdepth 1 -type f -print0 | tar --null -czf ../dist/resource.tar.gz --files-from=-
       working-directory: embedded
 
     - name: Extract Version

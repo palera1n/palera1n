@@ -65,7 +65,7 @@ void print_credits() {
         "::\n"
         ":: ========  Made by  =======>\n"
         ":: Made by: asdfugil, kok3shidoll, claration, mineek\n"
-        ":: nekohaxx, plooshi, staturnz\n"
+        ":: plooshi, staturnz\n"
         ":: ======== Thanks to =======>\n"
         ":: Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed\n"
         ":: kirb, ehilwyma, opa334, 0x7ff, alfiecg25, sneko, sbingner\n"
@@ -577,7 +577,7 @@ void parse_arguments(int argc, char* argv[]) {
     }
 
     // controls logging settings in our checkm8 libraries
-    if (palerain_flags & palerain_option_no_colors) gSilentLogs = false;
+    if (palerain_flags & palerain_option_no_colors) gColoredLogs = false;
     if (palerain_flags & palerain_option_tui) gSilentLogs = true;
 }
 
