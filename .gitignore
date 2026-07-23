@@ -3,6 +3,7 @@ dist/
 .DS_Store
 
 gen/
+docs/*.html
 embedded/Pongo.bin
 embedded/checkra1n-kpf-pongo
 embedded/ramdisk.dmg
