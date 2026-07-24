@@ -14,8 +14,40 @@ on:
       - Makefile
 
 jobs:
+  build-loader:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 8702f636192837367115a69c3f60ead79aa8c483
+          repository: palera1n/loader
+
+      - name: Install dependencies (brew)
+        run: |
+          brew install gnu-sed
+
+      - name: Select correct Xcode
+        uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b
+        with:
+          xcode-select-version: 16.4
+
+      - name: Build
+        run: |
+          agvtool new-version -all $(git rev-parse HEAD)
+          make package PLATFORM=iphoneos PACKAGE_NAME=palera1nLoader
+          make package PLATFORM=appletvos PACKAGE_NAME=palera1nLoaderTV
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: loader
+          path: |
+            packages/*
+
   build-ramdisk:
     runs-on: macos-15
+    needs: [build-loader]
 
     steps:
     - uses: actions/checkout@v4
@@ -23,6 +55,11 @@ jobs:
         ref: 9cadaa63569ba318677b4ef0869ad984b3663a6c
         repository: palera1n/jbinit
         submodules: true
+
+    - name: Download loader artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: loader
 
     - name: Select correct Xcode
       uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b
@@ -35,7 +72,6 @@ jobs:
 
     - name: Obtain artifacts
       run: |
-        curl -LOO https://static.palera.in/artifacts/loader/universal_lite/palera1nLoader{TV,}.ipa
         curl -LO https://static.palera.in/binpack.tar
         install -m644 binpack.tar palera1nLoader{TV,}.ipa src
 
