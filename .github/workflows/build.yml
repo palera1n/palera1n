@@ -1,4 +1,4 @@
-name: "Build"
+name: "Build palera1n"
 
 on:
   workflow_dispatch:
