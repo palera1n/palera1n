@@ -161,7 +161,7 @@ jobs:
         case "${{ matrix.triple }}" in
           i486-linux-musl)
             cpack
-            mv palera1n.tar.gz palera1n-linux-i486.tar.gz
+            mv palera1n.tar.gz palera1n-linux-x86.tar.gz
             ;;
           x86_64-linux-musl)
             cpack
@@ -173,7 +173,7 @@ jobs:
             ;;
           aarch64-linux-musl)
             cpack
-            mv palera1n.tar.gz palera1n-linux-aarch64.tar.gz
+            mv palera1n.tar.gz palera1n-linux-arm64.tar.gz
             ;;
         esac
 
