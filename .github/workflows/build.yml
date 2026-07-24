@@ -20,6 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: 9cadaa63569ba318677b4ef0869ad984b3663a6c
         repository: palera1n/jbinit
         submodules: true
 
@@ -62,6 +63,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: e98323f8a09abd80fc4cbcd74dee023b91a1ec22
         repository: palera1n/PongoOS
 
     - name: Build
