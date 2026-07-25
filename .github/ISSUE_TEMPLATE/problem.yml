@@ -1,6 +1,7 @@
 name: Create Issue
-description: Ask help for palera1n regarding support or generally how it works! 
+description: Ask help for palera1n regarding support or generally how it works!
 labels: [palera1n help]
+
 body:
   - type: input
     id: device
@@ -10,6 +11,7 @@ body:
       placeholder: iPhone X
     validations:
       required: true
+
   - type: input
     id: version
     attributes:
@@ -18,22 +20,24 @@ body:
       placeholder: iOS 15.6
     validations:
       required: true
+
   - type: checkboxes
     id: passcode-enabled
     attributes:
       label: Passcode?
-      description: Is your passcode enabled? 
+      description: Is your passcode enabled?
       options:
         - label: Passcode is enabled.
           required: false
+
   - type: textarea
     id: detailed-description
     attributes:
       label: Start going into detail..
-      description:
       placeholder: My device couldn't boot jailbroken. I have checked ... using ..., none of the solutions I've been given are working for me. I don't know what to do.
     validations:
       required: true
+
   - type: checkboxes
     id: familiarity
     attributes:
@@ -42,6 +46,7 @@ body:
       options:
         - label: I am familiar with palera1n and how to use it!
           required: false
+
   - type: checkboxes
     id: familiarity-command-line
     attributes:
