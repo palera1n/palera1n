@@ -210,6 +210,8 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
 
     char xargs_cmd[0x270];
     snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", boot_args);
+
+    // disables watchdog timer on rootful
     if (palerain_flags & palerain_option_setup_rootful) {
         strncat(xargs_cmd, " wdt=-1", sizeof(xargs_cmd) - strlen(xargs_cmd) - 1);
     }
