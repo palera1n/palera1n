@@ -241,11 +241,14 @@ bool build_normal_state(const IdeviceFFI::UsbmuxdDevice& device, DeviceState& ou
         }
     }
 
-    out.isSupported = SequenceIsSupported(out.productType);
+    DfuSequence seq = ParseSequence(out.productType);
+    out.isSupported = SequenceIsSupported(&seq);
+    out.requiresCLI = SequenceRequiresCLI(&seq);
+
     return true;
 }
 
-static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supported) {
+static void handle_other_add(hotplug_handle_t handle, DeviceMode mode) {
     char serial[256] = {};
     if (!get_usb_device_serial(handle, serial, sizeof(serial))) return;
 
@@ -269,7 +272,10 @@ static void handle_other_add(hotplug_handle_t handle, DeviceMode mode, bool supp
         m.state.productType = product_model ? product_model : "";
         m.state.productVersion.clear();
         m.state.displayName = product_name ? product_name : "";
-        m.state.isSupported = supported;
+
+        DfuSequence seq = ParseSequence(m.state.productType);
+        m.state.isSupported = SequenceIsSupported(&seq);
+        m.state.requiresCLI = SequenceRequiresCLI(&seq);
 
         m.recoveryPresent = (mode == DeviceMode::Recovery);
         m.dfuPresent = (mode == DeviceMode::DFU);
@@ -409,9 +415,9 @@ static void hotplug_callback(hotplug_event_t event, hotplug_handle_t handle) {
     #endif
 
     switch (event) {
-        case HOTPLUG_EVENT_DFU_ADD:          handle_other_add(handle, DeviceMode::DFU, false); break;
+        case HOTPLUG_EVENT_DFU_ADD:          handle_other_add(handle, DeviceMode::DFU); break;
         case HOTPLUG_EVENT_DFU_REMOVE:       remove_device(srv, DeviceMode::DFU); break;
-        case HOTPLUG_EVENT_RECOVERY_ADD:     handle_other_add(handle, DeviceMode::Recovery, true); break;
+        case HOTPLUG_EVENT_RECOVERY_ADD:     handle_other_add(handle, DeviceMode::Recovery); break;
         case HOTPLUG_EVENT_RECOVERY_REMOVE:  remove_device(srv, DeviceMode::Recovery); break;
     }
 }

@@ -216,7 +216,7 @@ void MainPanel::SetDeviceState(const DeviceState& state)
             m_deviceTitle->SetLabel("Multiple devices detected");
             m_deviceSubtitle->SetLabel(
                 wxString::Format(
-                    "%u devices connected. Please only connect one device.\n",
+                    "%u USB devices connected. Disconnect extras and keep only one device attached.\n",
                     state.connectedDeviceCount
                 )
             );
@@ -239,30 +239,38 @@ void MainPanel::SetDeviceState(const DeviceState& state)
             switch (state.mode)
             {
                 case DeviceMode::Normal:
-                    if (state.isSupported) {
+                    if (state.requiresCLI) {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Connected in normal mode - iOS " + versionString + "\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Sorry, jailbreaking is only available via CLI mode - OS " + versionString + "\n" + ecidString);
+                        m_startButton->Enable(false);
+                    } else if (state.isSupported) {
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Connected in normal mode - OS " + versionString + "\n" + ecidString);
                         m_startButton->Enable();
                     } else {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Not supported - iOS " + versionString + "\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Sorry, this normal device is not supported - OS " + versionString + "\n" + ecidString);
                         m_startButton->Enable(false);
                     }
                     break;
                 case DeviceMode::Recovery:
-                    if (state.isSupported) {
+                    if (state.requiresCLI) {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Connected in recovery mode\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Sorry, jailbreaking is only available via CLI mode.\n" + ecidString);
+                        m_startButton->Enable(false);
+                    } else if (state.isSupported) {
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Connected in recovery mode.\n" + ecidString);
                         m_startButton->Enable();
                     } else {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Not supported\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Sorry, this recovery device is not supported.\n" + ecidString);
                         m_startButton->Enable(false);
                     }
                     break;
                 case DeviceMode::DFU:
                     m_deviceTitle->SetLabel("DFU Mode device");
-                    m_deviceSubtitle->SetLabel("Sorry, jailbreaking in DFU mode is not supported.\n");
+                    m_deviceSubtitle->SetLabel("Sorry, jailbreaking in DFU is not supported.\n");
                     m_startButton->Enable(false);
                     break;
                 case DeviceMode::None:

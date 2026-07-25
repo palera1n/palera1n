@@ -50,6 +50,7 @@ struct DeviceState
 {
     bool connected = false;
     bool isSupported = false;
+    bool requiresCLI = false;
     bool multipleDevices = false;
     DeviceMode mode = DeviceMode::None;
     std::string productVersion;

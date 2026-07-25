@@ -51,6 +51,7 @@ struct DfuStep
 
 struct DfuSequence
 {
+    bool isSupported = true;
     std::string imageName;
     int imageWidth = 0;
     int imageHeight = 0;
@@ -60,7 +61,8 @@ struct DfuSequence
 };
 
 DfuSequence ParseSequence(const std::string& deviceKey);
-bool SequenceIsSupported(const std::string& deviceKey);
+bool SequenceIsSupported(const DfuSequence* seq);
+bool SequenceRequiresCLI(const DfuSequence* seq);
 
 #endif // SEQUENCE_H
 

@@ -259,6 +259,7 @@
             "sequence":"appletv4"
         },
         "appletv4k":{
+            "is_supported": false,
             "image_name":"atv_std_brd",
             "image_width":300,
             "image_height":240,

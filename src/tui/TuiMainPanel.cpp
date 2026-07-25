@@ -73,17 +73,23 @@ static std::string get_device_subtitle(const DeviceState& state) {
 
     switch (state.mode) {
         case DeviceMode::Normal:
-            if (state.isSupported) {
+            if (state.requiresCLI) {
+                return "Sorry, jailbreaking is only available via CLI mode * iOS " + version + "\n" + ecid;
+            } else if (state.isSupported) {
                 return "Connected in normal mode * iOS " + version + "\n" + ecid;
+            } else {
+                return "Sorry, this normal device is not supported * iOS " + version + "\n" + ecid;
             }
-            return "Not supported * iOS " + version + "\n" + ecid;
         case DeviceMode::Recovery:
-            if (state.isSupported) {
-                return "Connected in recovery mode\n" + ecid;
+            if (state.requiresCLI) {
+                return "Sorry, jailbreaking is only available via CLI mode.\n" + ecid;
+            } else if (state.isSupported) {
+                return "Connected in recovery mode.\n" + ecid;
+            } else {
+                return "Sorry, this recovery device is not supported.\n" + ecid;
             }
-            return "Not supported\n" + ecid;
         case DeviceMode::DFU:
-            return "Sorry, jailbreaking in DFU mode is not supported.\n";
+            return "Sorry, jailbreaking in DFU is not supported.\n";
         case DeviceMode::None:
             return "Please connect a device to get started. Ensure version range is 15.0+";
     }
@@ -221,7 +227,7 @@ void TuiMainPanel::handle_enter(int selected, int sy, int sx) {
         case 2: {
             if (block_start) break;
 
-            bool can_start = (state.connected && state.isSupported && state.mode != DeviceMode::DFU);
+            bool can_start = (state.connected && state.isSupported && !state.requiresCLI && state.mode != DeviceMode::DFU);
             if (can_start) {
                 if (state.mode == DeviceMode::Recovery) {
                     GetFrame()->ShowDfu(1);
@@ -255,7 +261,7 @@ bool TuiMainPanel::is_button_enabled(int btn_idx) const {
     switch(btn_idx) {
         case 0: return true;
         case 1: return true;
-        case 2: return (state.connected && state.isSupported && state.mode != DeviceMode::DFU);
+        case 2: return (state.connected && state.isSupported && !state.requiresCLI && state.mode != DeviceMode::DFU);
         case 3: return true;
     }
 

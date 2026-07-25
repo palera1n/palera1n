@@ -53,6 +53,8 @@ DfuSequence ParseSequence(const std::string& deviceKey)
 
     const auto& layout = itLayout.value();
 
+    // assume supported if not specified
+    seq.isSupported = layout.value("is_supported", true);
     seq.imageName = layout.value("image_name", "");
     seq.imageWidth = layout.value("image_width", 0);
     seq.imageHeight = layout.value("image_height", 0);
@@ -106,10 +108,14 @@ DfuSequence ParseSequence(const std::string& deviceKey)
     return seq;
 }
 
-bool SequenceIsSupported(const std::string& deviceKey)
+bool SequenceIsSupported(const DfuSequence* seq)
 {
-    DfuSequence seq = ParseSequence(deviceKey);
-    return !seq.steps.empty();
+    return seq && !seq->steps.empty();
+}
+
+bool SequenceRequiresCLI(const DfuSequence* seq)
+{
+    return seq && !seq->isSupported;
 }
 
 #endif // WITH_GUI || WITH_TUI
