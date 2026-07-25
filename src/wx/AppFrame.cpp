@@ -147,17 +147,10 @@ void MainFrame::UpdateDeviceState(const DeviceState& state)
 {
     m_state = state;
 
-    if (m_main)
-        m_main->SetDeviceState(m_state);
-
-    if (m_recovery)
-        m_recovery->SetDeviceState(m_state);
-
-    if (m_dfu)
-        m_dfu->SetDeviceState(m_state);
-
-    if (m_exploit)
-        m_exploit->SetDeviceState(m_state);
+    if (m_main)     m_main->SetDeviceState(m_state);
+    if (m_recovery) m_recovery->SetDeviceState(m_state);
+    if (m_dfu)      m_dfu->SetDeviceState(m_state);
+    if (m_exploit)  m_exploit->SetDeviceState(m_state);
 }
 
 bool PalerainApp::OnInit()

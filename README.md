@@ -1,6 +1,11 @@
 # palera1n
+[![GitHub Release](https://img.shields.io/github/v/release/palera1n/palera1n?include_prereleases)](https://github.com/palera1n/palera1n/releases)
+[![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/palera1n/palera1n/total)](https://github.com/palera1n/palera1n/releases)
+[![GitHub License](https://img.shields.io/github/license/palera1n/palera1n?color=%23C96FAD)](https://github.com/palera1n/palera1n/blob/main/LICENSE)
 
 Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 and higher.
+
+![Demo of app](demo.png)
 
 ## Device Support
 
@@ -49,8 +54,6 @@ Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 
 | iBridge2,11 (Unknown Mac) |
 | iBridge2,13 (Unknown Mac) |
 
-
-
 </details>
 
 ## Computer Requirements
@@ -88,9 +91,19 @@ Building is going to be a bit convoluted for each platform, each having their ow
 #   BUILD_TYPE="Release"
 ```
 
-### macOS
+When building, many precompiled artifacts are embedded inside of the program. Such as, [PongoOS](https://github.com/palera1n/pongoos), [jbinit](https://github.com/palera1n/jbinit), and the [Loader](https://github.com/palera1n/loader).
 
-Install necessary tooling:
+Make sure these files are present.\
+*NOTE: [PongoOS](https://github.com/palera1n/pongoos) BIN and KPF is absolutely required when building.*
+```sh
+embedded/Pongo.bin
+embedded/checkra1n-kpf-pongo
+embedded/binpack.dmg # not required with WITH_BINPACK=0
+embedded/ramdisk.dmg # not required with WITH_RAMDISK=0
+```
+
+
+### macOS
 
 - [Xcode](https://developer.apple.com/xcode/) and [Command Line Tools](https://developer.apple.com/download/all/)
 - [Rust](https://rustup.rs/)
@@ -102,15 +115,7 @@ brew install cmake \
     pkg-config
 ```
 
-Then compile:
-
-```sh
-make palera1n"
-```
-
 ### Debian / Ubuntu Linux
-
-Install necessary tooling:
 
 - [Rust](https://rustup.rs/)
 
@@ -124,17 +129,9 @@ sudo apt install -y \
     pkg-config
 ```
 
-Then compile:
-
-```sh
-make palera1n
-```
-
 ### Windows
 
 - [MSYS2](https://www.msys2.org/)
-
-Open mingw64 terminal and install necessary tooling:
 
 ```sh
 pacman -S \
@@ -155,9 +152,14 @@ pacman -S \
     patch
 ```
 
-Then compile:
+### Compiling
 
 ```sh
+# macOS / Linux
+make palera1n
+# iOS
+make palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1
+# MinGW environment
 make palera1n_mingw
 ```
 
