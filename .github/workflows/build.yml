@@ -283,6 +283,12 @@ jobs:
         token: ${{ secrets.BUILD_GITHUB_TOKEN }}
         submodules: recursive
 
+    - name: Setup Procursus
+      uses: beerpiss/procursus-action@v2.0.2
+      with:
+        cache: true
+        mirror: 'https://apt.procurs.us/'
+
     - name: Download Pongo
       uses: actions/download-artifact@v4
       with:
@@ -307,17 +313,35 @@ jobs:
 
     - name: Package
       run: |
-        cd build && \
-          cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-iphoneos-arm" && \
-          cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-iphoneos-arm64" \
-            -DCPACK_PACKAGING_INSTALL_PREFIX="/var/jb/usr/local"
+        cd build 
+        cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-iphoneos-arm" \
+              -DCPACK_PACKAGING_INSTALL_PREFIX="/usr/"
+        cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-iphoneos-arm64" \
+              -DCPACK_PACKAGING_INSTALL_PREFIX="/var/jb/usr/"
+
+        mkdir -p palera1n-iphoneos-arm64/DEBIAN
+        mkdir -p palera1n-iphoneos-arm/DEBIAN
+        tar -xf palera1n-iphoneos-arm64.tar.gz -C palera1n-iphoneos-arm64
+        tar -xf palera1n-iphoneos-arm.tar.gz -C palera1n-iphoneos-arm
+        cp ../packaging/control palera1n-iphoneos-arm64/DEBIAN/control
+        cp ../packaging/control palera1n-iphoneos-arm/DEBIAN/control
+
+        VERSION=$(grep '^#define PALERAIN_VERSION' ../src/globals.h | cut -d'"' -f2 | tr -cd '0-9.')
+
+        gsed 's|@DEB_ARCH@|iphoneos-arm|g' -i palera1n-iphoneos-arm/DEBIAN/control
+        gsed 's|@DEB_ARCH@|iphoneos-arm64|g' -i palera1n-iphoneos-arm64/DEBIAN/control
+        gsed 's|@DEB_VERSION@|'"$VERSION"'|g' -i palera1n-iphoneos-arm/DEBIAN/control
+        gsed 's|@DEB_VERSION@|'"$VERSION"'|g' -i palera1n-iphoneos-arm64/DEBIAN/control
+
+        dpkg-deb --build palera1n-iphoneos-arm64
+        dpkg-deb --build palera1n-iphoneos-arm
 
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: palera1n-iphoneos-arm64
         path: |
-          build/*.tar.gz
+          build/*.deb
 
   build-macos-universal:
     runs-on: macos-latest

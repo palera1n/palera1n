@@ -1,0 +1,45 @@
+name: "Upload debs"
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download debs from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" \
+            --pattern "palera1n-iphoneos-arm64.deb" \
+            --pattern "palera1n-iphoneos-arm.deb"
+
+          if [ ! -f "palera1n-iphoneos-arm64.deb" ] || [ ! -f "palera1n-iphoneos-arm.deb" ]; then
+            echo "Debs not found :/"
+            exit 1
+          fi
+
+      - name: Upload debs to repo
+        if: github.repository == 'palera1n/palera1n'
+        env:
+          USERNAME: GitHub-Actions
+          API_TOKEN: ${{ secrets.BUILD_GITHUB_TOKEN }}
+          GH_REPO: palera1n/repo.palera.in
+        run: |
+          git clone https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git upload
+
+          ARM64_HASH=$(sha256sum palera1n-iphoneos-arm64.deb | cut -c1-8)
+          ARM_HASH=$(sha256sum palera1n-iphoneos-arm.deb | cut -c1-8)
+          cp palera1n-iphoneos-arm64.deb upload/pool/iphoneos-arm64/palera1n_${{ github.event.release.tag_name }}_${ARM64_HASH}_iphoneos-arm64.deb
+          cp palera1n-iphoneos-arm.deb upload/pool/iphoneos-arm/palera1n_${{ github.event.release.tag_name }}_${ARM_HASH}_iphoneos-arm.deb
+
+          cd upload
+
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+
+          git add .
+          git commit -m "Update palera1n for ${{ github.event.release.tag_name }}" || exit 0
+          git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git
