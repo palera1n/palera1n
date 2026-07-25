@@ -54,6 +54,8 @@ DfuSequence ParseSequence(const std::string& deviceKey)
     const auto& layout = itLayout.value();
 
     // assume supported if not specified
+    // mainly for appletv4k
+    // TODO: integrate libtvcontrol for breakout boards
     seq.isSupported = layout.value("is_supported", true);
     seq.imageName = layout.value("image_name", "");
     seq.imageWidth = layout.value("image_width", 0);

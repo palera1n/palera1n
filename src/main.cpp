@@ -94,6 +94,7 @@ void print_usage(char* argv) {
         "  --dark-blockchain                     Enable dark blockchain\n"
         "  --force-revert                        Force environment reversion\n"
         "  --force-enable-ssv                    Force SSV detection to result in YES\n"
+        // TODO: add --demote
         "  -l, --rootless                        Enable rootless mode (standard)\n"
         "  -f, --rootful                         Boots fakefs\n"
         "  -c, --setup-fakefs                    Setup fake filesystem\n"
@@ -126,6 +127,7 @@ void print_usage(char* argv) {
         "  RA1N_DARK_BLOCKCHAIN=1                Enable dark blockchain\n"
         "  RA1N_FORCE_REVERT=1                   Force environment reversion\n"
         "  RA1N_FORCE_ENABLE_SSV=1               Force SSV detection to result in YES\n"
+        // TODO: add --demote
         "  RA1N_ROOTLESS=1                       Enable rootless mode (standard)\n"
         "  RA1N_ROOTFUL=1                        Boots fakefs\n"
         "  RA1N_SETUP_FAKEFS=1                   Setup fake filesystem\n"
@@ -191,6 +193,7 @@ void parse_arguments(int argc, char* argv[]) {
         {"dark-blockchain", no_argument, NULL, 4},
         {"force-revert", no_argument, NULL, 5},
         {"force-enable-ssv", no_argument, NULL, 6},
+        // TODO: add --demote
         {"rootless", no_argument, NULL, 'l'},
         {"rootful", no_argument, NULL, 'f'},
         {"setup-fakefs", no_argument, NULL, 'c'},
@@ -321,6 +324,13 @@ void parse_arguments(int argc, char* argv[]) {
                     LOG_ERROR("Boot arguments too long!");
                     exit(1);
                 }
+
+                // TODO: do some more checks on bootargs, like if it already
+                // contains "palerain_flags" or things like "wdt" on rootful
+                // using "-v" is also not supported
+
+                // TODO: maybe automatically "wdt=-1" when rootful, and display
+                // it through the various interfaces
                 snprintf(boot_args, sizeof(boot_args), "%s", optarg);
                 break;
             case 'k': // --override-pongo
@@ -332,6 +342,7 @@ void parse_arguments(int argc, char* argv[]) {
                     LOG_ERROR("Pongo payload is too large! %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
                     exit(1);
                 }
+                // TODO: check if macho, otherwise exit
                 LOG("Overriding pongo payload with %s", optarg);
                 break;
             case 'K': // --override-kpf
