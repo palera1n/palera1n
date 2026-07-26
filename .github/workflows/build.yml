@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 8702f636192837367115a69c3f60ead79aa8c483
+          ref: a766a91bf4b691317df24d3be41e44e754a3e0d8
           repository: palera1n/loader
 
       - name: Install dependencies (brew)
@@ -509,11 +509,11 @@ jobs:
         name: palera1n-macos-universal
         path: dist/
 
-    - name: Download Windows Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: palera1n-windows-x86_64
-        path: dist/
+    # - name: Download Windows Artifact
+    #   uses: actions/download-artifact@v4
+    #   with:
+    #     name: palera1n-windows-x86_64
+    #     path: dist/
 
     - name: Download iOS Artifact
       uses: actions/download-artifact@v4
