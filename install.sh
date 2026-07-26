@@ -48,6 +48,8 @@ prefix_path="${XDG_BIN_HOME:-$HOME/.local}"
 bin_path="$prefix_path/bin"
 install_path="$bin_path/palera1n"
 old_install_path="/usr/local/bin/palera1n"
+# DMG shit
+downloaded_dmg="0"
 
 download() {
     local url="$1"
@@ -230,15 +232,44 @@ esac
 # Run
 # =========
 
-download_version=$(curl -s https://api.github.com/repos/palera1n/palera1n/releases/latest | grep -o '"tag_name": "[^"]*' | sed 's/"tag_name": "//' || true)
+latest_tag=$(curl -fsSL https://api.github.com/repos/palera1n/palera1n/tags \
+    | grep -m1 -o '"name": "[^"]*' \
+    | sed 's/"name": "//' || true)
 
-if [ -z "$download_version" ]; then
-    error "Could not retrieve the latest release version from GitHub API."
+latest_release=$(curl -fsSL https://api.github.com/repos/palera1n/palera1n/releases/latest \
+    | grep -o '"tag_name": "[^"]*' \
+    | sed 's/"tag_name": "//' || true)
+
+if [ -z "$latest_release" ]; then
+    error "Could not retrieve the latest release version from GitHub."
     exit 1
 fi
 
+if [ -n "$latest_tag" ] && [ "$latest_tag" != "$latest_release" ]; then
+    printf "Select a version to download:\n"
+    printf "  1) Latest Beta           (%s)\n" "$latest_tag"
+    printf "  2) Latest Release        (%s)\n" "$latest_release"
+    printf "Choice [1/2, default: 2]: "
+    read -r choice
+
+    case "$choice" in
+        1)
+            download_version="$latest_tag"
+            ;;
+        ""|2)
+            download_version="$latest_release"
+            ;;
+        *)
+            error "Invalid selection."
+            exit 1
+            ;;
+    esac
+else
+    download_version="$latest_release"
+fi
+
 info "Detected environment: $os_name ($arch)"
-info "Targeting release tag: ${download_version}"
+info "Targeting version: ${download_version}"
 
 download_prefix="https://github.com/palera1n/palera1n/releases/download"
 mkdir -p "$bin_path"
@@ -267,12 +298,17 @@ case "$os" in
         tgz_url="${download_prefix}/${download_version}/palera1n-macos-${arch}.tar.gz"
         bin_url="${download_prefix}/${download_version}/palera1n-macos-${arch}"
 
-        if curl -fsLI "$dmg_url" >/dev/null 2>&1; then
-            error "DMG releases are not supported by this CLI installer. Please download the DMG manually."
-            exit 1
-        fi
+        hdiutil detach "/Volumes/palera1n-macos-universal" >/dev/null 2>&1 || true
 
-        if curl -fsLI "$tgz_url" >/dev/null 2>&1; then
+        if curl -fsLI "$dmg_url" >/dev/null 2>&1; then
+            info "Downloading macOS DMG..."
+            dmg_file="$TMPDIR/palera1n-macos-universal-$(date +%s).dmg"
+            download "$dmg_url" "$dmg_file"
+            hdiutil attach "$dmg_file" >/dev/null 2>&1
+            open "/Volumes/palera1n-macos-universal"
+            rm -f -- "$dmg_file"
+            downloaded_dmg="1"
+        elif curl -fsLI "$tgz_url" >/dev/null 2>&1; then
             info "Installing from macOS tarball..."
             curl -fsSL "$tgz_url" | tar -xz -C "$prefix_path"
         else
@@ -282,6 +318,11 @@ case "$os" in
         fi
         ;;
 esac
+
+if [ "$downloaded_dmg" = "1" ]; then
+    info "palera1n DMG downloaded. Please drag the palera1n app to your Applications folder."
+    exit 0
+fi
 
 add_to_path "$bin_path"
 
@@ -294,7 +335,7 @@ if [ -f "$install_path" ]; then
     info "palera1n installed successfully at ${install_path}."
     info "Type \`palera1n\` in your terminal to get started!"
     exec "${SHELL:-/bin/sh}" -l
-else 
+else
     error "palera1n failed to install. Please check your internet connection and try again."
     exit 1
 fi
