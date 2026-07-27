@@ -136,7 +136,7 @@ void TuiMainPanel::draw(int sy, int sx, int selected) {
     }
 
     const std::string made_by =
-        "Made by: asdfugil, claration, kok3shidoll, mineek, plooshi, staturnz";
+        "Made by: asdfugil, claration, kok3shidoll, mineek, sarah, staturnz";
     const std::string thanks_to =
         "Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed, kirb, ehilwyma, "
         "opa334, 0x7ff, alfiecg24, sneko, sbingner, nikias, "

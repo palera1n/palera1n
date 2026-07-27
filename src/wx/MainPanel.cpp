@@ -74,7 +74,7 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
     auto* credtext = new wxStaticText(
         this,
         wxID_ANY,
-        "Made by: asdfugil, claration, kok3shidoll, mineek, plooshi, staturnz\n\n"
+        "Made by: asdfugil, claration, kok3shidoll, mineek, sarah, staturnz\n\n"
         "Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed, kirb, ehilwyma, "
         "opa334, 0x7ff, alfiecg24, sneko, sbingner, nikias, tihmstar, "
         "Checkra1n (Siguza, axi0mx, littlelailo et al.), Procursus (Hayden Seay, "

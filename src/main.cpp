@@ -65,7 +65,7 @@ void print_credits() {
         "::\n"
         ":: ========  Made by  =======>\n"
         ":: Made by: asdfugil, kok3shidoll, claration, mineek\n"
-        ":: plooshi, staturnz\n"
+        ":: sarah, staturnz\n"
         ":: ======== Thanks to =======>\n"
         ":: Thanks to: itsnebulalol, llsc12, lrdsnow, dedbeddedbed\n"
         ":: kirb, ehilwyma, opa334, 0x7ff, alfiecg25, sneko, sbingner\n"

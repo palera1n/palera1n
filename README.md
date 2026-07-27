@@ -171,7 +171,7 @@ make palera1n_mingw
 - [staturnz](https://github.com/staturnz) - Liteusb, Loader contributions
 - [libusb](https://github.com/libimobiledevice/libimobiledevice) - Library for access to usb-devices, used by libopenra1n
 - [idevice](https://github.com/jkcoxson/idevice) - Library for access to usbmuxd devices
-- [plooshi](https://github.com/plooshi) - Plooshfinder, plooshinit, various legacy patches
+- [sarah](https://github.com/plooshi) - Plooshfinder, plooshinit, various legacy patches
 - [Procursus](https://github.com/ProcursusTeam/Procursus) - Bootstrap & binpack
 - [tealbathingsuit](https://github.com/tealbathingsuit) - Tweak injection ([ElleKit](https://github.com/tealbathingsuit/ellekit))
 - [sbingner](https://github.com/sbingner) - Substitute
