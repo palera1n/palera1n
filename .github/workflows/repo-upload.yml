@@ -1,14 +1,15 @@
 name: "Upload debs"
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       version:
         description: "palera1n tag"
         required: true
         type: string
+
+  release:
+    types: [published]
 
 env:
   TAG: ${{ github.event.inputs.version || github.event.release.tag_name }}
