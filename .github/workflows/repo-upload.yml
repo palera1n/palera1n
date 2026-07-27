@@ -21,7 +21,7 @@ jobs:
 
       - name: Download debs from tag
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ env.GITHUB_TOKEN }}
         run: |
           gh release download "${{ env.TAG }}" --pattern "palera1n-iphoneos-arm*.deb"
 
@@ -46,9 +46,28 @@ jobs:
 
           cd upload
 
-          git config user.name "github-actions[bot]"
+          git config user.name "$USERNAME"
           git config user.email "actions@github.com"
 
           git add .
           git commit -m "Update palera1n for ${{ env.TAG }}" || exit 0
           git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git
+
+      - name: Bump palen1x
+        if: github.repository == 'palera1n/palera1n'
+        env:
+          USERNAME: GitHub-Actions
+          API_TOKEN: ${{ secrets.BUILD_GITHUB_TOKEN }}
+          GH_REPO: palera1n/palen1x
+        run: |
+          git clone https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git tag
+          cd tag
+
+          git config --global user.name "$USERNAME"
+          git config --global user.email "actions@github.com"
+
+          git commit --allow-empty -m "bump to ${{ env.TAG }}"
+          git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git Alpine
+
+          git tag "${{ env.TAG }}"
+          git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git "${{ env.TAG }}"
