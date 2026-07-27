@@ -30,7 +30,7 @@
 #define FORMAT_KEY_VALUE 1
 #define FORMAT_XML 2
 
-#define NO_PHYSICAL_HOME_BUTTON (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e)))
+#define USES_VOLUME_DOWN_FOR_DFU (cpid == 0x8015 || (cpid == 0x8010 && (bdid == 0x08 || bdid == 0x0a || bdid == 0x0c || bdid == 0x0e || bdid == 0x16)))
 #define IS_APPLE_TV_HD (cpid == 0x7000 && bdid == 0x34)
 #define IS_APPLE_TV_4K (cpid == 0x8011 && bdid == 0x02)
 #define IS_APPLE_HOME1 (cpid == 0x7000 && bdid == 0x38)
@@ -192,7 +192,7 @@ static void* connected_recovery_mode(struct irecv_device_info* info) {
 			step(4, 0, "Put device upside down orientation", conditional, ecid);
 		}
 	} else if (cpid != 0x8012) {
-		if (NO_PHYSICAL_HOME_BUTTON)
+		if (USES_VOLUME_DOWN_FOR_DFU)
 			step(4, 2, "Hold volume down + side button", NULL, 0);
 		else
 			step(4, 2, "Hold home + power button", NULL, 0);
@@ -204,7 +204,7 @@ static void* connected_recovery_mode(struct irecv_device_info* info) {
 			return NULL;
 		}
 		printf("\r\033[K");
-		if (NO_PHYSICAL_HOME_BUTTON) {
+		if (USES_VOLUME_DOWN_FOR_DFU) {
 			step(2, 0, "Hold volume down + side button", NULL, 0);
 			step(10, 0, "Hold volume down button", conditional, ecid);
 		} else {
