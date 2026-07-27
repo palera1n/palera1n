@@ -369,6 +369,9 @@ static struct irecv_device irecv_devices[] = {
     /* Apple Vision Pro */
     { "RealityDevice14,1", "n301ap", 0x42, 0x8112, "Apple Vision Pro" },
     { "RealityDevice17,1", "n301aap", 0x42, 0x8142, "Apple Vision Pro (M5)" },
+    /* Lightning Video Adapters */
+    { "iAccy1,1", "b137ap", 0x00, 0x8747, "Lightning Digital AV Adapter" },
+    { "iAccy1,2", "b165ap", 0x02, 0x8747, "Lightning to VGA Adapter" },
     /* Private Cloud Compute Research Environment */
     { "iPhone99,11", "vresearch101ap", 0x90, 0xFE01, "iPhone 99,11" },
     { nullptr,          nullptr,         -1,     -1, nullptr }
