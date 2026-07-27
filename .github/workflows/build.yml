@@ -542,4 +542,4 @@ jobs:
         fail_on_unmatched_files: true
         draft: true
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -21,14 +21,19 @@ jobs:
 
       - name: Download debs from tag
         env:
-          GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release download "${{ env.TAG }}" --pattern "palera1n-iphoneos-arm*.deb"
+          gh release download "${{ env.TAG }}"
 
           if [ ! -f "palera1n-iphoneos-arm64.deb" ] || [ ! -f "palera1n-iphoneos-arm.deb" ]; then
             echo "Debs not found :/"
             exit 1
           fi
+
+          mkdir -p cdn-upload
+          cp *.tar.gz cdn-upload/
+          cp *.deb cdn-upload/
+          cp *.dmg cdn-upload/
 
       - name: Upload debs to repo
         if: github.repository == 'palera1n/palera1n'
@@ -37,14 +42,14 @@ jobs:
           API_TOKEN: ${{ secrets.BUILD_GITHUB_TOKEN }}
           GH_REPO: palera1n/repo.palera.in
         run: |
-          git clone https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git upload
+          git clone https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git repo-upload
 
           ARM64_HASH=$(sha256sum palera1n-iphoneos-arm64.deb | cut -c1-8)
           ARM_HASH=$(sha256sum palera1n-iphoneos-arm.deb | cut -c1-8)
-          cp palera1n-iphoneos-arm64.deb upload/pool/iphoneos-arm64/palera1n_${{ env.TAG }}_${ARM64_HASH}_iphoneos-arm64.deb
-          cp palera1n-iphoneos-arm.deb upload/pool/iphoneos-arm/palera1n_${{ env.TAG }}_${ARM_HASH}_iphoneos-arm.deb
+          cp palera1n-iphoneos-arm64.deb repo-upload/pool/iphoneos-arm64/palera1n_${{ env.TAG }}_${ARM64_HASH}_iphoneos-arm64.deb
+          cp palera1n-iphoneos-arm.deb repo-upload/pool/iphoneos-arm/palera1n_${{ env.TAG }}_${ARM_HASH}_iphoneos-arm.deb
 
-          cd upload
+          cd repo-upload
 
           git config user.name "$USERNAME"
           git config user.email "actions@github.com"
@@ -52,6 +57,19 @@ jobs:
           git add .
           git commit -m "Update palera1n for ${{ env.TAG }}" || exit 0
           git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git
+
+      - name: Upload artifacts to cdn
+        if: github.repository == 'palera1n/palera1n'
+        uses: wangyucode/sftp-upload-action@v3
+        with:
+          host: ${{ secrets.NICKCHAN_FTP_HOST }}
+          port: ${{ secrets.NICKCHAN_FTP_PORT }}
+          username: palera1n
+          password: ${{ secrets.NICKCHAN_FTP_PASS }}
+          forceUpload: true
+          dryRun: false
+          localDir: 'cdn-upload'
+          remoteDir: "/palera1n/c-rewrite/releases/${{ env.TAG }}"
 
       - name: Bump palen1x
         if: github.repository == 'palera1n/palera1n'
