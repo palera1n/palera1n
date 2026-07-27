@@ -216,7 +216,7 @@ void MainPanel::SetDeviceState(const DeviceState& state)
             m_deviceTitle->SetLabel("Multiple devices detected");
             m_deviceSubtitle->SetLabel(
                 wxString::Format(
-                    "%u USB devices connected. Disconnect extras and keep only one device attached.\n",
+                    "%u USB devices connected. Disconnect extras and keep\nonly one device attached.",
                     state.connectedDeviceCount
                 )
             );
