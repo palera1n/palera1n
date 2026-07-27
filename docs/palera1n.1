@@ -159,6 +159,12 @@ Remove the jailbreak while keeping user data. Some jailbreak files may remain
 after running this command. Additionally, jailbreak apps may remain on the
 home screen on for a while even when the files are deleted as the icon cache
 still has their icons. When used with
+.Fl f , -rootful ,
+this will actually boot the device in rootless mode then delete the jailbreak
+files. As a result, using the loader app to install the jailbreak environment
+is not supported when this option is used together with
+.Fl f , -rootful
+\[char46]
 
 .It Fl -force-enable-ssv
 Force the jailbreak to detect Signed System Volume (SSV) as being required on
@@ -173,13 +179,6 @@ the
 option is specified as well.
 (It is technically possible to setup fakefs using this option as well, but this
 is not a supported scenario)
-
-.Fl f , -rootful ,
-this will actually boot the device in rootless mode then delete the jailbreak
-files. As a result, using the loader app to install the jailbreak environment
-is not supported when this option is used together with
-.Fl f , -rootful
-\[char46]
 
 .It Fl l , -rootless
 Proceed in rootless mode. This option is only supported on iOS/iPadOS.
