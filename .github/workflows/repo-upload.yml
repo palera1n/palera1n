@@ -3,18 +3,27 @@ name: "Upload debs"
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "palera1n tag"
+        required: true
+        type: string
+
+env:
+  TAG: ${{ github.event.inputs.version || github.event.release.tag_name }}
 
 jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
-      - name: Download debs from release
+      - uses: actions/checkout@v4
+
+      - name: Download debs from tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download "${{ github.event.release.tag_name }}" \
-            --pattern "palera1n-iphoneos-arm64.deb" \
-            --pattern "palera1n-iphoneos-arm.deb"
+          gh release download "${{ env.TAG }}" --pattern "palera1n-iphoneos-arm*.deb"
 
           if [ ! -f "palera1n-iphoneos-arm64.deb" ] || [ ! -f "palera1n-iphoneos-arm.deb" ]; then
             echo "Debs not found :/"
@@ -32,8 +41,8 @@ jobs:
 
           ARM64_HASH=$(sha256sum palera1n-iphoneos-arm64.deb | cut -c1-8)
           ARM_HASH=$(sha256sum palera1n-iphoneos-arm.deb | cut -c1-8)
-          cp palera1n-iphoneos-arm64.deb upload/pool/iphoneos-arm64/palera1n_${{ github.event.release.tag_name }}_${ARM64_HASH}_iphoneos-arm64.deb
-          cp palera1n-iphoneos-arm.deb upload/pool/iphoneos-arm/palera1n_${{ github.event.release.tag_name }}_${ARM_HASH}_iphoneos-arm.deb
+          cp palera1n-iphoneos-arm64.deb upload/pool/iphoneos-arm64/palera1n_${{ env.TAG }}_${ARM64_HASH}_iphoneos-arm64.deb
+          cp palera1n-iphoneos-arm.deb upload/pool/iphoneos-arm/palera1n_${{ env.TAG }}_${ARM_HASH}_iphoneos-arm.deb
 
           cd upload
 
@@ -41,5 +50,5 @@ jobs:
           git config user.email "actions@github.com"
 
           git add .
-          git commit -m "Update palera1n for ${{ github.event.release.tag_name }}" || exit 0
+          git commit -m "Update palera1n for ${{ env.TAG }}" || exit 0
           git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git
