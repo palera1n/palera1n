@@ -133,6 +133,11 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
             palerain_flags &= ~palerain_option_quick;
     });
 
+    donateButton->Bind(wxEVT_BUTTON, [](wxCommandEvent&)
+    {
+        wxLaunchDefaultBrowser("https://patreon.com/palera1n");
+    });
+
     optionsButton->Bind(wxEVT_BUTTON, [frame](wxCommandEvent&)
     {
         frame->ShowSettings();
