@@ -231,10 +231,16 @@ if(WITH_CIDERRAIN)
 
         execute_process(
             COMMAND ${CMAKE_COMMAND} -E env
-                "CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
+                "EXTRA_CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
                 "CXXFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
                 "LDFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} AR=${CMAKE_AR}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
+            RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
+        )
+    elseif(APPLE)
+        execute_process(
+            COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} EXTRA_CFLAGS=-mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
             RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
         )
@@ -284,6 +290,14 @@ else()
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
             RESULT_VARIABLE OPENRA1N_BUILD_RESULT
         )
+    elseif(APPLE)
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E env
+                "CFLAGS=-mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+                make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
+            RESULT_VARIABLE OPENRA1N_BUILD_RESULT
+        )
     else()
         execute_process(
             COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
@@ -316,6 +330,14 @@ if(WITH_GUI OR WITH_TUI)
     )
 
     set(IDevice_ENV)
+
+    if(APPLE)
+        if(IOS)
+            list(APPEND IDevice_ENV "IPHONEOS_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        else()
+            list(APPEND IDevice_ENV "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        endif()
+    endif()
 
     if(CROSS_HOST_TRIPLE)
         if(CROSS_HOST_TRIPLE STREQUAL "i486-linux-musl")
@@ -379,6 +401,7 @@ if(WITH_GUI OR WITH_TUI)
                         -DCMAKE_BUILD_TYPE=Release
                         -DIDEVICE_FFI_PATH=<SOURCE_DIR>/target/${RUST_TARGET}/release/${FFI_LIB_NAME}
                         "-DCMAKE_CXX_FLAGS=-Du_int64_t=uint64_t -Du_int32_t=uint32_t -Du_int16_t=uint16_t -Du_int8_t=uint8_t"
+                        "-DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}"
 
                 COMMAND ${CMAKE_COMMAND} --build <SOURCE_DIR>/cpp/build --config Release
 
