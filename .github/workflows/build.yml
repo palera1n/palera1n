@@ -104,7 +104,7 @@ jobs:
 
     - name: Build
       run: |
-        make
+        gmake -j$(sysctl -n hw.ncpu)
 
     - name: Prepare upload directory
       run: |
@@ -259,7 +259,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -x build/palera1n.app/Contents/MacOS/palera1n
 
     - name: Package
@@ -308,7 +308,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        gmake palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1 WITH_CIDERRA1N=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         cmake --build build
 
     - name: Package

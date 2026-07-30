@@ -34,6 +34,7 @@ ifeq ($(PLATFORM),iphoneos)
 ifneq ($(UNAME_S),Darwin)
 $(error iOS builds require macOS/Xcode)
 endif
+EXTRA_TARGETS = apple-include
 TARGET_SYSROOT := $(shell xcrun --sdk iphoneos --show-sdk-path)
 else ifeq ($(PLATFORM),macos)
 ifneq ($(UNAME_S),Darwin)
@@ -78,6 +79,8 @@ APPLE_INCLUDE_DEP := apple-include
 else
 APPLE_INCLUDE_DEP :=
 endif
+
+all: palera1n
 
 apple-include:
 	mkdir -p $(CUSTOM_INCLUDE_PATH)/{bsm,objc,os/internal,sys,firehose,CoreFoundation,FSEvents,IOSurface,IOKit/kext,libkern,kern,arm,{mach/,}machine,CommonCrypto,Security,CoreSymbolication,Kernel/{kern,IOKit,libkern},rpc,rpcsvc,xpc/private,ktrace,mach-o,dispatch}
@@ -128,7 +131,7 @@ payloads:
 		>> "src/gen/embedded/$$name.h"; \
 	done
 
-palera1n: payloads
+palera1n: payloads $(EXTRA_TARGETS)
 	@cmake -S . -B build \
 		$(CMAKE_COMMON_ARGS) \
 		$(CMAKE_APPLE_ARGS) && \
@@ -151,3 +154,5 @@ clean:
 	@rm -rf apple-include-*
 	@if [ -d 1stparty/libciderra1n ]; then $(MAKE) -C 1stparty/libciderra1n clean; fi
 	@$(MAKE) -C 1stparty/libopenra1n clean
+
+.PHONY: palera1n palera1n_xcode palera1n_mingw payloads clean
