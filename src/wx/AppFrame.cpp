@@ -71,6 +71,13 @@ MainFrame::MainFrame()
 
     SetSizer(root);
 
+    // menu bar
+    #if __APPLE__
+    auto* menuBar = new wxMenuBar;
+    SetMenuBar(menuBar);
+    #endif
+
+    // listeners
     Bind(EVT_DEVICE_STATE_UPDATE, [this](wxCommandEvent& e)
     {
         auto* state = static_cast<DeviceState*>(e.GetClientData());
