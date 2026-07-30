@@ -352,60 +352,69 @@ if(WITH_GUI OR WITH_TUI)
         )
     endif()
 
-    ExternalProject_Add(idevice_ep
-        GIT_REPOSITORY https://github.com/jkcoxson/idevice.git
-        GIT_TAG v0.1.65
+    # Only build idevice if libraries are missing
+    set(IDEVICE_INSTALL_DIR "${CMAKE_BINARY_DIR}/idevice_ep-prefix")
+    if(NOT (EXISTS "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice++.a"
+        AND EXISTS "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice_ffi.a"))
 
-        PATCH_COMMAND
-            patch --forward --ignore-whitespace -p1 < "${CMAKE_SOURCE_DIR}/patches/idevice/0001-compile-usbmuxd-and-windows-fixes.patch" || true
+        ExternalProject_Add(idevice_ep
+            GIT_REPOSITORY https://github.com/jkcoxson/idevice.git
+            GIT_TAG v0.1.65
 
-        CONFIGURE_COMMAND ""
+            PATCH_COMMAND
+                patch --forward --ignore-whitespace -p1 < "${CMAKE_SOURCE_DIR}/patches/idevice/0001-compile-usbmuxd-and-windows-fixes.patch" || true
 
-        BUILD_COMMAND
-            ${CMAKE_COMMAND} -E env
-                ${IDevice_ENV}
-                cargo build
-                ${IDevice_CARGO_ARGS}
-                --manifest-path <SOURCE_DIR>/ffi/Cargo.toml
+            CONFIGURE_COMMAND ""
 
-            COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR>/cpp
-                ${CMAKE_COMMAND}
-                    -B build
-                    -DCMAKE_BUILD_TYPE=Release
-                    -DIDEVICE_FFI_PATH=<SOURCE_DIR>/target/${RUST_TARGET}/release/${FFI_LIB_NAME}
-                    "-DCMAKE_CXX_FLAGS=-Du_int64_t=uint64_t -Du_int32_t=uint32_t -Du_int16_t=uint16_t -Du_int8_t=uint8_t"
+            BUILD_COMMAND
+                ${CMAKE_COMMAND} -E env
+                    ${IDevice_ENV}
+                    cargo build
+                    ${IDevice_CARGO_ARGS}
+                    --manifest-path <SOURCE_DIR>/ffi/Cargo.toml
 
-            COMMAND ${CMAKE_COMMAND} --build <SOURCE_DIR>/cpp/build --config Release
+                COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR>/cpp
+                    ${CMAKE_COMMAND}
+                        -B build
+                        -DCMAKE_BUILD_TYPE=Release
+                        -DIDEVICE_FFI_PATH=<SOURCE_DIR>/target/${RUST_TARGET}/release/${FFI_LIB_NAME}
+                        "-DCMAKE_CXX_FLAGS=-Du_int64_t=uint64_t -Du_int32_t=uint32_t -Du_int16_t=uint16_t -Du_int8_t=uint8_t"
 
-        INSTALL_COMMAND
-            ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/lib/idevice
-            COMMAND ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/include
+                COMMAND ${CMAKE_COMMAND} --build <SOURCE_DIR>/cpp/build --config Release
 
-            COMMAND ${CMAKE_COMMAND} -E copy
-                <SOURCE_DIR>/target/${RUST_TARGET}/release/libidevice_ffi.a
-                <INSTALL_DIR>/lib/idevice/libidevice_ffi.a
+            INSTALL_COMMAND
+                ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/lib/idevice
+                COMMAND ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/include
 
-            COMMAND ${CMAKE_COMMAND} -E copy
-                <SOURCE_DIR>/cpp/build/libidevice++.a
-                <INSTALL_DIR>/lib/idevice/libidevice++.a
+                COMMAND ${CMAKE_COMMAND} -E copy
+                    <SOURCE_DIR>/target/${RUST_TARGET}/release/libidevice_ffi.a
+                    <INSTALL_DIR>/lib/idevice/libidevice_ffi.a
 
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                <SOURCE_DIR>/cpp/include
-                <INSTALL_DIR>/include
+                COMMAND ${CMAKE_COMMAND} -E copy
+                    <SOURCE_DIR>/cpp/build/libidevice++.a
+                    <INSTALL_DIR>/lib/idevice/libidevice++.a
 
-        BUILD_IN_SOURCE 1
-    )
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    <SOURCE_DIR>/cpp/include
+                    <INSTALL_DIR>/include
 
-    ExternalProject_Get_Property(idevice_ep install_dir)
-    set(IDEVICE_INCLUDE_DIR "${install_dir}/include")
-    set(IDEVICE_LIBRARY "${install_dir}/lib/idevice/libidevice++.a")
-    set(IDEVICE_FFI_LIBRARY "${install_dir}/lib/idevice/libidevice_ffi.a")
-    add_dependencies(palera1n idevice_ep)
+            BUILD_IN_SOURCE 1
+        )
+
+        add_dependencies(palera1n idevice_ep)
+    endif()
+
+    set(IDEVICE_INCLUDE_DIR "${IDEVICE_INSTALL_DIR}/include")
+    set(IDEVICE_LIBRARY "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice++.a")
+    set(IDEVICE_FFI_LIBRARY "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice_ffi.a")
+
     target_include_directories(palera1n PRIVATE ${IDEVICE_INCLUDE_DIR})
     target_link_libraries(palera1n PRIVATE "${IDEVICE_LIBRARY}" "${IDEVICE_FFI_LIBRARY}")
+
     if(MINGW)
         target_link_libraries(palera1n PRIVATE bcrypt userenv ntdll)
     endif()
+
     target_compile_definitions(palera1n PRIVATE LIBPLIST_STATIC)
 endif()
 
