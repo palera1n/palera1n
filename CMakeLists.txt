@@ -47,10 +47,6 @@ if(IOS AND (WITH_TUI OR WITH_GUI))
     message(FATAL_ERROR "-DWITH_TUI=1 or -DWITH_GUI=1 is not supported on iOS builds.")
 endif()
 
-if(IOS AND WITH_CIDERRAIN)
-    message(FATAL_ERROR "-DWITH_CIDERRAIN=1 is not supported on iOS builds.")
-endif()
-
 # =========================
 # SETUP
 # =========================
