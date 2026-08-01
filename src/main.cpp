@@ -103,6 +103,7 @@ void print_usage(char* argv) {
         "  -T, --telnetd                         Enable TELNET daemon on port 46 (insecure)\n"
         "  -V, --verbose-boot                    Enable verbose booting\n"
         "  -p, --early-exit                      Exit after uploading Pongo\n"
+        "  -P, --late-exit                       Exit after uploading existing images to Pongo\n"
         "  -e, --extra-bootargs <BOOTARGS>       Set extra bootargs\n"
         "  -k, --override-pongo <FILE PATH>      Override Pongo image\n"
         "  -K, --override-kpf <FILE PATH>        Override kernel patchfinder\n"
@@ -136,6 +137,7 @@ void print_usage(char* argv) {
         "  RA1N_TELNETD=1                        Enable TELNET daemon on port 46 (insecure)\n"
         "  RA1N_VERBOSE_BOOT=1                   Enable verbose booting\n"
         "  RA1N_EARLY_EXIT=1                     Exit after uploading Pongo\n"
+        "  RA1N_LATE_EXIT=1                      Exit after uploading existing images to Pongo\n"
         "  RA1N_EXTRA_BOOTARGS=<FILE PATH>       Set extra bootargs\n"
         "  RA1N_OVERRIDE_PONGO=<FILE PATH>       Override Pongo image\n"
         "  RA1N_OVERRIDE_KPF=<FILE PATH>         Override kernel patchfinder\n"
@@ -176,7 +178,7 @@ void parse_arguments(int argc, char* argv[]) {
     bool set_rootless = false, set_rootful = false;
     bool set_fakefs = false, set_partial_fakefs = false;
     bool set_safemode = false, set_telnetd = false, set_verbose = false;
-    bool set_pongo_exit = false, set_no_colors = false, set_quick = false;
+    bool set_pongo_exit = false, set_pongo_late = false, set_no_colors = false, set_quick = false;
     bool set_extra_bootargs = false, set_pongo = false, set_kpf = false;
     bool set_overlay = false, set_ramdisk = false;
 
@@ -202,6 +204,7 @@ void parse_arguments(int argc, char* argv[]) {
         {"telnetd", no_argument, NULL, 'T'},
         {"verbose-boot", no_argument, NULL, 'V'},
         {"early-exit", no_argument, NULL, 'p'},
+        {"late-exit", no_argument, NULL, 'P'},
         {"extra-bootargs", required_argument, NULL, 'e'},
         {"override-pongo", required_argument, NULL, 'k'},
         {"override-kpf", required_argument, NULL, 'K'},
@@ -241,7 +244,7 @@ void parse_arguments(int argc, char* argv[]) {
 
     // MARK: Standard
 
-    while ((options = getopt_long(argc, argv, "hvlfcBsTVpe:k:K:o:r:dnq", long_options, &option_index)) != -1) {
+    while ((options = getopt_long(argc, argv, "hvlfcBsTVpPe:k:K:o:r:dnq", long_options, &option_index)) != -1) {
         switch (options) {
             case 'h': // --help
                 print_usage(argv[0]);
@@ -294,11 +297,9 @@ void parse_arguments(int argc, char* argv[]) {
                 palerain_flags |= palerain_option_ssv;
                 break;
             case 'l': // --rootless
-                palerain_flags &= ~palerain_option_rootful;
                 palerain_flags |= palerain_option_rootless;
                 break;
             case 'f': // --rootful
-                palerain_flags &= ~palerain_option_rootless;
                 palerain_flags |= palerain_option_rootful;
                 break;
             case 'c': // --setup-fakefs
@@ -318,6 +319,9 @@ void parse_arguments(int argc, char* argv[]) {
                 break;
             case 'p': // --early-exit
                 palerain_flags |= palerain_option_pongo_exit;
+                break;
+            case 'P': // --late-exit
+                palerain_flags |= palerain_option_pongo_full;
                 break;
             case 'e': // --extra-bootargs
                 if (strlen(optarg) > (sizeof(boot_args) - 0x20)) {
@@ -423,11 +427,9 @@ void parse_arguments(int argc, char* argv[]) {
         palerain_flags |= palerain_option_ssv;
     }
     if (!set_rootless && get_env_binary("RA1N_ROOTLESS") == 1) {
-        palerain_flags &= ~palerain_option_rootful;
         palerain_flags |= palerain_option_rootless;
     }
     if (!set_rootful && get_env_binary("RA1N_ROOTFUL") == 1) {
-        palerain_flags &= ~palerain_option_rootless;
         palerain_flags |= palerain_option_rootful;
     }
     if (!set_fakefs && get_env_binary("RA1N_SETUP_FAKEFS") == 1) {
@@ -447,6 +449,9 @@ void parse_arguments(int argc, char* argv[]) {
     }
     if (!set_pongo_exit && get_env_binary("RA1N_EARLY_EXIT") == 1) {
         palerain_flags |= palerain_option_pongo_exit;
+    }
+    if (!set_pongo_late && get_env_binary("RA1N_LATE_EXIT") == 1) {
+        palerain_flags |= palerain_option_pongo_full;
     }
     if (!set_no_colors && get_env_binary("RA1N_NO_COLORS") == 1) {
         palerain_flags |= palerain_option_no_colors;
@@ -533,48 +538,60 @@ void parse_arguments(int argc, char* argv[]) {
 
     // MARK: Flag checks
 
-    if (!(palerain_flags & palerain_option_gui) &&
-        !(palerain_flags & palerain_option_tui))
+    if ((palerain_flags & palerain_option_pongo_exit) &&
+        (palerain_flags & palerain_option_pongo_full))
     {
-        if ((palerain_flags & palerain_option_pongo_exit) &&
-            ((palerain_flags & palerain_option_rootful) ||
-            (palerain_flags & palerain_option_rootless) ||
-            (palerain_flags & palerain_option_setup_rootful) ||
-            (palerain_flags & palerain_option_setup_partial_root)))
+        LOG_ERROR("You cannot specify both early-exit and late-exit modes.\n");
+        print_usage(argv[0]);
+        exit(1);
+    }
+
+    // Pongo exit modes are standalone and cannot be combined with root modes
+    if (palerain_flags & (palerain_option_pongo_exit | palerain_option_pongo_full))
+    {
+        if (palerain_flags & (palerain_option_rootful | palerain_option_rootless))
         {
-            LOG_ERROR("[-p, --early-exit] cannot be used with [-f, --rootful], [-l, --rootless], [-c, --setup-fakefs], or [-B, --setup-partial-fakefs].\n");
+            LOG_ERROR("Pongo exit modes cannot be used with [-l, --rootless] or [-f, --rootful].\n");
             print_usage(argv[0]);
             exit(1);
         }
 
-        if (!(palerain_flags & palerain_option_pongo_exit) &&
-            !(palerain_flags & palerain_option_rootful) &&
-            !(palerain_flags & palerain_option_rootless))
-        {
-            LOG_ERROR("You must specify either [-l, --rootless] or [-f, --rootful].\n");
-            print_usage(argv[0]);
-            exit(1);
-        }
+        goto skip_root_types;
+    }
 
-        if ((palerain_flags & palerain_option_rootful) &&
-            (palerain_flags & palerain_option_rootless))
-        {
-            LOG_ERROR("You cannot specify both [-l, --rootless] and [-f, --rootful].\n");
-            print_usage(argv[0]);
-            exit(1);
-        }
+    // Normal root checks
+    if (!(palerain_flags & palerain_option_gui) &&
+        !(palerain_flags & palerain_option_tui) &&
+        !(palerain_flags & palerain_option_rootful) &&
+        !(palerain_flags & palerain_option_rootless))
+    {
+        LOG_ERROR("You must specify either [-l, --rootless] or [-f, --rootful].\n");
+        print_usage(argv[0]);
+        exit(1);
+    }
 
-        if ((palerain_flags & palerain_option_setup_rootful) &&
-            (palerain_flags & palerain_option_setup_partial_root))
-        {
-            LOG_ERROR("You cannot specify both [-c, --setup-fakefs] and [-B, --setup-partial-fakefs].\n");
-            print_usage(argv[0]);
-            exit(1);
-        }
+    if ((palerain_flags & palerain_option_rootful) &&
+        (palerain_flags & palerain_option_rootless))
+    {
+        LOG_ERROR("You cannot specify both [-l, --rootless] and [-f, --rootful].\n");
+        print_usage(argv[0]);
+        exit(1);
+    }
 
-        if (((palerain_flags & palerain_option_setup_rootful) ||
-            (palerain_flags & palerain_option_setup_partial_root)) &&
-            !(palerain_flags & palerain_option_rootful))
+skip_root_types:
+
+    if ((palerain_flags & palerain_option_setup_rootful) &&
+        (palerain_flags & palerain_option_setup_partial_root))
+    {
+        LOG_ERROR("You cannot specify both [-c, --setup-fakefs] and [-B, --setup-partial-fakefs].\n");
+        print_usage(argv[0]);
+        exit(1);
+    }
+
+    if ((palerain_flags & palerain_option_setup_rootful) ||
+        (palerain_flags & palerain_option_setup_partial_root))
+    {
+        if (!(palerain_flags & palerain_option_rootful))
         {
             LOG_ERROR("[-c, --setup-fakefs] or [-B, --setup-partial-fakefs] require [-f, --rootful].\n");
             print_usage(argv[0]);

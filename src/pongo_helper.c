@@ -274,10 +274,14 @@ p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
         if (result.ret != 0) goto bad;
     }
 
+    if (palerain_flags & palerain_option_pongo_full)
+        goto good;
+
     // TODO: why do we check results
     result = issue_pongo_command(handle, "bootx");
     if (result.ret != 0) goto bad;
 
+good:
     return 0;
 bad:
     return 255;
