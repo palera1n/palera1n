@@ -2,15 +2,19 @@
     "devicemap":{
         "iPhone6,1":"iphonese",
         "iPhone6,2":"iphonese",
+
         "iPhone7,1":"iphone6s",
         "iPhone7,2":"iphone6s",
         "iPhone8,1":"iphone6s",
         "iPhone8,2":"iphone6s",
+
         "iPhone8,4":"iphonese",
+
         "iPhone9,1":"iphone7",
         "iPhone9,2":"iphone7",
         "iPhone9,3":"iphone7",
         "iPhone9,4":"iphone7",
+
         "iPhone10,1":"iphone8",
         "iPhone10,2":"iphone8",
         "iPhone10,4":"iphone8",
@@ -46,7 +50,6 @@
         "iPad7,6":"ipad",
         "iPad7,11":"ipad",
         "iPad7,12":"ipad",
-
         "iPad8,1":"ipad",
         "iPad8,2":"ipad",
         "iPad8,3":"ipad",
@@ -72,10 +75,33 @@
         "iPad4,9":"ipadmini",
         "iPad5,1":"ipadmini",
         "iPad5,2":"ipadmini",
+
         "iPod7,1":"ipodtouch",
         "iPod9,1":"ipodtouch7",
+
         "AppleTV5,3":"appletv4",
-        "AppleTV6,2":"appletv4k"
+        "AppleTV6,2":"appletv4k",
+
+        "iMac20,1":"dfuonly",
+        "iMac20,2":"dfuonly",
+        "MacBookAir8,1":"dfuonly",
+        "MacBookAir8,2":"dfuonly",
+        "MacBookPro9,1":"dfuonly",
+        "MacBookPro15,1":"dfuonly",
+        "MacBookPro15,2":"dfuonly",
+        "MacBookPro15,3":"dfuonly",
+        "MacBookPro15,4":"dfuonly",
+        "MacBookPro16,1":"dfuonly",
+        "MacBookPro16,2":"dfuonly",
+        "MacBookPro16,3":"dfuonly",
+        "MacBookPro16,4":"dfuonly",
+        "iMacPro1,1":"dfuonly",
+        "Macmini8,1":"dfuonly",
+        "MacPro7,1":"dfuonly",
+        "iBridge2,11":"dfuonly",
+        "iBridge2,13":"dfuonly",
+        "AudioAccessory1,1":"dfuonly",
+        "AudioAccessory1,2":"dfuonly"
     },
     "devicelayout":{
         "ipodtouch7":{
@@ -271,6 +297,9 @@
                 }
             },
             "sequence":"atv_standard_breakout"
+        },
+        "dfuonly": {
+            "is_supported": false
         }
     },
     "sequences":{

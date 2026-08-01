@@ -295,7 +295,7 @@ void MainPanel::SetDeviceState(const DeviceState& state)
                     } else {
                         m_deviceTitle->SetLabel(productString);
                         m_deviceSubtitle->SetLabel("This PongoOS device is not supported, worth a shot though...\n" + ecidString);
-                        m_startButton->Enable(true);
+                        m_startButton->Enable();
                     }
                     break;
                 case DeviceMode::None:
