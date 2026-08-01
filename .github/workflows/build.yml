@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: a766a91bf4b691317df24d3be41e44e754a3e0d8
+          ref: 9faf50968854aa47de65231e2985d60f6944d627
           repository: palera1n/loader
 
       - name: Install dependencies (brew)
