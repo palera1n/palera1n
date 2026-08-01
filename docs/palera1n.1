@@ -9,7 +9,7 @@
 .Nd arm64 iOS/iPadOS/tvOS 15-26, bridgeOS 5-10 jailbreaking tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl hvlfcBsTVpednq
+.Op Fl hvlfcBsTVpPednq
 .Op Fl e Ar Boot arguments
 .Op Fl k Ar Pongo image
 .Op Fl o Ar overlay file
@@ -218,6 +218,9 @@ Boots the device in verbose mode, allowing boot logs to be seen.
 .It Fl p , -early-exit
 Exit after booting into a clean PongoOS shell.
 
+.It Fl P , -late-exit
+Exit after uploading existing images into the PongoOS shell.
+
 .It Fl e , -extra-bootargs Ar boot arguments
 Specify custom XNU kernel command line. Additionally, the
 .Em wdt=-1
@@ -369,6 +372,11 @@ option.
 .It Ev RA1N_EARLY_EXIT
 Equivalent to using the
 .Fl p , -early-exit
+option.
+
+.It Ev RA1N_LATE_EXIT
+Equivalent to using the
+.Fl P , -late-exit
 option.
 
 .It Ev RA1N_EXTRA_BOOTARGS
@@ -599,6 +607,13 @@ has been removed, since it leaks memory in launchd.
 has been renamed to
 .Fl f, -rootful
 due to its ambiguity. As it supports both fakefs and realfs on certain platforms.
+
+.Fl P, -pongo-full
+has been renamed to
+.Fl P, -late-exit
+due to its ambiguity.
+
+
 .Sh SEE ALSO
 .Xr launchd 8
 .Xr launchd.plist 5
