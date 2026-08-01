@@ -102,6 +102,10 @@ jobs:
         ref: e98323f8a09abd80fc4cbcd74dee023b91a1ec22
         repository: palera1n/PongoOS
 
+    - name: Install dependencies (brew)
+      run: |
+        brew install make
+
     - name: Build
       run: |
         gmake -j$(sysctl -n hw.ncpu)
@@ -255,11 +259,11 @@ jobs:
     - name: Install dependencies (brew)
       run: |
         brew update
-        brew install cmake autoconf automake libtool pkg-config
+        brew install make cmake autoconf automake libtool pkg-config
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        gmake palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -x build/palera1n.app/Contents/MacOS/palera1n
 
     - name: Package
@@ -304,7 +308,7 @@ jobs:
     - name: Install dependencies (brew)
       run: |
         brew update
-        brew install cmake libtool gnu-sed
+        brew install make cmake libtool gnu-sed
 
     - name: Build
       run: |
