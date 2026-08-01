@@ -173,15 +173,6 @@ void parse_arguments(int argc, char* argv[]) {
     int options;
     int option_index = 0;
 
-    bool set_cli = false, set_gui = false, set_tui = false;
-    bool set_flower = false, set_force_revert = false, set_ssv = false;
-    bool set_rootless = false, set_rootful = false;
-    bool set_fakefs = false, set_partial_fakefs = false;
-    bool set_safemode = false, set_telnetd = false, set_verbose = false;
-    bool set_pongo_exit = false, set_pongo_late = false, set_no_colors = false, set_quick = false;
-    bool set_extra_bootargs = false, set_pongo = false, set_kpf = false;
-    bool set_overlay = false, set_ramdisk = false;
-
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"version", no_argument, NULL, 'v'},
@@ -398,66 +389,66 @@ void parse_arguments(int argc, char* argv[]) {
 
     // MARK: Environment vars
 
-    if (!set_cli && get_env_binary("RA1N_CLI") == 1) {
+    if (get_env_binary("RA1N_CLI") == 1) {
         palerain_flags &= ~palerain_option_tui;
         palerain_flags &= ~palerain_option_gui;
         palerain_flags |= palerain_option_cli;
     }
     #ifdef WITH_GUI
-    if (!set_gui && get_env_binary("RA1N_GUI") == 1) {
+    if (get_env_binary("RA1N_GUI") == 1) {
         palerain_flags &= ~palerain_option_cli;
         palerain_flags &= ~palerain_option_tui;
         palerain_flags |= palerain_option_gui;
     }
     #endif
     #ifdef WITH_TUI
-    if (!set_tui && get_env_binary("RA1N_TUI") == 1) {
+    if (get_env_binary("RA1N_TUI") == 1) {
         palerain_flags &= ~palerain_option_cli;
         palerain_flags &= ~palerain_option_gui;
         palerain_flags |= palerain_option_tui;
     }
     #endif
-    if (!set_flower && get_env_binary("RA1N_DARK_BLOCKCHAIN") == 1) {
+    if (get_env_binary("RA1N_DARK_BLOCKCHAIN") == 1) {
         palerain_flags |= palerain_option_flower_chain;
     }
-    if (!set_force_revert && get_env_binary("RA1N_FORCE_REVERT") == 1) {
+    if (get_env_binary("RA1N_FORCE_REVERT") == 1) {
         palerain_flags |= palerain_option_force_revert;
     }
-    if (!set_ssv && get_env_binary("RA1N_FORCE_ENABLE_SSV") == 1) {
+    if (get_env_binary("RA1N_FORCE_ENABLE_SSV") == 1) {
         palerain_flags |= palerain_option_ssv;
     }
-    if (!set_rootless && get_env_binary("RA1N_ROOTLESS") == 1) {
+    if (get_env_binary("RA1N_ROOTLESS") == 1) {
         palerain_flags |= palerain_option_rootless;
     }
-    if (!set_rootful && get_env_binary("RA1N_ROOTFUL") == 1) {
+    if (get_env_binary("RA1N_ROOTFUL") == 1) {
         palerain_flags |= palerain_option_rootful;
     }
-    if (!set_fakefs && get_env_binary("RA1N_SETUP_FAKEFS") == 1) {
+    if (get_env_binary("RA1N_SETUP_FAKEFS") == 1) {
         palerain_flags |= palerain_option_setup_rootful;
     }
-    if (!set_partial_fakefs && get_env_binary("RA1N_SETUP_PARTIAL_FAKEFS") == 1) {
+    if (get_env_binary("RA1N_SETUP_PARTIAL_FAKEFS") == 1) {
         palerain_flags |= palerain_option_setup_partial_root;
     }
-    if (!set_safemode && get_env_binary("RA1N_SAFE_MODE") == 1) {
+    if (get_env_binary("RA1N_SAFE_MODE") == 1) {
         palerain_flags |= palerain_option_safemode;
     }
-    if (!set_telnetd && get_env_binary("RA1N_TELNETD") == 1) {
+    if (get_env_binary("RA1N_TELNETD") == 1) {
         palerain_flags |= palerain_option_telnetd;
     }
-    if (!set_verbose && get_env_binary("RA1N_VERBOSE_BOOT") == 1) {
+    if (get_env_binary("RA1N_VERBOSE_BOOT") == 1) {
         palerain_flags |= palerain_option_verbose_boot;
     }
-    if (!set_pongo_exit && get_env_binary("RA1N_EARLY_EXIT") == 1) {
+    if (get_env_binary("RA1N_EARLY_EXIT") == 1) {
         palerain_flags |= palerain_option_pongo_exit;
     }
-    if (!set_pongo_late && get_env_binary("RA1N_LATE_EXIT") == 1) {
+    if (get_env_binary("RA1N_LATE_EXIT") == 1) {
         palerain_flags |= palerain_option_pongo_full;
     }
-    if (!set_no_colors && get_env_binary("RA1N_NO_COLORS") == 1) {
+    if (get_env_binary("RA1N_NO_COLORS") == 1) {
         palerain_flags |= palerain_option_no_colors;
     }
     #if defined(WITH_GUI) || defined(WITH_TUI)
-    if (!set_quick && get_env_binary("RA1N_QUICK") == 1) {
+    if (get_env_binary("RA1N_QUICK") == 1) {
         palerain_flags |= palerain_option_quick;
     }
     #endif
@@ -470,71 +461,62 @@ void parse_arguments(int argc, char* argv[]) {
         }
     }
 
-    if (!set_extra_bootargs) {
-        const char *env_bootargs = getenv("RA1N_EXTRA_BOOTARGS");
-        if (env_bootargs) {
-            if (strlen(env_bootargs) > (sizeof(boot_args) - 0x20)) {
-                LOG_ERROR("Boot arguments too long!");
-                exit(1);
-            }
-            snprintf(boot_args, sizeof(boot_args), "%s", env_bootargs);
+    const char *env_bootargs = getenv("RA1N_EXTRA_BOOTARGS");
+    if (env_bootargs) {
+        if (strlen(env_bootargs) > (sizeof(boot_args) - 0x20)) {
+            LOG_ERROR("Boot arguments too long!");
+            exit(1);
         }
+        snprintf(boot_args, sizeof(boot_args), "%s", env_bootargs);
     }
 
-    if (!set_pongo) {
-        const char *env_pongo = getenv("RA1N_OVERRIDE_PONGO");
-        if (env_pongo) {
-            if (!override_payload_from_file(env_pongo, &g_payload_pongo)) {
-                LOG_ERROR("Failed to load pongo payload from env, is the path correct?");
-                exit(1);
-            }
-            if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
-                LOG_ERROR("Pongo payload is too large! %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
-                exit(1);
-            }
-            LOG("Overriding pongo payload with %s (from env)", env_pongo);
+    const char *env_pongo = getenv("RA1N_OVERRIDE_PONGO");
+    if (env_pongo) {
+        if (!override_payload_from_file(env_pongo, &g_payload_pongo)) {
+            LOG_ERROR("Failed to load pongo payload from env, is the path correct?");
+            exit(1);
         }
+        if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
+            LOG_ERROR("Pongo payload is too large! %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
+            exit(1);
+        }
+        LOG("Overriding pongo payload with %s (from env)", env_pongo);
     }
 
-    if (!set_kpf) {
-        const char *env_kpf = getenv("RA1N_OVERRIDE_KPF");
-        if (env_kpf) {
-            if (!override_payload_from_file(env_kpf, &g_payload_kpf)) {
-                LOG_ERROR("Failed to load kpf payload from env, is the path correct?");
-                exit(1);
-            }
-            if (g_payload_kpf.data_len < 4
-                || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0
-                && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
-            {
-                LOG_ERROR("Invalid kpf payload from env, is it macho?");
-                exit(1);
-            }
-            LOG("Overriding kpf payload with %s (from env)", env_kpf);
+    const char *env_kpf = getenv("RA1N_OVERRIDE_KPF");
+    if (env_kpf) {
+        if (!override_payload_from_file(env_kpf, &g_payload_kpf)) {
+            LOG_ERROR("Failed to load kpf payload from env, is the path correct?");
+            exit(1);
         }
+        if (g_payload_kpf.data_len < 4
+            || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0
+            && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
+        {
+            LOG_ERROR("Invalid kpf payload from env, is it macho?");
+            exit(1);
+        }
+        LOG("Overriding kpf payload with %s (from env)", env_kpf);
     }
 
-    if (!set_overlay) {
-        const char *env_overlay = getenv("RA1N_OVERRIDE_OVERLAY");
-        if (env_overlay) {
-            if (!override_payload_from_file(env_overlay, &g_payload_overlay)) {
-                LOG_ERROR("Failed to load overlay payload from env, is the path correct?");
-                exit(1);
-            }
-            LOG("Overriding overlay payload with %s (from env)", env_overlay);
+    const char *env_overlay = getenv("RA1N_OVERRIDE_OVERLAY");
+    if (env_overlay) {
+        if (!override_payload_from_file(env_overlay, &g_payload_overlay)) {
+            LOG_ERROR("Failed to load overlay payload from env, is the path correct?");
+            exit(1);
         }
+        LOG("Overriding overlay payload with %s (from env)", env_overlay);
     }
 
-    if (!set_ramdisk) {
-        const char *env_ramdisk = getenv("RA1N_OVERRIDE_RAMDISK");
-        if (env_ramdisk) {
-            if (!override_payload_from_file(env_ramdisk, &g_payload_ramdisk)) {
-                LOG_ERROR("Failed to load ramdisk payload from env, is the path correct?");
-                exit(1);
-            }
-            LOG("Overriding ramdisk payload with %s (from env)", env_ramdisk);
+    const char *env_ramdisk = getenv("RA1N_OVERRIDE_RAMDISK");
+    if (env_ramdisk) {
+        if (!override_payload_from_file(env_ramdisk, &g_payload_ramdisk)) {
+            LOG_ERROR("Failed to load ramdisk payload from env, is the path correct?");
+            exit(1);
         }
+        LOG("Overriding ramdisk payload with %s (from env)", env_ramdisk);
     }
+
 
     // MARK: Flag checks
 
