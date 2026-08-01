@@ -62,9 +62,7 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
     if (command != NULL) {
         size_t len = strlen(command);
 
-        // unlikely to happen, unless we add support for pongoterm
-        // TODO: discuss on adding a pongoterm
-        if (len > CMD_LENGTH_MAX) {
+        if (len >= CMD_LENGTH_MAX) {
             LOG_ERROR("Pongo command too long: %s", command);
             result.ret = 1;
             return result;
@@ -86,12 +84,8 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
         result = send_interface_control_request(handle, 0x21, 3, 0, 0, command_buf, len);
         if (result.ret != USB_TRANSFER_OK) goto result;
         #endif
-
-        // return early if the command is boot, we dont care about results
-        if (strncmp(command,"boot",4) == 0) goto result;
     }
 
-    // TODO: does this work correctly?
     while (in_progress) {
         #if WITH_CIDERRAIN
         result = usb_ctrl_transfer(handle, 0xA1, 2, 0, 0, &in_progress, sizeof(in_progress));
@@ -101,26 +95,26 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
         if (result.ret != USB_TRANSFER_OK) goto result;
         #endif
 
-        if (in_progress == 0) break;
-
-        if (outpos + 0x1000 >= sizeof(stdout_buf)) {
-            memmove(stdout_buf, stdout_buf + 0x1000, sizeof(stdout_buf) - 0x1000);
-            outpos -= 0x1000;
+        if (!in_progress) break;
+        if (outpos > 0x1000) {
+            memmove(stdout_buf, stdout_buf + outpos - 0x1000, 0x1000);
+            outpos = 0x1000;
         }
 
+        outlen = 0;
         #if WITH_CIDERRAIN
-        result = usb_ctrl_transfer(handle, 0xA1, 1, 0, 0, stdout_buf + outpos, 0x1000);
+        result = usb_ctrl_transfer(handle, 0xA1, 1, 0, 0, (uint8_t *)(stdout_buf + outpos), 0x1000);
         if (result.ret != kUSBResponseSuccess) goto result;
+        outlen = result.wLenDone;
         #else
         result = send_interface_control_request(handle, 0xA1, 1, 0, 0, stdout_buf + outpos, 0x1000);
         if (result.ret != USB_TRANSFER_OK) goto result;
+        outlen = result.sz;
         #endif
-
-        outlen = 0x1000;
         outpos += outlen;
     }
 
-    result:
+result:
     return result;
 }
 
