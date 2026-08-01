@@ -53,9 +53,6 @@ static std::string get_device_title(const DeviceState& state) {
     }
 
     const std::string product = state.displayName.empty() ? (state.productType.empty() ? "Unknown" : state.productType) : state.displayName;
-    if (state.mode == DeviceMode::DFU) {
-        return "DFU Mode device";
-    }
     return product;
 }
 
@@ -74,7 +71,7 @@ static std::string get_device_subtitle(const DeviceState& state) {
     switch (state.mode) {
         case DeviceMode::Normal:
             if (state.requiresCLI) {
-                return "Sorry, jailbreaking is only available via CLI mode * iOS " + version + "\n" + ecid;
+                return "Sorry, jailbreaking is only available via DFU mode * iOS " + version + "\n" + ecid;
             } else if (state.isSupported) {
                 return "Connected in normal mode * iOS " + version + "\n" + ecid;
             } else {
@@ -82,14 +79,24 @@ static std::string get_device_subtitle(const DeviceState& state) {
             }
         case DeviceMode::Recovery:
             if (state.requiresCLI) {
-                return "Sorry, jailbreaking is only available via CLI mode.\n" + ecid;
+                return "Sorry, jailbreaking is only available via DFU mode.\n" + ecid;
             } else if (state.isSupported) {
                 return "Connected in recovery mode.\n" + ecid;
             } else {
                 return "Sorry, this recovery device is not supported.\n" + ecid;
             }
         case DeviceMode::DFU:
-            return "Sorry, jailbreaking in DFU is not supported.\n";
+           if (state.isSupported) {
+                return "Connected in DFU mode.\n" + ecid;
+            } else {
+                return "Sorry, this DFU device is not supported.\n" + ecid;
+            }
+        case DeviceMode::Pongo:
+            if (state.isSupported) {
+                return "Connected in PongoOS mode.\n" + ecid;
+            } else {
+                return "This PongoOS device is not supported, worth a shot though...\n" + ecid;
+            }
         case DeviceMode::None:
             return "Please connect a device to get started. Ensure version range is 15.0+";
     }
@@ -223,14 +230,23 @@ void TuiMainPanel::handle_enter(int selected, int sy, int sx) {
         case 1:
             GetFrame()->ShowSettings(5);
             break;
-
         case 2: {
             if (block_start) break;
 
-            bool can_start = (state.connected && state.isSupported && !state.requiresCLI && state.mode != DeviceMode::DFU);
+            bool isDfuLike =
+                state.mode == DeviceMode::DFU ||
+                state.mode == DeviceMode::Pongo;
+
+            bool can_start =
+                state.connected &&
+                state.isSupported &&
+                (isDfuLike || !state.requiresCLI);
+
             if (can_start) {
                 if (state.mode == DeviceMode::Recovery) {
                     GetFrame()->ShowDfu(1);
+                } else if (isDfuLike) {
+                    GetFrame()->ShowExploit(0);
                 } else {
                     GetFrame()->ShowRecovery(1);
                 }
@@ -261,7 +277,13 @@ bool TuiMainPanel::is_button_enabled(int btn_idx) const {
     switch(btn_idx) {
         case 0: return true;
         case 1: return true;
-        case 2: return (state.connected && state.isSupported && !state.requiresCLI && state.mode != DeviceMode::DFU);
+        case 2: {
+            bool isDfuLike =
+                state.mode == DeviceMode::DFU ||
+                state.mode == DeviceMode::Pongo;
+
+            return state.connected && state.isSupported && (isDfuLike || !state.requiresCLI);
+        }
         case 3: return true;
     }
 

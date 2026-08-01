@@ -259,7 +259,7 @@ jobs:
 
     - name: Build
       run: |
-        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        make palera1n WITH_STATIC=1 WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         strip -x build/palera1n.app/Contents/MacOS/palera1n
 
     - name: Package

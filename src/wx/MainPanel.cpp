@@ -149,6 +149,9 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
             frame->ShowRecovery();
         else if (frame->GetDeviceState().mode == DeviceMode::Recovery)
             frame->ShowDfu();
+        else if (frame->GetDeviceState().mode == DeviceMode::DFU ||
+                frame->GetDeviceState().mode == DeviceMode::Pongo)
+            frame->ShowExploit();
     });
 
     left->Add(m_deviceTitle, 0, wxLEFT | wxRIGHT | wxTOP, 10);
@@ -246,7 +249,7 @@ void MainPanel::SetDeviceState(const DeviceState& state)
                 case DeviceMode::Normal:
                     if (state.requiresCLI) {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Sorry, jailbreaking is only available via CLI mode - OS " + versionString + "\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Sorry, jailbreaking is only available via DFU mode - OS " + versionString + "\n" + ecidString);
                         m_startButton->Enable(false);
                     } else if (state.isSupported) {
                         m_deviceTitle->SetLabel(productString);
@@ -261,7 +264,7 @@ void MainPanel::SetDeviceState(const DeviceState& state)
                 case DeviceMode::Recovery:
                     if (state.requiresCLI) {
                         m_deviceTitle->SetLabel(productString);
-                        m_deviceSubtitle->SetLabel("Sorry, jailbreaking is only available via CLI mode.\n" + ecidString);
+                        m_deviceSubtitle->SetLabel("Sorry, jailbreaking is only available via DFU mode.\n" + ecidString);
                         m_startButton->Enable(false);
                     } else if (state.isSupported) {
                         m_deviceTitle->SetLabel(productString);
@@ -274,9 +277,26 @@ void MainPanel::SetDeviceState(const DeviceState& state)
                     }
                     break;
                 case DeviceMode::DFU:
-                    m_deviceTitle->SetLabel("DFU Mode device");
-                    m_deviceSubtitle->SetLabel("Sorry, jailbreaking in DFU is not supported.\n");
-                    m_startButton->Enable(false);
+                    if (state.isSupported) {
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Connected in DFU mode.\n" + ecidString);
+                        m_startButton->Enable();
+                    } else {
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Sorry, this DFU device is not supported.\n" + ecidString);
+                        m_startButton->Enable(false);
+                    }
+                    break;
+                case DeviceMode::Pongo:
+                    if (state.isSupported) {
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("Connected in PongoOS mode.\n" + ecidString);
+                        m_startButton->Enable();
+                    } else {
+                        m_deviceTitle->SetLabel(productString);
+                        m_deviceSubtitle->SetLabel("This PongoOS device is not supported, worth a shot though...\n" + ecidString);
+                        m_startButton->Enable(true);
+                    }
                     break;
                 case DeviceMode::None:
                     m_deviceTitle->SetLabel(deviceTextString);

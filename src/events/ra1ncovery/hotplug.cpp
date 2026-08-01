@@ -35,15 +35,16 @@
 #include <atomic>
 #include <chrono>
 
-constexpr int32_t APPLE_VID       = 0x05AC;
-constexpr int32_t PID_DFU         = 0x1227;
-constexpr int32_t PID_RECOVERY_1  = 0x1280;
-constexpr int32_t PID_RECOVERY_2  = 0x1281;
-constexpr int32_t PID_RECOVERY_3  = 0x1282;
-constexpr int32_t PID_RECOVERY_4  = 0x1283;
+constexpr int32_t APPLE_VID         = 0x05AC;
+constexpr int32_t PID_DFU           = 0x1227;
+constexpr int32_t PID_RECOVERY_1    = 0x1280;
+constexpr int32_t PID_RECOVERY_2    = 0x1281;
+constexpr int32_t PID_RECOVERY_3    = 0x1282;
+constexpr int32_t PID_RECOVERY_4    = 0x1283;
+constexpr int32_t PID_PONGO         = 0x4141;
 
 static const std::vector<int32_t> TARGET_PIDS = {
-    PID_DFU, PID_RECOVERY_1, PID_RECOVERY_2, PID_RECOVERY_3, PID_RECOVERY_4
+    PID_DFU, PID_RECOVERY_1, PID_RECOVERY_2, PID_RECOVERY_3, PID_RECOVERY_4, PID_PONGO
 };
 
 static hotplug_callback_t gUserCallback = nullptr;
@@ -55,6 +56,9 @@ static bool is_target_pid(int32_t pid) {
 static hotplug_event_t get_hotplug_event(int32_t pid, bool arrived) {
     if (pid == PID_DFU) {
         return arrived ? HOTPLUG_EVENT_DFU_ADD : HOTPLUG_EVENT_DFU_REMOVE;
+    }
+    if (pid == PID_PONGO) {
+        return arrived ? HOTPLUG_EVENT_PONGO_ADD : HOTPLUG_EVENT_PONGO_REMOVE;
     }
     return arrived ? HOTPLUG_EVENT_RECOVERY_ADD : HOTPLUG_EVENT_RECOVERY_REMOVE;
 }

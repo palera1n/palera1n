@@ -43,7 +43,8 @@ enum class DeviceMode
     None,
     Normal,
     Recovery,
-    DFU
+    DFU,
+    Pongo,
 };
 
 struct DeviceState

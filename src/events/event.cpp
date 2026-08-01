@@ -73,6 +73,7 @@ struct ManagedDevice {
     bool normalPresent = false;
     bool recoveryPresent = false;
     bool dfuPresent = false;
+    bool pongoPresent = false;
     hotplug_handle_t handle{};
     uint32_t device_id = 0;
 
@@ -279,6 +280,7 @@ static void handle_other_add(hotplug_handle_t handle, DeviceMode mode) {
 
         m.recoveryPresent = (mode == DeviceMode::Recovery);
         m.dfuPresent = (mode == DeviceMode::DFU);
+        m.pongoPresent = (mode == DeviceMode::Pongo);
     }
     publish_state();
 }
@@ -304,6 +306,7 @@ static void remove_device(platform_service_t service, DeviceMode mode, uint32_t 
             switch (mode) {
                 case DeviceMode::Recovery: return pair.second.recoveryPresent;
                 case DeviceMode::DFU:      return pair.second.dfuPresent;
+                case DeviceMode::Pongo:    return pair.second.pongoPresent;
                 default:                   return false;
             }
         });
@@ -319,9 +322,11 @@ static void remove_device(platform_service_t service, DeviceMode mode, uint32_t 
                 m.recoveryPresent = false;
             } else if (mode == DeviceMode::DFU) {
                 m.dfuPresent = false;
+            } else if (mode == DeviceMode::Pongo) {
+                m.pongoPresent = false;
             }
 
-            if (!m.normalPresent && !m.recoveryPresent && !m.dfuPresent) {
+            if (!m.normalPresent && !m.recoveryPresent && !m.dfuPresent && !m.pongoPresent) {
                 release_handle(m.handle);
                 g_devices.erase(it);
             }
@@ -419,6 +424,9 @@ static void hotplug_callback(hotplug_event_t event, hotplug_handle_t handle) {
         case HOTPLUG_EVENT_DFU_REMOVE:       remove_device(srv, DeviceMode::DFU); break;
         case HOTPLUG_EVENT_RECOVERY_ADD:     handle_other_add(handle, DeviceMode::Recovery); break;
         case HOTPLUG_EVENT_RECOVERY_REMOVE:  remove_device(srv, DeviceMode::Recovery); break;
+        case HOTPLUG_EVENT_PONGO_ADD:        handle_other_add(handle, DeviceMode::Pongo); break;
+        case HOTPLUG_EVENT_PONGO_REMOVE:     remove_device(srv, DeviceMode::Pongo); break;
+        default: break;
     }
 }
 
