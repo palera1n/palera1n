@@ -202,8 +202,6 @@ p1_checkm8_err_t send_compressed_pongo(p1_usb_handle_t *handle, const uint8_t *p
     return cr;
 }
 
-// TODO: support early-exit but with all embedded artifacts already loaded
-
 p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
 {
     p1_transfer_ret_t result;
