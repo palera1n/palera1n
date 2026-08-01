@@ -117,8 +117,9 @@ apple-include:
 payloads:
 	mkdir -p src/gen/embedded
 
-	xz --format=lzma -vfc6ekT 0 embedded/ramdisk.dmg > embedded/ramdisk-compressed.dmg.lzma
+	xz --format=lzma -vfc6ekT 0 embedded/ramdisk.dmg > embedded/ramdisk-compressed.lzma
 	xz --format=lzma -vfc6ekT 0 embedded/checkra1n-kpf-pongo > embedded/checkra1n-kpf-pongo-compressed.lzma
+	jq -c . embedded/DFUHelperDeviceInfo.json > embedded/DFUHelperDeviceInfo-minified.json
 
 	@for file in embedded/*; do \
 		name=$$(basename "$$file"); \

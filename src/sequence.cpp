@@ -28,7 +28,7 @@
 #if defined(WITH_GUI) || defined(WITH_TUI)
 
 #include <nlohmann/json.hpp>
-#include "gen/embedded/DFUHelperDeviceInfo.h"
+#include "gen/embedded/DFUHelperDeviceInfo-minified.h"
 #include "sequence.hpp"
 
 DfuSequence ParseSequence(const std::string& deviceKey)
@@ -36,9 +36,9 @@ DfuSequence ParseSequence(const std::string& deviceKey)
     DfuSequence seq;
 
     static nlohmann::json j = nlohmann::json::parse(
-        embedded_DFUHelperDeviceInfo_json,
-        embedded_DFUHelperDeviceInfo_json +
-        embedded_DFUHelperDeviceInfo_json_len
+        embedded_DFUHelperDeviceInfo_minified_json,
+        embedded_DFUHelperDeviceInfo_minified_json +
+        embedded_DFUHelperDeviceInfo_minified_json_len
     );
 
     auto itMap = j["devicemap"].find(deviceKey);

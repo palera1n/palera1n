@@ -39,7 +39,7 @@
 #endif
 #if WITH_RAMDISK
 # include "gen/embedded/ramdisk.h"
-# include "gen/embedded/ramdisk-compressed.dmg.h"
+# include "gen/embedded/ramdisk-compressed.h"
 #endif
 #include "gen/embedded/Pongo.h"
 #include "gen/embedded/checkra1n-kpf-pongo.h"
@@ -64,8 +64,8 @@ payload_t g_payload_overlay = {
 
 #if WITH_RAMDISK
 payload_t g_payload_ramdisk = {
-    .data = embedded_ramdisk_compressed_dmg_lzma,
-    .data_len = embedded_ramdisk_compressed_dmg_lzma_len,
+    .data = embedded_ramdisk_compressed_lzma,
+    .data_len = embedded_ramdisk_compressed_lzma_len,
     .uncompressed_data_len = embedded_ramdisk_dmg_len,
 };
 #else

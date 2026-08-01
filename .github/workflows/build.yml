@@ -176,7 +176,7 @@ jobs:
     - name: Install dependencies (apt)
       run: |
         sudo apt update
-        sudo apt install -y build-essential cmake autoconf automake libtool pkg-config zstd
+        sudo apt install -y build-essential cmake autoconf automake libtool pkg-config zstd jq
 
     - name: Build
       run: |
@@ -432,6 +432,7 @@ jobs:
           mingw-w64-x86_64-libusb
           mingw-w64-x86_64-rust
           mingw-w64-x86_64-nsis
+          mingw-w64-x86_64-jq
           libtool
           openssl
           openssl-devel
