@@ -115,6 +115,15 @@ p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char 
     }
 
 result:
+    if (result.ret != 0) {
+        // boot command, we don't care about results, lets assume success :-)
+        if (command != NULL && (!strncmp("boot", command, 4))) {
+            result.ret = 0;
+            return result;
+        }
+        LOG_ERROR("PongoOS command output: %.*s", (int)outpos, stdout_buf);
+    }
+
     return result;
 }
 
