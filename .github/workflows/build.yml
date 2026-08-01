@@ -314,6 +314,7 @@ jobs:
       run: |
         gmake palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
         cmake --build build
+        codesign --force --sign - --entitlements resources/entitlements.xml build/Debug-iphoneos/palera1n.app/palera1n
 
     - name: Package
       run: |
