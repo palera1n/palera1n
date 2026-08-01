@@ -202,6 +202,8 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
 
 void DfuPanel::OnShow(wxShowEvent& event)
 {
+    DevicePanel::OnShow(event);
+
     if (event.IsShown())
     {
         if (palerain_flags & palerain_option_quick) {
@@ -212,8 +214,6 @@ void DfuPanel::OnShow(wxShowEvent& event)
             StartSequence(m_sequence);
         }
     }
-
-    DevicePanel::OnShow(event);
 }
 
 void DfuPanel::LoadDevice(const std::string& productType)
