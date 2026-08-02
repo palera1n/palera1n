@@ -42,7 +42,7 @@ public:
     void handle_device_update(const DeviceState& state) override;
     bool is_button_enabled(int btn_idx) const override;
 
-    int get_total_items() const override { return 11; }
+    int get_total_items() const override { return 12; }
     int get_button_count() const override { return 1; }
     const char** get_buttons() const override;
 
