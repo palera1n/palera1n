@@ -160,6 +160,7 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
         m_index = m_sequence.steps.size();
         m_stepRemaining = -1;
         m_actionExecutedIndex = -1;
+        m_waitingForDfuTransition = true;
 
         const wxColour inactive =
             wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
@@ -191,8 +192,11 @@ void DfuPanel::SetDeviceState(const DeviceState& state)
         GetMainFrame()->ShowMain();
     }
 
-    if (!m_isEnteringDfu && !state.connected)
+    if (!state.connected)
     {
+        if (m_isEnteringDfu || m_waitingForDfuTransition)
+            return;
+
         m_isEnteringDfu = false;
         m_backButton->Enable();
         m_startButton->Enable();
@@ -362,6 +366,7 @@ void DfuPanel::StartSequence(const DfuSequence& seq)
     m_index = 0;
     m_stepRemaining = -1;
     m_actionExecutedIndex = -1;
+    m_waitingForDfuTransition = false;
 
     RunStep();
 }

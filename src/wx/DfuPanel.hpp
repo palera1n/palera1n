@@ -62,6 +62,7 @@ private:
     wxTimer m_timer;
     wxTimer m_stagnentTimer;
     bool m_isEnteringDfu = false;
+    bool m_waitingForDfuTransition = false;
 
     wxPanel* m_devicePanel = nullptr;
     wxStaticBitmap* m_deviceImage = nullptr;
