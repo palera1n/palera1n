@@ -69,14 +69,16 @@ void TuiSettingsPanel::draw(int sy, int sx, int selected) {
         !!(palerain_flags & palerain_option_safemode),
         !!(palerain_flags & palerain_option_verbose_boot),
         !!(palerain_flags & palerain_option_force_revert),
-        !!(palerain_flags & palerain_option_flower_chain)
+        !!(palerain_flags & palerain_option_flower_chain),
+        !!(palerain_flags & palerain_option_ssv)
     };
 
     const char *labels[] = {
         "Safe Mode",
         "Verbose Boot",
         "Restore System",
-        "Dark Blockchain"
+        "Dark Blockchain",
+        "Force Enable SSV Flag"
     };
 
     for (int i = 0; i < 2; i++) {
@@ -98,20 +100,25 @@ void TuiSettingsPanel::draw(int sy, int sx, int selected) {
         if (selected == i + 1) attroff(A_REVERSE);
     }
 
-    mvprintw(sy + 13, content_x, "Jailbreak Type:");
+    mvprintw(sy + 13, content_x, "[%c] ", states[4] ? 'x' : ' ');
     if (selected == 5) attron(A_REVERSE);
-    mvprintw(sy + 14, content_x + 2, "(%c) Rootless", is_rootful ? ' ' : 'x');
+    printw("%s", labels[4]);
     if (selected == 5) attroff(A_REVERSE);
 
+    mvprintw(sy + 15, content_x, "Jailbreak Type:");
     if (selected == 6) attron(A_REVERSE);
-    mvprintw(sy + 15, content_x + 2, "(%c) Rootful", is_rootful ? 'x' : ' ');
+    mvprintw(sy + 16, content_x + 2, "(%c) Rootless", is_rootful ? ' ' : 'x');
     if (selected == 6) attroff(A_REVERSE);
 
-    mvprintw(sy + 17, content_x, "Rootful Options:");
+    if (selected == 7) attron(A_REVERSE);
+    mvprintw(sy + 17, content_x + 2, "(%c) Rootful", is_rootful ? 'x' : ' ');
+    if (selected == 7) attroff(A_REVERSE);
+
+    mvprintw(sy + 19, content_x, "Rootful Options:");
 
     for (int i = 0; i < 3; ++i) {
-        const int item_idx = 7 + i;
-        const int row = sy + 18 + i;
+        const int item_idx = 8 + i;
+        const int row = sy + 20 + i;
         const bool active = is_rootful;
         const bool is_selected = selected == item_idx;
         const bool checked = setup_selection == i;
@@ -171,34 +178,35 @@ void TuiSettingsPanel::handle_enter(int selected, int sy, int sx) {
         case 2: edit_boot_args(sy, sx); break;
         case 3: palerain_flags ^= palerain_option_force_revert; break;
         case 4: palerain_flags ^= palerain_option_flower_chain; break;
-        case 5:
+        case 5: palerain_flags ^= palerain_option_ssv; break;
+        case 6:
             palerain_flags &= ~(palerain_option_rootless | palerain_option_rootful);
             palerain_flags &= ~(palerain_option_setup_rootful | palerain_option_setup_partial_root);
             palerain_flags |= palerain_option_rootless;
             break;
-        case 6:
+        case 7:
             palerain_flags &= ~(palerain_option_rootless | palerain_option_rootful);
             palerain_flags &= ~(palerain_option_setup_rootful | palerain_option_setup_partial_root);
             palerain_flags |= palerain_option_rootful;
             break;
-        case 7:
-            if (palerain_flags & palerain_option_rootful) {
-                palerain_flags &= ~(palerain_option_setup_rootful | palerain_option_setup_partial_root);
-            }
-            break;
         case 8:
             if (palerain_flags & palerain_option_rootful) {
                 palerain_flags &= ~(palerain_option_setup_rootful | palerain_option_setup_partial_root);
-                palerain_flags |= palerain_option_setup_rootful;
             }
             break;
         case 9:
             if (palerain_flags & palerain_option_rootful) {
                 palerain_flags &= ~(palerain_option_setup_rootful | palerain_option_setup_partial_root);
+                palerain_flags |= palerain_option_setup_rootful;
+            }
+            break;
+        case 10:
+            if (palerain_flags & palerain_option_rootful) {
+                palerain_flags &= ~(palerain_option_setup_rootful | palerain_option_setup_partial_root);
                 palerain_flags |= palerain_option_setup_partial_root;
             }
             break;
-        case 10: GetFrame()->ShowMain(0); break;
+        case 11: GetFrame()->ShowMain(0); break;
     }
 }
 
@@ -207,7 +215,7 @@ void TuiSettingsPanel::handle_device_update(const DeviceState& state) {
 }
 
 bool TuiSettingsPanel::is_button_enabled(int btn_idx) const {
-    if (btn_idx >= 7 && btn_idx <= 9) {
+    if (btn_idx >= 8 && btn_idx <= 10) {
         return (palerain_flags & palerain_option_rootful) != 0;
     }
 
