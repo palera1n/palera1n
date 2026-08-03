@@ -52,7 +52,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: 9cadaa63569ba318677b4ef0869ad984b3663a6c
+        ref: 7e1f6e122c3a45fc45e939293c7e2eaa1889731f
         repository: palera1n/jbinit
         submodules: true
 
