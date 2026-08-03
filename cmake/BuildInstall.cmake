@@ -2,8 +2,6 @@
 # MARK: INSTALL
 # =========================
 
-include(CPack)
-
 if(LINUX AND NOT MINGW)
     install(TARGETS palera1n RUNTIME DESTINATION bin)
 elseif(IOS)
@@ -72,3 +70,5 @@ else()
     set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
     set(CPACK_GENERATOR "TGZ")
 endif()
+
+include(CPack)
