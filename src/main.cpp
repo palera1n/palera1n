@@ -333,11 +333,10 @@ void parse_arguments(int argc, char* argv[]) {
                     LOG_ERROR("Failed to load pongo payload, is the path correct?");
                     exit(1);
                 }
-                if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
-                    LOG_ERROR("Pongo payload is too large! %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
+                if (!check_payload_validity(&g_payload_pongo, true)) {
+                    LOG_ERROR("Pongo payload is invalid or too large! %zu bytes", g_payload_pongo.data_len);
                     exit(1);
                 }
-                // TODO: check if macho, otherwise exit
                 LOG("Overriding pongo payload with %s", optarg);
                 break;
             case 'K': // --override-kpf
@@ -345,11 +344,8 @@ void parse_arguments(int argc, char* argv[]) {
                     LOG_ERROR("Failed to load kpf payload, is the path correct?");
                     exit(1);
                 }
-                if (g_payload_kpf.data_len < 4
-                    || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0
-                    && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
-                {
-                    LOG_ERROR("Invalid kpf payload, is it macho?");
+                if (!check_payload_validity(&g_payload_kpf, false)) {
+                    LOG_ERROR("KPF payload is invalid! Is it a valid Mach-O binary?");
                     exit(1);
                 }
                 LOG("Overriding kpf payload with %s", optarg);
@@ -476,8 +472,8 @@ void parse_arguments(int argc, char* argv[]) {
             LOG_ERROR("Failed to load pongo payload from env, is the path correct?");
             exit(1);
         }
-        if (g_payload_pongo.data_len > PONGO_MAX_SZ) {
-            LOG_ERROR("Pongo payload is too large! %zu bytes (max %zu)", g_payload_pongo.data_len, PONGO_MAX_SZ);
+        if (!check_payload_validity(&g_payload_pongo, true)) {
+            LOG_ERROR("Pongo payload is invalid or too large! %zu bytes", g_payload_pongo.data_len);
             exit(1);
         }
         LOG("Overriding pongo payload with %s (from env)", env_pongo);
@@ -489,10 +485,7 @@ void parse_arguments(int argc, char* argv[]) {
             LOG_ERROR("Failed to load kpf payload from env, is the path correct?");
             exit(1);
         }
-        if (g_payload_kpf.data_len < 4
-            || (memcmp(g_payload_kpf.data, MACHO_MAGIC_64, 4) != 0
-            && memcmp(g_payload_kpf.data, MACHO_MAGIC_32, 4) != 0))
-        {
+        if (!check_payload_validity(&g_payload_kpf, false)) {
             LOG_ERROR("Invalid kpf payload from env, is it macho?");
             exit(1);
         }
@@ -516,7 +509,6 @@ void parse_arguments(int argc, char* argv[]) {
         }
         LOG("Overriding ramdisk payload with %s (from env)", env_ramdisk);
     }
-
 
     // MARK: Flag checks
 

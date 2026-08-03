@@ -52,6 +52,7 @@ extern payload_t g_payload_kpf;
 extern "C" {
 #endif
 
+bool check_payload_validity(const payload_t *payload, bool isPongo);
 bool override_payload_from_file(const char *path, payload_t *out);
 
 #ifdef __cplusplus

@@ -88,6 +88,29 @@ payload_t g_payload_kpf = {
     .uncompressed_data_len = embedded_checkra1n_kpf_pongo_len,
 };
 
+#define PONGO_MAX_SZ    (0x7fe00)
+#define MACHO_MAGIC_32  (0xFEEDFACE)
+#define MACHO_MAGIC_64  (0xFEEDFACF)
+
+bool check_payload_validity(const payload_t *payload, bool isPongo)
+{
+    if (!payload || !payload->data || payload->data_len < 4)
+        return false;
+
+    const uint32_t magic = *(const uint32_t *)payload->data;
+    const bool isMachO = (magic == MACHO_MAGIC_32 || magic == MACHO_MAGIC_64);
+
+    if (isPongo) {
+        if (isMachO || payload->data_len > PONGO_MAX_SZ)
+            return false;
+    } else {
+        if (!isMachO)
+            return false;
+    }
+
+    return true;
+}
+
 bool override_payload_from_file(const char *path, payload_t *out)
 {
     FILE *f = fopen(path, "rb");
