@@ -25,30 +25,10 @@ option(WITH_CIDERRAIN "Build with Ciderra1n instead of Openra1n" OFF)
 # MARK: BUILD REQUIREMENTS
 # =========================
 
-if(LINUX AND WITH_STATIC)
-    if(NOT CROSS_HOST_TRIPLE MATCHES "musl" AND NOT CMAKE_C_COMPILER_TARGET MATCHES "musl" AND NOT CMAKE_C_COMPILER MATCHES "musl")
-        message(FATAL_ERROR "Static builds on Linux require a musl toolchain. Please specify a musl cross-compiler or set -DCROSS_HOST_TRIPLE=...-linux-musl")
-    endif()
-endif()
-
-if(MINGW AND NOT WITH_STATIC)
-    message(FATAL_ERROR "MinGW builds must be static. Please configure with -DWITH_STATIC=1")
-endif()
-
-if(MINGW AND WITH_TUI)
-    message(FATAL_ERROR "-DWITH_TUI=1 is not supported on MinGW builds.")
-endif()
-
-if(MINGW AND WITH_CIDERRAIN)
-    message(FATAL_ERROR "-DWITH_CIDERRAIN=1 is not supported on MinGW builds.")
-endif()
-
-if(IOS AND (WITH_TUI OR WITH_GUI))
-    message(FATAL_ERROR "-DWITH_TUI=1 or -DWITH_GUI=1 is not supported on iOS builds.")
-endif()
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/BuildRequirements.cmake")
 
 # =========================
-# SETUP
+# MARK: SETUP
 # =========================
 
 if(MINGW)
@@ -160,33 +140,7 @@ if(WITH_CIDERRAIN)
     target_compile_definitions(palera1n PRIVATE WITH_CIDERRAIN)
 endif()
 
-execute_process(
-    COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-execute_process(
-    COMMAND git rev-parse --abbrev-ref --symbolic-full-name "@{u}"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-)
-
-execute_process(
-    COMMAND git remote get-url origin
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_URL
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-target_compile_definitions(palera1n PRIVATE
-    GIT_HASH="${GIT_HASH}"
-    GIT_BRANCH="${GIT_BRANCH}"
-    GIT_URL="${GIT_URL}"
-)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Git.cmake")
 
 # =========================
 # MARK: LINKS
@@ -204,257 +158,24 @@ if(WIN32)
 endif()
 
 # =========================
-# MARK: NON-CMAKE DEPENDENCIES
+# MARK: NON-CMAKE DEPENDENCIES (LOCAL)
 # =========================
 
 # ra1ns
 if(WITH_CIDERRAIN)
-    message(STATUS "Building with Ciderra1n support")
-
-    # TODO: get rid
-    execute_process(
-        COMMAND patch --batch --forward -p1 -i ${CMAKE_SOURCE_DIR}/patches/liteusb/0001-cpp-compatible.patch
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/external/liteusb
-        RESULT_VARIABLE LITEUSB_PATCH_RESULT
-    )
-
-    if(IOS)
-        execute_process(
-            COMMAND xcrun --sdk iphoneos --show-sdk-path
-            OUTPUT_VARIABLE IOS_SDK
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -E env
-                "EXTRA_CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-                "CXXFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-                "LDFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
-                make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} AR=${CMAKE_AR}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
-            RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
-        )
-    elseif(APPLE)
-        execute_process(
-            COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} EXTRA_CFLAGS=-mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
-            RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
-        )
-    else()
-        execute_process(
-            COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libciderra1n
-            RESULT_VARIABLE CIDERRA1N_BUILD_RESULT
-        )
-    endif()
-
-    if(NOT CIDERRA1N_BUILD_RESULT EQUAL 0)
-        message(FATAL_ERROR "Failed to build Ciderra1n.")
-    endif()
-
-    set(CIDERRAIN_INCLUDE_DIR   "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/build/include")
-    set(CIDERRAIN_LIB           "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/build/lib/ciderra1n/libciderra1n.a")
-    target_include_directories(palera1n PRIVATE ${CIDERRAIN_INCLUDE_DIR})
-    target_link_libraries(palera1n PRIVATE "${CIDERRAIN_LIB}")
-
-    if(IOS)
-        target_include_directories(palera1n PRIVATE "${CMAKE_SOURCE_DIR}/apple-include-iphoneos")
-    endif()
-
-    if(LINUX)
-        set(LITEUSB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/1stparty/libciderra1n/external/liteusb/include")
-        target_compile_definitions(palera1n PRIVATE LITEUSB_PLATFORM_LINUX)
-        target_include_directories(palera1n PRIVATE ${LITEUSB_INCLUDE_DIR})
-    endif()
-
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Ciderra1n.cmake")
 else()
-    message(STATUS "Building with Openra1n support")
-
-    if(IOS)
-        execute_process(
-            COMMAND xcrun --sdk iphoneos --show-sdk-path
-            OUTPUT_VARIABLE IOS_SDK
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -E env
-                "CFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-                "CXXFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET} -I${CMAKE_SOURCE_DIR}/apple-include-iphoneos"
-                "LDFLAGS=-isysroot ${IOS_SDK} -arch arm64 -miphoneos-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
-                make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} AR=${CMAKE_AR}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
-            RESULT_VARIABLE OPENRA1N_BUILD_RESULT
-        )
-    elseif(APPLE)
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -E env
-                "CFLAGS=-mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}"
-                make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
-            RESULT_VARIABLE OPENRA1N_BUILD_RESULT
-        )
-    else()
-        execute_process(
-            COMMAND make CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/1stparty/libopenra1n
-            RESULT_VARIABLE OPENRA1N_BUILD_RESULT
-        )
-    endif()
-
-    if(NOT OPENRA1N_BUILD_RESULT EQUAL 0)
-        message(FATAL_ERROR "Failed to build Openra1n.")
-    endif()
-
-    set(OPENRA1N_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/1stparty/libopenra1n/build/include")
-    set(OPENRA1N_LIB "${CMAKE_SOURCE_DIR}/1stparty/libopenra1n/build/lib/openra1n/libopenra1n.a")
-
-    target_include_directories(palera1n PRIVATE ${OPENRA1N_INCLUDE_DIR})
-    target_link_libraries(palera1n PRIVATE "${OPENRA1N_LIB}")
-
-    if(IOS)
-        target_include_directories(palera1n PRIVATE "${CMAKE_SOURCE_DIR}/apple-include-iphoneos")
-    endif()
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Openra1n.cmake")
 endif()
 
 # idevice
 if(WITH_GUI OR WITH_TUI)
-    set(IDevice_CARGO_ARGS
-        --release
-        --no-default-features
-        --features "usbmuxd ring tcp"
-    )
-
-    set(IDevice_ENV)
-
-    if(APPLE)
-        if(IOS)
-            list(APPEND IDevice_ENV "IPHONEOS_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
-        else()
-            list(APPEND IDevice_ENV "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
-        endif()
-    endif()
-
-    if(CROSS_HOST_TRIPLE)
-        if(CROSS_HOST_TRIPLE STREQUAL "i486-linux-musl")
-            set(RUST_TARGET "i686-unknown-linux-musl")
-        elseif(CROSS_HOST_TRIPLE STREQUAL "x86_64-linux-musl")
-            set(RUST_TARGET "x86_64-unknown-linux-musl")
-        elseif(CROSS_HOST_TRIPLE STREQUAL "armel-linux-musleabi")
-            set(RUST_TARGET "arm-unknown-linux-musleabi")
-        elseif(CROSS_HOST_TRIPLE STREQUAL "aarch64-linux-musl")
-            set(RUST_TARGET "aarch64-unknown-linux-musl")
-        endif()
-
-        if(RUST_TARGET)
-            string(TOUPPER "${RUST_TARGET}" RUST_TARGET_ENV)
-            string(REPLACE "-" "_" RUST_TARGET_ENV "${RUST_TARGET_ENV}")
-
-            list(APPEND IDevice_CARGO_ARGS --target ${RUST_TARGET})
-            list(APPEND IDevice_ENV
-                "CC=${CMAKE_C_COMPILER}"
-                "AR=${CMAKE_AR}"
-                "CARGO_TARGET_${RUST_TARGET_ENV}_LINKER=${CMAKE_C_COMPILER}"
-            )
-        endif()
-
-    elseif(MINGW)
-        set(RUST_TARGET "x86_64-pc-windows-gnu")
-
-        list(APPEND IDevice_CARGO_ARGS --target ${RUST_TARGET})
-
-        list(APPEND IDevice_ENV
-            "CC=${CMAKE_C_COMPILER}"
-            "AR=${CMAKE_AR}"
-            "CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=${CMAKE_C_COMPILER}"
-        )
-    endif()
-
-    # Only build idevice if libraries are missing
-    set(IDEVICE_INSTALL_DIR "${CMAKE_BINARY_DIR}/idevice_ep-prefix")
-    if(NOT (EXISTS "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice++.a"
-        AND EXISTS "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice_ffi.a"))
-
-        ExternalProject_Add(idevice_ep
-            GIT_REPOSITORY https://github.com/jkcoxson/idevice.git
-            GIT_TAG v0.1.65
-
-            PATCH_COMMAND
-                patch --forward --ignore-whitespace -p1 < "${CMAKE_SOURCE_DIR}/patches/idevice/0001-compile-usbmuxd-and-windows-fixes.patch" || true
-
-            CONFIGURE_COMMAND ""
-
-            BUILD_COMMAND
-                ${CMAKE_COMMAND} -E env
-                    ${IDevice_ENV}
-                    cargo build
-                    ${IDevice_CARGO_ARGS}
-                    --manifest-path <SOURCE_DIR>/ffi/Cargo.toml
-
-                COMMAND ${CMAKE_COMMAND} -E chdir <SOURCE_DIR>/cpp
-                    ${CMAKE_COMMAND}
-                        -B build
-                        -DCMAKE_BUILD_TYPE=Release
-                        -DIDEVICE_FFI_PATH=<SOURCE_DIR>/target/${RUST_TARGET}/release/${FFI_LIB_NAME}
-                        "-DCMAKE_CXX_FLAGS=-Du_int64_t=uint64_t -Du_int32_t=uint32_t -Du_int16_t=uint16_t -Du_int8_t=uint8_t"
-                        "-DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}"
-
-                COMMAND ${CMAKE_COMMAND} --build <SOURCE_DIR>/cpp/build --config Release
-
-            INSTALL_COMMAND
-                ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/lib/idevice
-                COMMAND ${CMAKE_COMMAND} -E make_directory <INSTALL_DIR>/include
-
-                COMMAND ${CMAKE_COMMAND} -E copy
-                    <SOURCE_DIR>/target/${RUST_TARGET}/release/libidevice_ffi.a
-                    <INSTALL_DIR>/lib/idevice/libidevice_ffi.a
-
-                COMMAND ${CMAKE_COMMAND} -E copy
-                    <SOURCE_DIR>/cpp/build/libidevice++.a
-                    <INSTALL_DIR>/lib/idevice/libidevice++.a
-
-                COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    <SOURCE_DIR>/cpp/include
-                    <INSTALL_DIR>/include
-
-            BUILD_IN_SOURCE 1
-        )
-
-        add_dependencies(palera1n idevice_ep)
-    endif()
-
-    set(IDEVICE_INCLUDE_DIR "${IDEVICE_INSTALL_DIR}/include")
-    set(IDEVICE_LIBRARY "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice++.a")
-    set(IDEVICE_FFI_LIBRARY "${IDEVICE_INSTALL_DIR}/lib/idevice/libidevice_ffi.a")
-
-    target_include_directories(palera1n PRIVATE ${IDEVICE_INCLUDE_DIR})
-    target_link_libraries(palera1n PRIVATE "${IDEVICE_LIBRARY}" "${IDEVICE_FFI_LIBRARY}")
-
-    if(MINGW)
-        target_link_libraries(palera1n PRIVATE bcrypt userenv ntdll)
-    endif()
-
-    target_compile_definitions(palera1n PRIVATE LIBPLIST_STATIC)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Idevice.cmake")
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    if(APPLE)
-        target_link_options(palera1n PRIVATE
-            -Wl,-dead_strip
-            -Wl,-x
-        )
-    elseif(MINGW)
-        target_link_options(palera1n PRIVATE
-            -Wl,--gc-sections
-            -Wl,--strip-all
-        )
-    elseif(LINUX)
-        target_link_options(palera1n PRIVATE
-            -Wl,--gc-sections
-            -Wl,--strip-all
-        )
-    endif()
-endif()
+# =========================
+# MARK: NON-CMAKE DEPENDENCIES
+# =========================
 
 if(WITH_STATIC)
     find_program(PKG_CONFIG_EXECUTABLE NAMES pkg-config)
@@ -624,77 +345,31 @@ else()
 endif()
 
 # =========================
-# MARK: INSTALL
+# MARK: STRIP FLAGS
 # =========================
 
-if(LINUX AND NOT MINGW)
-    install(TARGETS palera1n RUNTIME DESTINATION bin)
-elseif(IOS)
-    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/Debug-iphoneos/palera1n.app/palera1n" DESTINATION bin)
-elseif(APPLE AND WITH_GUI)
-    install(TARGETS palera1n BUNDLE DESTINATION .)
-elseif(APPLE)
-    install(TARGETS palera1n RUNTIME DESTINATION bin)
-elseif(MINGW)
-    install(TARGETS palera1n
-        RUNTIME DESTINATION .
-    )
-
-    install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/libstdc++-6.dll"
-        "${CMAKE_CURRENT_BINARY_DIR}/libgcc_s_seh-1.dll"
-        "${CMAKE_CURRENT_BINARY_DIR}/libwinpthread-1.dll"
-        DESTINATION .
-    )
-
-    if(NOT WITH_CIDERRAIN)
-        install(FILES
-            "${CMAKE_CURRENT_BINARY_DIR}/libusb-1.0.dll"
-            DESTINATION .
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    if(APPLE)
+        target_link_options(palera1n PRIVATE
+            -Wl,-dead_strip
+            -Wl,-x
+        )
+    elseif(MINGW)
+        target_link_options(palera1n PRIVATE
+            -Wl,--gc-sections
+            -Wl,--strip-all
+        )
+    elseif(LINUX)
+        target_link_options(palera1n PRIVATE
+            -Wl,--gc-sections
+            -Wl,--strip-all
         )
     endif()
 endif()
 
-if((LINUX AND NOT MINGW) OR IOS OR (APPLE AND NOT IOS AND NOT WITH_GUI))
-    install(FILES "${CMAKE_SOURCE_DIR}/docs/palera1n.1" DESTINATION share/man/man1)
-    install(FILES "${CMAKE_SOURCE_DIR}/docs/p1ctl.8" DESTINATION share/man/man8)
-endif()
+# =========================
+# MARK: INSTALL
+# =========================
 
-set(CPACK_PACKAGE_NAME "palera1n")
-set(CPACK_PACKAGE_VERSION "0")
-set(CPACK_PACKAGE_FILE_NAME "palera1n")
-
-if(MINGW)
-    set(CPACK_GENERATOR "NSIS64")
-
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "palera1n")
-    set(CPACK_NSIS_DISPLAY_NAME "palera1n")
-    set(CPACK_NSIS_PACKAGE_NAME "palera1n")
-    set(CPACK_NSIS_BRANDING_TEXT "palera1n Setup")
-
-    set(CPACK_NSIS_MODIFY_PATH OFF)
-    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-
-    set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/resources/palera1n.ico")
-    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/resources/palera1n.ico")
-
-    set(CPACK_PACKAGE_EXECUTABLES "palera1n" "palera1n")
-
-    set(CPACK_NSIS_CREATE_ICONS_EXTRA
-        "CreateShortCut \\\"\\$DESKTOP\\\\palera1n.lnk\\\" \\\"\\$INSTDIR\\\\bin\\\\palera1n.exe\\\""
-    )
-
-    set(CPACK_NSIS_DELETE_ICONS_EXTRA
-        "Delete \\\"\\$DESKTOP\\\\palera1n.lnk\\\""
-    )
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-elseif(APPLE AND WITH_GUI)
-    set(CPACK_GENERATOR "DragNDrop")
-else()
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/")
-    set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-    set(CPACK_GENERATOR "TGZ")
-endif()
-
-include(CPack)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/BuildInstall.cmake")
 
