@@ -13,6 +13,9 @@ on:
       - CMakeLists.txt
       - Makefile
 
+env:
+  TAG: ${{ github.ref_name }}
+
 jobs:
   build-loader:
     runs-on: macos-15
@@ -532,18 +535,24 @@ jobs:
         find . -maxdepth 1 -type f -print0 | tar --null -czf ../dist/resource.tar.gz --files-from=-
       working-directory: embedded
 
-    - name: Extract Version
-      id: get_version
-      run: |
-        echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
     - name: Create Release
       uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
       with:
-        name: ${{ steps.get_version.outputs.version }}
-        tag_name: ${{ steps.get_version.outputs.version }}
+        name: ${{ env.TAG }}
+        tag_name: ${{ env.TAG }}
         files: |
           dist/*
+        body: |
+          ## What's Changed
+
+          <!-- auto generated -->
+
+          ## Files
+
+          - `palera1n-iphoneos-${arch}.deb`: Palera1n for iOS jailbroken environments.
+          - `palera1n-linux-${arch}.tar.gz`: Palera1n for Linux on CPU architecture `${arch}`.
+          - `palera1n-macos-universal.dmg`: Palera1n for macOS 10.11+.
+          - `resources.tar.gz`: Precompiled embedded artifacts used for compiling this tool.
         generate_release_notes: true
         fail_on_unmatched_files: true
         draft: true
