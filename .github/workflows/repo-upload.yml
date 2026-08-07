@@ -7,7 +7,6 @@ on:
         description: "palera1n tag"
         required: true
         type: string
-
   release:
     types: [published]
 
@@ -25,12 +24,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download "${{ env.TAG }}"
-
-          if [ ! -f "palera1n-iphoneos-arm64.deb" ] || [ ! -f "palera1n-iphoneos-arm.deb" ]; then
-            echo "Debs not found :/"
-            exit 1
-          fi
-
           mkdir -p cdn-upload
           cp *.tar.gz cdn-upload/
           cp *.deb cdn-upload/
@@ -45,10 +38,9 @@ jobs:
         run: |
           git clone https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git repo-upload
 
-          ARM64_HASH=$(sha256sum palera1n-iphoneos-arm64.deb | cut -c1-8)
-          ARM_HASH=$(sha256sum palera1n-iphoneos-arm.deb | cut -c1-8)
-          cp palera1n-iphoneos-arm64.deb repo-upload/pool/iphoneos-arm64/palera1n_${{ env.TAG }}_${ARM64_HASH}_iphoneos-arm64.deb
-          cp palera1n-iphoneos-arm.deb repo-upload/pool/iphoneos-arm/palera1n_${{ env.TAG }}_${ARM_HASH}_iphoneos-arm.deb
+          rm -rf repo-upload/dists/stable/main/binary-iphoneos-arm{,64}/palera1n*.deb
+          cp palera1n-iphoneos-arm64.deb repo-upload/pool/iphoneos-arm64/palera1n-iphoneos-arm64.deb
+          cp palera1n-iphoneos-arm.deb repo-upload/pool/iphoneos-arm/palera1n-iphoneos-arm.deb
 
           cd repo-upload
 
@@ -78,6 +70,7 @@ jobs:
           USERNAME: GitHub-Actions
           API_TOKEN: ${{ secrets.BUILD_GITHUB_TOKEN }}
           GH_REPO: palera1n/palen1x
+          BRANCH: Alpine
         run: |
           git clone https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git tag
           cd tag
@@ -86,7 +79,7 @@ jobs:
           git config --global user.email "actions@github.com"
 
           git commit --allow-empty -m "bump to ${{ env.TAG }}"
-          git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git Alpine
+          git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git "$BRANCH"
 
           git tag "${{ env.TAG }}"
           git push https://$USERNAME:$API_TOKEN@github.com/$GH_REPO.git "${{ env.TAG }}"
