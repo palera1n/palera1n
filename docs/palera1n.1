@@ -9,17 +9,18 @@
 .Nd arm64 iOS/iPadOS/tvOS 15-26, bridgeOS 5-10 jailbreaking tool
 .Sh SYNOPSIS
 .Nm
-.Op Fl cCdDEfhIlLnpRsSTvV
+.Op Fl hvlfcBsTVpPednq
 .Op Fl e Ar Boot arguments
 .Op Fl k Ar Pongo image
 .Op Fl o Ar overlay file
 .Op Fl r Ar ramdisk file
 .Op Fl K Ar KPF file
-.Op Fl i Ar checkra1n file
-.Op Fl -version
+.Op Fl -cli
+.Op Fl -gui
+.Op Fl -tui
 .Op Fl -force-revert
+.Op Fl -dark-blockchain
 .Op Fl -force-enable-ssv
-.Op Fl -override-libcheckra1nhelper Ar hook dylib
 .Sh DESCRIPTION
 .Nm
 jailbreaks an arm64 (arm64e excluded) iOS/iPadOS/tvOS 15-26, bridgeOS 5-10 device,
@@ -61,7 +62,7 @@ In the remainder of this document, the term "iOS" and "iPadOS" will be used inte
 as the difference is negligible as far as the jailbreak is concerened.
 .Pp
 .Sh SUPPORTED DEVICES
-As described above, arm64 iOS 15.0-18.0 devices are supported, here is an explicit
+As described above, arm64 iOS 15.0-26.0 devices are supported, here is an explicit
 list of supported devicecs:
 
 .Bl -tag -compact
@@ -120,21 +121,51 @@ but it is currently unsupported.
 
 arm64e devices will NEVER be supported.
 
+
+
 .Sh OPTIONS
 .Bl -tag -width -indent
-.It Fl -version
+
+
+
+.It Fl h , -help
+Prints usage information.
+
+.It Fl v , -version
 Prints the program version and exit.
+
+.It Fl -cli
+Run in command line interface mode.
+
+.It Fl -gui
+Run in graphical user interface mode.
+.Pp
+This argument is available only in builds compiled with
+.Cm WITH_GUI
+support enabled.
+
+.It Fl -tui
+Run in text user interface mode.
+.Pp
+This argument is available only in builds compiled with
+.Cm WITH_TUI
+support enabled.
+
+.It Fl -dark-blockchain
+Runs the jailbreak in hacker mode.
+
 .It Fl -force-revert
 Remove the jailbreak while keeping user data. Some jailbreak files may remain
 after running this command. Additionally, jailbreak apps may remain on the
 home screen on for a while even when the files are deleted as the icon cache
 still has their icons. When used with
-.Fl f , -fakefs ,
+.Fl f , -rootful ,
 this will actually boot the device in rootless mode then delete the jailbreak
 files. As a result, using the loader app to install the jailbreak environment
 is not supported when this option is used together with
-.Fl f , -fakefs
+.Fl f , -rootful
 \[char46]
+
 .It Fl -force-enable-ssv
 Force the jailbreak to detect Signed System Volume (SSV) as being required on
 the system. This option provides compatibility with previous version of palera1n
@@ -148,6 +179,20 @@ the
 option is specified as well.
 (It is technically possible to setup fakefs using this option as well, but this
 is not a supported scenario)
+
+.It Fl l , -rootless
+Proceed in rootless mode. This option is only supported on iOS/iPadOS.
+
+.It Fl f , -rootful
+Proceed in rootful mode. Despite its name, this applies to both full, partial fakefs, as well as realfs, and it still applies even when trying to force revert.
+
+.It Fl c , -setup-fakefs
+When used with
+.Fl f , -rootful ,
+creates the new APFS volume required for rootful. Will fail if one already exists.
+This flag is supported on iOS/iPadOS 15.0 or later and tvOS 18.2 or later, as they
+require fakefs for rootful.
+
 .It Fl B , -setup-fakefs-partial
 Like
 .Fl c , -setup-fakefs
@@ -156,41 +201,35 @@ parts in rarely-written paths. When jailbreaking 16 GB devices, this option must
 when setting up fakefs for rootful, as they do not have enough storage for full fakefs.
 This flag is supported on iOS/iPadOS 15.0 or later and tvOS 18.2 or later, as they
 require fakefs for rootful.
-.It Fl c , -setup-fakefs
-When used with
-.Fl f , -fakefs ,
-creates the new APFS volume required for rootful. Will fail if one already exists.
-This flag is supported on iOS/iPadOS 15.0 or later and tvOS 18.2 or later, as they
-require fakefs for rootful.
-.It Fl C , -clean-fakefs
-This option is not currently supported and is a no-operation in this version of
-.Nm
-\[char46]
-.It Fl d , -demote
-Set the effective production fuse to 0, so as to enable hardware debugging features.
-.It Fl D , -dfuhelper
-Execute the DFU helper to guide the user into putting the device into DFU mode
-then exit.
-.It Fl e , -boot-args Ar boot arguments
+
+.It Fl s , -safe-mode
+Enter safe mode. An alert will be displayed on iOS/iPadOS/tvOS. Jailbreak daemons nor early boot executable files
+specified (see
+.Sy FILES
+section below) will be executed. The loader app and the built in SSH server can still be used,
+as well as any jailbreak-specific apps you have installed.
+
+.It Fl T , -telnetd
+Enable the TELNET daemon on port 46, all interfaces. Please note that there is no authentication and is therefore insecure.
+
+.It Fl V , -verbose-boot
+Boots the device in verbose mode, allowing boot logs to be seen.
+
+.It Fl p , -early-exit
+Exit after booting into a clean PongoOS shell.
+
+.It Fl P , -late-exit
+Exit after uploading existing images into the PongoOS shell.
+
+.It Fl e , -extra-bootargs Ar boot arguments
 Specify custom XNU kernel command line. Additionally, the
 .Em wdt=-1
 argument is used during fakefs setup.
-.It Fl E , -enter-recovery
-Exit after entering recovery mode.
-.It Fl f , -fakefs
-Proceed in rootful mode. Despite its name, this applies to both full, partial fakefs, as well as realfs, and it still applies even when trying to force revert.
-.It Fl h , -help
-Prints help text.
-.It Fl i , -checkra1n-file Ar checkra1n file
-Specify the path to a custom checkra1n file.
-On Apple platforms this will disable the built-in checkra1n helper.
-A custom one may still be specified with
-.Fl -override-libcheckra1nhelper
-\[char46]
 .It Fl k , -override-pongo Ar pongo file
 Override PongoOS image. The raw image, named
 .Em Pongo.bin
 when built, should be used. PongoOS 2.6.0 or later is required.
+
 .It Fl K , -override-kpf Ar KPF file
 Override the kernel patchfinder PongoOS module. The module is required to support setting
 root filesystem in paleinfo with
@@ -198,10 +237,7 @@ root filesystem in paleinfo with
 command. If in doubt, use
 .Sy https://github.com/palera1n/PongoOS
 iOS15 branch or your own fork of it.
-.It Fl l , -rootless
-Proceed in rootless mode. This option is only supported on iOS/iPadOS.
-.It Fl n , -exit-recovery
-Exit recovery mode and exit.
+
 .It Fl o , -override-overlay Ar overlay file
 Specify the path to a custom overlay file, which is then mounted onto /cores/binpack
 during boot, if the default ramdisk is used. The default ramdisk expects the overlay
@@ -211,86 +247,235 @@ at the root of it, as well as a dmg named
 .Em loader.dmg
 at the root of it. Otherwise, the device will not boot. It is also expected that it
 contains a shell, a ssh server, and various command line utilities.
-.It Fl p , -pongo-shell
-Exit after booting into a clean PongoOS shell
-.It Fl P , -pongo-full
-Like
-.Fl p , -pongo-shell
-but default images and options have been uploaded and applied respectively.
+
 .It Fl r , -override-ramdisk Ar ramdisk file
 Override the ramdisk. At a very minimum, it should contain
 .Em /cores/ploosh
 as well as a fake dyld
 .Em /usr/lib/dyld
 where the logic is expected to be in.
-.It Fl R , -reboot-device
-Reboot device in normal mode and exit.
-.It Fl s , -safe-mode
-Enter safe mode. An alert will be displayed on iOS/iPadOS/tvOS. Jailbreak daemons nor early boot executable files
-specified (see
-.Sy FILES
-section below) will be executed. The loader app and the built in SSH server can still be used,
-as well as any jailbreak-specific apps you have installed.
-.It Fl S , -no-colors
-Disable colors on the command line. External programs like checkra1n clones may still output colors.
-.It Fl T , -telnetd
-Enable the TELNET daemon on port 46, all interfaces. Please note that there is no authentication and is therefore insecure.
-.It Fl v , -debug-logging
-Enable debug logging. The option may be repeated for extra verbosity.
-.It Fl V , -verbose-boot
-Boots the device in verbose mode, allowing boot logs to be seen.
-.It Fl I , -device-info
-Prints info about device and exits.
-.It Fl -override-libcheckra1nhelper Ar hook dylib
-(Apple platforms only) Specify a custom dylib to insert into checkra1n via
-.Em DYLD_INSERT_LIBRARIES
-\[char46]
+
+.It Fl d , -debug-logging
+Enable debug logging. Supports up to 5 levels of verbosity, with 5 being the most verbose.
+
+.It Fl n , -no-colors
+Disable colors on the command line.
+
+.It Fl q , -quick
+When used with
+.Fl -tui ,
+or
+.Fl -gui ,
+the interfaces will automate the process of entering DFU mode, without needing to press the interface buttons for every step of the process.
+.Pp
+This variable is available only in builds compiled with
+.Cm WITH_GUI
+or
+.Cm WITH_TUI
+support enabled.
+
+
 .El
 .Sh ENVIRONMENTAL VARIABLES
 .Bl -tag -width -indent
-.It Ev TMPDIR
-This environmental variable should contain the a directory for temporary
-files. Without the
-.Fl i , -override-checkra1n
-option, files must be executable from it as the built-in checkra1n file
-is extracted and executed here. When not set, /tmp is used.
+
+
+
+.It Ev RA1N_ABORT_TIMEOUT
+Set a custom timeout value (0 to 999999999) for the exploit abort timer.
+While the default value is sufficient for standard platforms (Intel or Apple Silicon),
+this variable allows timing adjustments on specific environments such as Linux (AMD)
+or Raspberry Pi (ARM64), where the exploit may fail due to platform-specific USB
+stack behavior.
+.Pp
+E.g. Raspberry Pi 5:
+.Em RA1N_ABORT_TIMEOUT=1000000
+.Pp
+This variable is available only in builds compiled with
+.Cm WITH_CIDERRAIN
+support enabled.
+
+.It Ev RA1N_CLI
+Equivalent to using the
+.Fl -cli
+option.
+
+.It Ev RA1N_GUI
+Equivalent to using the
+.Fl -gui
+option.
+.Pp
+This variable is available only in builds compiled with
+.Cm WITH_GUI
+support enabled.
+
+.It Ev RA1N_TUI
+Equivalent to using the
+.Fl -tui
+option.
+.Pp
+This variable is available only in builds compiled with
+.Cm WITH_TUI
+support enabled.
+
+.It Ev   RA1N_DARK_BLOCKCHAIN
+Equivalent to using the
+.Fl -dark-blockchain
+option.
+
+.It Ev RA1N_FORCE_REVERT
+Equivalent to using the
+.Fl -force-revert
+option.
+
+.It Ev RA1N_FORCE_ENABLE_SSV
+Equivalent to using the
+.Fl -force-enable-ssv
+option.
+
+.It Ev RA1N_ROOTLESS
+Equivalent to using the
+.Fl l , -rootless
+option.
+
+.It Ev RA1N_ROOTFUL
+Equivalent to using the
+.Fl f , -rootful
+option.
+
+
+.It Ev RA1N_SETUP_FAKEFS
+Equivalent to using the
+.Fl c , -setup-fakefs
+option.
+
+.It Ev RA1N_SETUP_FAKEFS_PARTIAL
+Equivalent to using the
+.Fl B , -setup-fakefs-partial
+option.
+
+.It Ev RA1N_SAFE_MODE
+Equivalent to using the
+.Fl s , -safe-mode
+option.
+
+.It Ev RA1N_TELNETD
+Equivalent to using the
+.Fl T , -telnetd
+option.
+
+.It Ev RA1N_VERBOSE_BOOT
+Equivalent to using the
+.Fl V , -verbose-boot
+option.
+
+.It Ev RA1N_EARLY_EXIT
+Equivalent to using the
+.Fl p , -early-exit
+option.
+
+.It Ev RA1N_LATE_EXIT
+Equivalent to using the
+.Fl P , -late-exit
+option.
+
+.It Ev RA1N_EXTRA_BOOTARGS
+Equivalent to using the
+.Fl e , -extra-bootargs
+option.
+
+.It Ev RA1N_OVERRIDE_PONGO
+Equivalent to using the
+.Fl k , -override-pongo
+option.
+
+.It Ev RA1N_OVERRIDE_KPF
+Equivalent to using the
+.Fl K , -override-kpf
+option.
+
+.It Ev RA1N_OVERRIDE_OVERLAY
+Equivalent to using the
+.Fl o , -override-overlay
+option.
+
+.It Ev RA1N_OVERRIDE_RAMDISK
+Equivalent to using the
+.Fl r , -override-ramdisk
+option.
+
+.It Ev RA1N_DEBUG_LOGGING
+Equivalent to using the
+.Fl d , -debug-logging
+option. Supports up to 5 levels of verbosity, with 5 being the most verbose.
+e.g. to enable level 3 debug logging, use
+.Em RA1N_DEBUG_LOGGING=3
+
+.It Ev RA1N_NO_COLORS
+Equivalent to using the
+.Fl n , -no-colors
+option.
+
+.It Ev RA1N_QUICK
+Equivalent to using the
+.Fl q , -quick
+option.
+.Pp
+This variable is available only in builds compiled with
+.Cm WITH_GUI
+or
+.Cm WITH_TUI
+support enabled.
+
+
 .El
 .Sh EXAMPLES
+
+
+
 To (re-)jailbreak in rootless mode:
 .Pp
 .Dl "palera1n -l"
 .Pp
+
 To setup fakefs for rootful mode:
 .Pp
 .Dl "palera1n -fc"
 .Pp
 After the device has rebooted into recovery mode, follow the following example.
 .Pp
+
 To re-jailbreak in rootful mode:
 .Pp
 .Dl "palera1n -f"
 .Pp
+
 To remove the jailbreak in rootful mode:
 .Pp
 .Dl "palera1n --force-revert -f"
 .Pp
+
 To remove the jailbreak in rootless mode:
 .Pp
 .Dl "palera1n --force-revert"
 .Pp
+
 To verbose boot in rootful mode:
 .Pp
 .Dl "palera1n -Vf"
 .Pp
+
 To create a partial fakefs with bind mounts:
 .Pp
 .Dl "palera1n -Bf"
 .Pp
-To exit recovery mode:
-.Pp
-.Dl "palera1n -n"
-.Pp
+
+
+.El
 .Sh CAVEATS
+
+
+
 .Pp
 .Em -v
 is not a real XNU boot argument. It is interpreted by iBoot. However, since XNU
@@ -310,7 +495,7 @@ before they can be ran on a device jailbroken with
 \[char46]
 .Pp
 When using rootful mode, the
-.Fl f , -fakefs
+.Fl f , -rootful
 flag must be specified at all times. It does not matter whether you want to create fakefs,
 create partial fakefs, rejailbreak or remove jailbreak.
 .Pp
@@ -366,8 +551,14 @@ has been mounted.
 The directory where executable files that needs to be executed during boot, before
 daemons are launched, are placed on rootless. They are executed after all filesystems
 has been mounted.
+
+
+
 .El
 .Sh BUGS
+
+
+
 .Nm
 may crash if the machine it is running on has non-compliant USB devices plugged in.
 .Pp
@@ -377,16 +568,25 @@ Usually this is not a problem on PCs since the built-in root hubs are also
 USB devices. However, on platforms such as Apple Silicon Macs in Linux, since
 there are no built-in USB hubs, at least one USB device needs to be manually
 plugged in for palera1n to be initialized.
+
 .Pp
 The exploit may also work less reliably on some hosts, like AMD desktops, or some MediaTek devices.
+
 .Pp
 The built-in SSH server might be not accessible with password after bootstrapping rootful,
 since the bootstrap uses a custom crypt() function that is not supported
 by the built-in SSH server.
+
 .Pp
 There are no DFU instructions for iBridge T2 as there are no known ways to connect to the T2's USB
 interface when macOS has been booted.
+
+
+
 .Sh DEPRECATED AND REMOVED FUNCTIONALITY
+
+
+
 There was an option in
 .Nm
 to force create the fakefs even when one already exists (which would overwrite
@@ -396,16 +596,36 @@ in palera1n flags. This option was removed because using
 and
 .Fl c
 at the same time has exactly the same effect.
+
 .Pp
 The hook that enabled
 .Sy launchctl runstats
 has been removed, since it leaks memory in launchd.
+.Pp
+
+.Fl f, -fakefs
+has been renamed to
+.Fl f, -rootful
+due to its ambiguity. As it supports both fakefs and realfs on certain platforms.
+
+.Fl P, -pongo-full
+has been renamed to
+.Fl P, -late-exit
+due to its ambiguity.
+
+
 .Sh SEE ALSO
 .Xr launchd 8
 .Xr launchd.plist 5
 .Xr ldid 1
 .Xr p1ctl 8
+
+
+
 .Sh HISTORY
+
+
+
 The
 .Nm
 jailbreak was first written by Nebula and Mineek on September 26, 2022, as a shell

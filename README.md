@@ -3,15 +3,9 @@
 [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/palera1n/palera1n/total)](https://github.com/palera1n/palera1n/releases)
 [![GitHub License](https://img.shields.io/github/license/palera1n/palera1n?color=%23C96FAD)](https://github.com/palera1n/palera1n/blob/main/LICENSE)
 
-
 Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 and higher.
 
-
-
-
-| ![Screenshot of macOS Terminal.app](assets/image-1.png)	| 
-|:--:												| 
-| A screenshot of palera1n being used in a Terminal | 
+![Demo of app](demo.png)
 
 ## Device Support
 
@@ -27,8 +21,7 @@ Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 
 | iPhone 8                  | iPad Pro (12.9") (1st generation)		|								|								|
 | iPhone 8 Plus             | iPad Pro (10.5")						|								|								|
 | iPhone X                  | iPad Pro (12.9") (2nd generation)		|								|								|
-|                           | iPad Air 2		|								|								|
-
+|                           | iPad Air 2                            |								|								|
 
 > Note that on `A11` (iPhone X, 8, 8 Plus), **you must disable your passcode while in the jailbroken state** (on iOS 16, you need to **reset your device** before proceeding with palera1n).
 
@@ -61,73 +54,138 @@ Jailbreak for A8 through A11, T2 devices, on iOS/iPadOS/tvOS 15.0, bridgeOS 5.0 
 | iBridge2,11 (Unknown Mac) |
 | iBridge2,13 (Unknown Mac) |
 
-
-
 </details>
 
-
 ## Computer Requirements
+
 1. **USB-A** cables are recommended to use, USB-C to may have issues with palera1n and getting into DFU mode.
 > Due to USB-C cables having different accessory IDs, your device may not be able to be recognized when using USB-C due to not being able to assert to its USB voltage pin.
 
 2. **Linux or macOS computer**
-> AMD CPUs (not AMD Mobile) have an issue where it causes them to have a very low success rate with checkm8 exploit. It is not recommended that you use them with palera1n.
 
 > USB-C port on Apple Silicon Macs *may* require manual unplugging and replugging of the lightning cable after checkm8 exploit. This problem may be solved by connecting via USB hub, though extensions can vary.
 
-## Usage 
-```
-Usage: palera1n [-DEhpvVdsSLRnPI] [-e boot arguments] [-k Pongo image] [-o overlay file] [-r ramdisk file] [-K KPF file] [-i checkra1n file]
-
-	--version				Print version
-	--force-revert				Remove jailbreak
-	-d, --demote				Demote
-	-D, --dfuhelper				Exit after entering DFU
-	-e, --boot-args <boot arguments>	XNU boot arguments
-	-E, --enter-recovery			Enter recovery mode
-	-h, --help				Show this help
-	-i, --override-checkra1n <file>		Override checkra1n
-	-k, --override-pongo <file>		Override Pongo image
-	-K, --override-kpf <file>		Override kernel patchfinder
-	-L, --jbinit-log-to-file		Make jbinit log to /cores/jbinit.log (can be read from sandbox while jailbroken)
-	-n, --exit-recovery			Exit recovery mode
-	-I, --device-info			Print info about the connected device
-	-o, --override-overlay <file>		Override overlay
-	-p, --pongo-shell			Boots to PongoOS shell
-	-P, --pongo-full			Boots to a PongoOS shell with default images already uploaded
-	-r, --override-ramdisk <file>		Override ramdisk
-	-R, --reboot-device			Reboot connected device in normal mode
-	-s, --safe-mode				Enter safe mode
-	-S, --no-colors				Disable colors on the command line
-	-v, --debug-logging			Enable debug logging
-		  This option can be repeated for extra verbosity.
-	-V, --verbose-boot			Verbose boot
-
-Environmental variables:
-	TMPDIR		temporary diretory (path the built-in checkra1n will be extracted to)
-```
-
 ## Installing
+
 Visit https://palera.in
 
-## Disclaimers
-We are **NOT** responsible for any data loss, or the result of a device being bricked. When using palera1n, the user should accept responsibility if anything happens to their device during the process.
-- If your device is stuck in recovery, please run futurerestore `--exit-recovery`, or use `irecovery -n`, or `palera1n -n`.
-- If you're unable to get out of recovery via these methods please restore with iTunes or Finder.
-- palera1n **will not work** in VirtualBox, VMware or any virtual machine that doesn't support PCI passthrough.
+## Building
 
-## Troubleshooting
-Make sure you're following the guides provided [here](https://palera.in), also when asking for support make sure you provide full details on your device, such as:
-- iPhone/iPad/iPod/Apple TV
-- iOS Version
-- Passcode enabled?
-- Verbose from palera1n (specifying `-Vv` within palera1n)
-- Panic logs, if panicked then send latest `panic-full` log from your device.
+Building is going to be a bit convoluted for each platform, each having their own unique specifications, but the best reference for building should be looking at how [GitHub actions](./.github/workflows/build.yml) does it.
 
-Create an issue here: https://github.com/palera1n/palera1n/issues/new/choose
+```sh
+# Supported params:
+#  GUI support                              (0 default):
+#   WITH_GUI=1
+#  TUI support                              (0 default):
+#   WITH_TUI=1
+#  Default ramdisk                          (1 default):
+#   WITH_RAMDISK=1
+#  Default overlay                          (1 default):
+#   WITH_BINPACK=1
+#  Compile statically                       (0 default):
+#   WITH_STATIC=0
+#  Compile using libciderra1n as backend    (0 default):
+#   WITH_CIDERRAIN=0
+#  Debug or release build                   ("Debug" default):
+#   BUILD_TYPE="Release"
+```
 
-## Credits
+When building, many precompiled artifacts are embedded inside of the program. Such as, [PongoOS](https://github.com/palera1n/pongoos), [jbinit](https://github.com/palera1n/jbinit), and the [Loader](https://github.com/palera1n/loader).
 
-[All credits for palera1n can be found here](https://palera.in/)
+Make sure these files are present.\
+*NOTE: [PongoOS](https://github.com/palera1n/pongoos) BIN and KPF is absolutely required when building.*
+```sh
+embedded/Pongo.bin
+embedded/checkra1n-kpf-pongo
+embedded/binpack.dmg # not required with WITH_BINPACK=0
+embedded/ramdisk.dmg # not required with WITH_RAMDISK=0
+```
 
-If proper credit isn't shown please message us or create an issue.
+
+### macOS
+
+- [Xcode](https://developer.apple.com/xcode/) and [Command Line Tools](https://developer.apple.com/download/all/)
+- [Rust](https://rustup.rs/)
+```sh
+brew install cmake \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config
+```
+
+### Debian / Ubuntu Linux
+
+- [Rust](https://rustup.rs/)
+
+```sh
+sudo apt install -y \
+    build-essential \
+    cmake \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config
+```
+
+### Windows
+
+- [MSYS2](https://www.msys2.org/)
+
+```sh
+pacman -S \
+    git \
+    mingw-w64-x86_64-toolchain \
+    mingw-w64-x86_64-cmake \
+    mingw-w64-x86_64-libusb \
+    mingw-w64-x86_64-rust \
+    libtool \
+    openssl \
+    openssl-devel \
+    python-devel \
+    autoconf \
+    automake \
+    zip \
+    vim \
+    make \
+    patch
+```
+
+### Compiling
+
+```sh
+# macOS / Linux
+make palera1n
+# iOS
+make palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1
+# MinGW environment
+make palera1n_mingw
+```
+
+## Acknowledgements
+
+- [mineek](https://github.com/mineek) - Checkm8 exploit re-implementation (libopenra1n), based off [gaster](https://github.com/0x7ff/gaster)
+- [kok3shidoll](https://github.com/kok3shidoll) - Checkm8 (1337) exploit re-implementation (libciderra1n), PongoOS patches, ROP chain generator
+- [checkra1n](https://checkra.in) - Checkra1n, PongoOS, payloads, DFU helper & device assets
+- [staturnz](https://github.com/staturnz) - Liteusb, Loader contributions
+- [libusb](https://github.com/libimobiledevice/libimobiledevice) - Library for access to usb-devices, used by libopenra1n
+- [idevice](https://github.com/jkcoxson/idevice) - Library for access to usbmuxd devices
+- [sarah](https://github.com/plooshi) - Plooshfinder, plooshinit, various legacy patches
+- [Procursus](https://github.com/ProcursusTeam/Procursus) - Bootstrap & binpack
+- [tealbathingsuit](https://github.com/tealbathingsuit) - Tweak injection ([ElleKit](https://github.com/tealbathingsuit/ellekit))
+- [sbingner](https://github.com/sbingner) - Substitute
+- [elihwyma](https://github.com/elihwyma) - Package manager ([Sileo](https://github.com/Sileo/Sileo)) & [Pogo](https://github.com/elihwyma/Pogo)
+- [kirb](https://github.com/kirb) - Package manager ([Zebra](https://github.com/zbrateam/Zebra))
+- [lrdsnow](https://github.com/lrdsnow) - TvOS package manager ([PurePKG](https://github.com/Lrdsnow/purepkg)).
+- [opa334](https://github.com/opa334) - Cfprefs hook
+- [itsnebulalol](https://github.com/itsnebulalol) - Palera1n v1
+- [llsc12](https://github.com/llsc12) - Palera1n loader v1
+- [tihmstar](https://github.com/tihmstar) - Jbinit v1
+- [nekohaxx](https://github.com/nekohaxx) - Contributions
+
+## License
+
+Project is licensed under the MIT license. You can see the full details of the license [here](https://github.com/khcrysalis/PlumeImpactor/blob/main/LICENSE). Some components may be licensed under different licenses, see their respective directories for details.
+
+Many things included in this program are made and developed by the Checkra1n team. Please do NOT contact the Checkra1n team for Palera1n, they are not responsible for this program. The original Checkra1n payloads are from [here](https://checkra.in/1337).

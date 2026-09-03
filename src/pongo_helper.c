@@ -1,283 +1,295 @@
-#include <errno.h>
-#include <fcntl.h>              // open
-#include <pthread.h>
-#include <stdbool.h>
-#include <stdint.h>
+/*
+ * palera1n - https://palera.in
+ *
+ * Copyright (C) 2026 palera1n team
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+#include "pongo_helper.h"
+
+#include <stdlib.h>
 #include <stdio.h>
-#include <stdlib.h>             // exit, strtoull
-#include <string.h>             // strlen, strerror, memcpy, memmove
-#include <unistd.h>             // close
-#include <sys/mman.h>           // mmap, munmap
-#include <sys/stat.h>           // fstst
+#include <string.h>
+#include <inttypes.h> // PRIx64
 
-#include <palerain.h>
-#ifdef TUI
-#include <tui.h>
+#if WITH_CIDERRAIN
+# include <ciderra1n/usb.h>
+# include <ciderra1n/log.h>
+# include <ciderra1n/pongo_compress.h>
+#else
+# include <openra1n/shim.h>
+# include <openra1n/utils.h>
 #endif
-#include <ANSI-color-codes.h>
 
-bool device_has_booted = 0;
-int pongo_thr_running = 0;
+#include "globals.h"
+#include "paleinfo.h"
 
-#define ERR(...) LOG(LOG_VERBOSE, __VA_ARGS__)
+#define CMD_LENGTH_MAX 512
 
-static int issue_pongo_command(usb_device_handle_t, char*);
-static int upload_pongo_file(usb_device_handle_t, unsigned char*, unsigned int);
-static void write_stdout(char *buf, uint32_t len);
-
-void* pongo_helper(void* ptr) {
-	pongo_thr_running = 1;
-	pthread_cleanup_push(thr_cleanup, &pongo_thr_running);
-	wait_for_pongo();
-	while (get_spin()) {
-		sleep(1);
-	}
-	pthread_cleanup_pop(1);
-	return NULL;
-}
-
-static void *pongo_usb_callback(stuff_t *arg) {
-	if (get_found_pongo())
-		return NULL;
-	set_found_pongo(1);
-#ifdef ROOTFUL
-	if ((palerain_flags & palerain_option_setup_rootful)) {
-		strncat(xargs_cmd, " wdt=-1", 0x270 - strlen(xargs_cmd) - 1);	
-	}
-#endif
-	LOG(LOG_INFO, "Found PongoOS USB Device");
-	if (palerain_flags & palerain_option_pongo_exit)
-		goto done;
-
-	usb_device_handle_t handle = arg->handle;
-#ifdef TUI
-	if (tui_is_jailbreaking) {
-		tui_jailbreak_stage = 4;
-    	tui_jailbreak_status = "Sending PongoOS commands";
-    	tui_jailbreak_status_changed();
-	}
-#endif
-	issue_pongo_command(handle, NULL);	
-	issue_pongo_command(handle, "fuse lock");
-	issue_pongo_command(handle, "sep auto");
-#ifdef TUI
-	if (tui_is_jailbreaking) {
-		tui_jailbreak_stage = 5;
-    	tui_jailbreak_status = "Sending KPF";
-    	tui_jailbreak_status_changed();
-	}
-#endif
-	upload_pongo_file(handle, **kpf_to_upload, checkra1n_kpf_pongo_lzma_len);
-	if (*kpf_to_upload == &checkra1n_kpf_pongo_lzma) {
-		issue_pongo_command(handle, "modload " KPF_UNCOMPRESSED_SIZE);
-	} else {
-		issue_pongo_command(handle, "modload");
-	}
-	issue_pongo_command(handle, palerain_flags_cmd);
-#ifdef NO_RAMDISK
-	if (ramdisk_dmg_lzma_len != 0)
-#endif
-	{
-#ifdef TUI
-		if (tui_is_jailbreaking) {
-			tui_jailbreak_stage = 6;
-			tui_jailbreak_status = "Sending ramdisk";
-			tui_jailbreak_status_changed();
-		}
-#endif
-		upload_pongo_file(handle, **ramdisk_to_upload, ramdisk_dmg_lzma_len);
-		if ((*ramdisk_to_upload) == &ramdisk_dmg_lzma)
-			issue_pongo_command(handle, "ramdisk " RAMDISK_UNCOMPRESSED_SIZE);
-		else {
-			issue_pongo_command(handle, "ramdisk");
-		}
-	}
-#ifdef NO_OVERLAY
-	if (binpack_dmg_len != 0)
-#endif
-	{
-#ifdef TUI
-		if (tui_is_jailbreaking) {
-			tui_jailbreak_stage = 7;
-			tui_jailbreak_status = "Sending binpack";
-			tui_jailbreak_status_changed();
-		}
-#endif
-		upload_pongo_file(handle, **overlay_to_upload, binpack_dmg_len);
-		issue_pongo_command(handle, "overlay");
-	}
-	issue_pongo_command(handle, xargs_cmd);
-	if ((palerain_flags & palerain_option_pongo_full)) goto done;
-
-#ifdef TUI
-	if (tui_is_jailbreaking) {
-		tui_jailbreak_stage = 8;
-		tui_jailbreak_status = "Booting";
-		tui_jailbreak_status_changed();
-	}
-#endif
-	issue_pongo_command(handle, "bootx");
-	LOG(LOG_INFO, "Booting Kernel...");
-#ifdef ROOTFUL
-	if ((palerain_flags & palerain_option_setup_partial_root)) {
-		LOG(LOG_INFO, "Please wait up to 5 minutes for the bindfs to be created.");
-		LOG(LOG_INFO, "Once the device reboots into recovery mode, run again without the -B (Create BindFS) option to jailbreak.");
-	} else if ((palerain_flags & palerain_option_setup_rootful)) {
-		LOG(LOG_INFO, "Please wait up to 10 minutes for the fakefs to be created.");
-		LOG(LOG_INFO, "Once the device reboots into recovery mode, run again without the -c (Create FakeFS) option to jailbreak.");
-	}
-#endif
-	if (dfuhelper_thr_running) {
-		pthread_cancel(dfuhelper_thread);
-		dfuhelper_thr_running = false;
-	}
-done:
-	device_has_booted = true;
-
-#ifdef TUI
-	if (tui_is_jailbreaking) {
-		tui_jailbreak_stage = 9;
-		tui_jailbreak_status = "All Done";
-		tui_is_jailbreaking = false;
-		tui_jailbreak_status_changed();
-	}
-#endif
-#ifdef USE_LIBUSB
-	libusb_unref_device(arg->dev);
-#endif
-	set_spin(0);
-	return NULL;
-}
-
-static int issue_pongo_command(usb_device_handle_t handle, char *command)
+p1_transfer_ret_t issue_pongo_command(const p1_usb_handle_t *handle, const char *command)
 {
-	uint32_t outpos = 0;
-	uint32_t outlen = 0;
-	int ret = USB_RET_SUCCESS;
-	uint8_t in_progress = 1;
-	if (command == NULL) goto fetch_output;
-	size_t len = strlen(command);
-	char command_buf[512];
-	char stdout_buf[0x2000];
-	if (len > (CMD_LEN_MAX - 2))
-	{
-		LOG(LOG_ERROR, "Pongo command %s too long (max %d)", command, CMD_LEN_MAX - 2);
-		return EINVAL;
-	}
-    if (verbose < 3 || verbose > 4) {
-	    LOG(LOG_VERBOSE, "Executing PongoOS command: '%s'", command);
-    } else {
-        printf("%s\n", command);
+    p1_transfer_ret_t result;
+
+    uint32_t outpos = 0;
+    uint32_t outlen = 0;
+    uint8_t in_progress = 1;
+
+    char command_buf[CMD_LENGTH_MAX];
+    char stdout_buf[0x2000];
+
+    memset(stdout_buf, 0, sizeof(stdout_buf));
+
+    if (command != NULL) {
+        size_t len = strlen(command);
+
+        if (len >= CMD_LENGTH_MAX) {
+            LOG_ERROR("Pongo command too long: %s", command);
+            result.ret = 1;
+            return result;
+        }
+
+        LOG_DEBUG("Executing PongoOS command: '%s'", command);
+
+        snprintf(command_buf, sizeof(command_buf), "%s\n", command);
+        len = strlen(command_buf);
+
+        #if WITH_CIDERRAIN
+        result = usb_ctrl_transfer(handle, 0x21, 4, 1, 0, NULL, 0);
+        if (result.ret != kUSBResponseSuccess) goto result;
+        result = usb_ctrl_transfer(handle, 0x21, 3, 0, 0, (uint8_t *)command_buf, len);
+        if (result.ret != kUSBResponseSuccess) goto result;
+        #else
+        result = send_interface_control_request(handle, 0x21, 4, 1, 0, NULL, 0);
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        result = send_interface_control_request(handle, 0x21, 3, 0, 0, command_buf, len);
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        #endif
     }
-	snprintf(command_buf, 512, "%s\n", command);
-	len = strlen(command_buf);
-	ret = USBControlTransfer(handle, 0x21, 4, 1, 0, 0, NULL, NULL);
-	if (ret)
-		goto bad;
-	ret = USBControlTransfer(handle, 0x21, 3, 0, 0, (uint32_t)len, command_buf, NULL);
-fetch_output:
-	while (in_progress) {
-		ret = USBControlTransfer(handle, 0xa1, 2, 0, 0, (uint32_t)sizeof(in_progress), &in_progress, NULL);
-		if (ret == USB_RET_SUCCESS)
-		{
-			ret = USBControlTransfer(handle, 0xa1, 1, 0, 0, 0x1000, stdout_buf + outpos, &outlen);
-			if (ret == USB_RET_SUCCESS)
-			{
-				write_stdout(stdout_buf + outpos, outlen);
-				outpos += outlen;
-				if (outpos > 0x1000)
-				{
-					memmove(stdout_buf, stdout_buf + outpos - 0x1000, 0x1000);
-					outpos = 0x1000;
-				}
-			}
-		}
-		if (ret != USB_RET_SUCCESS)
-		{
-			goto bad;
-		}
-	}
-bad:
-	if (ret != USB_RET_SUCCESS)
-	{
+
+    while (in_progress) {
+        #if WITH_CIDERRAIN
+        result = usb_ctrl_transfer(handle, 0xA1, 2, 0, 0, &in_progress, sizeof(in_progress));
+        if (result.ret != kUSBResponseSuccess) goto result;
+        #else
+        result = send_interface_control_request(handle, 0xA1, 2, 0, 0, &in_progress, sizeof(in_progress));
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        #endif
+
+        if (!in_progress) break;
+        if (outpos > 0x1000) {
+            memmove(stdout_buf, stdout_buf + outpos - 0x1000, 0x1000);
+            outpos = 0x1000;
+        }
+
+        outlen = 0;
+        #if WITH_CIDERRAIN
+        result = usb_ctrl_transfer(handle, 0xA1, 1, 0, 0, (uint8_t *)(stdout_buf + outpos), 0x1000);
+        if (result.ret != kUSBResponseSuccess) goto result;
+        outlen = result.wLenDone;
+        #else
+        result = send_interface_control_request(handle, 0xA1, 1, 0, 0, stdout_buf + outpos, 0x1000);
+        if (result.ret != USB_TRANSFER_OK) goto result;
+        outlen = result.sz;
+        #endif
+        outpos += outlen;
+    }
+
+result:
+    if (result.ret != 0) {
+        // boot command, we don't care about results, lets assume success :-)
         if (command != NULL && (!strncmp("boot", command, 4))) {
-			if (ret == USB_RET_IO || ret == USB_RET_NO_DEVICE || ret == USB_RET_NOT_RESPONDING)
-				return 0;
-		}
-		LOG(LOG_ERROR, "USB error: %s", usb_strerror(ret));
-		return ret;
-	}
-	else
-		return ret;
+            result.ret = 0;
+            return result;
+        }
+        LOG_ERROR("PongoOS command output: %.*s", (int)outpos, stdout_buf);
+    }
+
+    return result;
 }
 
-static int upload_pongo_file(usb_device_handle_t handle, unsigned char *buf, unsigned int buf_len)
+p1_transfer_ret_t upload_buffer_to_pongo(p1_usb_handle_t *handle, const void *data, size_t length)
 {
-	int ret = 0;
-	ret = USBControlTransfer(handle, 0x21, 1, 0, 0, 4, &buf_len, NULL);
-	if (ret == USB_RET_SUCCESS)
-	{
-		ret = USBBulkUpload(handle, buf, buf_len);
-		if (ret == USB_RET_SUCCESS)
-		{
-		    if (verbose < 3 || verbose > 4) {
-				LOG(LOG_VERBOSE, "Uploaded %llu bytes to PongoOS", (unsigned long long)buf_len);
-    		} else {
-				if ((palerain_flags & palerain_option_no_colors))
-				    printf("/send mem:%p:%p\n[Uploaded %llu bytes]\n", (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
-				else
-        			printf("/send mem:%p:%p\n" BCYN "[Uploaded %llu bytes]\n" CRESET, (void*)buf, (void*)(buf + buf_len), (unsigned long long)buf_len);
-    		}
-		}
-	}
-	if (verbose >= 3) printf("pongoOS> ");
-	return ret;
+    p1_transfer_ret_t result;
+
+    if (data == NULL || length == 0) {
+        LOG_ERROR("Invalid data buffer or length");
+        result.ret = -1;
+        goto result;
+    }
+
+    LOG_DEBUG("Uploading %zu bytes to PongoOS...", length);
+
+    #if WITH_CIDERRAIN
+    result = usb_ctrl_transfer(handle, 0x21, 1, 0, 0, (void *)&length, 4);
+    if (result.ret != kUSBResponseSuccess) {
+        LOG_ERROR("Failed to initiate PongoOS upload: %d", result.ret);
+        goto result;
+    }
+    result = usb_bulk_upload(handle, (uint8_t *)data, (uint32_t)length);
+    if (result.ret != kUSBResponseSuccess) {
+        LOG_ERROR("Failed to upload data to PongoOS: %d", result.ret);
+        goto result;
+    }
+    #else
+    result = send_interface_control_request(handle, 0x21, 1, 0, 0, (void *)&length, 4);
+    if (result.ret != USB_TRANSFER_OK || result.sz != 4) {
+        LOG_ERROR("Failed to initiate PongoOS upload: %d", result.ret);
+        goto result;
+    }
+    result = send_interface_bulk_transfer(handle, (void *)data, (uint32_t)length);
+    if (result.ret != USB_TRANSFER_OK || result.sz != length) {
+        LOG_ERROR("Failed to upload data to PongoOS: %d", result.ret);
+        goto result;
+    }
+    #endif
+
+result:
+    return result;
 }
 
-void io_start(stuff_t *stuff)
+p1_checkm8_err_t send_compressed_pongo(p1_usb_handle_t *handle, const uint8_t *pongo_bin, const size_t pongo_bin_length)
 {
-    int r = pthread_create(&stuff->th, NULL, (pthread_start_t)pongo_usb_callback, stuff);
-    if(r != 0)
-    {
-        ERR("pthread_create: %s", strerror(r));
-        set_spin(0);
-		return;
+    uint8_t *pongo_lz4 = NULL;
+    size_t pongo_lz4_length = 0;
+
+    if (!pongo_bin) {
+        LOG_ERROR("pongoOS is not loaded?");
+        return 15;
     }
-    pthread_join(stuff->th, NULL);
+
+    // pongo has been moved to sram, due to space constraints
+    // we need to make a self-decompressing payload before sending
+    #if WITH_CIDERRAIN
+    if (lz4_compress_pongo(pongo_bin, pongo_bin_length, &pongo_lz4, &pongo_lz4_length)) {
+    #else
+    if (!prepare_pongo(&pongo_lz4, &pongo_lz4_length, pongo_bin, pongo_bin_length)) {
+    #endif
+        // how on earth
+        LOG_ERROR("Failed to compress pongo image?");
+        free(pongo_lz4);
+        return 15;
+    }
+
+    p1_checkm8_err_t cr =
+    #if WITH_CIDERRAIN
+    ra1n_send_pongo(handle, pongo_lz4, pongo_lz4_length);
+    #else
+    checkm8_boot_pongo(handle, pongo_lz4, pongo_lz4_length);
+    #endif
+
+    free(pongo_lz4);
+
+    return cr;
 }
 
-void io_stop(stuff_t *stuff)
+p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle)
 {
-    int r = pthread_cancel(stuff->th);
-    if(r != 0)
-    {
-        ERR("pthread_cancel: %s", strerror(r));
-        set_spin(0);
-		return;
-    }
-    r = pthread_join(stuff->th, NULL);
-    if(r != 0)
-    {
-        ERR("pthread_join: %s", strerror(r));
-        set_spin(0);
-		return;
-    }
-#ifdef USE_LIBUSB
-	libusb_unref_device(stuff->dev);
-#endif
-}
+    p1_transfer_ret_t result;
 
-static void write_stdout(char *buf, uint32_t len)
-{
-    while(len > 0) {
-        if (verbose >= 3) {
-                ssize_t s = write(1, buf, len);
-            if(s < 0) {
-                LOG(LOG_ERROR, "write: %s", strerror(errno));
-                pthread_exit(NULL);
-            }
-            buf += s;
-            len -= s;
-        } else break;
+    char paleinfo[64];
+    snprintf(paleinfo, sizeof(paleinfo), "palera1n_flags 0x%" PRIx64, palerain_flags);
+
+    char xargs_cmd[0x270];
+    snprintf(xargs_cmd, sizeof(xargs_cmd), "xargs %s", boot_args);
+
+    // disables watchdog timer on rootful
+    if (palerain_flags & palerain_option_setup_rootful) {
+        strncat(xargs_cmd, " wdt=-1", sizeof(xargs_cmd) - strlen(xargs_cmd) - 1);
     }
+
+    result = issue_pongo_command(handle, "fuse lock");
+    if (result.ret != 0) goto bad;
+
+    result = issue_pongo_command(handle, "sep auto");
+    if (result.ret != 0) goto bad;
+
+    if (g_payload_kpf.data_len > 0) {
+        result = upload_buffer_to_pongo(handle, g_payload_kpf.data, g_payload_kpf.data_len);
+        if (result.ret != 0) goto bad;
+
+        // TODO: discuss on adding support for compressed artifacts
+        // embedded artifacts are lzma compressed, mostly for binary size
+        // this tells pongo to decompress after sending the KPF
+        // overwritten artifacts should not be compressed, so we always
+        // assume not compressed
+        if (g_payload_kpf.uncompressed_data_len > 0) {
+            char modload_cmd[64];
+            snprintf(modload_cmd, sizeof(modload_cmd), "modload %zu", g_payload_kpf.uncompressed_data_len);
+            result = issue_pongo_command(handle, modload_cmd);
+        } else {
+            result = issue_pongo_command(handle, "modload");
+        }
+
+        if (result.ret != 0) goto bad;
+    }
+
+    // palera1n specific flags
+    result = issue_pongo_command(handle, paleinfo);
+    if (result.ret != 0) goto bad;
+
+    // this wont run by default if builds dont have a ramdisk (WITH_RAMDISK=0)
+    if (g_payload_ramdisk.data_len > 0) {
+        result = upload_buffer_to_pongo(handle, g_payload_ramdisk.data, g_payload_ramdisk.data_len);
+        if (result.ret != 0) goto bad;
+
+        // TODO: discuss on adding support for compressed artifacts
+        // embedded artifacts are lzma compressed, mostly for binary size
+        // this tells pongo to decompress after sending the ramdisk
+        // overwritten artifacts should not be compressed, so we always
+        // assume not compressed
+        if (g_payload_ramdisk.uncompressed_data_len > 0) {
+            char ramdisk_cmd[64];
+            snprintf(ramdisk_cmd, sizeof(ramdisk_cmd), "ramdisk %zu", g_payload_ramdisk.uncompressed_data_len);
+            result = issue_pongo_command(handle, ramdisk_cmd);
+        } else {
+            result = issue_pongo_command(handle, "ramdisk");
+        }
+
+        if (result.ret != 0) goto bad;
+    }
+
+    // this wont run by default if builds dont have a binpack (WITH_BINPACK=0)
+    if (g_payload_overlay.data_len > 0) {
+        result = upload_buffer_to_pongo(handle, g_payload_overlay.data, g_payload_overlay.data_len);
+        if (result.ret != 0) goto bad;
+        result = issue_pongo_command(handle, "overlay");
+        if (result.ret != 0) goto bad;
+    }
+
+    if (strlen(boot_args) > 0) {
+        result = issue_pongo_command(handle, xargs_cmd);
+        if (result.ret != 0) goto bad;
+    }
+
+    if (palerain_flags & palerain_option_pongo_full)
+        goto good;
+
+    // TODO: why do we check results
+    result = issue_pongo_command(handle, "bootx");
+    if (result.ret != 0) goto bad;
+
+good:
+    return 0;
+bad:
+    return 255;
 }

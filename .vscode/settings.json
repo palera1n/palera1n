@@ -1,0 +1,6 @@
+{
+  "cmake.loadCompileCommands": true,
+  "cmake.configureOnOpen": true,
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+}

@@ -4,7 +4,6 @@ Version: @DEB_VERSION@
 Architecture: @DEB_ARCH@
 Maintainer: palera1n team
 Author: palera1n team
-Depends: usbmuxd
 Section: Utilities
 Priority: optional
 Homepage: https://palera.in

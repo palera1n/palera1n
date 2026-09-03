@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>English</string>
+        <key>CFBundleExecutable</key>
+        <string>palera1n</string>
+        <key>CFBundleIconFile</key>
+        <string>palera1n.icns</string>
+        <key>CFBundleIdentifier</key>
+        <string>palera1n</string>
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>6.0</string>
+        <key>CFBundleName</key>
+        <string>palera1n</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>NSHumanReadableCopyright</key>
+        <string>(c) 2026 palera1n</string>
+        <key>NSHighResolutionCapable</key>
+        <true/>
+    </dict>
+</plist>
