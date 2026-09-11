@@ -11,6 +11,7 @@ embedded/binpack.dmg
 embedded/DFUHelperDeviceInfo-minified.json
 
 apple-include-*
+*-unknown-*
 libusbK/
 libusbK-tmp/
 

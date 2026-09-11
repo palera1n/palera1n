@@ -75,7 +75,11 @@ DfuPanel::DfuPanel(MainFrame* frame, wxWindow* parent)
         "Time to put the device into DFU mode.",
         wxDefaultPosition,
         wxDefaultSize,
-        wxST_WRAP
+        #ifdef __linux__
+            wxSP_WRAP
+        #else
+            wxST_WRAP
+        #endif
     );
     left->Add(m_headerText, 0, wxTOP | wxLEFT | wxRIGHT, 10);
 

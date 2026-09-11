@@ -88,7 +88,11 @@ RecoveryPanel::RecoveryPanel(MainFrame* frame, wxWindow* parent)
         "The device needs to be put into DFU mode to apply the jailbreak. This is a manual process and we will guide you through it.",
         wxDefaultPosition,
         wxDefaultSize,
-        wxST_WRAP
+        #ifdef __linux__
+            wxSP_WRAP
+        #else
+            wxST_WRAP
+        #endif
     ), 0, wxALL, 10);
     left->Add(m_statusText, 0, wxALL, 10);
 

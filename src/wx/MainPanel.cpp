@@ -81,7 +81,11 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
         "Cameron Katri, Keto et al.)",
         wxDefaultPosition,
         wxDefaultSize,
-        wxST_WRAP
+        #ifdef __linux__
+            wxSP_WRAP
+        #else
+            wxST_WRAP
+        #endif
     );
 
     auto* twitterLabel = new wxStaticText(this, wxID_ANY, "Twitter:");
@@ -167,7 +171,11 @@ MainPanel::MainPanel(MainFrame* frame, wxWindow* parent)
         "NOTE: Please ensure you've made a backup of your device before proceeding.\n",
         wxDefaultPosition,
         wxDefaultSize,
-        wxST_WRAP
+        #ifdef __linux__
+            wxSP_WRAP
+        #else
+            wxST_WRAP
+        #endif
     );
 
     wxFont noteFont = warningNote->GetFont();

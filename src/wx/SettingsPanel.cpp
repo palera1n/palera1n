@@ -58,7 +58,14 @@ auto createTitle = [](wxWindow* parent, const wxString& text)
 
 auto createDescription = [](wxWindow* parent, const wxString& text)
 {
-    auto* description = new wxStaticText(parent, wxID_ANY, text, wxDefaultPosition, wxDefaultSize, wxST_WRAP);
+    auto* description = new wxStaticText(
+        parent, wxID_ANY, text, wxDefaultPosition, wxDefaultSize,
+        #ifdef __linux__
+            wxSP_WRAP
+        #else
+            wxST_WRAP
+        #endif
+    );
 
     wxFont font = description->GetFont();
     font.SetPointSize(font.GetPointSize() - 2);
@@ -85,7 +92,11 @@ SettingsPanel::SettingsPanel(MainFrame* frame, wxWindow* parent)
         "You may set the following options. If you don't know what they mean you'll probably have no reason to set them.",
         wxDefaultPosition,
         wxDefaultSize,
-        wxST_WRAP
+        #ifdef __linux__
+            wxSP_WRAP
+        #else
+            wxST_WRAP
+        #endif
     ), 0, wxTOP | wxLEFT | wxRIGHT, 10);
 
     auto* notebook = new wxNotebook(this, wxID_ANY);

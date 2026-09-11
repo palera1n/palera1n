@@ -329,8 +329,8 @@ jobs:
         mkdir -p palera1n-iphoneos-arm/DEBIAN
         tar -xf palera1n-iphoneos-arm64.tar.gz -C palera1n-iphoneos-arm64
         tar -xf palera1n-iphoneos-arm.tar.gz -C palera1n-iphoneos-arm
-        cp ../packaging/control palera1n-iphoneos-arm64/DEBIAN/control
-        cp ../packaging/control palera1n-iphoneos-arm/DEBIAN/control
+        cp ../resources/control palera1n-iphoneos-arm64/DEBIAN/control
+        cp ../resources/control palera1n-iphoneos-arm/DEBIAN/control
 
         VERSION=$(grep '^#define PALERAIN_VERSION' ../src/globals.h | cut -d'"' -f2 | tr -cd '0-9.')
 
@@ -388,8 +388,8 @@ jobs:
       run: |
         create-dmg \
           --volname "palera1n-macos-universal" \
-          --volicon "packaging/drive.icns" \
-          --background "packaging/background.png" \
+          --volicon "resources/drive.icns" \
+          --background "resources/background.png" \
           --window-pos 200 120 \
           --window-size 510 350 \
           --icon-size 100 \
