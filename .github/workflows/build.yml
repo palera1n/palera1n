@@ -315,7 +315,7 @@ jobs:
 
     - name: Build
       run: |
-        gmake palera1n_xcode PLATFORM=iphoneos WITH_STATIC=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
+        gmake palera1n PLATFORM=iphoneos WITH_STATIC=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(sysctl -n hw.ncpu)
 
     - name: Package
       run: |
