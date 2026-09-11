@@ -1,9 +1,5 @@
 .PHONY: all clean
 
-# ---------------------------------------------------------------------------
-# Options
-# ---------------------------------------------------------------------------
-
 WITH_GUI          ?= 0
 WITH_TUI          ?= 0
 WITH_RAMDISK      ?= 1
@@ -64,6 +60,9 @@ palera1n:
 ifeq ($(PLATFORM),iphoneos)
 	@codesign --force --sign - --entitlements resources/entitlements.xml build/Debug-iphoneos/palera1n.app/palera1n
 endif
+
+package: build
+	cpack --config build/CPackConfig.cmake -C $(BUILD_TYPE)
 
 clean:
 	@rm -rf build src/gen apple-include-*
