@@ -85,6 +85,14 @@ FetchContent_MakeAvailable(nlohmann_json)
 # MARK: TARGET
 # =========================
 
+message(STATUS "========================")
+message(STATUS "Using XXD on this shit!!!")
+message(STATUS "========================")
+include(cmake/Xxd.cmake)
+if(IOS)
+    include(cmake/AppleHeaders.cmake)
+endif()
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "src/*.cpp"
     "src/*.c"
