@@ -106,5 +106,6 @@ else()
         set(CPACK_GENERATOR "TGZ")
     endif()
 endif()
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 include(CPack)

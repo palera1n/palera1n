@@ -61,7 +61,7 @@ ifeq ($(PLATFORM),iphoneos)
 	@codesign --force --sign - --entitlements resources/entitlements.xml build/Debug-iphoneos/palera1n.app/palera1n
 endif
 
-package: build
+package: palera1n
 	cpack --config build/CPackConfig.cmake -C $(BUILD_TYPE)
 
 clean:

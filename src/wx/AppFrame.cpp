@@ -32,7 +32,7 @@
 #include <wx/wx.h>
 #include "../globals.h"
 #if defined(WITH_GUI) && defined(__linux__)
-# include "../udevhelper.h"
+# include "../udev_helper.h"
 #endif
 #include "../events/event.hpp"
 

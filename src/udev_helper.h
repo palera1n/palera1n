@@ -25,57 +25,24 @@
  *
  */
 
+#ifndef P1__UDEV_HELPER_H
+#define P1__UDEV_HELPER_H
+
 #if defined(__linux__)
 
-#include "udevhelper.h"
+#include <stdint.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h> // waitpid
-#include <sys/stat.h> // chmod
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "gen/embedded/add_udev_rules.h"
+int udev_rules_exist(void);
+int add_udev_rules(void);
 
-int udev_rules_exist(void)
-{
-    return access("/etc/udev/rules.d/turdusra1n.rules", F_OK) == 0;
+#ifdef __cplusplus
 }
-
-int add_udev_rules(void)
-{
-    FILE *f = fopen("/tmp/udevhelper.sh", "wb");
-    if (!f)
-        return 1;
-
-    fwrite(
-        embedded_add_udev_rules_sh,
-        1,
-        embedded_add_udev_rules_sh_len,
-        f
-    );
-    fclose(f);
-
-    chmod("/tmp/udevhelper.sh", 0700);
-
-    pid_t pid = fork();
-
-    if (pid < 0) {
-        unlink("/tmp/udevhelper.sh");
-        return 1;
-    }
-
-    if (pid == 0) {
-        execlp("pkexec", "pkexec", "/tmp/udevhelper.sh", (char *)NULL);
-        exit(1);
-    }
-
-    int status;
-    waitpid(pid, &status, 0);
-
-    unlink("/tmp/udevhelper.sh");
-
-    return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
-}
+#endif
 
 #endif // defined(__linux__)
+
+#endif // P1__UDEV_HELPER_H
