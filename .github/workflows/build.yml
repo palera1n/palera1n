@@ -405,73 +405,80 @@ jobs:
         path: |
           dist/palera1n-macos-universal.dmg
 
-  build-windows:
-    runs-on: windows-latest
-    needs: [build-pongo, build-ramdisk]
+  # build-windows:
+  #   runs-on: windows-latest
+  #   needs: [build-pongo, build-ramdisk]
 
-    steps:
-    - uses: actions/checkout@v4
+  #   steps:
+  #   - uses: actions/checkout@v4
 
-    - name: Download Pongo
-      uses: actions/download-artifact@v4
-      with:
-        name: pongo
-        path: embedded/
+  #   - name: Download Pongo
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: pongo
+  #       path: embedded/
 
-    - name: Download embedded artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: embedded
-        path: embedded/
+  #   - name: Download embedded artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: embedded
+  #       path: embedded/
 
-    - name: Install dependencies (choco)
-      run: choco install nsis.portable
+  #   - name: Install dependencies (choco)
+  #     run: choco install nsis.portable
 
-    - name: Install dependencies (msys2)
-      uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884
-      with:
-        msystem: MINGW64
-        install: >
-          git
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-cmake
-          mingw-w64-x86_64-libusb
-          mingw-w64-x86_64-rust
-          mingw-w64-x86_64-nsis
-          mingw-w64-x86_64-jq
-          libtool
-          openssl
-          openssl-devel
-          python-devel
-          autoconf
-          automake
-          zip
-          vim
-          make
-          patch
-        update: true
+  #   - name: Install dependencies (msys2)
+  #     uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884
+  #     with:
+  #       msystem: MINGW64
+  #       install: >
+  #         git
+  #         mingw-w64-x86_64-toolchain
+  #         mingw-w64-x86_64-cmake
+  #         mingw-w64-x86_64-libusb
+  #         mingw-w64-x86_64-rust
+  #         mingw-w64-x86_64-nsis
+  #         mingw-w64-x86_64-jq
+  #         libtool
+  #         openssl
+  #         openssl-devel
+  #         python-devel
+  #         autoconf
+  #         automake
+  #         zip
+  #         vim
+  #         make
+  #         patch
+  #       update: true
 
-    - name: Build
-      shell: msys2 {0}
-      run: |
-        make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(nproc)
-        strip -s build/palera1n.exe
+  #   - name: Build
+  #     shell: msys2 {0}
+  #     run: |
+  #       make palera1n_mingw WITH_STATIC=1 WITH_GUI=1 BUILD_TYPE=Release JOBS=$(nproc)
+  #       strip -s build/palera1n.exe
 
-    - name: Package
-      run: |
-        cd build && cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-windows-x86_64-setup"
+  #   - name: Package
+  #     run: |
+  #       cd build && cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-windows-x86_64-setup"
 
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: palera1n-windows-x86_64
-        path: |
-          build/palera1n-windows-x86_64-setup.exe
+  #   - name: Upload
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: palera1n-windows-x86_64
+  #       path: |
+  #         build/palera1n-windows-x86_64-setup.exe
 
   release:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: [build-ramdisk, build-pongo, build-linux, build-macos-universal, build-windows, build-ios]
+    needs: [
+      build-ramdisk,
+      build-pongo,
+      build-linux,
+      build-macos-universal,
+      # build-windows,
+      build-ios
+    ]
 
     steps:
     - name: Download embedded artifacts
