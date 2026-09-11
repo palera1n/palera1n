@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef SETTINGSPANEL_H
-#define SETTINGSPANEL_H
+#ifndef P1__SETTINGS_PANEL_HPP
+#define P1__SETTINGS_PANEL_HPP
 
 #ifdef WITH_GUI
 
@@ -42,4 +42,4 @@ public:
 
 #endif // WITH_GUI
 
-#endif // SETTINGSPANEL_H
+#endif // P1__SETTINGS_PANEL_HPP

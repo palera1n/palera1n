@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef DFUPANEL_H
-#define DFUPANEL_H
+#ifndef P1__DFU_PANEL_HPP
+#define P1__DFU_PANEL_HPP
 
 #ifdef WITH_GUI
 
@@ -73,4 +73,4 @@ private:
 
 #endif // WITH_GUI
 
-#endif // DFUPANEL_H
+#endif // P1__DFU_PANEL_HPP

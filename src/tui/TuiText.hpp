@@ -27,8 +27,8 @@
 
 #ifdef WITH_TUI
 
-#ifndef TUI_TEXT_HPP
-#define TUI_TEXT_HPP
+#ifndef P1__TUI_TEXT_HPP
+#define P1__TUI_TEXT_HPP
 
 #include <ncurses.h>
 
@@ -105,6 +105,6 @@ inline int draw_wrapped_text(int y, int x, int width, const std::string& text, i
 
 } // namespace tui_text
 
-#endif // TUI_TEXT_HPP
+#endif // P1__TUI_TEXT_HPP
 
 #endif // WITH_TUI

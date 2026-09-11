@@ -25,38 +25,57 @@
  *
  */
 
-#ifndef P1__GLOBALS_H
-#define P1__GLOBALS_H
+#if defined(__linux__)
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
+#include "udevhelper.h"
 
-#define PALERAIN_VERSION "beta 3.0.0"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h> // waitpid
+#include <sys/stat.h> // chmod
 
-extern uint64_t palerain_flags;
-extern char boot_args[0x270];
+#include "gen/embedded/add_udev_rules.h"
 
-typedef struct {
-    const uint8_t *data;
-    size_t data_len;
-    size_t uncompressed_data_len;
-} payload_t;
-
-extern payload_t g_payload_overlay;
-extern payload_t g_payload_ramdisk;
-extern payload_t g_payload_pongo;
-extern payload_t g_payload_kpf;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-bool check_payload_validity(const payload_t *payload, bool isPongo);
-bool override_payload_from_file(const char *path, payload_t *out);
-
-#ifdef __cplusplus
+int udev_rules_exist(void)
+{
+    return access("/etc/udev/rules.d/turdusra1n.rules", F_OK) == 0;
 }
-#endif
 
-#endif // P1__GLOBALS_H
+int add_udev_rules(void)
+{
+    FILE *f = fopen("/tmp/udevhelper.sh", "wb");
+    if (!f)
+        return 1;
+
+    fwrite(
+        embedded_add_udev_rules_sh,
+        1,
+        embedded_add_udev_rules_sh_len,
+        f
+    );
+    fclose(f);
+
+    chmod("/tmp/udevhelper.sh", 0700);
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        unlink("/tmp/udevhelper.sh");
+        return 1;
+    }
+
+    if (pid == 0) {
+        execlp("pkexec", "pkexec", "/tmp/udevhelper.sh", (char *)NULL);
+        exit(1);
+    }
+
+    int status;
+    waitpid(pid, &status, 0);
+
+    unlink("/tmp/udevhelper.sh");
+
+    return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+}
+
+#endif // defined(__linux__)

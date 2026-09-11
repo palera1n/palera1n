@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef USB_PONGO_H
-#define USB_PONGO_H
+#ifndef P1__PONGO_HELPER_H
+#define P1__PONGO_HELPER_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -49,4 +49,4 @@ typedef checkm8_err_t p1_checkm8_err_t;
 p1_checkm8_err_t send_compressed_pongo(p1_usb_handle_t *handle, const uint8_t *pongo_bin, const size_t pongo_bin_length);
 p1_checkm8_err_t send_full_pongo_jailbreak(p1_usb_handle_t *handle);
 
-#endif // USB_PONGO_H
+#endif // P1__PONGO_HELPER_H

@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef MAINPANEL_H
-#define MAINPANEL_H
+#ifndef P1__MAIN_PANEL_HPP
+#define P1__MAIN_PANEL_HPP
 
 #ifdef WITH_GUI
 
@@ -48,4 +48,4 @@ private:
 
 #endif // WITH_GUI
 
-#endif // MAINPANEL_H
+#endif // P1__MAIN_PANEL_HPP

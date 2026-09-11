@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef APPFRAME_H
-#define APPFRAME_H
+#ifndef P1__APP_FRAME_HPP
+#define P1__APP_FRAME_HPP
 
 #ifdef WITH_GUI
 
@@ -77,4 +77,4 @@ public:
 
 #endif // WITH_GUI
 
-#endif // APPFRAME_H
+#endif // P1__APP_FRAME_HPP

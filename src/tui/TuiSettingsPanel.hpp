@@ -27,8 +27,8 @@
 
 #ifdef WITH_TUI
 
-#ifndef TUI_SETTINGS_PANEL_HPP
-#define TUI_SETTINGS_PANEL_HPP
+#ifndef P1__TUI_SETTINGS_PANEL_HPP
+#define P1__TUI_SETTINGS_PANEL_HPP
 
 #include "TuiPanel.hpp"
 
@@ -50,6 +50,6 @@ private:
     void edit_boot_args(int start_y, int start_x);
 };
 
-#endif // TUI_SETTINGS_PANEL_HPP
+#endif // P1__TUI_SETTINGS_PANEL_HPP
 
 #endif // WITH_TUI

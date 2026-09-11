@@ -27,8 +27,8 @@
 
 #ifdef WITH_TUI
 
-#ifndef TUI_DFU_ART_HPP
-#define TUI_DFU_ART_HPP
+#ifndef P1__TUI_DFU_ART_HPP
+#define P1__TUI_DFU_ART_HPP
 
 #include <string>
 
@@ -43,6 +43,6 @@ struct DfuAsciiPreview {
 const DfuAsciiPreview* find_dfu_ascii_preview(const std::string& imageName);
 void draw_dfu_ascii_preview(const DfuAsciiPreview& preview, int sx, int sy);
 
-#endif // TUI_DFU_ART_HPP
+#endif // P1__TUI_DFU_ART_HPP
 
 #endif // WITH_TUI

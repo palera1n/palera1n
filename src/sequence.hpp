@@ -27,8 +27,8 @@
 
 #if defined(WITH_GUI) || defined(WITH_TUI)
 
-#ifndef SEQUENCE_H
-#define SEQUENCE_H
+#ifndef P1__SEQUENCE_HPP
+#define P1__SEQUENCE_HPP
 
 #include <string>
 #include <vector>
@@ -64,6 +64,6 @@ DfuSequence ParseSequence(const std::string& deviceKey);
 bool SequenceIsSupported(const DfuSequence* seq);
 bool SequenceRequiresCLI(const DfuSequence* seq);
 
-#endif // SEQUENCE_H
+#endif // P1__SEQUENCE_HPP
 
 #endif // WITH_GUI || WITH_TUI

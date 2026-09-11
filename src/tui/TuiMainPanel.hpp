@@ -27,8 +27,8 @@
 
 #ifdef WITH_TUI
 
-#ifndef TUI_MAIN_PANEL_HPP
-#define TUI_MAIN_PANEL_HPP
+#ifndef P1__TUI_MAIN_PANEL_HPP
+#define P1__TUI_MAIN_PANEL_HPP
 
 #include "TuiPanel.hpp"
 
@@ -47,6 +47,6 @@ public:
     const char** get_buttons() const override;
 };
 
-#endif // TUI_MAIN_PANEL_HPP
+#endif // P1__TUI_MAIN_PANEL_HPP
 
 #endif // WITH_TUI

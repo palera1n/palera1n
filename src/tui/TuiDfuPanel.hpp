@@ -27,8 +27,8 @@
 
 #ifdef WITH_TUI
 
-#ifndef TUI_DFU_PANEL_HPP
-#define TUI_DFU_PANEL_HPP
+#ifndef P1__TUI_DFU_PANEL_HPP
+#define P1__TUI_DFU_PANEL_HPP
 
 #include "TuiPanel.hpp"
 #include "../sequence.hpp"
@@ -73,6 +73,6 @@ private:
     std::chrono::steady_clock::time_point m_last_tick;
 };
 
-#endif // TUI_DFU_PANEL_HPP
+#endif // P1__TUI_DFU_PANEL_HPP
 
 #endif // WITH_TUI

@@ -27,8 +27,8 @@
 
 #ifdef WITH_TUI
 
-#ifndef TUI_PANEL_HPP
-#define TUI_PANEL_HPP
+#ifndef P1__TUI_PANEL_HPP
+#define P1__TUI_PANEL_HPP
 
 #include <ncurses.h>
 
@@ -71,6 +71,6 @@ private:
     TuiFrame* m_frame = nullptr;
 };
 
-#endif // TUI_PANEL_HPP
+#endif // P1__TUI_PANEL_HPP
 
 #endif // WITH_TUI

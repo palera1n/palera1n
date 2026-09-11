@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef RECOVERYPANEL_H
-#define RECOVERYPANEL_H
+#ifndef P1__RECOVERY_PANEL_HPP
+#define P1__RECOVERY_PANEL_HPP
 
 #ifdef WITH_GUI
 
@@ -53,4 +53,4 @@ private:
 
 #endif // WITH_GUI
 
-#endif // RECOVERYPANEL_H
+#endif // P1__RECOVERY_PANEL_HPP

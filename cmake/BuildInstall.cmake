@@ -3,7 +3,11 @@
 # =========================
 
 if(LINUX AND NOT MINGW)
+    if(WITH_GUI)
+    install(TARGETS palera1n RUNTIME DESTINATION usr/bin)
+    else()
     install(TARGETS palera1n RUNTIME DESTINATION bin)
+    endif()
 elseif(IOS)
     install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/Debug-iphoneos/palera1n.app/palera1n" DESTINATION bin)
 elseif(APPLE AND WITH_GUI)
@@ -31,8 +35,36 @@ elseif(MINGW)
 endif()
 
 if((LINUX AND NOT MINGW) OR IOS OR (APPLE AND NOT IOS AND NOT WITH_GUI))
-    install(FILES "${CMAKE_SOURCE_DIR}/docs/palera1n.1" DESTINATION share/man/man1)
-    install(FILES "${CMAKE_SOURCE_DIR}/docs/p1ctl.8" DESTINATION share/man/man8)
+    install(FILES "${CMAKE_SOURCE_DIR}/docs/palera1n.1" DESTINATION usr/share/man/man1)
+    install(FILES "${CMAKE_SOURCE_DIR}/docs/p1ctl.8" DESTINATION usr/share/man/man8)
+endif()
+
+if((LINUX AND NOT MINGW) OR IOS OR (APPLE AND NOT IOS AND WITH_GUI))
+    include(InstallRequiredSystemLibraries)
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/in.palera.palera1n.desktop"
+        DESTINATION share/applications
+    )
+
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/hicolor/64x64/apps/in.palera.palera1n.png"
+        DESTINATION usr/share/icons/hicolor/64x64/apps
+    )
+
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/hicolor/128x128/apps/in.palera.palera1n.png"
+        DESTINATION usr/share/icons/hicolor/128x128/apps
+    )
+
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/hicolor/256x256/apps/in.palera.palera1n.png"
+        DESTINATION usr/share/icons/hicolor/256x256/apps
+    )
+
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/hicolor/512x512/apps/in.palera.palera1n.png"
+        DESTINATION usr/share/icons/hicolor/512x512/apps
+    )
 endif()
 
 set(CPACK_PACKAGE_NAME "palera1n")
@@ -68,7 +100,11 @@ elseif(APPLE AND WITH_GUI)
 else()
     set(CPACK_PACKAGING_INSTALL_PREFIX "/")
     set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-    set(CPACK_GENERATOR "TGZ")
+    if(WITH_GUI)
+        include("${CMAKE_SOURCE_DIR}/cmake/LinuxDeploy.cmake")
+    else()
+        set(CPACK_GENERATOR "TGZ")
+    endif()
 endif()
 
 include(CPack)

@@ -25,38 +25,24 @@
  *
  */
 
-#ifndef P1__GLOBALS_H
+#ifndef P1__UDEVHELPER_H
 #define P1__GLOBALS_H
 
-#include <stdbool.h>
+#if defined(__linux__)
+
 #include <stdint.h>
-#include <stddef.h>
-
-#define PALERAIN_VERSION "beta 3.0.0"
-
-extern uint64_t palerain_flags;
-extern char boot_args[0x270];
-
-typedef struct {
-    const uint8_t *data;
-    size_t data_len;
-    size_t uncompressed_data_len;
-} payload_t;
-
-extern payload_t g_payload_overlay;
-extern payload_t g_payload_ramdisk;
-extern payload_t g_payload_pongo;
-extern payload_t g_payload_kpf;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool check_payload_validity(const payload_t *payload, bool isPongo);
-bool override_payload_from_file(const char *path, payload_t *out);
+int udev_rules_exist(void);
+int add_udev_rules(void);
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif // defined(__linux__)
 
 #endif // P1__GLOBALS_H

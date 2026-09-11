@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef DEVICEPANEL_H
-#define DEVICEPANEL_H
+#ifndef P1__DEVICE_PANEL_HPP
+#define P1__DEVICE_PANEL_HPP
 
 #include <wx/wx.h>
 #include "../events/event.hpp"
@@ -65,4 +65,4 @@ private:
     DeviceState m_deviceState;
 };
 
-#endif // DEVICEPANEL_H
+#endif // P1__DEVICE_PANEL_HPP

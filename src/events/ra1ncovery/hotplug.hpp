@@ -27,8 +27,8 @@
 
 #if defined(WITH_GUI) || defined(WITH_TUI)
 
-#ifndef MAIN__HOTPLUG_HPP
-#define MAIN__HOTPLUG_HPP
+#ifndef P1__HOTPLUG_HPP
+#define P1__HOTPLUG_HPP
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -79,6 +79,6 @@ void exit_recovery(hotplug_handle_t handle);
 }
 #endif
 
-#endif // MAIN__HOTPLUG_HPP
+#endif // P1__HOTPLUG_HPP
 
 #endif // WITH_GUI || WITH_TUI

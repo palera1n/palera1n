@@ -27,8 +27,8 @@
 
 #ifdef WITH_TUI
 
-#ifndef TUI_HPP
-#define TUI_HPP
+#ifndef P1__TUI_HPP
+#define P1__TUI_HPP
 
 #include <memory>
 #include <mutex>
@@ -93,6 +93,6 @@ private:
 void ui_run(void);
 void update_tui_device_state(const DeviceState* new_state);
 
-#endif // TUI_HPP
+#endif // P1__TUI_HPP
 
 #endif // WITH_TUI

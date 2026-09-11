@@ -27,8 +27,8 @@
 
 #if defined(WITH_GUI) || defined(WITH_TUI)
 
-#ifndef MAIN__DEVICE_INFO_H
-#define MAIN__DEVICE_INFO_H
+#ifndef P1__DEVICE_INFO_HPP
+#define P1__DEVICE_INFO_HPP
 
 // stolen from irecovery, I dont think an array
 // of devices can be copyrighted?
@@ -382,6 +382,6 @@ static struct irecv_device irecv_devices[] = {
 void get_recovery_info(char *sn, const char **ecid, const char **product_model, const char **product_name);
 void get_name_from_product_type(const char *product_type, const char **name);
 
-#endif // MAIN__DEVICE_INFO_H
+#endif // P1__DEVICE_INFO_HPP
 
 #endif // WITH_GUI || WITH_TUI

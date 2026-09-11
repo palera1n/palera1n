@@ -31,6 +31,9 @@
 
 #include <wx/wx.h>
 #include "../globals.h"
+#if defined(WITH_GUI) && defined(__linux__)
+# include "../udevhelper.h"
+#endif
 #include "../events/event.hpp"
 
 wxDEFINE_EVENT(EVT_DEVICE_STATE_UPDATE, wxCommandEvent);
@@ -106,6 +109,36 @@ void MainFrame::ShowMain()
     m_dfu->Hide();
     m_exploit->Hide();
     Layout();
+
+    // check udev rules
+    #if defined(WITH_GUI) && defined(__linux__)
+
+    if (!udev_rules_exist()) {
+        int result = wxMessageBox(
+            "USB permissions need to be configured before exploiting.\n\n"
+            "This will install the required udev rules so palera1n "
+            "can communicate with your device over USB in DFU.\n\n"
+            "Otherwise, we may not be able to jailbreak your device.",
+            "Set Up USB Permissions",
+            wxYES_NO | wxICON_INFORMATION,
+            this
+        );
+
+        if (result != wxYES)
+            return;
+
+        if (add_udev_rules() != 0) {
+            wxMessageBox(
+                "Failed to configure USB permissions.",
+                "Error",
+                wxOK | wxICON_ERROR,
+                this
+            );
+            return;
+        }
+    }
+
+    #endif
 }
 
 void MainFrame::ShowSettings()

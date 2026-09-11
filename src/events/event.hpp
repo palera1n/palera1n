@@ -27,8 +27,8 @@
 
 #if defined(WITH_GUI) || defined(WITH_TUI)
 
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef P1__EVENT_HPP
+#define P1__EVENT_HPP
 
 #include <cstdint>
 #include <functional>
@@ -69,6 +69,6 @@ void ensure_device_event_system_started();
 bool enter_recovery();
 void exit_recovery();
 
-#endif // EVENT_H
+#endif // P1__EVENT_HPP
 
 #endif // WITH_GUI || WITH_TUI
