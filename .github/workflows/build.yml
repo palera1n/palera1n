@@ -44,7 +44,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: loader
+          name: _loader
           path: |
             packages/*
 
@@ -62,7 +62,7 @@ jobs:
     - name: Download loader artifacts
       uses: actions/download-artifact@v4
       with:
-        name: loader
+        name: _loader
 
     - name: Select correct Xcode
       uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b
@@ -92,7 +92,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: embedded
+        name: _embedded
         path: |
           upload/*
 
@@ -122,7 +122,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: pongo
+        name: _pongo
         path: |
           upload/*
 
@@ -147,13 +147,13 @@ jobs:
     - name: Download Pongo
       uses: actions/download-artifact@v4
       with:
-        name: pongo
+        name: _pongo
         path: embedded/
 
     - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
-        name: embedded
+        name: _embedded
         path: embedded/
 
     - name: Download musl toolchain
@@ -229,6 +229,53 @@ jobs:
         path: |
           build/*.tar.gz
 
+  build-linux-appimage:
+    runs-on: ${{ matrix.os }}
+    needs: [build-pongo, build-ramdisk]
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch: x86_64
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.BUILD_GITHUB_TOKEN }}
+        submodules: recursive
+
+    - name: Download Pongo
+      uses: actions/download-artifact@v4
+      with:
+        name: _pongo
+        path: embedded/
+
+    - name: Download embedded artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: _embedded
+        path: embedded/
+
+    - name: Install dependencies (apt)
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential cmake autoconf automake libtool pkg-config zstd jq libwxgtk3.2-dev
+
+    - name: Build
+      run: |
+        make package WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(nproc)
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: palera1n-${{ matrix.arch }}-linux-gui
+        path: |
+          build/*.AppImage
+
   build-macos:
     runs-on: ${{ matrix.os }}
     needs: [build-pongo, build-ramdisk]
@@ -250,13 +297,13 @@ jobs:
     - name: Download Pongo
       uses: actions/download-artifact@v4
       with:
-        name: pongo
+        name: _pongo
         path: embedded/
 
     - name : Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
-        name: embedded
+        name: _embedded
         path: embedded/
 
     - name: Install dependencies (brew)
@@ -299,13 +346,13 @@ jobs:
     - name: Download Pongo
       uses: actions/download-artifact@v4
       with:
-        name: pongo
+        name: _pongo
         path: embedded/
 
     - name : Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
-        name: embedded
+        name: _embedded
         path: embedded/
 
     - name: Install dependencies (brew)
@@ -415,13 +462,13 @@ jobs:
   #   - name: Download Pongo
   #     uses: actions/download-artifact@v4
   #     with:
-  #       name: pongo
+  #       name: _pongo
   #       path: embedded/
 
   #   - name: Download embedded artifacts
   #     uses: actions/download-artifact@v4
   #     with:
-  #       name: embedded
+  #       name: _embedded
   #       path: embedded/
 
   #   - name: Install dependencies (choco)
@@ -484,13 +531,13 @@ jobs:
     - name: Download embedded artifacts
       uses: actions/download-artifact@v4
       with:
-        name: embedded
+        name: _embedded
         path: embedded/
 
     - name: Download Pongo
       uses: actions/download-artifact@v4
       with:
-        name: pongo
+        name: _pongo
         path: embedded/
 
     - name: Download Linux i486 Artifact

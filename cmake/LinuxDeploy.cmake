@@ -2,9 +2,15 @@
 
 include(FetchContent)
 
-set(LINUXDEPLOY_URL
-    "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+    set(LINUXDEPLOY_URL
+        "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-aarch64.AppImage"
+    )
+else()
+    set(LINUXDEPLOY_URL
+        "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+    )
+endif()
 
 set(LINUXDEPLOY
     "${CMAKE_BINARY_DIR}/linuxdeploy"

@@ -344,7 +344,7 @@ else()
         target_link_libraries(palera1n PRIVATE ${CURSES_LIBRARIES})
     endif()
 
-    if(NOT APPLE AND NOT CIDERRAIN)
+    if(NOT APPLE AND NOT WITH_CIDERRAIN)
         pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
         target_include_directories(palera1n PRIVATE ${LIBUSB_INCLUDE_DIRS})
         target_link_libraries(palera1n PRIVATE ${LIBUSB_LIBRARIES})
