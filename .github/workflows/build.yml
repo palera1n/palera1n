@@ -558,6 +558,18 @@ jobs:
         name: palera1n-armel-linux-musleabi
         path: dist/
 
+    - name: Download Linux x86_64 AppImage Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-x86_64-linux-gui
+        path: dist/
+
+    - name: Download Linux aarch64 AppImage Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: palera1n-aarch64-linux-gui
+        path: dist/
+
     - name: Download Linux aarch64 Artifact
       uses: actions/download-artifact@v4
       with:
