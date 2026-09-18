@@ -45,8 +45,7 @@ int udev_rules_exist(void)
 int add_udev_rules(void)
 {
     FILE *f = fopen("/tmp/udevhelper.sh", "wb");
-    if (!f)
-        return 1;
+    if (!f) return 1;
 
     fwrite(
         embedded_add_udev_rules_sh,
