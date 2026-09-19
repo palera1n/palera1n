@@ -1,0 +1,26 @@
+diff --git a/include/liteusb.h b/include/liteusb.h
+index 4f4033a..ab9d48a 100644
+--- a/include/liteusb.h
++++ b/include/liteusb.h
+@@ -134,6 +134,10 @@ typedef struct {
+ #endif
+ } liteusb_handle_t;
+
++#ifdef __cplusplus
++extern "C" {
++#endif
++
+ const char *liteusb_strerror(liteusb_err_t err);
+ liteusb_err_t liteusb_init(uint32_t flags);
+ void liteusb_deinit(void);
+@@ -154,4 +158,8 @@ liteusb_err_t liteusb_upload(liteusb_handle_t *handle, uint32_t endpoint, void *
+ liteusb_err_t liteusb_get_device_desc(liteusb_handle_t *handle, liteusb_device_desc_t *desc);
+ liteusb_err_t liteusb_get_device_serial_num(liteusb_handle_t *handle, char **serial_num);
+
+-#endif /* LITEUSB_HEADER_H */
+\ No newline at end of file
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* LITEUSB_HEADER_H */

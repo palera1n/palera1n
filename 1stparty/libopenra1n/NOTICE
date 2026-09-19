@@ -1,0 +1,19 @@
+Gaster
+Copyright (c) 2023 0x7ff
+
+Openra1n
+Copyright (c) 2024 Mineek.
+
+Gaster was modified by Mineek to include support for booting PongoOS
+payloads, by sending the device into download mode with extracted
+stage2 payloads from Checkra1n.
+
+libOpenra1n
+Copyright (c) 2026 palera1n team
+
+Openra1n was modified into a importable library for use in palera1n,
+(libOpenra1n) along side another checkm8 backend (closed source).
+
+Many changes included are mainly for overall better practices and
+readability, like better error handling. Other changes include
+more verbose logging, fixes for libusb/iokit, and a ROP generator.

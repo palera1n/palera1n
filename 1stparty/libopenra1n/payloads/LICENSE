@@ -1,0 +1,21 @@
+Copyright (c) checkra1n team. All rights reserved.
+
+* This component is used under the following conditions:
+* 1. NON-AFFILIATION & ATTRIBUTION:
+Any product or project utilizing this code must clearly state that
+the resulting work was NOT developed by the checkra1n team.
+The checkra1n team is the original author of this specific component,
+but they do not endorse, support, or take responsibility for this implementation.
+
+2. MIT LICENSE & DISCLAIMER:
+Subject to the condition above, this code is provided under the MIT License.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+The binary containing this shellcode is available from the following link: https://checkra.in/1337
+

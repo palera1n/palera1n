@@ -1,0 +1,6 @@
+#include <windows.h>
+
+MAINICON ICON "palera1n.ico"
+
+#define RT_MANIFEST 24
+1 RT_MANIFEST "palera1n.exe.manifest"
