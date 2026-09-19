@@ -21,7 +21,7 @@ jobs:
     runs-on: macos-15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: 9faf50968854aa47de65231e2985d60f6944d627
           repository: palera1n/loader
@@ -31,7 +31,7 @@ jobs:
           brew install gnu-sed
 
       - name: Select correct Xcode
-        uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b
+        uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b # v1.1.0
         with:
           xcode-select-version: 16.4
 
@@ -42,7 +42,7 @@ jobs:
           make package PLATFORM=appletvos PACKAGE_NAME=palera1nLoaderTV
 
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: _loader
           path: |
@@ -53,19 +53,19 @@ jobs:
     needs: [build-loader]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: 7e1f6e122c3a45fc45e939293c7e2eaa1889731f
         repository: palera1n/jbinit
         submodules: true
 
     - name: Download loader artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _loader
 
     - name: Select correct Xcode
-      uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b
+      uses: mobiledevops/xcode-select-version-action@7b50160de7c8bd6a8c4ee2c2e6b5ee0983886c0b # v1.1.0
       with:
         xcode-select-version: 16.4
 
@@ -90,7 +90,7 @@ jobs:
         mv src/binpack.dmg upload/
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: _embedded
         path: |
@@ -100,7 +100,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: e98323f8a09abd80fc4cbcd74dee023b91a1ec22
         repository: palera1n/PongoOS
@@ -120,7 +120,7 @@ jobs:
         mv build/checkra1n-kpf-pongo upload/
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: _pongo
         path: |
@@ -139,19 +139,19 @@ jobs:
         - aarch64-linux-musl
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         token: ${{ secrets.BUILD_GITHUB_TOKEN }}
         submodules: recursive
 
     - name: Download Pongo
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _pongo
         path: embedded/
 
     - name: Download embedded artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _embedded
         path: embedded/
@@ -223,7 +223,7 @@ jobs:
         esac
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: palera1n-${{ matrix.triple }}
         path: |
@@ -243,19 +243,19 @@ jobs:
             arch: aarch64
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         token: ${{ secrets.BUILD_GITHUB_TOKEN }}
         submodules: recursive
 
     - name: Download Pongo
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _pongo
         path: embedded/
 
     - name: Download embedded artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _embedded
         path: embedded/
@@ -270,7 +270,7 @@ jobs:
         make package WITH_GUI=1 WITH_TUI=1 WITH_CIDERRAIN=1 BUILD_TYPE=Release JOBS=$(nproc)
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: palera1n-${{ matrix.arch }}-linux-gui
         path: |
@@ -289,19 +289,19 @@ jobs:
           arch: x86_64
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         token: ${{ secrets.BUILD_GITHUB_TOKEN }}
         submodules: recursive
 
     - name: Download Pongo
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _pongo
         path: embedded/
 
     - name : Download embedded artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _embedded
         path: embedded/
@@ -321,7 +321,7 @@ jobs:
         cd build && zip -r palera1n-macos-${{ matrix.arch }}.zip palera1n.app
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: palera1n-macos-${{ matrix.arch }}
         path: |
@@ -332,25 +332,25 @@ jobs:
     needs: [build-pongo, build-ramdisk]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         token: ${{ secrets.BUILD_GITHUB_TOKEN }}
         submodules: recursive
 
     - name: Setup Procursus
-      uses: beerpiss/procursus-action@v2.0.2
+      uses: beerpiss/procursus-action@fbd8e4db6742ffc2c300b4995587a57bcb66654b # v2.0.2
       with:
         cache: true
         mirror: 'https://apt.procurs.us/'
 
     - name: Download Pongo
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _pongo
         path: embedded/
 
     - name : Download embedded artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _embedded
         path: embedded/
@@ -390,7 +390,7 @@ jobs:
         dpkg-deb --build palera1n-iphoneos-arm
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: palera1n-iphoneos-arm64
         path: |
@@ -401,15 +401,15 @@ jobs:
     needs: [build-macos]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Download arm64 artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-macos-arm64
 
     - name: Download x86_64 artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-macos-x86_64
 
@@ -446,7 +446,7 @@ jobs:
           dist/palera1n-macos-universal.dmg dist/palera1n-macos-universal
 
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: palera1n-macos-universal
         path: |
@@ -457,16 +457,16 @@ jobs:
   #   needs: [build-pongo, build-ramdisk]
 
   #   steps:
-  #   - uses: actions/checkout@v4
+  #   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
   #   - name: Download Pongo
-  #     uses: actions/download-artifact@v4
+  #     uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
   #     with:
   #       name: _pongo
   #       path: embedded/
 
   #   - name: Download embedded artifacts
-  #     uses: actions/download-artifact@v4
+  #     uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
   #     with:
   #       name: _embedded
   #       path: embedded/
@@ -475,7 +475,7 @@ jobs:
   #     run: choco install nsis.portable
 
   #   - name: Install dependencies (msys2)
-  #     uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884
+  #     uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
   #     with:
   #       msystem: MINGW64
   #       install: >
@@ -509,7 +509,7 @@ jobs:
   #       cd build && cpack -DCPACK_PACKAGE_FILE_NAME="palera1n-windows-x86_64-setup"
 
   #   - name: Upload
-  #     uses: actions/upload-artifact@v4
+  #     uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
   #     with:
   #       name: palera1n-windows-x86_64
   #       path: |
@@ -529,67 +529,67 @@ jobs:
 
     steps:
     - name: Download embedded artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _embedded
         path: embedded/
 
     - name: Download Pongo
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: _pongo
         path: embedded/
 
     - name: Download Linux i486 Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-i486-linux-musl
         path: dist/
 
     - name: Download Linux x86_64 Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-x86_64-linux-musl
         path: dist/
 
     - name: Download Linux armel Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-armel-linux-musleabi
         path: dist/
 
     - name: Download Linux x86_64 AppImage Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-x86_64-linux-gui
         path: dist/
 
     - name: Download Linux aarch64 AppImage Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-aarch64-linux-gui
         path: dist/
 
     - name: Download Linux aarch64 Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-aarch64-linux-musl
         path: dist/
 
     - name: Download macOS Universal Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-macos-universal
         path: dist/
 
     # - name: Download Windows Artifact
-    #   uses: actions/download-artifact@v4
+    #   uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
     #   with:
     #     name: palera1n-windows-x86_64
     #     path: dist/
 
     - name: Download iOS Artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # 8.0.1
       with:
         name: palera1n-iphoneos-arm64
         path: dist/
@@ -600,7 +600,7 @@ jobs:
       working-directory: embedded
 
     - name: Create Release
-      uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
+      uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v3.0.2
       with:
         name: ${{ env.TAG }}
         tag_name: ${{ env.TAG }}
