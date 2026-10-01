@@ -1,0 +1,72 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "srgb:0.68630,0.73449,0.81004,1.00000",
+      "srgb:0.73248,0.53902,0.51652,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "blend-mode" : "screen",
+          "fill" : {
+            "solid" : "srgb:0.95467,1.00000,0.96255,1.00000"
+          },
+          "hidden" : false,
+          "image-name" : "palera1n_glyph 2.png",
+          "name" : "palera1n_glyph 2"
+        },
+        {
+          "glass" : false,
+          "hidden" : true,
+          "image-name" : "asdsadsadasasd.png",
+          "name" : "asdsadsadasasd",
+          "opacity" : 0.7
+        },
+        {
+          "fill" : {
+            "solid" : "srgb:0.91539,1.00000,0.91492,1.00000"
+          },
+          "glass" : false,
+          "hidden" : false,
+          "image-name" : "asdasdasdas.png",
+          "name" : "asdasdasdas",
+          "opacity" : 0.3
+        },
+        {
+          "blend-mode" : "normal",
+          "glass" : false,
+          "hidden" : true,
+          "image-name" : "palera1n_bg.png",
+          "name" : "palera1n_bg",
+          "opacity" : 1
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

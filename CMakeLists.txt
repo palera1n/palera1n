@@ -101,13 +101,15 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 )
 
 if((APPLE AND NOT IOS) AND WITH_GUI)
-    set(APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/palera1n.icns")
+    set(APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/AppIcon.icns")
+    set(APP_ICON_CAR "${CMAKE_CURRENT_SOURCE_DIR}/resources/Assets.car")
     add_executable(palera1n MACOSX_BUNDLE ${SOURCES})
-    target_sources(palera1n PRIVATE ${APP_ICON})
+    target_sources(palera1n PRIVATE ${APP_ICON} ${APP_ICON_CAR})
     set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    set_source_files_properties(${APP_ICON_CAR} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     set_target_properties(palera1n PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist"
-        MACOSX_BUNDLE_ICON_FILE palera1n.icns
+        MACOSX_BUNDLE_ICON_FILE AppIcon.icns
     )
 elseif(IOS)
     add_executable(palera1n MACOSX_BUNDLE ${SOURCES})
