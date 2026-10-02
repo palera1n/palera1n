@@ -7,7 +7,9 @@
         <key>CFBundleExecutable</key>
         <string>palera1n</string>
         <key>CFBundleIconFile</key>
-        <string>palera1n.icns</string>
+        <string>AppIcon</string>
+        <key>CFBundleIconName</key>
+        <string>AppIcon</string>
         <key>CFBundleIdentifier</key>
         <string>palera1n</string>
         <key>CFBundleInfoDictionaryVersion</key>
@@ -20,5 +22,9 @@
         <string>(c) 2026 palera1n</string>
         <key>NSHighResolutionCapable</key>
         <true/>
+        <key>CFBundleShortVersionString</key>
+        <string>3.0.0</string>
+        <key>CFBundleVersion</key>
+        <string>1</string>
     </dict>
 </plist>

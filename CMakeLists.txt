@@ -109,7 +109,6 @@ if((APPLE AND NOT IOS) AND WITH_GUI)
     set_source_files_properties(${APP_ICON_CAR} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     set_target_properties(palera1n PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist"
-        MACOSX_BUNDLE_ICON_FILE AppIcon.icns
     )
 elseif(IOS)
     add_executable(palera1n MACOSX_BUNDLE ${SOURCES})
