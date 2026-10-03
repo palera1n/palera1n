@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=palera1n
+Comment=Semi-tethered jailbreak for iOS 15+
+Categories=Utility;
+Icon=in.palera.palera1n
+Exec=palera1n
+Terminal=false
+StartupWMClass=in.palera.palera1n

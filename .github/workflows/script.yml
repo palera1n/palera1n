@@ -1,0 +1,33 @@
+name: "Upload install script"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/script.yml"
+      - "install.sh"
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Move
+        run: |
+          mkdir -p dist
+          cp install.sh dist/
+
+      - name: Upload artifact
+        uses: wangyucode/sftp-upload-action@v3
+        with:
+          host: ${{ secrets.NICKCHAN_FTP_HOST }}
+          port: ${{ secrets.NICKCHAN_FTP_PORT }}
+          username: palera1n
+          password: ${{ secrets.NICKCHAN_FTP_PASS }}
+          forceUpload: true
+          dryRun: false
+          localDir: 'dist/'
+          remoteDir: '/www/static.palera.in/scripts'
