@@ -55,11 +55,7 @@ MainFrame::MainFrame()
               wxID_ANY,
               "palera1n - Version " + wxString(PALERAIN_VERSION),
               wxDefaultPosition,
-              #ifdef __linux__
-                wxSize(520, 388),
-              #else
-                wxSize(480, 348),
-              #endif
+              wxSize(480, 348),
               wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX | wxRESIZE_BORDER))
 {
     auto* root = new wxBoxSizer(wxVERTICAL);
