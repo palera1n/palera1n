@@ -1,0 +1,13 @@
+diff --git a/src/msw/taskdlg.cpp b/src/msw/taskdlg.cpp
+index 7844220405..d3c181029d 100644
+--- a/src/msw/taskdlg.cpp
++++ b/src/msw/taskdlg.cpp
+@@ -966,7 +966,7 @@ TDRadioButtonSubclassProc(HWND hwnd,
+                 ::DefSubclassProc(hwnd, WM_PRINTCLIENT, reinterpret_cast<WPARAM>(hdcBuf), PRF_CLIENT);
+ 
+                 wchar_t text[512] = {};
+-                GetWindowTextW(hwnd, text, static_cast<int>(std::size(text)));
++                GetWindowTextW(hwnd, text, static_cast<int>(sizeof(text) / sizeof(text[0])));
+ 
+                 auto gs = hBtn.GetTrueSize(BP_RADIOBUTTON, RBS_UNCHECKEDNORMAL);
+                 RECT rcText = { gs.x + 2, 0, rcClient.right, rcClient.bottom };
